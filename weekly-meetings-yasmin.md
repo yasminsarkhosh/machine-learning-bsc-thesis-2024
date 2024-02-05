@@ -1,4 +1,4 @@
-The material is derived from "Whitaker Lab Project Management" by Dr. Kirstie Whitaker and the Whitaker Lab team, used under machine-learning-bsc-thesis-2024/weekly-meetings-yasmin.md by [Yasmin Sarkhosh].
+The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Project Management" by Dr. Kirstie Whitaker and the Whitaker Lab team, used under CC BY 4.0. weekly-meetings-yasmin.md is licensed under CC BY 4.0 by [Yasmin Sarkhosh].
 
 # Yasmin's Weekly Meeting Notes
 
