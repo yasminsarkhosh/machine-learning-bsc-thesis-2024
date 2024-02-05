@@ -6,11 +6,6 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [Template](#template-date-dd-month-yyyy)
 
 ### Date: 05 feb 2024
-#### Who did you help this week?
-
-Replace this text with a one/two sentence description of who you helped this week and how.
-
-
 #### Who helped you this week?
 
 Replace this text with a one/two sentence description of who helped you this week and how.
@@ -43,11 +38,6 @@ This space is yours to add to as needed.
 
 
 ### Date: [Template]
-
-#### Who did you help this week?
-
-Replace this text with a one/two sentence description of who you helped this week and how.
-
 
 #### Who helped you this week?
 
