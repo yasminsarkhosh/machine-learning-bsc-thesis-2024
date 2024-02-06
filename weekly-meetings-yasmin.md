@@ -12,17 +12,17 @@ Replace this text with a one/two sentence description of who helped you this wee
 #### What did you achieve?
 
 * Settled on a research direction 
-* Finished pre-liminary problem statement 
-* Experiments
+* Finished preliminary problem statement 
+* Experiments: 
+  * examining datasets in papers in MICCA 2023 for demographic information
 * Looking into potential research questions 
-* Relevant literature 
+* Looking for relevant literature 
 * Setting up a Git repo with weekly meetings
 * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024.git
 
 #### What did you struggle with?
 
-* Replace this text with a bullet point list of where you struggled this week.
-* It's ok if your list is only one bullet point long!
+N/A
 
 #### What would you like to work on next week?
 
