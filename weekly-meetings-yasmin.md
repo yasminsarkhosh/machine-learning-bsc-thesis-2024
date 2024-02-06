@@ -4,41 +4,57 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 
 * [06 feb 2024](#date-30-march-2024)
 
-### Date: 05 feb 2024
-#### Who helped you this week?
-
-Replace this text with a one/two sentence description of who helped you this week and how.
-
-#### What did you achieve?
-
+### Date: 06 feb 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
 * Settled on a research direction 
-* Finished pre-liminary problem statement 
-* Experiments
+* Finished preliminary problem statement 
+* Experiments: 
+  * examining datasets in papers in MICCA 2023 for demographic information
 * Looking into potential research questions 
-* Relevant literature 
+* Looking for relevant literature 
 * Setting up a Git repo with weekly meetings
 * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024.git
 
-#### What did you struggle with?
+### What did you struggle with?
+N/A
 
-* Replace this text with a bullet point list of where you struggled this week.
-* It's ok if your list is only one bullet point long!
-
-#### What would you like to work on next week?
-
+### What would you like to work on next week?
 * Finalizing research questions 
-* Finanlizing the methodology for the project
+* Finalizing the methodology for the project
 * Experiments 
+* Looking into MICCA 2023
 
-
-#### Where do you need help from Veronika?
-
+### Where do you need help from Veronika?
 * Finalizing research questions 
-* Finanlizing the methodology for the project!
+* Finalizing the methodology for the project!
 * Setting research boundaries (finalizing a scope for the project) 
 
-#### Any other topics
+### Any other topics
+N/A
 
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
+#### Looking into MICCA 2023 ONLY
+#### Write instructions
+- How did I find the papers?
+    - ‘command F’ - ‘cancer’
+- Annotation scheme
+    - Categories: why these?
+    - How do I examine/annotate papers? 
+- Find number of all papers
+    - Define the number of rows from the total number of papers
+    - Add all papers
+    - Filter by ‘cancer’
+        - What organ is in focus?
+        - What image type?
+    - Find the dataset(s)
+        - Number of dataset(s)?
+        - What are the demographic information?
+        - What are other subgroups in mentioned in the paper?
+- Think of a 'analysis code' for my method that makes it applicable for future analysis
+- Remember: insert all experiments into ‘weekly meetings’
 
 
 
