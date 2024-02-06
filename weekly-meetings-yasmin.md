@@ -17,6 +17,8 @@ Replace this text with a one/two sentence description of who helped you this wee
 * Experiments
 * Looking into potential research questions 
 * Relevant literature 
+* Setting up a Git repo with weekly meetings
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024.git
 
 #### What did you struggle with?
 
