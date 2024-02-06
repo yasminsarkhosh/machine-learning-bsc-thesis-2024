@@ -7,11 +7,9 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 
 ### Date: 05 feb 2024
 #### Who helped you this week?
-
-Replace this text with a one/two sentence description of who helped you this week and how.
+N/A
 
 #### What did you achieve?
-
 * Settled on a research direction 
 * Finished pre-liminary problem statement 
 * Experiments
@@ -21,25 +19,23 @@ Replace this text with a one/two sentence description of who helped you this wee
 * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024.git
 
 #### What did you struggle with?
-
-* Replace this text with a bullet point list of where you struggled this week.
-* It's ok if your list is only one bullet point long!
+N/A
 
 #### What would you like to work on next week?
 
 * Finalizing research questions 
-* Finanlizing the methodology for the project
+* Finalising the methodology for the project
 * Experiments 
 
 
 #### Where do you need help from Veronika?
 
 * Finalizing research questions 
-* Finanlizing the methodology for the project!
+* Finalising the methodology for the project!
 * Setting research boundaries (finalizing a scope for the project) 
 
 #### Any other topics
-
+N/A
 
 
 ### Date: [Template]
