@@ -57,4 +57,20 @@ N/A
 - Remember: insert all experiments into ‘weekly meetings’
 
 
+[13 feb 2024](#date-30-march-2024)
+
+### Date: 13 feb 2024
+### Who helped you this week?
+
+### What did you achieve?
+
+### What did you struggle with?
+
+### What would you like to work on next week?
+
+### Where do you need help from Veronika?
+
+### Any other topics
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
 
