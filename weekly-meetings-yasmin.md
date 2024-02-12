@@ -41,7 +41,7 @@ N/A
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
 #### Looking into MICCA 2023 ONLY
-#### Write instructions
+#### Write instructions - Experiment 1
 - How did I find the papers?
     - ‘command F’ - ‘cancer’
 - Annotation scheme
@@ -65,6 +65,7 @@ N/A
 
 ### Date: 13 feb 2024
 ### Who helped you this week?
+N/A
 
 ### What did you achieve?
 Extracting all papers from MICCA 2023 webpage into an Excel sheet 
@@ -82,8 +83,8 @@ Extracting all papers from MICCA 2023 webpage into an Excel sheet
     - opened the PDFs and searched for 'cancer' by command + F 
       - papers, with 'cancer' in their titel was marked with orange
       - papers, with 'cancer' beyond their titel was marked with purple
-    - No. of papers with 'cancer' in their title:
-    - No. of papers with 'cancer' beyond their title (in the content):
+    - No. of papers with 'cancer' in their title: 23
+    - No. of papers with 'cancer' beyond their title (in the content): in progress
     - No. of papers in total: 730
 
   * Annotation scheme
