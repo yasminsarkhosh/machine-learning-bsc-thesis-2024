@@ -3,6 +3,7 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 # Yasmin's Weekly Meeting Notes
 
 * [06 feb 2024](#date06-feb-2024)
+* [13 feb 2024](#date-13-feb-2024)
 
 ### Date: 06 feb 2024
 ### Who helped you this week?
@@ -95,11 +96,15 @@ Writing code that will:
 * Extract PDFS with 'cancer' in their title from webpage
 
 ### What would you like to work on next week?
+* Continueing my analysis of demographics in papers
 
 
 ### Where do you need help from Veronika?
-* Web scraping
+* Web scraping/writing code to help me find demographic information
 * Keep me on the right track  
+* Figuring out which steps to take next
+  - What is important
+  - The boundaries of papers: cancer in the title and/or cancer in the content
 
 ### Any other topics
 * I need to reschedule meetings if possible due to work (not all tuesdays, but some)
