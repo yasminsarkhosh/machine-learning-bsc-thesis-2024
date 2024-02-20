@@ -84,7 +84,7 @@ Extracting all papers from MICCA 2023 webpage into an Excel sheet
       - papers, with 'cancer' in their titel was marked with orange
       - papers, with 'cancer' beyond their titel was marked with purple
     - No. of papers with 'cancer' in their title: 23
-    - No. of papers with 'cancer' beyond their title (in the content): in progress
+    - No. of papers with 'cancer' beyond their title (in the content): in progress (17 papers)
     - No. of papers in total: 730
 
   * Annotation scheme
@@ -111,4 +111,57 @@ Writing code that will:
 * I need to reschedule meetings if possible due to work (not all tuesdays, but some)
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
+Meeting notes:
+- Look into variables: pretend that you have the data
+- There are papers that are useful about MICCA 2023 in Notion meeting notes
+- Make excel sheet into csv files
+- flowchart: reasoning for selecting papers and the annotation
+- Working next tuesday: use weekly meetings for questions
 
+
+
+[20 feb 2024](#date-20-feb-2024)
+### Date: 20 feb 2024
+### Who helped you this week?
+N/A
+
+### What did you achieve?
+#### From the latest meeting:
+* Converted lists into csv files
+  - https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/experiments/demographic_keywords.csv
+  - https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/experiments/organs_other.csv
+  - https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/experiments/searchwords.csv
+* Converted MICCAI 2023 excel into csv file (https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/experiments/miccai2023_scheme.csv)
+#### Experiment 3
+* Finished Experiment 3 - search for cancer-related papers (not just by title)
+* From the extracted pdfs (10 volumens, combined contains 730 papers): 
+    - look for ‘cancer’ in each paper, select papers that have 'cancer' in their content and not in their title
+    - 178 out of 730 papers were found with the search word ‘cancer’ in their content
+    - 23 out of 730 papers with 'cancer' in their title (and also content)
+
+#### Experiment 4
+* Trying to see if I can extract text from PDFs into a dataframe with MyMuPDF:
+  - Each row is the title of the paper
+  - Columns: text, headings (divide text by secton such as Abstract, Introduction etc)
+
+#### Experiment 5 - extract 730 papers into a csv file by title, author(s) and year
+* Inspired from the recommended paper from last weeks Meeting Notes:
+  - https://github.com/purrlab/MICCAI-paper-analysis/
+
+
+### What did you struggle with?
+#### Experiment 5 - extract 730 papers into a csv file by title, author(s) and year
+- Managed to extract volumen 1 (part 1 of MICCAI 2023) into a dataframe from the copied HTML file, but not the other 9 parts
+
+### What would you like to work on next week?
+* To have a finished dataset of all 730 papers, organised into a csv file by title, author(s), year
+* To establish the way best to work with the text analysis/annotation of the pdf files:
+  - Is the group of 23 papers (cancer in title) enough for my analysis or should I go by the 178 papers too (cancer in content)?
+
+### Where do you need help from Veronika?
+I have done so many experiments and had so many issues with extracting text from PDFs files that I might need to know what I should focus on next.
+However, I have set a deadline for the end of this month (28 feb), where a dataset should be ready for analysis/annotation process
+
+### Any other topics
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
