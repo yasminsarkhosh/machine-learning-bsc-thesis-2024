@@ -57,27 +57,32 @@ The following will be delivered as my project:
 ## References
 Papanai A. Gupta M. Gupta P. Arora C. Basu, S. Gall bladder cancer detection from US images with
 only image level labels. arXiv, 2023. URL https://doi.org/10.1007/978-3-031-43907-0_20.
+
 Kalluri P. Card D. Agnew W. Dotan R. Bao M. Birhane, A. The values encoded in machine learning
 research. arXiv, 2022. URL https://doi.org/10.48550/arXiv.2106.15590.
+
 Delaney Burns, Tara Grabowsky, Emma Kemble, and Lucy P´erez. Closing the data gaps in women’s
 health. McKinsey Company, Life Sciences Practice, 2023.
+
 Fei M. Cai J. Liu L. Zhang L. Wang Q. Cao, M. Detection-free pipeline for cervical cancer screening of
 whole slide images. Medical Image Computing and Computer Assisted Intervention – MICCAI 2023,
 Lecture Notes in Computer Science. Springer Nature Switzerland, Cham, pp. 243–252, 2023. URL
 https://doi.org/10.1007/978-3-031-43987-2_24.
+
 FemTechnology. The gender data health gap: Harnessing ai’s transformative power to bridge the gen-
-der health data divide. 2023. URL https://femtechnology.org/wp-content/uploads/2019/07/
-Copy-of-Gender-Data-Health-Gap-PFG.pdf.
+der health data divide. 2023. URL https://femtechnology.org/wp-content/uploads/2019/07/Copy-of-Gender-Data-Health-Gap-PFG.pdf.
+
 Netzer N. Baumgartner M. Eith C. Bounias D. Meinzer C. J¨ager P.F. Zhang K.S. Floca R. Schrader
 A. Isensee F. Gnirs R. G¨ortz M. Sch¨utz V. Stenzinger A. Hohenfellner M. Schlemmer H.-P. Wolf
 I. Bonekamp D. Maier-Hein K.H. Kovacs, B. Anatomy-informed data augmentation for enhanced
 prostate cancer detection. Medical Image Computing and Computer Assisted Intervention – MICCAI
 2023, Lecture Notes in Computer Science. Springer Nature Switzerland, Cham, pp. 531–540, 2023.
 URL https://doi.org/10.1007/978-3-031-43990-2_50.
+
 MICCAI. Medical Image Computing and Computer Assisted Intervention. 2023.
+
 Singh V. Tamersoy B. Prokein A. Kapoor A. Teixeira, B. Automated ct lung cancer screening workflow
 using 3d camera. Medical Image Computing and Computer Assisted Intervention – MICCAI 2023,
 Lecture Notes in Computer Science. Springer Nature Switzerland, Cham, pp. 423–431, 2023. URL
 https://doi.org/10.1007/978-3-031-43990-2_40.
-1WSI: whole slide imaging
 
