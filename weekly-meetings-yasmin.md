@@ -5,7 +5,10 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [06 feb 2024](#date06-feb-2024)
 * [13 feb 2024](#date-13-feb-2024)
 * [20 feb 2024](#date-20-feb-2024)
-
+* [27 feb 2024](#date-27-feb-2024)
+***
+***
+* [06 feb 2024](#date06-feb-2024)
 ### Date: 06 feb 2024
 ### Who helped you this week?
 N/A
@@ -61,9 +64,9 @@ N/A
 - Think of a 'analysis code' for my method that makes it applicable for future analysis
 - Remember: insert all experiments into ‘weekly meetings’
 
+***
 
 [13 feb 2024](#date-13-feb-2024)
-
 ### Date: 13 feb 2024
 ### Who helped you this week?
 N/A
@@ -119,7 +122,7 @@ Meeting notes:
 - flowchart: reasoning for selecting papers and the annotation
 - Working next tuesday: use weekly meetings for questions
 
-
+***
 
 [20 feb 2024](#date-20-feb-2024)
 ### Date: 20 feb 2024
@@ -164,5 +167,39 @@ I have done so many experiments and had so many issues with extracting text from
 However, I have set a deadline for the end of this month (28 feb), where a dataset should be ready for analysis/annotation process
 
 ### Any other topics
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
+***
+
+[27 feb 2024](#date27-feb-2024)
+### Date: 27 feb 2024
+### Who helped you this week?
+N/A
+
+### What did you achieve?
+* Extracted 730 PDFs into a csv file with the help of https://github.com/purrlab/MICCAI-paper-analysis/
+* Looking further into my annotation scheme and how I want to define it
+* Experimenting with converting the PDFS into docx - txt files with the purpose of extracting the text in jypyter notebook
+  - Converted the 10 volumens of PDFs into text files with utf-8 encoding 
+  - Saved all 10 volumens of text files as 1 complete text file
+
+### What did you struggle with?
+* To extract 730 PDFs into a csv file with the help of https://github.com/purrlab/MICCAI-paper-analysis/
+* To extract text from the 730 PDFs into seperate files 
+  - One file one paper, thus 730 papers in total
+  - Still working on this one
+
+### What would you like to work on next week?
+* Settling on my annotation scheme
+  - defining the properties I want to annotate per paper and 
+  - how to analyze those properties
+* To ask Théo to help with the text extraction and annotation 
+
+### Where do you need help from Veronika?
+N/A
+
+### Any other topics
+* I can't join meeting today (the 27 feb) as I'm working 
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
