@@ -6,6 +6,7 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [13 feb 2024](#date-13-feb-2024)
 * [20 feb 2024](#date-20-feb-2024)
 * [27 feb 2024](#date-27-feb-2024)
+* [05 mar 2024](#date-05-mar-2024)
 ***
 ***
 
@@ -202,5 +203,37 @@ N/A
 
 ### Any other topics
 * I can't join meeting today (the 27 feb) as I'm working 
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
+***
+
+[05 mar 2024](#date-05-mar-2024)
+### Date: 27 feb 2024
+### Who helped you this week?
+N/A
+
+### What did you achieve?
+* Looked into which key demographic information I want to analyse
+  - How do these research papers define and group their data?
+    * Dataset: Gender, Age, Geolocation, Gender-specific illness, Subgroups
+    * Idea: looking into authors as well? Educational background, Departments, Area?
+* Annotated 23 papers with cancer in their title in Excel 
+* Managed to somewhat write a code that somewhat splits PDFs into separate research papers
+  - Some minor errors in the splitting, however all volumes are now seperated into 730 research papers
+* Wrote Théo a mail asking for help. We will meet this week.
+
+### What did you struggle with?
+* Managed to somewhat write a code that somewhat splits PDFs into separate research papers
+
+
+### What would you like to work on next week?
+* Annotation and analysis
+
+
+### Where do you need help from Veronika?
+N/A
+
+### Any other topics
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
