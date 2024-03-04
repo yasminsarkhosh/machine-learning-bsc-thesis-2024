@@ -221,7 +221,8 @@ N/A
 * Annotated 23 papers with cancer in their title in Excel 
 * Managed to somewhat write a code that somewhat splits PDFs into separate research papers
   - Some minor errors in the splitting, however all volumes are now seperated into 730 research papers
-* Wrote Théo a mail asking for help. We will meet this week.
+* Wrote Théo a mail asking for help. We will meet thursday this week
+* Succesfully installed PDF annotator 
 
 ### What did you struggle with?
 * Managed to somewhat write a code that somewhat splits PDFs into separate research papers
