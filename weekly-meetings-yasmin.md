@@ -13,7 +13,6 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 ***
 ***
 
-[06 feb 2024](#date06-feb-2024)
 ### Date: 06 feb 2024
 ### Who helped you this week?
 N/A
@@ -253,8 +252,8 @@ Due to illness there is nothing added for this week
 
 ***
 
-[19 mar 2024](#date-19-mar-2024)
-### Date: 27 feb 2024
+
+### Date: 19 mar 2024
 ### Who helped you this week?
 N/A
 
