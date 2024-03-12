@@ -7,6 +7,9 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [20 feb 2024](#date-20-feb-2024)
 * [27 feb 2024](#date-27-feb-2024)
 * [05 mar 2024](#date-05-mar-2024)
+* [12 mar 2024](#date-12-mar-2024)
+* [19 mar 2024](#date-19-mar-2024)
+
 ***
 ***
 
@@ -238,3 +241,77 @@ N/A
 ### Any other topics
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
+* Make columns into 0/1
+* clean the experiment form raw to clean by making it more database friendly 
+* annotation guidelines: reproducable, add as appendix in the report 
+* make script for clean data analysis
+
+
+***
+[12 mar 2024](#date-12-mar-2024)
+Due to illness there is nothing added for this week
+
+***
+
+[19 mar 2024](#date-19-mar-2024)
+### Date: 27 feb 2024
+### Who helped you this week?
+N/A
+
+### What did you achieve?
+
+##### Annotation experiment: Papers from the MICCA 2023 with ‘cancer’ in their title
+* Categories: 
+  * Organs
+  * Image types
+  * Number of datasets
+  * Sex-specific cancer
+  * Demographic information
+    - How do they define their data?
+    - Do they use demographic information in their datasets?
+    - How do they evaluate their results?
+    - Do they consider how the data affects their results?
+  * Other subgroups
+
+#### Annotation scheme: experiments and reflections
+##### Purpose of the annotation: To examine fairness and bias in research papers
+* How can researchers in medical AI, specifically in medical imaging, incorporate less bias’ and more fairness into their models?
+* What are the practices and/or methods that can reduce bias and promote fairness when creating models?
+* Do they implement recommendations that address bias and prevent algorithm discrimination?
+  - Why demographic information?**
+    * What is it?
+    * How do we define demographic information?
+    * How are they useful for analyzing fairness and bias?
+* Categories: 
+  * Organs
+  * Image types
+  * Number of datasets
+  * Sex-specific cancer
+  * Demographic information
+
+* Inspiration: [The Values Encoded in Machine Learning Research](https://www.notion.so/The-Values-Encoded-in-Machine-Learning-Research-f2d9f2ce77a442f6bddfaaeaa4446f8e?pvs=21)
+    
+##### Further details: datasets
+* Do they mention, critique, evaluate, or reflect upon their dataset?
+  - Do they evaluate the quality of their dataset?
+  - Are there any imbalances in their data collection? and do they consider how these imbalances might affect their model?
+  - Do they consider the defined subgroups in their datasets, such as distinguishing data by patients and not by sex too? Are patients further differentiated by age, ethnicity, and/or geolocation?
+  - Do they identify weaknesses within their model?
+  - Do they contemplate the potential social impacts of their models?
+
+### What did you struggle with?
+
+
+### What would you like to work on next week?
+* Annotation scheme and analysis
+
+
+### Where do you need help from Veronika?
+N/A
+
+### Any other topics
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
+
+
