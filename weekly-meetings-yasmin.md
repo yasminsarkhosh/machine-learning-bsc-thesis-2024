@@ -69,8 +69,6 @@ N/A
 - Remember: insert all experiments into ‘weekly meetings’
 
 ***
-
-[13 feb 2024](#date-13-feb-2024)
 ### Date: 13 feb 2024
 ### Who helped you this week?
 N/A
@@ -127,8 +125,6 @@ Meeting notes:
 - Working next tuesday: use weekly meetings for questions
 
 ***
-
-[20 feb 2024](#date-20-feb-2024)
 ### Date: 20 feb 2024
 ### Who helped you this week?
 N/A
@@ -175,8 +171,6 @@ However, I have set a deadline for the end of this month (28 feb), where a datas
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
 ***
-
-[27 feb 2024](#date27-feb-2024)
 ### Date: 27 feb 2024
 ### Who helped you this week?
 N/A
@@ -209,9 +203,7 @@ N/A
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
 ***
-
-[05 mar 2024](#date-05-mar-2024)
-### Date: 27 feb 2024
+### Date: 05 mar 2024
 ### Who helped you this week?
 N/A
 
@@ -247,7 +239,8 @@ N/A
 
 
 ***
-[12 mar 2024](#date-12-mar-2024)
+
+### Date: 12 mar 2024
 Due to illness there is nothing added for this week
 
 ***
