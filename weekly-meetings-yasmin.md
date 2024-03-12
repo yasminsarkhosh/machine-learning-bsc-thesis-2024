@@ -239,13 +239,12 @@ N/A
 
 
 ***
-
+***
 ### Date: 12 mar 2024
 Due to illness there is nothing added for this week
 
 ***
-
-
+***
 ### Date: 19 mar 2024
 ### Who helped you this week?
 N/A
@@ -265,6 +264,26 @@ N/A
     - Do they consider how the data affects their results?
   * Other subgroups
 
+##### Findings: annotation of papers with cancer in the title
+* 14 out of 23 papers had no mentioning of demographic information
+* 8 papers with demographic information mentioned in their paper
+  - 1 paper defined their data collection by age and gender, data was collected from 7 medical centres (geolocation)
+  - the 7 others have data collected by geolocation, however these are vaguely mentioned in their paper
+* 23 out of 23 papers do not mentioned anything about fairness nor bias
+  - 1 paper mentioned a “sightly gender imbalance”
+  - 1 paper mentioned datasets are unbalanced
+* Organs:
+  - Breast/breast tissue: 7 papers
+  - Cervix: 1 paper
+  - Colorectal: 3 papers
+  - Kidney: 1 paper
+  - Liver: 1 paper
+  - gall bladder: 1 paper
+  - prostate gland: 2 papers
+  - lungs/lung tissue: 3 papers
+  - head and neck: 2 papers
+
+***
 #### Annotation scheme: experiments and reflections
 ##### Purpose of the annotation: To examine fairness and bias in research papers
 * How can researchers in medical AI, specifically in medical imaging, incorporate less bias’ and more fairness into their models?
