@@ -289,6 +289,8 @@ N/A
 * How can researchers in medical AI, specifically in medical imaging, incorporate less bias’ and more fairness into their models?
 * What are the practices and/or methods that can reduce bias and promote fairness when creating models?
 * Do they implement recommendations that address bias and prevent algorithm discrimination?
+  * Recommendations from:
+  ![alt text](image.png)
 * How can we use demographic information to analyse papers?
     * What is it?
     * How do we define demographic information?
@@ -315,7 +317,13 @@ N/A
 
 
 ### What would you like to work on next week?
+* Finalize findings from the annotation scheme experiment
 * Annotation scheme and analysis
+  * Annotation guide
+  * Annotation scheme
+    * Finalize a scheme, that is supported by theory, recommendations, litterature
+    * Make a list of recommendations by references to address fairness and bias' in medical AI
+    * Supervision and guideness by Théo 
 
 
 ### Where do you need help from Veronika?
