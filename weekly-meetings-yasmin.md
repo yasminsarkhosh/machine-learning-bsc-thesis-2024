@@ -251,7 +251,7 @@ N/A
 
 ### What did you achieve?
 
-##### Annotation experiment: Papers from the MICCA 2023 with ‘cancer’ in their title
+#### Annotation experiment: Papers from the MICCA 2023 with ‘cancer’ in their title
 * Categories: 
   * Organs
   * Image types
@@ -264,7 +264,7 @@ N/A
     - Do they consider how the data affects their results?
   * Other subgroups
 
-##### Findings: annotation of papers with cancer in the title
+#### Findings: annotation of papers with cancer in the title
 * 14 out of 23 papers had no mentioning of demographic information
 * 8 papers with demographic information mentioned in their paper
   - 1 paper defined their data collection by age and gender, data was collected from 7 medical centres (geolocation)
@@ -284,8 +284,8 @@ N/A
   - head and neck: 2 papers
 
 ***
-#### Annotation scheme: experiments and reflections
-##### Purpose of the annotation: To examine fairness and bias in research papers
+### Annotation scheme: reflections
+#### Purpose of the annotation: To examine fairness and bias in research papers
 * How can researchers in medical AI, specifically in medical imaging, incorporate less bias’ and more fairness into their models?
 * What are the practices and/or methods that can reduce bias and promote fairness when creating models?
 * Do they implement recommendations that address bias and prevent algorithm discrimination?
@@ -302,7 +302,7 @@ N/A
 
 * Inspiration: [The Values Encoded in Machine Learning Research](https://www.notion.so/The-Values-Encoded-in-Machine-Learning-Research-f2d9f2ce77a442f6bddfaaeaa4446f8e?pvs=21)
     
-##### Further details: datasets
+#### Further details: datasets
 * Do they mention, critique, evaluate, or reflect upon their dataset?
   - Do they evaluate the quality of their dataset?
   - Are there any imbalances in their data collection? and do they consider how these imbalances might affect their model?
