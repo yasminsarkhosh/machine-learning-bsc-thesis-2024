@@ -289,11 +289,12 @@ N/A
 * How can researchers in medical AI, specifically in medical imaging, incorporate less bias’ and more fairness into their models?
 * What are the practices and/or methods that can reduce bias and promote fairness when creating models?
 * Do they implement recommendations that address bias and prevent algorithm discrimination?
-  - Why demographic information?**
+* How can we use demographic information to analyse papers?
     * What is it?
     * How do we define demographic information?
     * How are they useful for analyzing fairness and bias?
-* Categories: 
+* Are there any other methods useful for analysing papers?
+* Categories for annotation scheme: 
   * Organs
   * Image types
   * Number of datasets
