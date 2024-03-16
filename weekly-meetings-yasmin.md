@@ -250,6 +250,22 @@ Due to illness there is nothing added for this week
 N/A
 
 ### What did you achieve?
+#### Organizing my notebooks and notes
+* Gathering useful notes from my readings into schemes
+* Organizing codes and csv files in github
+* Rewriting and refining the jupyter notebooks 
+
+
+#### Writing a script that searches for papers that work with cancer
+* The papers were choosen by: 
+  * defining the text/relevant content of a paper to start from Abstract ending with incl. Conclusion
+  * authors and affiliations, Acknowlegdement and References were excluded from the content
+  * then searching for keyword 'cancer' in the defined text for each 730 paper
+  * result: 189 papers were selected and added into a dataframe 
+  * previously, I manually counted the number of papers by searching from keywords 'cancer', 'tumor', 'tumour' 
+    * I found 178 papers excluding papers with keywords in their title
+    * with the titles its a total of 201 papers
+    * therefore I have approved the selected 189 to fit the criteria when looking for 'cancer' only 
 
 #### Annotation experiment: Papers from the MICCA 2023 with ‘cancer’ in their title
 * Categories: 
@@ -314,7 +330,9 @@ N/A
   - Do they contemplate the potential social impacts of their models?
 
 ### What did you struggle with?
-
+#### Writing a script that searches for papers that work with cancer
+* Issues with extracting the titles from the selected papers to merge with the MICCAI 2023 to get the metadata 
+* Solved by hard coding and many, many attemps/refinements of the script
 
 ### What would you like to work on next week?
 * Finalize findings from the annotation scheme experiment
