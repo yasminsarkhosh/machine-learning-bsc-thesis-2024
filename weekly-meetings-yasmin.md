@@ -255,8 +255,21 @@ N/A
 * Organizing codes and csv files in github
 * Rewriting and refining the jupyter notebooks 
 
+#### Preprocessing, Data Extraction and Analysis/Data viz
+* Wrote/refined script, that: 
+  * extracted relevant information (e.g., mentions of demographic data, ethical considerations, methodologies for bias mitigation) from the papers.
+  * extracted relevant informatio by a list of keywords
+  * structured data according to key indicators
+  * designed a data structure (e.g., a pandas DataFrame) where each row represents a paper by title and columns represent extracted sentences by key indicators
+  * data viz. of key indicators in papers
 
-#### Writing a script that searches for papers that work with cancer
+Outputs can be find here:  
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/5c838793e0571c2db6d763bddac778fac1c5148d/images
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/code/database_analysis_output/finals
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/code/data_vis.ipynb
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/ea0fdf9183e4fc7fca6e7ac997bdd1dc66c3aded/code/database_analysis.ipynb
+
+#### Wrote a script that searches for 'cancer' in text 
 * The papers were choosen by: 
   * defining the text/relevant content of a paper to start from Abstract ending with incl. Conclusion
   * authors and affiliations, Acknowlegdement and References were excluded from the content
@@ -329,23 +342,26 @@ N/A
   - Do they identify weaknesses within their model?
   - Do they contemplate the potential social impacts of their models?
 
+### Others
+* Finalized findings from the annotation scheme experiment
+* Annotation scheme and analysis
+  * Annotation guide
+  * Annotation scheme
+    * Finalize a scheme, that is supported by theory, recommendations, litterature
+    * Make a list of recommendations by references to address fairness and bias' in medical AI
+
 ### What did you struggle with?
 #### Writing a script that searches for papers that work with cancer
 * Issues with extracting the titles from the selected papers to merge with the MICCAI 2023 to get the metadata 
 * Solved by hard coding and many, many attemps/refinements of the script
 
 ### What would you like to work on next week?
-* Finalize findings from the annotation scheme experiment
-* Annotation scheme and analysis
-  * Annotation guide
-  * Annotation scheme
-    * Finalize a scheme, that is supported by theory, recommendations, litterature
-    * Make a list of recommendations by references to address fairness and bias' in medical AI
-    * Supervision and guideness by Théo 
-
+* To gather my current findings and reflect next steps
+* Supervision and guideness by Théo 
 
 ### Where do you need help from Veronika?
-N/A
+* I need to evaluate my findings and works, see what's useful (since I have a lot by now)
+* Plan next steps 
 
 ### Any other topics
 
