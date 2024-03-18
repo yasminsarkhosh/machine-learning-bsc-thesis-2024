@@ -319,7 +319,8 @@ Outputs can be find here:
 * What are the practices and/or methods that can reduce bias and promote fairness when creating models?
 * Do they implement recommendations that address bias and prevent algorithm discrimination?
   * Recommendations from:
-  ![alt text](image.png)
+  ![alt text](images/image.png)
+
 * How can we use demographic information to analyse papers?
     * What is it?
     * How do we define demographic information?
