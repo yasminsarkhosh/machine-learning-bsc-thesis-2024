@@ -265,9 +265,9 @@ N/A
 
 Outputs can be find here:  
 * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/5c838793e0571c2db6d763bddac778fac1c5148d/images
-* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/code/database_analysis_output/finals
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/41ab21bbbd9a86c78df3ecd3cbe058d84a4b21ad/code/finals
 * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/main/code/data_vis.ipynb
-* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/ea0fdf9183e4fc7fca6e7ac997bdd1dc66c3aded/code/database_analysis.ipynb
+* https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/41ab21bbbd9a86c78df3ecd3cbe058d84a4b21ad/code/database_analysis_output
 
 #### Wrote a script that searches for 'cancer' in text 
 * The papers were choosen by: 
