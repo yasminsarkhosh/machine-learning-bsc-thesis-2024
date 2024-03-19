@@ -358,7 +358,9 @@ Outputs can be find here:
 
 ### What would you like to work on next week?
 * To gather my current findings and reflect next steps
-* Supervision and guideness by Théo 
+* Manually examine the dataframe with extracted sentences: 
+  * https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/41ab21bbbd9a86c78df3ecd3cbe058d84a4b21ad/code/finals/papers_sent.csv
+* Supervision and guideness by Théo friday the 22th of March 
 
 ### Where do you need help from Veronika?
 * I need to evaluate my findings and works, see what's useful (since I have a lot by now)
