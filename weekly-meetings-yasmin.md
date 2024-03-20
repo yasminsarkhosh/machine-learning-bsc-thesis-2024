@@ -368,7 +368,11 @@ Outputs can be find here:
 
 ### Any other topics
 
-### What are the agreements after this meeting? (to fill in after the meeting) 
+### What are the agreements after this meeting? (to fill in after the meeting)
+* Look at what distinguishes the papers that do discuss something about age/gender, from the ones that don't
+* The reflections/recommendations you have seem relevant for the discussion
+* Start putting some structure on the report already to see how it looks in the template
+ 
 
 
 
