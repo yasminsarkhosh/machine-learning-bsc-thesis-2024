@@ -1,0 +1,963 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SwinUNETR-V2: Stronger Swin Transformers with Stagewise Convolutions for 3D Medical Image Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Yufan</forename><surname>He</surname></persName>
+							<email>yufanh@nvidia.com</email>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vishwesh</forename><surname>Nath</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dong</forename><surname>Yang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yucheng</forename><surname>Tang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Andriy</forename><surname>Myronenko</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Daguang</forename><surname>Xu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">NVidia</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<region>US</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SwinUNETR-V2: Stronger Swin Transformers with Stagewise Convolutions for 3D Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="416" to="426"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">35264E64750ED371B93E566854AEF8E7</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_40</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:49+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Swin transformer</term>
+					<term>Convolution</term>
+					<term>Hybrid model</term>
+					<term>Medical image segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Transformers for medical image segmentation have attracted broad interest. Unlike convolutional networks (CNNs), transformers use self-attentions that do not have a strong inductive bias. This gives transformers the ability to learn long-range dependencies and stronger modeling capacities. Although they, e.g. SwinUNETR, achieve state-of-the-art (SOTA) results on some benchmarks, the lack of inductive bias makes transformers harder to train, requires much more training data, and are sensitive to training recipes. In many clinical scenarios and challenges, transformers can still have inferior performances than SOTA CNNs like nnUNet. A transformer backbone and corresponding training recipe, which can achieve top performances under different medical image segmentation scenarios, still needs to be developed. In this paper, we enhance the Swi-nUNETR with convolutions, which results in a surprisingly stronger backbone, the SwinUNETR-V2, for 3D medical image segmentation. It achieves top performance on a variety of benchmarks of different sizes and modalities, including the Whole abdominal ORgan Dataset (WORD), MICCAI FLARE2021 dataset, MSD pancreas dataset, MSD prostate dataset, and MSD lung cancer dataset, all using the same training recipe (https://github.com/Project-MONAI/researchcontributions/tree/main/SwinUNETR/BTCV, our training recipe is the same as that by SwinUNETR) with minimum changes across tasks.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is a core step for quantitative and precision medicine. In the past decade, Convolutional Neural Networks (CNNs) became the SOTA method to achieve accurate and fast medical image segmentation <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b20">21]</ref>. nn-UNet <ref type="bibr" target="#b11">[12]</ref>, which is based on UNet <ref type="bibr" target="#b20">[21]</ref>, has achieved top performances on over 20 medical segmentation challenges. Parallel to manually created networks such as nn-UNet, DiNTS <ref type="bibr" target="#b9">[10]</ref>, a CNN designed by automated neural network search, also achieved top performances in medical segmentation decathlon (MSD) <ref type="bibr" target="#b0">[1]</ref> challenges. The convolution operation in CNN provides a strong inductive bias which is translational equivalent and efficient in capturing local features like boundary and texture. However, this inductive bias limits the representation power of CNN models which means a potentially lower performance ceiling on more challenging tasks <ref type="bibr" target="#b6">[7]</ref>. Additionally, CNN has a local receptive field and are not able to capture long-range dependencies unlike transformers. Recently, vision transformers have been proposed, which adopt the transformers in natural language processing by splitting images into patches (tokens) <ref type="bibr" target="#b5">[6]</ref>, and use self-attention to learn features. The self-attention mechanism enables learning longrange dependencies between far-away tokens. This is intriguing and numerous works have been proposed to incorporate transformer attentions into medical image segmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b31">32,</ref><ref type="bibr" target="#b35">35]</ref>. Among them, SwinUNETR <ref type="bibr" target="#b22">[23]</ref> has achieved the new top performance in the MSD challenge and Beyond the Cranial Vault (BTCV) Segmentation Challenge by pretraining on large datasets. It has a U-shaped structure where the encoder is a Swin-Transformer <ref type="bibr" target="#b15">[16]</ref>.</p><p>Although transformers have achieved certain success in medical imaging, the lack of inductive bias makes them harder to be trained and requires much more training data to avoid overfitting. The self-attentions are good at learning complicated relational interactions for high-level concepts <ref type="bibr" target="#b4">[5]</ref> but are also observed to be ignoring local feature details <ref type="bibr" target="#b4">[5]</ref>. Unlike natural image segmentation benchmarks, e.g. ADE20k <ref type="bibr" target="#b34">[34]</ref>, where the challenge is in learning complex relationships and scene understanding from a large amount of labeled training images, many medical image segmentation networks need to be extremely focused on local boundary details while less in need of highlevel relationships. Moreover, the number of training data is also limited. Hence in real clinical studies and challenges, CNNs can still achieve better results than transformers. For example, the top solutions in the last year MICCAI challenges HECTOR <ref type="bibr" target="#b18">[19]</ref>, FLARE <ref type="bibr" target="#b10">[11]</ref>, INSTANCE <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b21">22]</ref> and AMOS <ref type="bibr" target="#b12">[13]</ref> are all CNN based. Besides lacking inductive bias and enough training data, one extra reason could be that transformers are computationally much expensive and harder to tune. More improvements and empirical evidence are needed before we say transformers are ready to replace CNNs for medical image segmentation.</p><p>In this paper, we try to develop a new "to-go" transformer for 3D medical image segmentation, which is expected to exhibit strong performance under different data situations and does not require extensive hyperparameter tuning. SwinUNETR reaches top performances on several large benchmarks, making itself the current SOTA, but without effective pretraining and excessive tuning, its performance on new datasets and challenges is not as high-performing as expected.</p><p>A straightforward direction to improve transformers is to combine the merits of both convolutions and self-attentions. Many methods have been proposed and most of them fall into two directions: 1) a new self-attention scheme to have convolutionlike properties <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b28">29]</ref>. Swin-transformer <ref type="bibr" target="#b15">[16]</ref> is a typical work in the first direction. It uses a local window instead of the whole image to perform self-attention. Although the basic operation is still self-attention, the local window and relative position embedding give self-attention a conv-like local receptive field and less computation cost. Another line in 1) is changing the self-attention operation directly. CoAtNet <ref type="bibr" target="#b4">[5]</ref> unifies convolution and self-attention with relative attention, while ConViT <ref type="bibr" target="#b6">[7]</ref> uses gated positional self-attention which is equipped with a soft convolutional inductive bias. Works in the second direction 2) employs both convolution and self-attention in the network <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b30">31,</ref><ref type="bibr" target="#b32">33,</ref><ref type="bibr" target="#b35">35]</ref>. For the works in this direction, we sum-marize them into three major categories as shown in Fig. <ref type="figure" target="#fig_0">1</ref>: 2.a) dual branch feature fusion. MobileFormer <ref type="bibr" target="#b3">[4]</ref>, Conformer <ref type="bibr" target="#b19">[20]</ref>, and TransFuse <ref type="bibr" target="#b32">[33]</ref> use a CNN branch and a transformer branch in parallel to fuse the features, thus the local details and global features are learned separately and fused altogether. However, this doubles the computation cost. Another line of works 2.b) focuses on the bottleneck design. The low-level features are extracted by convolution blocks and the bottleneck is the transformer, like the TransUNet <ref type="bibr" target="#b2">[3]</ref>, Cotr <ref type="bibr" target="#b29">[30]</ref> and TransBTS <ref type="bibr" target="#b26">[27]</ref>. The third direction 2.c) is a new block containing both convolution and self-attention. MOAT <ref type="bibr" target="#b30">[31]</ref> removes the MLP in self-attention and uses a mobile convolution block at the front. The MOAT block is then used as the basic block in building the network. CvT <ref type="bibr" target="#b27">[28]</ref> uses convolution as the embedding layer for key, value, and query. nnFormer <ref type="bibr" target="#b35">[35]</ref> replaces the patch merging with convolution with stride. Although those works showed strong performances, which works best and can be the "to go" transformer for 3D medical image segmentation is still unknown. For this purpose, we design the SwinUNETR-V2, which improves the current SOTA Swi-nUNETR by introducing stage-wise convolutions into the backbone. Our network belongs to the second category, which employs convolution and self-attention directly. At each resolution level, we add a residual convolution (ResConv) block at the beginning, and the output is then used as input to the swin transformer blocks (contains a swin block and a shifted window swin block). MOAT <ref type="bibr" target="#b30">[31]</ref> and CvT <ref type="bibr" target="#b27">[28]</ref> add convolution before self-attention as a micro-level building block, and nnFormer has a similar design that uses convolution with stride to replace the patch merging layer for downsampling. Differently, our work only adds a ResConv block at the beginning of each stage, which is a macro-network level design. It is used to regularize the features for the following transformers. Although simple, we found it surprisingly effective for 3D medical image segmentation. The network is evaluated extensively on a variety of benchmarks and achieved top performances on the WORD <ref type="bibr" target="#b16">[17]</ref>, FLARE2021 <ref type="bibr" target="#b17">[18]</ref>, MSD prostate, MSD lung cancer, and MSD pancreas cancer datasets <ref type="bibr" target="#b0">[1]</ref>. Compared to the original Swin-UNETR which needs extensive recipe tuning on a new dataset, we utilized the same training recipe with minimum changes across all benchmarks, showcasing the straightforward applicability of SwinUNETR-V2 to reach state-of-the-art without extensive hyperparameter tuning or pretraining. We also experimented with four design variations inspired by existing works to justify the SwinUNETR-V2 design.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Our SwinUNETR-V2 is based on the original SwinUNETR, and we focus on the transformer encoder. The overall framework is shown in Fig. <ref type="figure">2</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Fig. 2. The SwinUNETR-V2 architecture</head><p>Swin-Transformer. We briefly introduce the 3D swin-transformer as used in Swin-UNETR <ref type="bibr" target="#b22">[23]</ref>. A patch embedding layer of 3D convolution (stride = 2,2,2, kernel size = 2,2,2) is used to embed the patch into tokens. Four stages of swin transformer block followed by patch merging are used to encode the input patches. Given an input tensor z i of size (B, C, H, W, D) at swin block i, the swin transformer block splits the tensor into ( H/M , W/M , D/M windows. It performs four operations</p><formula xml:id="formula_0">z i = W-MSA(LN(z i-1 )) + z i-1 ; z i = MLP(LN(z i )) + z i z i+1 = SW-MSA(LN(z i )) + z i ; z i+1 = MLP(LN(z i+1 )) + z i+1</formula><p>W-MSA and SW-MSA represent regular window and shifted window multi-head selfattention, respectively. MLP and LN represent multilayer perceptron and layernorm, respectively. A patch merging layer is applied after every swin transformer block to reduce each spatial dimension by half.</p><p>Stage-Wise Convolution. Although Swin-transformer uses local window attention to introduce inductive bias like convolutions, self-attentions can still mess up with the local details. We experimented with multiple designs as in Fig. <ref type="figure" target="#fig_1">3</ref> and found that interleaved stage-wise convolution is the most effective for swin: convolution followed by swin blocks, then convolution goes on. At the beginning of each resolution level (stage), the input tokens are reshaped back to the original 3D volumes. A residual convolution (ResConv) block with two sets of 3 × 3x3 convolution, instance normalization, and leaky relu are used. The output then goes to a set of following swin transformer blocks (we use 2 in the paper). There are in total 4 ResConv blocks at 4 stages. We also tried inverted convolution blocks with depth-wise convolution like MOAT <ref type="bibr" target="#b30">[31]</ref> or with original 3D convolution, they improve the performance but are worse than the ResConv block.</p><p>Decoder. The decoder is the same as SwinUNETR <ref type="bibr" target="#b22">[23]</ref>, where convolution blocks are used to extract outputs from those four swin blocks and the bottleneck. The extracted features are upsampled by deconvolutional layers and concatenated with features from a higher-resolution level(long-skip connection). A final convolution with 1 × 1 × 1 kernel is used to map features to segmentation maps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>We use extensive experiments to show its effectiveness and justify its design for 3D medical image segmentation. To make fair comparisons with baselines, we did not use any pre-trained weights.</p><p>Datasets. The network is validated on five datasets of different sizes, targets and modalities:</p><p>1) The WORD dataset <ref type="bibr" target="#b16">[17]</ref>  The challenge comes from segmenting small tumors from large full 3D CT images. The pancreas dataset contains 281 3D CT scans with annotated pancreas and tumors (or cysts). The challenge is from the large label imbalances between the background, pancreas, and tumor structures. For all three MSD tasks, we perform 5-fold crossvalidation with 70%/10%/20% train, validation, and test splits. These 20% test data will not overlap with other folds and cover all data by 5 folds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Implementation Details</head><p>The training pipeline is based on the publicly available SwinUNETR codebase (https://github.com/Project-MONAI/research-contributions/tree/main/SwinUNETR/BT CV, our training recipe is the same as that by SwinUNETR). We changed the initial learning rate to 4e-4, and the training epoch is adapted to each task such that the total training iteration is about 40k. Random Gaussian smooth, Gaussian noise, and random gamma correction are also added as additional data augmentation. There are differences in data preprocessing across tasks. MSD data are resampled to 1 × 1x1 mm resolution and normalized to zero mean and standard deviation (CT images are firstly clipped by .5% and 99.5% foreground intensity percentile). For WORD and FLARE preprocessing, we use the default transforms in SwinUNETR codebase (https://github. com/Project-MONAI/research-contributions/tree/main/SwinUNETR/BTCV, our training recipe is the same as that by SwinUNETR) and 3D UXNet codebase (see footnote 1). Besides these, all other training hyperparameters are the same. We only made those minimal changes for different tasks and show surprisingly good generalizability of the SwinUNETR-V2 and the pipeline across tasks. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>WORD Result. We follow the data split in <ref type="bibr" target="#b16">[17]</ref> and report the test scores. All the baseline scores are from <ref type="bibr" target="#b16">[17]</ref> except nnFormer and SwinUNETR. To make a fair comparison, we didn't use any test-time augmentation or model ensemble. The test set dice      <ref type="table" target="#tab_1">1</ref> and Table <ref type="table" target="#tab_2">2</ref>. We don't have the original baseline results for statistical testing (we reproduced some baseline results but the results are lower than reported), so we report the standard deviation of our methods. SwinUNETR has 62.5M parameters/295 GFlops and SwinUNETR-V2 has 72.8M parameters/320 GFlops. The baseline parameters/flops can be found in <ref type="bibr" target="#b13">[14]</ref>.</p><p>FLARE 2021 Result. We use the 5-fold cross-validation data split and baseline scores from <ref type="bibr" target="#b13">[14]</ref>. Following <ref type="bibr" target="#b13">[14]</ref>, the five trained models are evaluated on 20 held-out test scans, and the average dice scores (not model ensemble) are shown in Table <ref type="table" target="#tab_3">3</ref>. We can see our SwinUNETR-V2 surpasses all the baseline methods by a large margin.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>MSD Results.</head><p>For MSD datasets, we perform 5-fold cross-validation and ran the baseline experiments with our codebase using exactly the same hyperparameters as mentioned. nnunet2D/3D baseline experiments are performed using nnunet's original codebase <ref type="foot" target="#foot_1">2</ref> since it has its own automatic hyperparameter selection. The test dice score and standard deviation (averaged over 5 fold) are shown in Table <ref type="table" target="#tab_4">4</ref>. We did not do any postprocessing or model ensembling, thus there can be a gap between the test values and online MSD leaderboard values. We didn't compare with leaderboard results because the purpose of the experiments is to make fair comparisons, while not resorting to additional training data/pretraining, postprocessing, or model ensembling.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Variations of SwinUNetR-V2</head><p>In this section, we investigate other variations of adding convolutions into swin transformer. We follow Fig. <ref type="figure" target="#fig_0">1</ref>   <ref type="bibr" target="#b30">[31]</ref> work. 4) Swin-Var-Down: the patch merging is replaced by convolution with stride 2 like nnFormer <ref type="bibr" target="#b35">[35]</ref>. We perform the study on the WORD dataset, and the mean test Dice and HD95 scores are shown in Table <ref type="table" target="#tab_5">5</ref>. We can see that adding convolution at different places does affect the performances, and the SwinUNETR-V2 design is the optimal on WORD test set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion and Conclusion</head><p>In this paper, we propose a new 3D medical image segmentation network SwinUNETR-V2. For some tasks, we found the original SwinUNETR with pure transformer backbones (or other ViT-based models) may have inferior performance and training stability than CNNs. To improve this, our core intuition is to combine convolution with window-based self-attention. Although existing window-based attention already has a convolution-like inductive bias, it is still not good enough for learning local details as convolutions. We tried multiple combination strategies as in Table <ref type="table" target="#tab_5">5</ref> and found our current design most effective. By only adding one ResConv block at the beginning of each resolution level, the features can be well-regularized while not too constrained by the convolution inductive bias, and the computation cost will not increase by a lot. Extensive experiments are performed on a variety of challenging datasets, and SwinUNETR-V2 achieved promising improvements. The optimal combination of swin transformer and convolution still lacks a clear principle and theory, and we can only rely on trial and error in designing new architectures. We will apply the network to active challenges for more evaluation.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Three major categories of methods combining convolution with transformers. (2.a): parallel branches with a CNN branch and a transformer branch [4, 20, 33]. (2.b): Using CNNs to extract local features in the lower level and use transformers in the bottleneck [3, 27, 30]. (2.c):New transformer blocks with convolution added<ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b30">31]</ref>. Our SwinUNETR-V2 adds a convolution block at the beginning of each resolution stage.</figDesc><graphic coords="3,74,31,215,87,275,23,95,26" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Design variations for SwinUNETR-V2. Swin-Var-IR replaces the ResConv block in SwinUNETR-V2 with an inverted depth-wise convolution block. Swin-Var-Res added a ResConv block to every swin transformer block. Swin-Var-Down replaces the patch merging with a convolution block with stride 2. Swin-Var-Bot changes the top 2 stages of the encoder with ResConv blocks and only keeps transformer blocks in the higher stages.</figDesc><graphic coords="6,122,97,324,32,206,53,123,31" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>MSD Task05 prostate, Task06 lung tumour and Task07 pancreas.</head><label></label><figDesc>(large-scale Whole abdominal ORgan Dataset) contains 150 high-resolution abdominal CT volumes, each with 16 pixel-level organ annotations. A predefined data split of 100 training, 30 validation, and 20 test are provided. We use this split for our experiments.2) The MICCAI FLARE 2021 dataset<ref type="bibr" target="#b17">[18]</ref>. It provides 361 training scans with manual labels from 11 medical centers. Each scan is an abdominal 3D CT image with 4 organ annotations. We follow the test split in the 3D-UXNET 1<ref type="bibr" target="#b13">[14]</ref>: 20 hold-out test scans, and perform 5-fold 80%/20% train validation split on the rest 341 scans.3) The Medical segmentation decathlon (MSD)<ref type="bibr" target="#b0">[1]</ref> prostate dataset contains 32 labeled prostate MRI with two modalities for the prostate peripheral zone (PZ) and the transition zone (TZ). The challenges are the large inter-subject variability and limited training data. The lung tumor dataset contains 63 lung CT images with tumor annotations.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>WORD test set Dice scores (%) and standard deviation in brackets. The best score is in bold. nnFormer, SwinUNETR and SwinUNETR-V2 results are from our codebase training, the rest is from the WORD paper<ref type="bibr" target="#b16">[17]</ref>.</figDesc><table><row><cell>Method</cell><cell cols="10">nnUNetV2 (2D) ResUNet (2D) AttUNet (3D) nnUNet (3D) nnUNetV2 (3D) UNETR (3D) nnFormer (3D) CoTr (3D) SwinUNETR (3D) SwinUNETR-V2 (3D)</cell></row><row><cell>Liver</cell><cell>96.19</cell><cell>96.55</cell><cell>96.00</cell><cell>96.45</cell><cell>96.59</cell><cell>94.67</cell><cell>95.52</cell><cell>95.58</cell><cell>96.6</cell><cell>96.65(0.007)</cell></row><row><cell>Spleen</cell><cell>94.33</cell><cell>95.26</cell><cell>94.90</cell><cell>95.98</cell><cell>96.09</cell><cell>92.85</cell><cell>94.05</cell><cell>94.9</cell><cell>95.93</cell><cell>96.16(0.009)</cell></row><row><cell>Kidney (L)</cell><cell>91.29</cell><cell>95.63</cell><cell>94.65</cell><cell>95.40</cell><cell>95.63</cell><cell>91.49</cell><cell>92.8</cell><cell>93.26</cell><cell>94.93</cell><cell>95.73(0.009)</cell></row><row><cell>Kidney (R)</cell><cell>91.20</cell><cell>95.84</cell><cell>94.7</cell><cell>95.68</cell><cell>95.83</cell><cell>91.72</cell><cell>93.53</cell><cell>93.63</cell><cell>95.5</cell><cell>95.91(0.011)</cell></row><row><cell>Stomach</cell><cell>91.12</cell><cell>91.58</cell><cell>91.15</cell><cell>91.69</cell><cell>91.57</cell><cell>85.56</cell><cell>88.26</cell><cell>89.99</cell><cell>91.28</cell><cell>92.31(0.025)</cell></row><row><cell>Gallbladder</cell><cell>83.19</cell><cell>82.83</cell><cell>81.38</cell><cell>83.19</cell><cell>83.72</cell><cell>65.08</cell><cell>71.55</cell><cell>76.4</cell><cell>79.67</cell><cell>81.02(0.159)</cell></row><row><cell>Esophagus</cell><cell>77.79</cell><cell>77.17</cell><cell>76.87</cell><cell>78.51</cell><cell>77.36</cell><cell>67.71</cell><cell>58.89</cell><cell>74.37</cell><cell>77.68</cell><cell>78.36(0.122)</cell></row><row><cell>Pancreas</cell><cell>83.55</cell><cell>83.56</cell><cell>83.55</cell><cell>85.04</cell><cell>85.00</cell><cell>74.79</cell><cell>75.28</cell><cell>81.02</cell><cell>85.16</cell><cell>85.51(0.06)</cell></row><row><cell>Duodenum</cell><cell>64.47</cell><cell>66.67</cell><cell>67.68</cell><cell>68.31</cell><cell>67.73</cell><cell>57.56</cell><cell>58.76</cell><cell>63.58</cell><cell>68.11</cell><cell>69.93(0.152)</cell></row><row><cell>Colon</cell><cell>83.92</cell><cell>83.57</cell><cell>85.72</cell><cell>87.41</cell><cell>87.26</cell><cell>74.62</cell><cell>77.20</cell><cell>84.14</cell><cell>86.07</cell><cell>87.46(0.07)</cell></row><row><cell>Intestine</cell><cell>86.83</cell><cell>86.76</cell><cell>88.19</cell><cell>89.3</cell><cell>89.37</cell><cell>80.4</cell><cell>80.78</cell><cell>86.39</cell><cell>88.66</cell><cell>89.71(0.029)</cell></row><row><cell>Adrenal</cell><cell>70.0</cell><cell>70.9</cell><cell>70.23</cell><cell>72.38</cell><cell>72.98</cell><cell>60.76</cell><cell>57.13</cell><cell>69.06</cell><cell>70.58</cell><cell>71.75(0.09)</cell></row><row><cell>Rectum</cell><cell>81.49</cell><cell>82.16</cell><cell>80.47</cell><cell>82.41</cell><cell>82.32</cell><cell>74.06</cell><cell>73.42</cell><cell>80.0</cell><cell>81.73</cell><cell>82.56(0.05)</cell></row><row><cell>Bladder</cell><cell>90.15</cell><cell>91.0</cell><cell>89.71</cell><cell>92.59</cell><cell>92.11</cell><cell>85.42</cell><cell>86.97</cell><cell>89.27</cell><cell>91.79</cell><cell>91.56(0.11)</cell></row><row><cell cols="2">Head of Femur (L) 93.28</cell><cell>93.39</cell><cell>91.90</cell><cell>91.99</cell><cell>92.56</cell><cell>89.47</cell><cell>87.04</cell><cell>91.03</cell><cell>92.88</cell><cell>92.64 (0.04)</cell></row><row><cell cols="2">Head of Femur (R) 93.93</cell><cell>93.88</cell><cell>92.43</cell><cell>92.74</cell><cell>92.49</cell><cell>90.17</cell><cell>86.87</cell><cell>91.87</cell><cell>92.77</cell><cell>92.9 (0.037)</cell></row><row><cell>Mean</cell><cell>85.80</cell><cell>86.67</cell><cell>86.21</cell><cell>87.44</cell><cell>87.41</cell><cell>79.77</cell><cell>79.88</cell><cell>84.66</cell><cell>86.83</cell><cell>87.51(0.062)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>WORD test set HD95 scores and standard deviation in brackets. The best score is in bold. nnFormer, SwinUNETR, and SwinUNETR-V2 are from our codebase training, the rest is from the WORD paper<ref type="bibr" target="#b16">[17]</ref>.</figDesc><table><row><cell>Method</cell><cell cols="10">nnUNetV2 (2D) ResUNet (2D) AttUNet (3D) nnUNet (3D) nnUNetV2 (3D) UNETR (3D) nnFormer (3D) CoTr (3D) SwinUNETR (3D) SwinUNETR-V2 (3D)</cell></row><row><cell>Liver</cell><cell>7.34</cell><cell>4.64</cell><cell>3.61</cell><cell>3.31</cell><cell>3.17</cell><cell>8.36</cell><cell>3.95</cell><cell>7.47</cell><cell>2.63</cell><cell>2.54(1.36)</cell></row><row><cell>Spleen</cell><cell>9.53</cell><cell>8.7</cell><cell>2.74</cell><cell>2.15</cell><cell>2.12</cell><cell>14.84</cell><cell>3.02</cell><cell>8.14</cell><cell>1.78</cell><cell>1.44(0.48)</cell></row><row><cell>Kidney (L)</cell><cell>10.33</cell><cell>5.4</cell><cell>6.28</cell><cell>6.07</cell><cell>2.46</cell><cell>23.37</cell><cell>9.28</cell><cell>16.42</cell><cell>5.24</cell><cell>5.18 (18.98)</cell></row><row><cell>Kidney (R)</cell><cell>10.85</cell><cell>2.47</cell><cell>2.86</cell><cell>2.35</cell><cell>2.24</cell><cell>7.9</cell><cell>9.69</cell><cell>12.79</cell><cell>5.77</cell><cell>1.58 (0.59)</cell></row><row><cell>Stomach</cell><cell>13.97</cell><cell>9.98</cell><cell>8.23</cell><cell>8.47</cell><cell>9.47</cell><cell>19.25</cell><cell>11.99</cell><cell>10.26</cell><cell>9.95</cell><cell>8.61 (7.86)</cell></row><row><cell>Gallbladder</cell><cell>7.91</cell><cell>9.48</cell><cell>5.11</cell><cell>5.24</cell><cell>6.04</cell><cell>12.72</cell><cell>6.58</cell><cell>11.32</cell><cell>6.46</cell><cell>5.29 (7.54)</cell></row><row><cell>Esophagus</cell><cell>6.7</cell><cell>6.7</cell><cell>5.35</cell><cell>5.49</cell><cell>5.83</cell><cell>9.31</cell><cell>7.99</cell><cell>6.29</cell><cell>3.89</cell><cell>3.32 (1.83)</cell></row><row><cell>Pancreas</cell><cell>7.82</cell><cell>7.82</cell><cell>6.96</cell><cell>6.84</cell><cell>6.87</cell><cell>10.66</cell><cell>7.96</cell><cell>8.88</cell><cell>4.84</cell><cell>4.98 (5.66)</cell></row><row><cell>Duodenum</cell><cell>23.29</cell><cell>21.79</cell><cell>21.61</cell><cell>21.3</cell><cell>21.15</cell><cell>25.15</cell><cell>18.18</cell><cell>24.83</cell><cell>18.03</cell><cell>17.13 (10.44)</cell></row><row><cell>Colon</cell><cell>15.68</cell><cell>17.41</cell><cell>10.21</cell><cell>9.99</cell><cell>10.42</cell><cell>20.32</cell><cell>15.38</cell><cell>12.41</cell><cell>9.93</cell><cell>8.48 (9.28)</cell></row><row><cell>Intestine</cell><cell>8.96</cell><cell>9.54</cell><cell>5.68</cell><cell>5.14</cell><cell>5.27</cell><cell>12.62</cell><cell>8.82</cell><cell>7.96</cell><cell>5.33</cell><cell>3.84 (2.33)</cell></row><row><cell>Adrenal</cell><cell>6.42</cell><cell>6.67</cell><cell>5.98</cell><cell>5.46</cell><cell>5.43</cell><cell>8.73</cell><cell>7.53</cell><cell>6.76</cell><cell>5.32</cell><cell>4.81 (3.89)</cell></row><row><cell>Rectum</cell><cell>11.15</cell><cell>10.62</cell><cell>11.67</cell><cell>11.57</cell><cell>12.39</cell><cell>12.79</cell><cell>9.79</cell><cell>11.26</cell><cell>7.71</cell><cell>7.16 (4.03)</cell></row><row><cell>Bladder</cell><cell>4.97</cell><cell>5.02</cell><cell>4.83</cell><cell>3.68</cell><cell>4.17</cell><cell>14.71</cell><cell>4.7</cell><cell>14.34</cell><cell>2.38</cell><cell>2.74 (4.15)</cell></row><row><cell cols="2">Head of Femur (L) 6.54</cell><cell>6.56</cell><cell>6.93</cell><cell>35.18</cell><cell>17.05</cell><cell>38.11</cell><cell>4.21</cell><cell>19.42</cell><cell>2.78</cell><cell>2.84 (2.45)</cell></row><row><cell cols="2">Head of Femur (R) 5.74</cell><cell>5.98</cell><cell>6.06</cell><cell>33.03</cell><cell>27.29</cell><cell>38.62</cell><cell>4.3</cell><cell>26.78</cell><cell>2.99</cell><cell>2.79 (2.19)</cell></row><row><cell>Mean</cell><cell>9.88</cell><cell>8.6</cell><cell>7.13</cell><cell>10.33</cell><cell>8.84</cell><cell>17.34</cell><cell>8.34</cell><cell>12.83</cell><cell>5.94</cell><cell>5.17 (5.19)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>FLARE 2021 5-fold cross-validation average test dice scores (on held-out test scans) and standard deviation in brackets. Baseline results from 3D UX-Net paper<ref type="bibr" target="#b13">[14]</ref>.</figDesc><table><row><cell></cell><cell cols="10">3D U-Net SegResNet RAP-Net nn-UNet TransBTS UNETR nnFormer SwinUNETR 3D UX-Net SwinUNETR-V2</cell></row><row><cell>Spleen</cell><cell>0.911</cell><cell>0.963</cell><cell>0.946</cell><cell>0.971</cell><cell>0.964</cell><cell>0.927</cell><cell>0.973</cell><cell>0.979</cell><cell>0.981</cell><cell>0.980 (0.018)</cell></row><row><cell cols="2">Kidney 0.962</cell><cell>0.934</cell><cell>0.967</cell><cell>0.966</cell><cell>0.959</cell><cell>0.947</cell><cell>0.960</cell><cell>0.965</cell><cell>0.969</cell><cell>0.973 (0.013)</cell></row><row><cell>Liver</cell><cell>0.905</cell><cell>0.965</cell><cell>0.940</cell><cell>0.976</cell><cell>0.974</cell><cell>0.960</cell><cell>0.975</cell><cell>0.980</cell><cell>0.982</cell><cell>0.983 (0.008)</cell></row><row><cell cols="2">Pancreas 0.789</cell><cell>0.745</cell><cell>0.799</cell><cell>0.792</cell><cell>0.711</cell><cell>0.710</cell><cell>0.717</cell><cell>0.788</cell><cell>0.801</cell><cell>0.851 (0.037)</cell></row><row><cell>Mean</cell><cell>0.892</cell><cell>0.902</cell><cell>0.913</cell><cell>0.926</cell><cell>0.902</cell><cell>0.886</cell><cell>0.906</cell><cell>0.929</cell><cell>0.934</cell><cell>0.947 (0.019)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>MSD prostate, lung, and pancreas 5-fold cross-validation average test dice scores and standard deviation in brackets. The best score is in bold.</figDesc><table><row><cell></cell><cell>Task05 Prostate</cell><cell>Task06 Lung</cell><cell>Task07 Pancreas</cell><cell></cell></row><row><cell></cell><cell>Peripheral zone Transition zone Avg.</cell><cell cols="2">Tumour (Avg.) Pancreas</cell><cell>Tumour</cell><cell>Avg.</cell></row><row><cell>nnUNet2D</cell><cell cols="2">0.5838(0.1789) 0.8063(0.0902) 0.6950(0.1345) -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>nnUNet3D</cell><cell cols="5">0.5764(0.1697) 0.7922(0.0979) 0.6843(0.1338) 0.6067(0.2545) 0.7937(0.0882) 0.4507(0.3321) 0.6222(0.2101)</cell></row><row><cell>nnFormer</cell><cell cols="5">0.5666(0.1955) 0.7876(0.1228) 0.6771(0.1591) 0.4363(0.2080) 0.6405(0.1340) 0.3061(0.2687) 0.4733(0.2013)</cell></row><row><cell>UNETR</cell><cell cols="5">0.5440(0.1881) 0.7618(0.1213) 0.6529(0.1547) 0.2999(0.1785) 0.7262(0.1109) 0.2606(0.2732) 0.4934(0.1920)</cell></row><row><cell>3D-UXNet</cell><cell cols="5">0.6102(0.1760) 0.8410(0.0637) 0.7256(0.1198) 0.5999(0.2057) 0.7643(0.0987) 0.4374(0.2930) 0.6009(0.1959)</cell></row><row><cell>SwinUNETR</cell><cell cols="5">0.6167(0.1862) 0.8498(0.0518) 0.7332(0.1190) 0.5672(0.1968) 0.7546(0.0978) 0.3552(0.2514) 0.5549(0.1746)</cell></row><row><cell cols="6">SwinUNETR-V2 0.6353(0.1688) 0.8457(0.0567) 0.7405 (0.1128) 0.6203(0.2012) 0.8001(0.0802) 0.4805(0.2973) 0.6403(0.1887)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 5 .</head><label>5</label><figDesc>Dice and HD95 on WORD test set of the variations of SwinUNETR-V2.</figDesc><table><row><cell cols="6">SwinUNETR Swin-Var-Bot Swin-Var-IR Swin-Var-Res Swin-Var-Down SwinUNETR-V2</cell></row><row><cell>Dice (↑) 0.8683</cell><cell>0.8685</cell><cell>0.8713</cell><cell>0.8713</cell><cell>0.8687</cell><cell>0.8751</cell></row><row><cell>HD95 (↓) 5.94</cell><cell>5.18</cell><cell>6.64</cell><cell>5.3</cell><cell>14.04</cell><cell>5.17</cell></row><row><cell cols="5">score and 95% Hausdorff Distance (hd95) are shown in Table</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head></head><label></label><figDesc>and investigate the (2.b) and (2.c) schemes, as well as the inverted convolution block. As for the (2.a) of parallel branches, it increases the GPU memory usage for 3D medical image too much and we keep it for future investigation. As shown in Fig.3, we investigate 1) Swin-Var-Bot (2.b scheme): Replacing the top 2 stages of swin transformer with ResConv block, and keeping the bottom two stages using swin blocks. 2) Swin-Var-IR: Using inverted residual blocks (with 3D depthwise convolution) instead of ResConv blocks. 3) Swin-Var-Res (2.c scheme): Instead of only adding Resconv blocks at the beginning of each stage, we create a new swin transformer block which all starts with this ResConv block, like the MOAT</figDesc><table /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://github.com/MASILab/3DUX-Net.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>https://github.com/MIC-DKFZ/nnUNet.</p></note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The medical segmentation decathlon</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Antonelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Swin-Unet: Unet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2105.05537</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">TransUNet: Transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mobile-Former: Bridging mobileNet and transformer</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="5270" to="5279" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">CoAtNet: marrying convolution and attention for all data sizes</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="3965" to="3977" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<title level="m">An image is worth 16 × 16 words: Transformers for image recognition at scale</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">ConViT: improving vision transformers with soft convolutional inductive biases</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ascoli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Leavitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Morcos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Biroli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Sagun</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2286" to="2296" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">CMT: convolutional neural networks meet vision transformers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="12175" to="12185" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">UNETR: transformers for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="574" to="584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">DiNTS: differentiable neural network topology search for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="5841" to="5850" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Revisiting nnU-Net for iterative pseudo labeling and efficient sliding window inference</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-23911-3_16</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-23911-3_16" />
+	</analytic>
+	<monogr>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Ma</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Wang</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13816</biblScope>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Fast and Low-Resource Semi-supervised Abdominal Organ Segmentation. FLARE 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a selfconfiguring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">AMOS: A large-scale abdominal multi-organ benchmark for versatile medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.08023</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">D UX-Net: A large kernel volumetric convnet modernizing hierarchical transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Landman</surname></persName>
+		</author>
+		<idno>arXiv</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">The state-of-the-art 3d anisotropic intracranial hemorrhage segmentation on non-contrast head CT: the instance challenge</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2301.03281</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Word: a large scale dataset, benchmark and clinical applicable study for abdominal organ segmentation from CT image</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102642</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Fast and low-GPU-memory abdomen CT organ segmentation: the flare challenge</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102616</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Automated head and neck tumor segmentation from 3D PET/CT</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Myronenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M R</forename><surname>Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.10809</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Conformer: local features coupling global representations for visual recognition</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Peng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="367" to="376" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M R</forename><surname>Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Myronenko</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.10648</idno>
+		<title level="m">Automated segmentation of intracranial hemorrhages from 3D CT</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Self-supervised pre-training of swin transformers for 3D medical image analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20730" to="20740" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Medical transformer: gated axialattention for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M J</forename><surname>Valanarasu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Oza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Hacihaliloglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="36" to="46" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Scaling local self-attention for parameter efficient visual backbones</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ramachandran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Srinivas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hechtman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shlens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12894" to="12904" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Pyramid vision transformer: a versatile backbone for dense prediction without convolutions</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="568" to="578" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">TransBTS: multimodal brain tumor segmentation using transformer</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_11</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_11" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="109" to="119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">CvT: introducing convolutions to vision transformers</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="22" to="31" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Vision transformer with deformable attention</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="4794" to="4803" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">CoTr: efficiently bridging CNN and transformer for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_16</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4_16" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="171" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">MOAT: alternating mobile convolution and attention brings strong vision models</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2210.01820</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">T-AutoML: automated machine learning for lesion segmentation using transformers in 3d medical imaging</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3962" to="3974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">TransFuse: fusing transformers and CNNs for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="14" to="24" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_2</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_2" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Scene parsing through ADE20K dataset</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Puig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fidler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barriuso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="633" to="641" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">nnFormer: Interleaved transformer for volumetric segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.03201</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

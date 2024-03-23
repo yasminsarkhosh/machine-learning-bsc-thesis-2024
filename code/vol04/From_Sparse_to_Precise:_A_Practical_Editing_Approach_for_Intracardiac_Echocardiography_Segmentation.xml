@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">From Sparse to Precise: A Practical Editing Approach for Intracardiac Echocardiography Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Ahmed</forename><forename type="middle">H</forename><surname>Shahin</surname></persName>
+							<email>ahmedhshahen@gmail.com</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<region>New Jersey</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yan</forename><surname>Zhuang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<region>New Jersey</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">National Institutes of Health Clinical Center</orgName>
+								<address>
+									<settlement>Maryland</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Noha</forename><surname>El-Zehiry</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<region>New Jersey</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<address>
+									<settlement>Wipro</settlement>
+									<region>New Jersey</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">From Sparse to Precise: A Practical Editing Approach for Intracardiac Echocardiography Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="766" to="775"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">0E3FE4BF4CCF71524D76855A435EC879</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_73</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:49+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Interactive editing</term>
+					<term>Ultrasound</term>
+					<term>Echocardiography</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate and safe catheter ablation procedures for atrial fibrillation require precise segmentation of cardiac structures in Intracardiac Echocardiography (ICE) imaging. Prior studies have suggested methods that employ 3D geometry information from the ICE transducer to create a sparse ICE volume by placing 2D frames in a 3D grid, enabling the training of 3D segmentation models. However, the resulting 3D masks from these models can be inaccurate and may lead to serious clinical complications due to the sparse sampling in ICE data, frames misalignment, and cardiac motion. To address this issue, we propose an interactive editing framework that allows users to edit segmentation output by drawing scribbles on a 2D frame. The user interaction is mapped to the 3D grid and utilized to execute an editing step that modifies the segmentation in the vicinity of the interaction while preserving the previous segmentation away from the interaction. Furthermore, our framework accommodates multiple edits to the segmentation output in a sequential manner without compromising previous edits. This paper presents a novel loss function and a novel evaluation metric specifically designed for editing. Crossvalidation and testing results indicate that, in terms of segmentation quality and following user input, our proposed loss function outperforms standard losses and training strategies. We demonstrate quantitatively and qualitatively that subsequent edits do not compromise previous edits when using our method, as opposed to standard segmentation losses. Our approach improves segmentation accuracy while avoiding undesired changes away from user interactions and without compromising the quality of previously edited regions, leading to better patient outcomes.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Atrial Fibrillation (AFib) is a prevalent cardiac arrhythmia affecting over 45 million individuals worldwide as of 2016 <ref type="bibr" target="#b7">[7]</ref>. Catheter ablation, which involves the elimination of affected cardiac tissue, is a widely used treatment for AFib. To ensure procedural safety and minimize harm to healthy tissue, Intracardiac Echocardiography (ICE) imaging is utilized to guide the intervention.</p><p>Intracardiac Echocardiography imaging utilizes an ultrasound probe attached to a catheter and inserted into the heart to obtain real-time images of its internal structures. In ablation procedures for Left Atrium (LA) AFib treatment, the ICE ultrasound catheter is inserted in the right atrium to image the left atrial structures. The catheter is rotated clockwise to capture image frames that show the LA body, the LA appendage and the pulmonary veins <ref type="bibr" target="#b12">[12]</ref>. Unlike other imaging modalities, such as transesophageal echocardiography, ICE imaging does not require general anesthesia <ref type="bibr" target="#b2">[3]</ref>. Therefore, it is a safer and more convenient option for cardiac interventions using ultrasound imaging.</p><p>The precise segmentation of cardiac structures, particularly the LA, is crucial for the success and safety of catheter ablation. However, segmentation of the LA is challenging due to the constrained spatial resolution of 2D ICE images and the manual manipulation of the ICE transducer. Additionally, the sparse sampling of ICE frames makes it difficult to train automatic segmentation models. Consequently, there is a persistent need to develop interactive editing tools to help experts modify the automatic segmentation to reach clinically satisfactory accuracy.</p><p>During a typical ICE imaging scan, a series of sparse 2D ICE frames is captured and a Clinical Application Specialist (CAS) annotates the boundaries of the desired cardiac structure in each frame<ref type="foot" target="#foot_0">1</ref> (Fig. <ref type="figure" target="#fig_0">1a</ref>). To construct dense 3D masks for training segmentation models, Liao et al. utilized the 3D geometry information from the ICE transducer, to project the frames and their annotations onto a 3D grid <ref type="bibr" target="#b8">[8]</ref>. They deformed a 3D template of the LA computed from 414 CT scans to align as closely as possible with the CAS contours, producing a 3D mesh to train a segmentation model <ref type="bibr" target="#b8">[8]</ref>. However, the resulting mesh may not perfectly align with the original CAS contours due to factors such as frames misalignment and cardiac motion (Fig. <ref type="figure" target="#fig_0">1b</ref>). Consequently, models trained with such 3D mesh as ground truth do not produce accurate enough segmentation results, which can lead to serious complications (Fig. <ref type="figure" target="#fig_0">1c</ref>).</p><p>A natural remedy is to allow clinicians to edit the segmentation output and create a model that incorporates and follows these edits. In the case of ICE data, the user interacts with the segmentation output by drawing a scribble on one of the 2D frames (Fig. <ref type="figure" target="#fig_0">1d</ref>). Ideally, the user interaction should influence the segmentation in the neighboring frames while preserving the original segmentation in the rest of the volume. Moreover, the user may make multiple edits to the segmentation output, which must be incorporated in a sequential manner without compromising the previous edits.</p><p>In this paper, we present a novel interactive editing framework for the ICE data. This is the first study to address the specific challenges of interactive editing with ICE data. Most of the editing literature treats editing as an interactive segmentation problem and does not provide a clear distinction between interactive segmentation and interactive editing. We provide a novel method that is specifically designed for editing. The novelty of our approach is two-fold: 1) We introduce an editing-specific novel loss function that guides the model to incorporate user edits while preserving the original segmentation in unedited areas. 2) We present a novel evaluation metric that best reflects the editing formulation. Comprehensive evaluations of the proposed method on ICE data demonstrate that the presented loss function achieves superior performance compared to traditional interactive segmentation losses and training strategies, as evidenced by the experimental data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Interactive Editing of ICE Data</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Problem Definition</head><p>The user is presented first with an ICE volume, x ∈ R H×W ×D , and its initial imperfect segmentation, y init ∈ R H×W ×D , where H, W and D are the dimensions of the volume. To correct inaccuracies in the segmentation, the user draws a scribble on one of the 2D ICE frames. Our goal is to use this 2D interaction to provide a 3D correction to y init in the vicinity of the user interaction. We project the user interaction from 2D to 3D and encode it as a 3D Gaussian heatmap, u ∈ R H×W ×D , centered on the scribble with a standard deviation of σ enc <ref type="bibr" target="#b9">[9]</ref>. The user iteratively interacts with the output until they are satisfied with the quality of the segmentation.</p><p>We train an editing model f to predict the corrected segmentation output ŷt ∈ R H×W ×D given x, y t init , and u t , where t is the iteration number. The goal is for ŷt to accurately reflect the user's correction near their interaction while preserving the initial segmentation elsewhere. Since y t+1 init ≡ ŷt , subsequent user inputs u {t+1,...,T } should not corrupt previous corrections u {0,...,t} (Fig. <ref type="figure" target="#fig_1">2</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Loss Function</head><p>Most interactive segmentation methods aim to incorporate user guidance to enhance the overall segmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b9">9]</ref>. However, in our scenario, this approach may undesirably modify previously edited areas and may not align with clinical expectations since the user has corrected these areas, and the changes are unexpected. To address the former issue, Bredell et al. proposed an iterative training strategy in which user edits are synthesized and accumulated over a fixed number of steps with every training iteration <ref type="bibr" target="#b0">[1]</ref>. However, this approach comes with a significant increase in training time and does not explicitly instruct the model to preserve regions away from the user input.</p><p>We propose an editing-specific loss function L that encourages the model to preserve the initial segmentation while incorporating user input. The proposed loss function incentivizes the model to match the prediction ŷ with the ground truth y in the vicinity of the user interaction. In regions further away from the user interaction, the loss function encourages the model to match the initial segmentation y init , instead. Here, y represents the 3D mesh, which is created by deforming a CT template to align with the CAS contours y cas <ref type="bibr" target="#b8">[8]</ref>. Meanwhile, y init denotes the output of a segmentation model that has been trained on y.</p><p>We define the vicinity of the user interaction as a 3D Gaussian heatmap, A ∈ R H×W ×D , centered on the scribble with a standard deviation of σ edit . Correspondingly, the regions far from the interaction are defined as Ā = 1 -A. The loss function is defined as the sum of the weighted cross entropy losses L edit and L preserve w.r.t y and y init , respectively, as follows</p><formula xml:id="formula_0">L = L edit + L preserve<label>(1)</label></formula><p>where</p><formula xml:id="formula_1">L edit = - H i=1 W j=1 D k=1 A i,j,k [y i,j,k log ŷi,j,k + (1 -y i,j,k ) log(1 -ŷi,j,k )]<label>(2)</label></formula><formula xml:id="formula_2">L preserve = - H i=1 W j=1 D k=1 Āi,j,k y init i,j,k log ŷi,j,k + (1 -y init i,j,k ) log(1 -ŷi,j,k )<label>(3)</label></formula><p>The Gaussian heatmaps facilitate a gradual transition between the edited and unedited areas, resulting in a smooth boundary between the two regions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Evaluation Metric</head><p>The evaluation of segmentation quality typically involves metrics such as the Dice coefficient and the Jaccard index, which are defined for binary masks, or distancebased metrics, which are defined for contours <ref type="bibr" target="#b13">[13]</ref>. In our scenario, where the ground truth is CAS contours, we use distance-based metrics 2 . However, standard utilization of these metrics computes the distance between the predicted and ground truth contours, which misleadingly incentivizes alignment with the ground truth contours in all regions. This approach incentivizes changes in the unedited regions, which is undesirable from a user perspective, as users want to see changes only in the vicinity of their edit. Additionally, this approach incentivizes the corruption of previous edits.</p><p>We propose a novel editing-specific evaluation metric that assesses how well the prediction ŷ matches the CAS contours y cas in the vicinity of the user interaction, and the initial segmentation y init in the regions far from the interaction.</p><formula xml:id="formula_3">D = D edit + D preserve<label>(4)</label></formula><p>where, ∀(i, j, k) ∈ {1, . . . , H} × {1, . . . , W } × {1, . . . , D}, D edit is the distance from y cas to ŷ in the vicinity of the user edit, as follows</p><formula xml:id="formula_4">D edit = 1 (ycas i,j,k =1) • A i,j,k • d(y cas i,j,k , ŷ)<label>(5)</label></formula><p>2 Contours are inferred from the predicted mask ŷ.</p><p>where d is the minimum Manhattan distance from y cas i,j,k to any point on ŷ. For D preserve , we compute the average symmetric distance between y init and ŷ, since the two contours are of comparable length. The average symmetric distance is defined as the average of the minimum Manhattan distance from each point on y init contour to ŷ contour and vice versa, as follows</p><formula xml:id="formula_5">D preserve = Ā 2 • 1 (y init i,j,k =1) • d(y init i,j,k , ŷ) + 1 ( ŷi,j,k =1 ) • d(ŷ i,j,k , y init )<label>(6)</label></formula><p>The resulting D represents a distance map ∈ R H×W ×D with defined values only on the contours y cas , y init , ŷ. Statistics such as the 95 th percentile and mean can be computed on the corresponding values of these contours on the distance map.</p><p>3 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>Our dataset comprises ICE scans for 712 patients, each with their LA CAS contours y cas and the corresponding 3D meshes y generated by <ref type="bibr" target="#b8">[8]</ref>. Scans have an average of 28 2D frames. Using the 3D geometry information, frames are projected to a 3D grid with a resolution of 128 × 128 × 128 and voxel spacing of 1.1024 × 1.1024 × 1.1024 mm. We performed five-fold cross-validation on 85% of the dataset (605 patients) and used the remaining 15% (107 patients) for testing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>To obtain the initial imperfect segmentation y init , a U-Net model <ref type="bibr" target="#b11">[11]</ref> is trained on the 3D meshes y using a Cross-Entropy (CE) loss. The same U-Net architecture is used for the editing model. The encoding block consists of two 3D convolutional layers followed by a max pooling layer. Each convolutional layer is followed by batch normalization and ReLU non-linearity layers <ref type="bibr" target="#b3">[4]</ref>. The number of filters in the segmentation model convolutional layers are 16, 32, 64, and 128 for each encoding block, and half of them for the editing model. The decoder follows a similar architecture.</p><p>The input of the editing model consists of three channels: the input ICE volume x, the initial segmentation y init , and the user input u. During training, the user interaction is synthesized on the frame with maximum error between y init and y. <ref type="foot" target="#foot_1">3</ref> The region of maximum error is selected and a scribble is drawn on the boundary of the ground truth in that region to simulate the user interaction. During testing, the real contours of the CAS are used and the contour with the maximum distance from the predicted segmentation is chosen as the user interaction. The values of σ enc and σ edit are set to 20, chosen by cross-validation. Adam optimizer is used with a learning rate of 0.005 and a batch size of 4 to train the editing model for 100 epochs <ref type="bibr" target="#b6">[6]</ref>. Table <ref type="table">1</ref>. Results on Cross-Validation (CV) and test set. We use the editing evaluation metric D and report the 95 th percentile of the overall editing error, the error near the user input, and far from the user input (mm). The near and far regions are defined by thresholding A at 0.5. For the CV results, we report the mean and standard deviation over the five folds. The statistical significance is computed for the difference with InterCNN. † : p-value &lt; 0.01, ‡ : p-value &lt; 0.001. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>We use the editing evaluation metric D (Sect. 2.3) for the evaluation of the different methods. For better interpretability of the results, we report the overall error, the error near the user input, and the error far from the user input. We define near and far regions by thresholding the Gaussian heatmap A at 0.5. We evaluate our loss (editing loss) against the following baselines: (1) No Editing: the initial segmentation y init is used as the final segmentation ŷ, and the overall error in this case is the distance from the CAS contours to y init . This should serve as an upper bound for error. (2) CE Loss: an editing model trained using the standard CE segmentation loss w.r.t y. (3) Dice Loss <ref type="bibr" target="#b10">[10]</ref>: an editing model trained using Dice segmentation loss w.r.t y. (4) InterCNN <ref type="bibr" target="#b0">[1]</ref>: for every training sample, simulated user edits based on the prediction are accumulated with any previous edits and re-input to the model for 10 iterations, trained using CE loss. We report the results after a single edit (the furthest CAS contour from ŷ) in Table <ref type="table">1</ref>. A single training epoch takes ≈ 3 min for all models except InterCNN, which takes ≈ 14 min, on a single NVIDIA Tesla V100 GPU. The inference time through our model is ≈ 20 milliseconds per volume.</p><p>Our results demonstrate that the proposed loss outperforms all baselines in terms of overall error. Although all the editing methods exhibit comparable performance in the near region, in the far region where the error is calculated relative to y init , our proposed loss outperforms all the baselines by a significant margin. This can be attributed to the fact that the baselines are trained using loss functions which aim to match the ground truth globally, resulting in deviations from the initial segmentation in the far region. In contrast, our loss takes into account user input in its vicinity and maintains the initial segmentation elsewhere.</p><p>Sequential Editing. We also investigate the scenario in which the user iteratively performs edits on the segmentation multiple times. We utilized the same models that were used in the single edit experiment and simulated 10 editing iterations. At each iteration, we selected the furthest CAS contour from ŷ, ensuring that the same edit was not repeated twice. For the interCNN model, we aggregated the previous edits and input them into the model, whereas for all other models, we input a single edit per iteration. We assessed the impact of the number of edits on the overall error. In Fig. <ref type="figure" target="#fig_2">3</ref>, we calculated the distance from all the CAS contours to the predicted segmentation and observed that the editing loss model improved with more edits. In contrast, the CE and Dice losses degraded with more edits due to compromising the previous corrections, while InterCNN had only marginal improvements.</p><p>Furthermore, in Fig. <ref type="figure" target="#fig_3">4</ref>, we present a qualitative example to understand the effect of follow-up edits on the first correction. Edits after the first one are on other frames and not shown in the figure. We observe that the CE and InterCNN methods did not preserve the first correction, while the editing loss model maintained it. This is a crucial practical advantage of our loss, which allows the user to make corrections without compromising the previous edits. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We presented an interactive editing framework for challenging clinical applications. We devised an editing-specific loss function that penalizes the deviation from the ground truth near user interaction and penalizes deviation from the initial segmentation away from user interaction. Our novel editing algorithm is more robust as it does not compromise previously corrected regions. We demonstrate the performance of our method on the challenging task of volumetric segmentation of sparse ICE data. However, our formulation can be applied to other editing tasks and different imaging modalities.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Volumetric segmentation of ICE data. (a) 2D ICE frames with CAS contours outlining LA boundaries. (b) 2D frames (black shades) and CAS contours projected onto a 3D grid. The blue mesh represents the 3D segmentation mask obtained by deforming a CT template to fit the contours as closely as possible [8]. Note the sparsity of frames. (c) Predicted 3D segmentation mask generated by a model trained with masks from (b). (d) Predicted mask projected onto 2D (green) and compared with the original CAS contours. Note the misalignment between the mask and CAS contours in some frames. Yellow indicates an example of a user-corrective edit. (Color figure online)</figDesc><graphic coords="3,44,79,54,11,334,57,98,59" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The proposed interactive editing framework involves user interaction with the segmentation output by drawing a scribble on one of the 2D frames. The editing model is trained to incorporate user interaction while preserving the initial segmentation in unedited areas. Cyan shade: initial segmentation. Green contour: corrected segmentation. Yellow contour: user interaction. (Color figure online)</figDesc><graphic coords="4,57,48,54,11,337,45,136,60" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig.3. 95 th percentile of the distance from the CAS contours to the prediction.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Impact of follow-up edits on the first correction. Yellow: first user edit. Green: output after each edit. Our editing loss maintains the integrity of the previous edits, while in the other methods the previous edits are compromised. (Color figure online)</figDesc><graphic coords="8,98,97,378,20,254,38,141,88" type="bitmap" /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Annotations typically take the form of contours instead of masks, as the structures being segmented appear with open boundaries in the frames.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_1"><p>We do not utilize the CAS contours during training and only use them for testing because the CAS contours do not align with the segmentation meshes y.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43901-8_73.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Iterative interaction training for segmentation editing networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bredell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tanner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning in Medical Imaging</title>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">I</forename><surname>Suk</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Liu</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="363" to="370" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Inter extreme points geodesics for end-to-end weakly supervised image segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Dorent</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_57" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="615" to="624" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Use of intracardiac echocardiography in interventional cardiology: working with the anatomy rather than fighting it</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Enriquez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Circulation</title>
+		<imprint>
+			<biblScope unit="volume">137</biblScope>
+			<biblScope unit="issue">21</biblScope>
+			<biblScope unit="page" from="2278" to="2294" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Batch normalization: accelerating deep network training by reducing internal covariate shift</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="448" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Extreme points derived confidence map as a cue for class-agnostic interactive segmentation using deep neural network</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Shahin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Villafruela</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="66" to="73" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_8" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Epidemiology of atrial fibrillation in the 21st century</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kornej</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Börschel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Benjamin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Schnabel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Circ. Res</title>
+		<imprint>
+			<biblScope unit="volume">127</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="4" to="20" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">More knowledge is better: cross-modality volume completion and 3D+2D segmentation for intracardiac echocardiography contouring</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Funka-Lea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00934-2_60</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00934-2_60" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11071</biblScope>
+			<biblScope unit="page" from="535" to="543" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Deep extreme cut: from extreme points to object segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Maninis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Caelles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pont-Tuset</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="616" to="625" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">V-net: fully convolutional neural networks for volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Ahmadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Fourth International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<date type="published" when="2016">2016. 2016</date>
+			<biblScope unit="page" from="565" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Role of intracardiac echocardiography in atrial fibrillation ablation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">D</forename><surname>Russo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Atr. Fibrillation</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Metrics for evaluating 3D medical image segmentation: analysis, selection, and tool</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Taha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hanbury</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="28" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

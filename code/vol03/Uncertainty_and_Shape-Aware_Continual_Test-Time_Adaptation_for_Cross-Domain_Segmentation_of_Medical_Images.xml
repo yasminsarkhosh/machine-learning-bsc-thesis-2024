@@ -1,0 +1,1033 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Uncertainty and Shape-Aware Continual Test-Time Adaptation for Cross-Domain Segmentation of Medical Images</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Jiayi</forename><surname>Zhu</surname></persName>
+							<email>jiayi.zhu3@unsw.edu.au</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of New South Wales</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Neuroscience Research Australia (NeuRA)</orgName>
+								<address>
+									<settlement>Randwick</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Bart</forename><surname>Bolsterlee</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of New South Wales</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Neuroscience Research Australia (NeuRA)</orgName>
+								<address>
+									<settlement>Randwick</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Brian</forename><forename type="middle">V Y</forename><surname>Chow</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of New South Wales</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Neuroscience Research Australia (NeuRA)</orgName>
+								<address>
+									<settlement>Randwick</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yang</forename><surname>Song</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of New South Wales</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Erik</forename><surname>Meijering</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of New South Wales</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Uncertainty and Shape-Aware Continual Test-Time Adaptation for Cross-Domain Segmentation of Medical Images</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">EAF8265E5460F5E46E83FE3D8CCC118F</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-163.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:46+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Continual Test-Time Adaptation</term>
+					<term>Segmentation</term>
+					<term>Convolutional Neural Networks</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Continual test-time adaptation (CTTA) aims to continuously adapt a source-trained model to a target domain with minimal performance loss while assuming no access to the source data. Typically, source models are trained with empirical risk minimization (ERM) and assumed to perform reasonably on the target domain to allow for further adaptation. However, ERM-trained models often fail to perform adequately on a severely drifted target domain, resulting in unsatisfactory adaptation results. To tackle this issue, we propose a generalizable CTTA framework. First, we incorporate domain-invariant shape modeling into the model and train it using domain-generalization (DG) techniques, promoting target-domain adaptability regardless of the severity of the domain shift. Then, an uncertainty and shape-aware mean teacher network performs adaptation with uncertainty-weighted pseudo-labels and shape information. Lastly, small portions of the model's weights are stochastically reset to the initial domain-generalized state at each adaptation step, preventing the model from 'diving too deep' into any specific test samples. The proposed method demonstrates strong continual adaptability and outperforms its peers on three cross-domain segmentation tasks. Code is available at https://github.com/ThisGame42/CTTA.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Deep neural networks (DNN) have demonstrated state-of-the-art performance in medical image segmentation in recent years <ref type="bibr" target="#b0">[1]</ref>. In practice, the discrepancies in the distributions between the target domain, where the test data come from, and the source domain that provides the training data, often lead to reduced test-time performance (Fig. <ref type="figure" target="#fig_0">1</ref>). This phenomenon, known as the domain shift <ref type="bibr" target="#b4">[5]</ref>, is common in medical imaging <ref type="bibr" target="#b1">[2]</ref>, thus necessitates model re-training across institutes, resulting in a waste of resources and precluding the use of DNNs in budget-challenged scenarios.</p><p>Many studies have attempted to address the domain shift. Earlier works adapt models to the target domain with access to the source domain <ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref>, restricting their applications due to privacy concerns. In response, methods utilizing prior or anatomical information to remove the need for source data are proposed <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b9">10]</ref>, yet their flexibility is limited. Lately, test-time domain adaptation (TTA), continual test-time adaptation (CTTA), and domain generalization (DG) methods have been gaining popularity <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b18">19]</ref>. TTA methods train a model on a labeled source domain and adapt it to an unlabeled target domain with access to target data only. Adaptation is usually performed via feature alignment through generative models <ref type="bibr" target="#b11">[12]</ref>, domain adversarial learning and paired consistency <ref type="bibr" target="#b12">[13]</ref>, image/feature translation via adaptor networks <ref type="bibr" target="#b13">[14]</ref>, and entropy minimization which fine-tunes the parameters of the batch normalization (BN) layers <ref type="bibr" target="#b14">[15]</ref> on test data <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b15">16]</ref>. CTTA is an emerging approach aiming to improve the robustness of TTA methods during long-term continual adaptation, a scenario where TTA methods are susceptible to catastrophic forgetting and become overfitted to later test samples. Examples include stochastic parameter restoration <ref type="bibr" target="#b2">[3]</ref> and normalization correction and data resampling <ref type="bibr" target="#b3">[4]</ref>. DG methods aim to produce a more generalizable model from one or more source domains without updating parameters at test time. Popular methods involve data augmentations to enhance domain robustness <ref type="bibr" target="#b16">[17]</ref> and learn domain-invariant features <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref>.</p><p>CTTA could be a useful technique to segment patient data acquired at different time points of longitudinal studies. However, we note that adaptation is possible only when the source model, typically trained with empirical risk minimization (ERM) <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref>, already demonstrates reasonable target-domain performance as the starting point. ERM models may struggle to provide adequate performance for further adaptation in severe domain shifts (see panels (g)-(l), Fig. <ref type="figure" target="#fig_0">1</ref>). Domain knowledge can be utilized to design a preprocessing procedure that reduces the domain gap <ref type="bibr" target="#b19">[20]</ref> and enables ERM models to perform adequately on the target domain. However, the effort to design preprocessing procedures significantly increases when a trained source model is shared with multiple end-users to account for different test-time data distributions.</p><p>To address those issues, we propose a generalizable CTTA framework for the cross-domain segmentation task of medical images. We first incorporate shape-aware feature learning into existing models and train them on the source domain with DG techniques. This removes the need for carefully preprocessed target domain data and allows the source model to perform reasonably in most target domains regardless of the severity of the domain shift. Then, we use an uncertainty-weighted multi-task mean teacher network inspired by semisupervised literature to perform adaptation, producing results with improved accuracy and refined contours. In addition, a small portion of the model weight is stochastically reset to its initial, domain-generalized state at each adaptation step to prevent the model from overfitting to later test samples. We show the proposed framework works with ERM and DG-trained source models and (1) outperforms several state-of-the-art methods on three challenging cross-domain segmentation tasks and (2) is better suited for CTTA than its peers in various scenarios.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Overview. The proposed framework is a synergy of three components (Fig. <ref type="figure" target="#fig_1">2):</ref> (1) shape-aware model training, (2) shape and uncertainty-aware mean teacher network for the model update, and (3) domain-generalized stochastic weight restoration for continual adaptation. Component ( <ref type="formula">1</ref>) is used for model training in the source domain, while (2) and (3) are used simultaneously for CTTA. We describe each component in detail below. Shape-Aware Model Training. Motivated by recent studies <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref> suggesting that shape information enables generalizable performance due to their consistent and invariable presence across different domains, we propose integrating shape awareness into the model training in the source domain. We first model the shape information with the signed distance field (SDF <ref type="bibr" target="#b21">[22]</ref>, ∈ [-1, 1]) which measures the distance between any pixel to the nearest object boundary and the position of the pixel relative to the boundary: positive if outside, zero if on the boundary, and negative if inside. Then, an SDF head is appended to the source model to share features with the existing segmentation head to encode shape information into the model. Finally, the source training is performed with DG techniques to ensure reasonable performance even in extremely drifted target domains (such as T 1 -weighted ↔ mDixon magnetic resonance images, Table <ref type="table" target="#tab_0">1</ref>), allowing for further adaptation to take place.</p><p>Specifically, we train the modified model on the source domain (X S , Y S , Z S ) ∈ S, where X S denotes the input image, Y S the manual annotations, and Z S the ground-truth SDF calculated from Y S using <ref type="bibr" target="#b21">[22]</ref>, by minimizing a multi-task loss</p><formula xml:id="formula_0">1 N N n=1 seg (Y S n , Ŷ S n ) + sdf (Z S n , ẐS n ).</formula><p>Here, seg and sdf represent loss functions used for optimizing the segmentation and SDF prediction tasks, respectively, N is the number of images in each batch, and</p><formula xml:id="formula_1">( Ŷ S n , ẐS n ) = f (g(x)</formula><p>) indicate the predicted segmentation probability and SDF maps produced by the source model f from the augmented input g(x). We implement g with causality-inspired DG (CiDG) <ref type="bibr" target="#b18">[19]</ref>, a shallow randomly-weighted neural network that imposes domain-generalized shape-based feature learning through constant resampling of appearances of potentially correlated objects in the image.</p><p>Uncertainty and Shape-Aware Adaptation With Mean Teacher. The mean teacher network trains a student model and uses the exponential moving averages (EMA) of its weights to update an identical teacher model whose predictions further regularize the student model. Inspired by their rising popularity in semi-supervised studies <ref type="bibr" target="#b22">[23]</ref>, we use a mean teacher network to adapt all parameters of the trained shape-aware source model to the unlabeled target domain T . The overall architecture follows <ref type="bibr" target="#b20">[21]</ref> except for the absence of the reconstruction task: both models predict SDF maps on top of segmentation labels, allowing for the utilization of shape information, and uncertainties are estimated from the teacher's outputs, avoiding misleading supervision during the adaptation phase.</p><p>Specifically, both models are initialized with the weights of the source model. Then, at each time step t, the student model first predicts segmentation probability maps Ỹ T t and SDF predictions ZT t for the current test data x T t . Next, the teacher model performs K forward passes, producing K segmentation probability maps { Ŷ T tk } K k=1 and SDF predictions { ẐT tk } K k=1 from a set of noisy input images constructed by adding K random Gaussian noise vectors to x T t . The final segmentation map of the teacher model at time step t is obtained by aggregating all K segmentation probability maps through their uncertainties. The pixel-wise uncertainty of each of the K segmentation probability maps is measured as the entropy</p><formula xml:id="formula_2">U tk = -c∈C Ŷ T tkc log C Ŷ T tkc</formula><p>, where the log function has a base of C, the number of segmentation classes. Next, the confidence map of kth probability map is calculated as 1 -U tk , as higher values in U tk ∈ [0, 1] denote areas with higher uncertainties. Then, all confidence maps are stacked in the first dimension where we apply the softmax function, i.e., {W tk } K k=1 = softmax({1 -U tk } K k=1 ), to normalize the confidence value to [0, 1]. Lastly, the final segmentation probability map is constructed as a confidence-weighted combination of all K intermediate probability maps as</p><formula xml:id="formula_3">Ŷ T t = K k=1 W tk Ŷ T tk .</formula><p>The entropy of the final segmentation represents its uncertainty</p><formula xml:id="formula_4">U seg = -c∈C Ŷ T tc log C Ŷ T tc .</formula><p>Entropy cannot be calculated on real-valued outputs such as SDF maps. As such, the final SDF prediction is obtained by averaging all K SDF maps, i.e., ẐT</p><formula xml:id="formula_5">t = 1 K K k=1</formula><p>ẐT tk , and we follow <ref type="bibr" target="#b23">[24]</ref> to estimate the uncertainty using the variance</p><formula xml:id="formula_6">U sdf = K k=1 ( ẐT tk -ẐT t ) 2 .</formula><p>The student model is therefore guided by the teacher model by minimizing four loss terms:</p><formula xml:id="formula_7">t = 1 N N n=1 seg Ỹ T n , Ȳ T n + sdf ZT n , ẐT n + con seg Ỹ T n , Ȳ T n + con sdf ZT n , ẐT n (1)</formula><p>where sdf and seg are the MSE and the Dice loss <ref type="bibr" target="#b25">[26]</ref>, Ȳ T n is the one-hot encoded pseudo-labels calculated from Ŷ T n with the argmax function, and N denotes the number of images in each test batch.</p><formula xml:id="formula_8">con seg = exp(-U seg ) Ỹ T n -Ȳ T n 2 and con sdf = exp(-U sdf ) ZT n -ẐT n</formula><p>2 also penalize inconsistencies between the student and teacher models, but are weighted by the calculated uncertainty maps to encourage learning of confident predictions from the teacher model. The student model also performs self-regularization comprising two loss terms:</p><formula xml:id="formula_9">s = 1 N N n=1 Ỹ T n -σ κ • ZT n 2 + e Ỹ T n (<label>2</label></formula><formula xml:id="formula_10">)</formula><p>where σ is the sigmoid function and κ is a multiplying factor approximating the inverse transformation from segmentation labels to SDF maps. The first loss term converts SDF maps into approximations of their corresponding segmentation labels and enforces a cross-task consistency <ref type="bibr" target="#b24">[25]</ref>, and the second term e = c Ỹ T c log Ỹ T c reduces the entropy in the predicted segmentation maps. The final objective function is therefore formulated as a weighted sum as = t +α s . Domain Generalized Stochastic Restore. Continual and unsupervised model adaptation to T would likely result in performance degradation due to accumulations of errors, leading to catastrophic forgetting of earlier samples. Therefore, we combine DG source training and a stochastic weight restoration mechanism <ref type="bibr" target="#b2">[3]</ref> to reset small portions of the model to its initial domaingeneralized weights, stopping the model from 'diving too deep' into specific target data while providing a decent baseline performance for the model to roll back.</p><p>Let W t+1 denote the weights of a trainable conv layer after the gradient update at time step t. A small portion of W t+1 is reset to its initial weights as</p><formula xml:id="formula_11">W t+1 = M W 0 + (1 -M ) W t+1</formula><p>, where M ∼ Bernoulli(p) is a binary mask tensor, and W 0 denotes the initial domain-generalized weights of the conv layer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Setup. We implemented our method with PyTorch 1.10.0 and trained it on one Nvidia Tesla V100 GPU. We evaluated our method and other benchmarking methods on three cross-domain datasets with varying degrees of domain shifts: (1) cross-site binary prostate segmentation from T 2 -weighted MRI scans collected from six different sites (12-30 scans/site) <ref type="bibr" target="#b28">[29]</ref><ref type="bibr" target="#b29">[30]</ref><ref type="bibr" target="#b30">[31]</ref>, (2) cross-site and cross-modality multi-class (liver, left and right kidneys, and spleen) abdominal segmentation between 30 CT and 20 MRI T 2 -SPIR scans <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b32">33]</ref>, and (3) same-site cross-modality muscle segmentation of 13 lower-leg muscles and bones between 30 MRI T 1 and 30 mDixon scans <ref type="bibr" target="#b33">[34]</ref>. All scans were collected from healthy and diseased individuals and normalized to zero mean and unit variance before being reformatted to 2D. The prostate and abdominal scans were resized to 192 × 192 pixels while the muscle scans were spatially resized to 128 × 128 pixels. Lastly, a window of <ref type="bibr">[-275, 125]</ref> in Houndsfield units was applied to CT scans and the top 0.5% of the histogram of MRI scans were clipped as per <ref type="bibr" target="#b2">[3]</ref>.</p><p>We treated each site as the source domain and adapted to all other sites in the first experiment. For other experiments, we first performed adaptation from modality A to B, then from B to A. All experiments were performed in an online manner: each test scan arrived randomly and was broken down into multiple batches if needed. The model adapted itself to each batch before making a prediction. U-Net with an EfficientNet-b2 backbone was used as the source model for all our experiments. The Adam optimizer <ref type="bibr" target="#b34">[35]</ref> was used with a learning rate of 0.001 and a batch size of 32. α was set to 1, κ to -1500, and p to 0.01. The model was empirically updated for two steps per test batch for prostate and muscle segmentation and 10 steps for abdominal segmentation. In addition, we calculated the final performance of each model by using each model to re-predict the segmentation labels of all test samples after the adaptation was completed. We then compared the final performance of each model against their running Results. We compared our method against several state-of-the-art general and medical TTA and CTTA methods that require no additional clinical or anatomical information about either domain. General methods include BN Stats <ref type="bibr" target="#b26">[27]</ref>, Tent <ref type="bibr" target="#b15">[16]</ref>, and CoTTA <ref type="bibr" target="#b2">[3]</ref>, and medical methods involve the combination of ATTA <ref type="bibr" target="#b13">[14]</ref> and DLTTA <ref type="bibr" target="#b27">[28]</ref>. DLTTA was also combined with Tent and CoTTA for a more comprehensive comparison.</p><p>The proposed method substantially outperformed other methods on all three tasks and could consistently improve the CiDG-trained source model even in scenarios where other peer methods could not (Table <ref type="table" target="#tab_0">1</ref>). Surprisingly, the CiDGtrained source model outperformed all TTA methods except ours in numerous experiments with its decent performance. We attribute this to the fact that most TTA methods rely on (1) image/feature translation and reconstruction or (2) BN statistics re-estimation. However, DG methods often employ extensive augmentations, which may continuously change the contrast of the source data to allow domain-invariant feature learning. A constantly changing source domain may impede methods such as ATTA performing image or feature-level translation or reconstruction at the adaptation phase. Furthermore, we hypothesize that the running BN statistics of DG-trained models help to stabilize domaininvariant feature extraction at test time. As such, discarding and re-estimating them from test data, as was done by Tent, may be detrimental to the targetdomain performance. To test our hypothesis, we disabled the BN statistics reestimation in Tent and had a 3% improvement of Dice and 0.4 mm improvement on ASSD in the abdominal segmentation task. DLTTA consistently improved Tent and ATTA through dynamic learning rates but failed to improve CoTTA at the same rate. CoTTA is a CTTA method highly relevant to ours, and its inconsistency in performance improvement suggests that geometric augmentations may be too strong for test-time learning and highlights the efficacy of the proposed uncertainty and shape-aware mean teacher setup. For adaptation, the uncertainty-aware module ensured only trustworthy predictions from the teacher model were used, and the shape-aware regularization further enhanced the target-domain performance by refining the smoothness of the predicted labels and ensuring the integrity of the anatomical structure of the predicted objects (Fig. <ref type="figure" target="#fig_2">3</ref>). A brief ablation study demonstrated the effectiveness of each proposed component (see bottom of Table <ref type="table" target="#tab_0">1</ref>). Our framework also outperformed other methods by a larger margin on the prostate and abdominal segmentation tasks, where an ERM-trained source model was used for adaptation, further showcasing the generalizability of each proposed component (Supplementary Table <ref type="table" target="#tab_0">1</ref>).</p><p>The proposed model also demonstrated an equal or higher final performance (in comparison to its running performance) in all experiments, whereas many of its peers demonstrated the opposite (Supplementary Table <ref type="table">2</ref>). Equal final performance suggests that the model remembered earlier test data, and a higher final performance indicates its capability to utilize later test samples to improve its earlier performance. On the other hand, a lower final performance suggests that the model forgot about earlier test data and overfitted to later test data. The proposed DG stochastic restore prevented the model from drifting towards later test samples, and the teacher model reduced the likelihood of error accumulation through uncertainty estimation. Together they enabled reliable CTTA for medical images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We proposed a generalizable framework for continual test-time adaption of medical images. Our approach first trains a model on the source domain with domain-invariant shape features before adapting it to the target domain with uncertainty-weighted pseudo-labels and SDF maps. Our method can work with ERM or DG-trained source models and outperformed its peers on three crosssite/cross-domain segmentation tasks without showing performance degradation as the adaptation progressed. Our framework can continuously adapt the source model to unknown test data online for the segmentation task, significantly reducing the cost and bias associated with manual labeling.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Demonstrations of different severities of domain shifts. Panels (a) and (d) are preprocessed CT and MRI T2 abdominal scans and (c) and (f) are their manual labels. (b) and (e) are cross-domain predictions for (a) and (d) by an ERM model trained on (d) and (a), respectively. Panels (g) and (j) are preprocessed MRI T1 and mDixon muscle scans and (i) and (l) are their manual labels. (h) and (k) are labels predicted for (g) and (j) by an ERM model trained on (j) and (g), respectively. Arrows of the same color indicate the same anatomical structures across different domains.</figDesc><graphic coords="3,70,47,54,35,311,08,205,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Schematic of the proposed CTTA framework. The model (U-Net with EfficientNet-b2 backbone) is first trained on the source domain with shape-aware DG techniques for generalizable and adaptable baseline performance. Then, a multi-task uncertainty-weighted mean teacher setup performs target-domain adaptation. Small portions of the model are also reset to their initial shape-aware state at each step to counter catastrophic forgetting and improve the robustness of continual adaptation.</figDesc><graphic coords="4,42,30,56,90,161,98,108,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative evaluation of selected benchmarked methods on the task of crosssite MRI T2 prostate segmentation (top), mDixon → MRI T1 muscle segmentation (middle), and MRI T2 → CT abdominal segmentation (bottom). Results produced by methods augmented by DLTTA can be viewed in Supplementary Fig. 1.</figDesc><graphic coords="8,42,30,53,84,339,40,117,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative evaluation of all methods w/ CiDG-trained source model. Results are shown as Dice/ASSD. The second row shows source/target domains. Source, general, medical, and (our) ablated methods are placed into their respective groups. † denotes statistical significance with our method (p &lt; 0.05 w/Wilcoxon signedrank test). Running performance shown. Best results in bold.performance to evaluate their ability for continual adaptation. The performance was quantitatively evaluated by their volume-wise Dice Similarity Coefficient (Dice, in %) and Average Symmetric Surface Distance (ASSD, in mm).</figDesc><table><row><cell>Prostate</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A survey on deep learning in medical image analysis</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Litjens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="60" to="88" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Test-time adaptation with shape moments for image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_70</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-870" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page" from="736" to="745" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Continual test-time domain adaptation</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Fink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">NOTE: robust continual test-time adaptation against temporal correlation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jeong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Neural Information Processing Systems (NeurIPS)</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A theory of learning from different domains</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ben-David</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Blitzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Crammer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kulesza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pereira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Vaughan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="151" to="175" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Data efficient unsupervised domain adaptation for cross-modality image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kamnitsas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Biffi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_74</idno>
+		<idno>978-3-030-32245-8 74</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="669" to="677" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Unsupervised domain adaptation via disentangled representations: application to crossmodality liver segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Dvornek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chapiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Duncan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Semantic consistent unsupervised domain adaptation for crossmodality medical image segmentation</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_19</idno>
+		<idno>978-3-030-87199-4 19</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="201" to="210" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Constrained domain adaptation for segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-837" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="326" to="334" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Source-relaxed domain adaptation for image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_48</idno>
+		<idno>978-3-030-59710-8 48</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="490" to="499" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Domain generalization via invariant feature representation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Krikamol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Balduzzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schölkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning (ICML)</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">SoFA: source-data-free feature alignment for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">H.-W</forename><surname>Yeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Yuen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Harada</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Winter Conference on Applications of Computer Vision (WCAV)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Test-time unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Varsavsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Orbes-Arteaga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Sudre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Graham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Nachev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-842" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="428" to="436" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Autoencoder based selfsupervised test-time adaptation for medical image analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Carass</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">E</forename><surname>Dewey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Prince</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">102136</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Batch normalization: accelerating deep network training by reducing internal covariate shift</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1502.03167</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Tent: fully testtime adaptation by entropy minimization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shelhamer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Olshausen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations (ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Improved regularization of convolutional neural networks with cutout</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Devries</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1708.04552</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Robust and generalizable visual representation learning via random convolutions</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Raffel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Conference on Learning Representations (ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Causality-inspired single-source domain generalization for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ouyang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="1095" to="1106" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Pre-processing method to improve cross-domain fault diagnosis for bearing</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sensors</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page">4970</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Tripled-uncertainty guided mean teacher network for semisupervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page">42</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Shape-aware organ segmentation by predicting signed distance maps</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xue</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Conference on Artificial Intelligence (AAAI</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A survey on deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Knowl. Data Eng</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="8934" to="8954" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">What uncertainties do we need in Bayesian deep learning for computer vision?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kendall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Neural Information Processing Systems (NeurIPS)</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5574" to="5584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation through dual-task consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Conference on Artificial Intelligence (AAAI)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">V-Net: fully convolutional neural networks for volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Ahmadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Fourth International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2016">2016. 2016</date>
+			<biblScope unit="page" from="565" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Improving robustness against common corruptions by covariate shift adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Schneider</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Rusak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Eck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bringmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Brendel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bethge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Neural Information Processing Systems (NeurIPS)</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="11539" to="11551" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">DLTTA: dynamic learning rate for test-time adaptation on crossdomain medical images</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="3575" to="3586" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Shape-aware meta-learning for generalizing prostate MRI segmentation to unseen domains</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59713-9_46</idno>
+		<idno>978-3-030-59713-9 46</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12262</biblScope>
+			<biblScope unit="page" from="475" to="485" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">NCI-ISBI 2013 challenge: automated segmentation of prostate structures</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bloch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Cancer Imaging Archive</title>
+		<imprint>
+			<biblScope unit="volume">370</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Computer-aided detection and diagnosis for prostate cancer based on mono and multi-parametric MRI: a review</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lemaître</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Martí</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Freixenet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Vilanova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Walker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Meriaudeau</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CBM</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="8" to="31" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">MICCAI multi-atlas labeling beyond the cranial vault-workshop and challenge</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</title>
+		<meeting>MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">CHAOS challenge-combined (CT-MR) healthy abdominal organ segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Kavur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">101950</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Deep learning methods for automatic segmentation of lower leg muscles and bones from MRI scans of children with and without cerebral palsy</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NMR Biomed</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page">4609</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

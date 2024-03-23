@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Continual Learning for Abdominal Multi-organ and Tumor Segmentation</title>
+				<funder>
+					<orgName type="full">Lustgarten Foundation for Pancreatic Cancer Research</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Patrick J. McGovern Foundation Award</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yixiao</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xinyi</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Huimiao</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Alan</forename><forename type="middle">L</forename><surname>Yuille</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yaoyao</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Zongwei</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Continual Learning for Abdominal Multi-organ and Tumor Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="35" to="45"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">62DE2BCEE81F3825533629DBF848512E</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_4</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:40+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Continual Learning</term>
+					<term>Incremental Learning</term>
+					<term>Multi-Organ Segmentation</term>
+					<term>Tumor Segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The ability to dynamically extend a model to new data and classes is critical for multiple organ and tumor segmentation. However, due to privacy regulations, accessing previous data and annotations can be problematic in the medical domain. This poses a significant barrier to preserving the high segmentation accuracy of the old classes when learning from new classes because of the catastrophic forgetting problem. In this paper, we first empirically demonstrate that simply using high-quality pseudo labels can fairly mitigate this problem in the setting of organ segmentation. Furthermore, we put forward an innovative architecture designed specifically for continuous organ and tumor segmentation, which incurs minimal computational overhead. Our proposed design involves replacing the conventional output layer with a suite of lightweight, class-specific heads, thereby offering the flexibility to accommodate newly emerging classes. These heads enable independent predictions for newly introduced and previously learned classes, effectively minimizing the impact of new classes on old ones during the course of continual learning. We further propose incorporating Contrastive Language-Image Pretraining (CLIP) embeddings into the organspecific heads. These embeddings encapsulate the semantic information of each class, informed by extensive image-text co-training. The proposed method is evaluated on both in-house and public abdominal CT datasets under organ and tumor segmentation tasks. Empirical results suggest that the proposed design improves the segmentation performance of a baseline model on newly-introduced and previously-learned classes along the learning trajectory.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Humans inherently learn in an incremental manner, acquiring new concepts over time without forgetting previous ones. In contrast, deep learning models suffer from catastrophic forgetting <ref type="bibr" target="#b9">[10]</ref>, where learning from new data can override previously acquired knowledge. In this context, the class-incremental continual learning problem was formalized by Rebuffi et al. <ref type="bibr" target="#b22">[23]</ref>, where new classes are observed in different stages, restricting the model from accessing previous data.</p><p>The medical domain faces a similar problem: the ability to dynamically extend a model to new classes is critical for multiple organ and tumor segmentation, wherein the key obstacle lies in mitigating 'forgetting.' A typical strategy involves retaining some previous data. For instance, Liu et al. <ref type="bibr" target="#b12">[13]</ref> introduced a memory module to store the prototypical representation of different organ categories. However, such methods, reliant on an account of data and annotations, may face practical constraints as privacy regulations could make accessing prior data and annotations difficult <ref type="bibr" target="#b8">[9]</ref>. An alternative strategy is to use pseudo labels generated by previously trained models on new data. Ozdemir et al. <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref> extended the distillation loss to medical image segmentation. A concurrent study of ours <ref type="bibr" target="#b6">[7]</ref> mainly focused on architectural extension, addressing the forgetting problem by freezing the encoder and decoder and adding additional decoders when learning new classes. While these strategies have been alleviating the forgetting problem, they led to tremendous memory costs for model parameters.</p><p>Therefore, we identify two main open questions that must be addressed when designing a multi-organ and tumor segmentation framework. Q1: Can we relieve the forgetting problem without needing previous data and annotations? Q2: Can we design a new model architecture that allows us to share more parameters among different continual learning steps?</p><p>To tackle the above questions, in this paper, we propose a novel continual multi-organ and tumor segmentation method that overcomes the forgetting problem with little memory and computation overhead. First, inspired by knowledge distillation methods in continual learning <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b16">17]</ref>, we propose to generate soft pseudo annotations for the old classes on newly-arrived data. This enables us to recall old knowledge without saving the old data. We observe that with this simple strategy, we are able to maintain a reasonable performance for the old classes. Second, we propose image-aware segmentation heads for each class on top of the shared encoder and decoder. These heads allow the use of a single backbone and easy extension to new classes while bringing little computational cost. Inspired by Liu et al. <ref type="bibr" target="#b11">[12]</ref>, we adopt the text embedding generated by Contrastive Language-Image Pre-training (CLIP) <ref type="bibr" target="#b21">[22]</ref>. CLIP is a large-scale image-text co-training model that is able to encode high-level visual semantics into text embeddings. This information will be an advantage for training new classes with the class names known in advance.</p><p>We focus on organ/tumor segmentation because it is one of the most critical tasks in medical imaging <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b27">28]</ref>, and continual learning in semantic segmentation is under-explored in the medical domain. We evaluate our continual learning method using three datasets: BTCV <ref type="bibr" target="#b7">[8]</ref>, LiTS <ref type="bibr" target="#b0">[1]</ref> and JHH <ref type="bibr" target="#b24">[25]</ref> (a private dataset at Johns Hopkins Hospital) <ref type="foot" target="#foot_0">1</ref> . On the public datasets, the learning trajectory is to first segment 13 organs in the BTCV dataset, then learn to Fig. <ref type="figure">1</ref>. An overview of the proposed method. An encoder (Enc) processes the input image to extract its features, which are then reduced to a feature vector (fimage) by a global average pooling layer. This feature vector is subsequently concatenated with a CLIP embedding (ω class ), calculated using the pre-trained CLIP model. Through a series of Multi-Layer Perceptron (MLP) layers, we derive class-specific parameters of convolution kernels (θ class ). These kernels, when applied to the decoder (Dec) feature, yield the mask for the respective class.</p><p>segment liver tumors in the LiTS dataset. On the private dataset, the learning trajectory is to first segment 13 organs, followed by continual segmentation of three gastrointestinal tracts and four cardiovascular system structures. In our study, we review and compare three popular continual learning baselines that apply knowledge distillation to predictions <ref type="bibr" target="#b10">[11]</ref>, features <ref type="bibr" target="#b16">[17]</ref>, and multi-scale pooled features <ref type="bibr" target="#b2">[3]</ref>, respectively. The extensive results demonstrate that the proposed method outperforms existing methods, achieving superior performance in both keeping the knowledge of old classes and learning the new ones while maintaining high memory efficiency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>We formulate the continual organ segmentation as follows: given a sequence of partially annotated datasets {D 1 , D 2 , . . . , D n } each with organ classes {C 1 , C 2 , . . . , C n }, we learn a single multi-organ segmentation model sequentially using one dataset at a time. When training on the i-th dataset D t , the previous datasets {D 1 , . . . , D t-1 } are not available. The model is required to predict the accumulated organ labels for all seen datasets {D 1 , . . . , D t }:</p><formula xml:id="formula_0">Ŷj = argmax c∈Ct P (Y j = c|X)</formula><p>(1)</p><formula xml:id="formula_1">C t = ∪ τ ≤t C τ (2)</formula><p>where j is a voxel index, X is an image from D t , P is the probability function that the model learns and Ŷ is the output segmentation mask.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Pseudo Labels for Multi-organ Segmentation</head><p>In the context of continual organ segmentation, the model's inability to access the previous dataset presents a challenge as it often results in the model forgetting the previously learned classes. In a preliminary experiment, we observed that a segmentation model pre-trained on some organ classes will totally forget the old classes when fine-tuned on new ones. We found the use of pseudo-labeling can largely mitigate this issue and preserve the existing knowledge. Specifically, we leverage the output prediction from the previous learning step t -1, denoted as Ŷt-1 , which includes the old classes C t-1 , as the pseudo label for the current step's old classes. For new classes, we still use the ground truth label. Formally, the label Lc t for class c in current learning step t can be expressed as:</p><formula xml:id="formula_2">Lc t = L c t if c ∈ C t -C t-1 Ŷ c t-1 if c ∈ C t-1<label>(3)</label></formula><p>where L c t represents the ground truth label for class c in step t obtained from dataset D t . By utilizing this approach, we aim to maintain the original knowledge and prevent the model from forgetting the previously learned information while learning the new classes. The following proposed model is trained only with pseudo labeling of old classes without any other distillation or regularization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">The Proposed Multi-organ Segmentation Model</head><p>In the following, we introduce the proposed multi-organ segmentation model for continual learning. Figure <ref type="figure">1</ref> illustrates the overall framework of the proposed model architecture. It has an encoder-decoder backbone, a set of image-aware organ-specific output heads, and text-driven head parameter generation.</p><p>Backbone Model: For continual learning, ideally, the model should be able to learn a sufficiently general representation that would easily adapt to new classes. We use Swin UNETR <ref type="bibr" target="#b3">[4]</ref> as our backbone since it exhibits strong performance in self-supervised pre-training and the ability to transfer to various medical image segmentation tasks. Swin UNETR has Swin Transformer <ref type="bibr" target="#b15">[16]</ref> as the encoder and several deconvolution layers as the decoder.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Image-Aware Organ-Specific Heads:</head><p>The vanilla Swin UNETR has a Softmax layer as the output layer that predicts the probabilities of each class. We propose to replace the output layer with multiple image-aware organ-specific heads. We first use a global average pooling (GAP) layer on the last encoder features to obtain a global feature f of the current image X. Then for each organ class k, a multilayer perceptron (MLP) module is learned to map the global image feature to a set of parameters θ k :</p><formula xml:id="formula_3">θ k = MLP k (GAP(E(X))),<label>(4)</label></formula><p>where E(X) denotes the encoder feature of image X. An output head for organ class k is a sequence of convolution layers that use parameters θ k as convolution kernel parameters. These convolution layers are applied to the decoder features, which output the segmentation prediction for organ class k:</p><formula xml:id="formula_4">P (Y k j = 1|X, θ k ) = σ(Conv(D(E(X)); θ k )), (<label>5</label></formula><formula xml:id="formula_5">)</formula><p>where E is the encoder, D is the decoder, σ is the Sigmoid non-linear layer and P (Y k j = 1) denotes the predicted probability that pixel j belongs to the organ class k. The predictions for each class are optimized by Binary Cross Entropy loss. The separate heads allow independent probability prediction for newly introduced and previously learned classes, therefore minimizing the impact of new classes on old ones during continual learning. Moreover, this design allows multi-label prediction for cases where a pixel belongs to more than one class (e.g., a tumor on an organ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Text Driven Head Parameter Generation:</head><p>We further equip the segmentation heads with semantic information about each organ class. With the widespread success of large-scale vision-language models, there have been many efforts that apply these models to the medical domain <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b25">26]</ref>. It is suggested that vision-language models could be used for zero-shot learning in the medical domain and recognize novel classes with well-designed prompts <ref type="bibr" target="#b19">[20]</ref>. We propose to use CLIP <ref type="bibr" target="#b21">[22]</ref> to generate text embeddings for the target organ names. Specifically, we produce the organ name embedding by the pre-trained CLIP text encoder and a medical prompt (e.g., "a computerized tomography of a [CLS]", where [CLS] is an organ class name). Then we use the text embeddings ω together with the global image feature f to generate parameters for the organ segmentation heads:</p><formula xml:id="formula_6">θ k = MLP k ([GAP(E(X)), ω k ]),<label>(6)</label></formula><p>where ω k is the text embedding for organ class k. CLIP embeddings carry highlevel semantic meanings and have the ability to connect correlated concepts. Therefore, it guides the MLP module to generate better convolution parameters for each organ class. More importantly, the fixed-length CLIP embedding allows us to adapt the pre-trained model to open-vocabulary segmentation and extend to novel classes. <ref type="bibr" target="#b11">[12]</ref>: For the purpose of continual learning, we improve the original design of Universal Model in the MLP module.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Difference from Universal Model</head><p>Unlike Liu et al. <ref type="bibr" target="#b11">[12]</ref>, who utilized a single MLP to manage multiple classes, we allocate an individual and independent MLP to each class. This design significantly mitigates interference among different classes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Computational Complexity Analysis</head><p>Another key contribution of our work is the reduction of computational complexity in continual segmentation. We compare our proposed model's FLOPs (floating-point operations per second) with the baseline model, Swin UNETR <ref type="bibr" target="#b3">[4]</ref>. Our model's FLOPs are just slightly higher than Swin UNETR's, with 661.6 GFLOPs and 659.4 GFLOPs, respectively. This is because we used lightweight output convolution heads with a small number of channels. Ji et al. <ref type="bibr" target="#b6">[7]</ref> proposed a state-of-the-art architecture for medical continual semantic segmentation, which uses a pre-trained and then frozen encoder coupled with incrementally added decoders in each learning step. However, subsequent continual learning steps using this architecture introduce massive computational complexity. For example, Swin UNETR's decoder alone has 466.08 GFLOPs, meaning that every new learning step adds an additional 466.08 GFLOPs. In contrast, our model only needs to add a few image-aware organ-specific heads for new classes of the new task, with each head consuming only 0.12 GFLOPs. As a result, the computational complexity of our model nearly remains constant in continual learning for segmentation, while that of the architecture of Ji et al. <ref type="bibr" target="#b6">[7]</ref> increases linearly to the number of steps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment and Result</head><p>Datasets: We empirically evaluate the proposed model under two data settings: in one setting, both training and continual learning are conducted on the inhouse JHH dataset. It has multiple classes annotated, which can be categorized into three groups: the abdominal organs (in which seven classes are learned in step 1: spleen, right kidney, left kidney, gall bladder, liver, postcava, pancreas), the gastrointestinal tract (in which three classes are learned in step 2: stomach, colon, intestine), and other organs (in which four classes are learned in step 3: aorta, portal vein and splenic vein, celiac truck, superior mesenteric artery). The categorization is in accordance with TotalSegmentator <ref type="bibr" target="#b23">[24]</ref>. In the other setting, we first train on the BTCV dataset and then do continual learning on the LiTS dataset. The BTCV dataset contains 47 abdominal CT images delineating 13 organs. The LiTS dataset contains 130 contrast-enhanced abdominal CT scans for liver and liver tumor segmentation. We use 13 classes (spleen, right kidney, left kidney, gall bladder, esophagus, liver, stomach, aorta, inferior vena cava, portal vein and splenic vein, pancreas, right adrenal gland, left adrenal gland) from BTCV in step 1 learning and the live tumor from LiTS in step 2 learning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Baselines and Metrics:</head><p>For a fair comparison, all the compared methods use the same Swin UNETR <ref type="bibr" target="#b3">[4]</ref> as the backbone, which is the state-of-the-art model in a bunch of medical image segmentation tasks. We compare with three popular continual learning baseline methods that apply knowledge distillation, including LwF <ref type="bibr" target="#b10">[11]</ref>, ILT <ref type="bibr" target="#b16">[17]</ref> and PLOP <ref type="bibr" target="#b2">[3]</ref>. We compare the proposed method with different baseline models using the commonly used Dice score (DSC) metric (the Sørensen-Dice coefficient). In each learning step, we report the average DSC for the classes that are used at the current step as well as the previous steps (e.g., in step 2 of the JHH dataset, we report the average dice of the gastrointestinal tracts and the abdominal organs). The dice score at old classes reveals a model's ability to retain its previous knowledge, and the score for the current step classes indicates the model's ability to acquire new knowledge under the regularization of old ones.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Implementation Details:</head><p>The proposed model architecture is trained on new classes with pseudo labeling of old classes. No other distillation techniques are used. We use a lightweight design for the image-aware organ-specific heads. Each head consists of three convolution layers. The number of kernels in the first two layers is 8, and in the last layer is 1. All the compared models are trained using the AdamW optimizer for 100 epochs with a cosine learning rate scheduler. We use a batch size of 2 and a patch size of 96 × 96 × 96 for the training. The initial </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results:</head><p>The continual segmentation results using the JHH dataset and public datasets are shown in Tables <ref type="table" target="#tab_0">1</ref> and<ref type="table" target="#tab_1">2</ref>, respectively. Notably, by simply using the pseudo labeling technique (LwF), we are able to achieve reasonably good performance in remembering the old classes (Dice of 0.777 in step 2 and 0.767 in step 3 for abdominal organs in the JHH dataset; Dice of 0.770 in step 2 for BTCV organs). Class-wise DSC scores are in Appendix Tables <ref type="table">4</ref><ref type="table">5</ref><ref type="table">6</ref><ref type="table">7</ref>. All the compared methods use prediction-level or feature-level distillation as regularization. Among them, the proposed method achieves the highest performance in most learning steps. Specifically, the proposed method exhibits the least forgetting in old classes and a far better ability to adapt to new data and new classes.</p><p>To evaluate the proposed model designs, we also conduct the ablation study on the JHH dataset, shown in Table <ref type="table" target="#tab_2">3</ref>. Specifically, we ablate the performance improvement introduced by the organ-specific segmentation heads as well as the CLIP text embeddings. The first line in Table <ref type="table" target="#tab_2">3</ref> shows the performance of the baseline Swin UNETR model learned with pseudo labeling (LwF). The second row introduces the organ-specific segmentation heads, but uses one-hot embeddings rather than the CLIP text embeddings for each organ. The third row gives the performance of the full method. The results show that by adapting the model to use organ-specific heads as segmentation outputs, we are able to achieve improvement of a large margin (e.g., 0.144 in step 2 and 0.179 in step 3 for gastrointestinal tracts). With the application of CLIP text embeddings, we are able to further improves the performance (e.g., by a margin of 0.019 in step 2 and 0.027 in step 3 for gastrointestinal tracts). This study validates the effectiveness of the proposed organ-specific segmentation heads and the CLIP text embeddings in the continual organ segmentation task. Finally, we show the qualitative segmentation results of the proposed method together with the best baseline method ILT on the JHH dataset. We show the results of learning steps 2 and 3 in Fig. <ref type="figure" target="#fig_0">2</ref>, one case per column and two cases for each step. The visualization demonstrates that the proposed method successfully segments the correct organs while the best baseline method fails throughout the continual learning process.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a method for continual multiple organ and tumor segmentation in 3D abdominal CT images. We first empirically verified the effectiveness of high-quality pseudo labels in retaining previous knowledge. Then, we propose a new model design that uses organ-specific heads for segmentation, which allows easy extension to new classes and brings little computational cost in the meantime. The segmentation heads are further strengthened by utilizing the CLIP text embeddings that encode the semantics of organ or tumor classes. Numerical results on an in-house dataset and two public datasets demonstrate that the proposed method outperforms the continual learning baseline methods in the challenging multiple organ and tumor segmentation tasks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The visualization comparison between our model and the baseline model Swin UNETR in continual learning steps 2 and 3 on the JHH dataset.</figDesc><graphic coords="7,57,48,54,02,337,36,279,70" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="3,57,48,54,35,337,33,195,34" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Benchmark continual learning methods on the JHH dataset.</figDesc><table><row><cell cols="2">Method JHH organ (7)</cell><cell>JHH gastro (3) JHH cardiac (4)</cell></row><row><cell></cell><cell cols="2">Step 1 Step 2 Step 3 Step 2 Step 3 Step 3</cell></row><row><cell cols="3">LwF [11] 0.891 0.777 0.767 0.530 0.486</cell><cell>0.360</cell></row><row><cell cols="3">ILT [17] 0.891 0.775 0.776 0.653 0.480</cell><cell>0.484</cell></row><row><cell cols="3">PLOP [3] 0.891 0.780 0.777 0.427 0.464</cell><cell>0.318</cell></row><row><cell>Ours</cell><cell cols="2">0.887 0.783 0.787 0.695 0.692 0.636</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Benchmark continual learning methods on the public datasets. , and the weight decay is set as 1e-5 . The version of MONAI 2 used in our experiments is 1.1.0. Models are trained on NVIDIA TITAN RTX and Quadro RTX 8000 GPUs.</figDesc><table><row><cell cols="2">Method BTCV (13)</cell><cell>LiTS (1)</cell></row><row><cell></cell><cell cols="2">Step 1 Step 2 Step 2</cell></row><row><cell cols="3">LwF [11] 0.828 0.770 0.456</cell></row><row><cell cols="3">ILT [17] 0.828 0.786 0.335</cell></row><row><cell cols="3">PLOP [3] 0.828 0.799 0.362</cell></row><row><cell>Ours</cell><cell cols="2">0.860 0.817 0.466</cell></row><row><cell>learning rate is set as 1e -4</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation study on the JHH dataset.</figDesc><table><row><cell>Method</cell><cell>JHH organ (7)</cell><cell cols="2">JHH gastro (3) JHH cardiac (4)</cell></row><row><cell></cell><cell cols="3">Step 1 Step 2 Step 3 Step 2 Step 3 Step 3</cell></row><row><cell>LwF [11]</cell><cell cols="2">0.891 0.777 0.767 0.530 0.486</cell><cell>0.360</cell></row><row><cell cols="3">Ours 1-hot 0.882 0.767 0.777 0.674 0.665</cell><cell>0.452</cell></row><row><cell cols="4">Ours CLIP 0.887 0.783 0.787 0.695 0.692 0.636</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>The JHH dataset has</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="200" xml:id="foot_1"><p>abdominal CT scans with per-voxel annotations for 13 organs, three gastrointestinal tracts, and four cardiovascular system structures.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_2"><p>https://monai.io.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">Lustgarten Foundation for Pancreatic Cancer Research</rs> and partially by the <rs type="funder">Patrick J. McGovern Foundation Award</rs>. We appreciate the effort of the <rs type="institution">MONAI Team</rs> to provide open-source code for the community.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 4.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bilic</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1901.04056</idno>
+		<title level="m">The liver tumor segmentation benchmark (LiTS)</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Multi-modal masked autoencoders for medical vision-and-language pre-training</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_65</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-965" />
+	</analytic>
+	<monogr>
+		<title level="m">MIC-CAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="679" to="689" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Plop: learning without forgetting for continual semantic segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Douillard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dapogny</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4040" to="4050" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Swin UNETR: swin transformers for semantic segmentation of brain tumors in MRI images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Nath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-08999-2_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-08999-222" />
+	</analytic>
+	<monogr>
+		<title level="m">BrainLes 2021</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Crimi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">12962</biblScope>
+			<biblScope unit="page" from="272" to="284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Gloria: a multimodal global-local representation learning framework for label-efficient medical image recognition</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Lungren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yeung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3942" to="3951" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ji</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.00162</idno>
+		<title level="m">Continual segment: towards a single, unified and accessible continual segmentation model of 143 whole-body organs in CT scans</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">MICCAI multi-atlas labeling beyond the cranial vault-workshop and challenge</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</title>
+		<meeting>MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">12</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A roadmap for foundational research on artificial intelligence in medical imaging: from the 2018 NIH/RSNA/ACR/the academy workshop</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Langlotz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">291</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="781" to="791" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Catastrophic interference in neural networks: causes, solutions, and data</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lewandowsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Interference and Inhibition in Cognition</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="1995">1995</date>
+			<biblScope unit="page" from="329" to="361" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning without forgetting</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hoiem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2935" to="2947" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Clip-driven universal model for organ segmentation and tumor detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Learning incrementally to segment multiple organs in a CT image</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_68</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page">68</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Online hyperparameter optimization for classincremental learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Thirty-Seventh AAAI Conference on Artificial Intelligence</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">RMM: reinforced memory management for classincremental learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 34: Annual Conference on Neural Information Processing Systems 2021</title>
+		<imprint>
+			<date type="published" when="2021-12-14">NeurIPS 2021, 6-14 December 2021. 2021</date>
+			<biblScope unit="page" from="3478" to="3490" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Incremental learning techniques for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Michieli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zanuttigh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision Workshops</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learn the new, keep the old: extending pretrained models with new anatomy and images</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ozdemir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fuernstahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Goksel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00937-3_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00937-3" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11073</biblScope>
+			<biblScope unit="page">42</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Extending pretrained segmentation networks with additional anatomical structures</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ozdemir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Goksel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11548-019-01984-4</idno>
+		<ptr target="https://doi.org/10.1007/s11548-019-01984-4" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1187" to="1195" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Medical image understanding with pretrained vision language models: a comprehensive study</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.15517</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Qu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2305.09666</idno>
+		<title level="m">Annotating 8,000 abdominal CT volumes for multi-organ segmentation in three weeks</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">ICARL: incremental classifier and representation learning</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Rebuffi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kolesnikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sperl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Lampert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2001" to="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wasserthal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Meyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">C</forename><surname>Breit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cyriac</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Segeroth</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2208.05868</idno>
+		<title level="m">Totalsegmentator: robust segmentation of 104 anatomical structures in CT images</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The felix project: deep networks to detect pancreatic neoplasms</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">medRxiv</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Contrastive learning of medical visual representations from paired images and text</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Miura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Langlotz</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning for Healthcare Conference</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Towards annotation-efficient deep learning for computer-aided diagnosis</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+		<respStmt>
+			<orgName>Arizona State University</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Ph.D. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Interpreting medical images</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">B</forename><surname>Gotway</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-09108-7_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-09108-712" />
+	</analytic>
+	<monogr>
+		<title level="m">Intelligent Systems in Medicine and Health</title>
+		<editor>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Cohen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">V</forename><forename type="middle">L</forename><surname>Patel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><forename type="middle">H</forename><surname>Shortliffe</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="343" to="371" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,911 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Rad-ReStruct: A Novel VQA Benchmark and Method for Structured Radiology Reporting</title>
+				<funder ref="#_htfghm7">
+					<orgName type="full">Bavarian Research Foundation (BFS)</orgName>
+				</funder>
+				<funder ref="#_sAXErtP">
+					<orgName type="full">Federal Ministry of Education and Research of Germany (BMBF)</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Chantal</forename><surname>Pellegrini</surname></persName>
+							<email>chantal.pellegrini@tum.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Matthias</forename><surname>Keicher</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ege</forename><surname>Özsoy</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nassir</forename><surname>Navab</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technical University Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Rad-ReStruct: A Novel VQA Benchmark and Method for Structured Radiology Reporting</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="409" to="419"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EA8CD9744DDC46459BD81352AD839032</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-9_40</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:50+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Structured Report Population</term>
+					<term>VQA</term>
+					<term>X-ray diagnosis</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Radiology reporting is a crucial part of the communication between radiologists and other medical professionals, but it can be timeconsuming and error-prone. One approach to alleviate this is structured reporting, which saves time and enables a more accurate evaluation than free-text reports. However, there is limited research on automating structured reporting, and no public benchmark is available for evaluating and comparing different methods. To close this gap, we introduce Rad-ReStruct, a new benchmark dataset that provides fine-grained, hierarchically ordered annotations in the form of structured reports for X-Ray images. We model the structured reporting task as hierarchical visual question answering (VQA) and propose hi-VQA, a novel method that considers prior context in the form of previously asked questions and answers for populating a structured radiology report. Our experiments show that hi-VQA achieves competitive performance to the stateof-the-art on the medical VQA benchmark VQARad while performing best among methods without domain-specific vision-language pretraining and provides a strong baseline on Rad-ReStruct. Our work represents a significant step towards the automated population of structured radiology reports and provides a valuable first benchmark for future research in this area. Our dataset and code is available at https://github.com/ ChantalMP/Rad-ReStruct.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Radiology is a critical medical field that relies on accurate and efficient communication between radiologists and other healthcare professionals enabled through radiology reports. However, generating these reports takes a lot of time and is prone to errors, as it often relies on ambiguous natural language. One alternative to free-text reports is to use structured reporting, which is endorsed by radiology societies, saves time, and offers standardized content and terminology <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b17">18]</ref>.</p><p>Automated report generation can reduce radiologists' workload and support quick diagnostic decisions. Most current research focuses on generating freetext reports, which lack standardization, and still face challenges of ambiguity and difficulties in clinical correctness evaluation <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b25">26]</ref>. In comparison, automating structured reporting allows an accurate evaluation of clinical correctness and can enforce the prediction of detailed findings. However, for automating structured reporting, the research is limited. Some studies predict high-level abnormalities using pre-defined template sentences <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b18">19]</ref>, or predict location and attributes for a single disease <ref type="bibr" target="#b1">[2]</ref>. Syeda-Mahmood et al. <ref type="bibr" target="#b20">[21]</ref> predict fine-grained but unstructured labels to retrieve and adapt free-text reports from a database. However, none of these works predict highly-detailed and structured annotations as needed to populate an entire structured report. A significant challenge towards this goal is the lack of public benchmarks with highly detailed structured annotations. To facilitate future research, we introduce Rad-ReStruct, the first dataset of publicly available, fine-grained, and structured annotations for Chest X-Rays. To create Rad-ReStruct, we define a detailed, multi-level structured reporting template and automatically populate it by parsing and analyzing unstructured finding summaries from the IU X-ray dataset <ref type="bibr" target="#b4">[5]</ref>.</p><p>Structured reports with high standardization have a structured layout and content, e.g., organized in expendable trees with drop-down menus to select answers <ref type="bibr" target="#b17">[18]</ref>. A user interface for structured reporting would pose a series of questions that, dependent on the answer, lead to expandable follow-up questions. In this setup, structured reporting can be considered several classification tasks on different levels. We model this as a hierarchical visual question answering (VQA) task and propose hi-VQA, a hierarchical, autoregressive VQA method for populating structured reports by successively filling out all fields in the report while preserving consistency. Hi-VQA considers the prior context of previously asked questions and answers, allowing to exploit inter-dependencies between questions about the same image. For structured report population, this is essential, as lower-level questions directly depend on higher levels. Further, our autoregressive formulation enhances explainability, showing at which level and for which question type the model made mistakes. As backbone, we propose a simple yet effective VQA architecture relying on large pretrained image and text encoders and a transformer-based fusion module. Using VQA <ref type="bibr" target="#b0">[1]</ref> allows to exploit the knowledge encoded in large language models. It has recently received attention in the medical field, mainly on small datasets, where every question is answered independently <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b22">23]</ref>. One previous work explicitly models question consistency for medical VQA in the loss <ref type="bibr" target="#b23">[24]</ref>. Another work had promising results using an unstructured question history in a visual dialog setting <ref type="bibr" target="#b11">[12]</ref>. They ask for high-level abnormalities, such as "Pneumonia?" and use a randomly sampled, fixed history of other abnormality questions. In contrast, we define a hierarchical history with detailed questions and an autoregressive model.</p><p>We demonstrate the effectiveness of our streamlined design and hierarchical framework in our experimental results, reaching competitive results to the SOTA on the medical VQA benchmark VQARad and setting a baseline for Rad-ReStruct. Overall, our work is a significant step towards automating the population of structured radiology reports and provides a valuable benchmark for future research in this area.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Rad-ReStruct Dataset</head><p>We propose the first benchmark dataset to enable the development and comparison of methods for the population of structured reports entailing hierarchical and fine-grained classifications for radiological images. Rad-ReStruct is based upon the IU-Xray dataset <ref type="bibr" target="#b4">[5]</ref> and consists of X-Ray images paired with fine-grained radiological findings organized as a structured report. To create the dataset, we first define a detailed report template and then populate it automatically by parsing and analyzing the unstructured expert annotations of the reports in IU-Xray.</p><p>Creation of Structured Report Template. We build upon the semistructured encoded findings provided for the IU-XRay data collection <ref type="bibr" target="#b4">[5]</ref>. The encoded findings were provided by medical experts, who labeled the IU-XRay free-text reports using MeSH (Medical Subject Headings) <ref type="bibr" target="#b6">[7]</ref> and RadLex (Radiology Lexicon) <ref type="bibr" target="#b12">[13]</ref> codes. They accurately summarize all findings in the radiological images together with a detailed attribute description. They are an unstructured collection of findings, with a sequence of annotation terms representing each finding (e.g., "infiltrate/lung/upper lobe/left/patchy/mild"...). The codes use a controlled vocabulary containing 178 terms, which include anatomies, diseases, pathological signs, foreign objects, and attributes. Anatomies and diseases can be matched to broad body regions, such as the respiratory or skeletal system. Attributes include degree, descriptive, and positional attributes.</p><p>We utilize this semi-structured finding representation to construct a highly detailed report template as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. Our report template is structured into multiple sections and employs a multi-level hierarchy of questions that delve deeper into the findings at each level. The template can be considered a large decision tree with questions at every level. The highest level asks for the general existence of findings (signs, diseases, abnormal regions, or objects), the second level asks for specific elements, such as a certain object or disease, and the lowestlevel questions ask for specific attributes. Table <ref type="table" target="#tab_0">1</ref> shows how often which question type occurs. To create the template, we parse the codes of all patients and identify all occurrences of term combinations at all levels of the defined hierarchy. We then remove unseen options to produce a streamlined report template that includes only possible options for all findings. Further, we mark all questions as either single-or multi-choice and add a "no selection" option.</p><p>Overall, our structured report template provides a rigorous and comprehensive framework for classifying radiological images and mimics the style of a structured report in a clinical setting. This enables the development and comparison of methods for the population of structured reports and the prediction of finegrained radiological findings.</p><p>Dataset and Evaluation Metrics. Our dataset consists of structured reports for each patient in the IU-XRay data collection, for which finding codes and a frontal X-Ray were available. The new dataset includes 3720 images matched to 3597 structured patient reports entailing more than 180k questions. If multiple images belong to one patient, each image is considered an independent sample. We use a 80-10-10 split to create train, validation and test set. To avoid data leakage, we ensure that different images of the same patient are in the same split.</p><p>The goal of our task is to produce fine-grained finding classifications for populating a structured report given an X-Ray image of a patient. This task involves answering a series of questions about the image, gradually adding more detail. We define several evaluation metrics for the proposed benchmark. As the distribution of questions and answers is very imbalanced, we evaluate with the macro precision, recall, and F1 score over all possible paths in the question tree to encourage methods that also perform well in under-represented question-answer combinations. One path is a unique position in the report combined with a specific answer option. Further, we employ report-level accuracy to measure how many predicted reports are entirely correct. During the evaluation, we enforce consistency within the question hierarchy. For example, if the answer to a higherlevel question is "no", we prohibit to answer a lower-level question positively. This ensures the generated reports are consistent and coherent, as in a real medical report. Lastly, as multiple instances of an object, sign or pathology can occur for one patient, we iteratively ask for further occurrences, when the model predicts a positive answer. (e.g., "Are there other opacities in the lung?"). We restrict the number of follow-up questions by the maximum of per-patient occurrences in the data. As the order of occurrences is ambiguous, we apply instance matching during the metric computation. We order all predicted instances such that the highest F1 score for this finding is achieved.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Hierarchical Visual Question Answering</head><p>With Rad-ReStruct, we propose a hierarchical VQA task, where lower level questions are dependent on context information. For instance, to answer the questions "What is the degree?" it is essential to know what the question is referring to. This information is given through the previous question, which could be "Is there Pneumonia in the lung? Yes". To integrate this context, we propose a hierarchical VQA framework that can effectively answer questions about medical images by considering previously asked questions. We extend the input to the model by pre-pending the current question with the history of previously asked questions and the model's answers. This extension enables interpretable and consistent results.</p><p>We leverage a pretrained image encoder, EfficientNet-b5 <ref type="bibr" target="#b21">[22]</ref>, and a domainspecific pretrained text encoder, RadBERT <ref type="bibr" target="#b26">[27]</ref>, to extract features from the image, history, and question. The extracted features are fused by a transformer <ref type="bibr" target="#b24">[25]</ref> layer, adapted to handle multi-modal input. The fused features are then used to perform a multi-label classification over all answer options. However, we only consider outputs that are valid answers to the current question. For single-choice questions, we predict a single label applying a softmax over all valid answers, while for multi-choice questions, we predict multiple labels using a sigmoid function. Figure <ref type="figure" target="#fig_1">2</ref> shows an overview of the proposed framework.</p><p>Feature Encoding. For fusing the image and text features, we construct a token sequence (Nx458x768) of the form &lt;image_tokens&gt; &lt;history_tokens&gt; &lt;question_tokens&gt;. The image tokens (Nx196x768) consist of the flattened embedding representation of the image encoder, while the history and question text (Nx259x768) is encoded jointly using RadBERT. The different parts are separated by a &lt;SEP&gt; token and fused by a single transformer layer. We encode the type of input in the token-type IDs with different IDs for the image tokens, history questions, history answers, and the current question. Further, we use modified positional encodings to preserve the 2D spatial information of the image as well as the sequential order of the text. We create a joint positional encoding (Nx768x458) by concatenating a 1D positional encoding <ref type="bibr" target="#b24">[25]</ref> for the text and a 2D positional encoding <ref type="bibr" target="#b2">[3]</ref> for the image (each of shape Nx384x458). We set the non-used part of the encoding per modality to zero. The token-type IDs and positional encodings are added to the feature vector. Training and Evaluation. During training, we use teacher forcing, relying on ground truth answers for prior questions in the history, allowing for efficient batch-wise processing. At inference all answers are predicted, and no ground truth is used. The model is trained end-to-end, using a weighted masked crossentropy loss to optimize the classification performance. For every sample in a training batch, we only consider the loss for the labels corresponding to the asked question to avoid optimizing the model on currently irrelevant outputs. Further, we apply positive weighting per class. The evaluation is autoregressive, thus, the model utilizes the previously asked questions and their predicted answers as history. In a hierarchical VQA task such as Rad-ReStruct, the inference is interrupted if the model predicts a negative answer and sub-questions lower in the hierarchy are automatically answered as negative (set to No/No selection), enforcing consistency of the prediction. This also improves the explainability of predictions by allowing to track errors back to their source and showing at which level the model made a mistake. For non-hierarchical VQA tasks, the history is utilized solely as context information, allowing the model to exploit inter-dependencies between different questions about the same image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>We test our model on Rad-ReStruct, setting a baseline for this new dataset. To further validate our model design, we compare the performance of our model with previous work on the standard VQA benchmark VQARad. We train all models on a NVIDIA A40 GPU. We use pytorch-lightning 1.8.3. and the AdamW optimizer with a learning rate of 5e-5 for VQARad and 1e-5 for Rad-ReStruct. For all models, we set the number of epochs by maximizing validation set performance. Rad-ReStruct. For Rad-ReStruct, the history includes all higher-level questions on the same question path. Additionally, attribute questions asked pre- viously about an element, are included in the history, enabling the model to provide consistent predictions. Lastly, the history includes previously predicted instances of the same element. Table <ref type="table" target="#tab_1">2</ref> and Table <ref type="table" target="#tab_2">3</ref> show the overall and questionlevel results of our model. We compare hi-VQA to a visual baseline, consisting of our image encoder and a classification layer. Hi-VQA achieves better performance than the visual baseline in all metrics, indicating the benefits of targeted information retrieval using a large language model. When comparing the RadBERT text encoder, a RoBERTa model <ref type="bibr" target="#b15">[16]</ref> pretrained with radiology reports, to RoBERTa BASE , which was pre-trained on general text, the RadBERT encoder is superior. This indicates that our method can benefit from better domain-specific language encoders. Using history information improves report accuracy and precision with a slightly decreased recall and a similar F1 score, showing the benefit of history integration. We emphasize, that the history is especially important for the lowlevel attribute questions, as these are only meaningful with context. Therefore, it will be even more impactful with improved performance for these questions.</p><p>Our labels' hierarchical, structured formulation enables a performance analysis on different topics and levels. Hi-VQA performs well in detecting the existence of sub-topics like objects, diseases, signs, and abnormalities. However, attribute prediction performance is much lower, likely due to the rarity and complexity of these questions and error propagation from higher levels. Such an analysis is precious to understand what a model learned and when it should be trusted. VQARad is a medical VQA benchmark with 315 radiological images and 3515 questions. The task is to make a classification over 2248 possible answers. In VQARad multiple questions are asked about one image, but in previous work they are always answered separately. To make use of possible inter-dependencies between questions, we define five question levels based on question topics in VQARad, ranging from general to specific: Modality → Plane → Organ → Presence, Count, Abnormality → Color, Position, Size, Attributes, Other. For a certain question, previously asked questions from lower or the same level are included in the history. During training, we augment the history by randomly dropping and reordering questions within a level to prevent overfitting on this small dataset. Table <ref type="table" target="#tab_3">4</ref> shows the performance of hi-VQA compared to previous methods. Amongst the methods without domain-specific joined image-text pretraining, we reach SOTA results, even without history context. When integrating history information, our model achieves competitive results with the current SOTA method, M3AE <ref type="bibr" target="#b3">[4]</ref>. This result demonstrates the promise of jointly answering questions about the same image in medical VQA tasks. Lastly, we again compare using the RadBERT encoder to RoBERTa BASE <ref type="bibr" target="#b15">[16]</ref>. We can observe, also on VQARad, using RadBERT improves the performance notably, again indicating that VQA tasks benefit from domain-specific text encoders.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion and Conclusion</head><p>By introducing Rad-ReStruct, the first structured radiology reporting benchmark, we create a framework to develop, evaluate, and compare structured reporting methods. The structured formulation enables an accurate evaluation of clinical correctness at different levels of granularity, focusing on levels with greater clinical importance. Moreover, such a structured finding representation could then again, rule-based, be converted to a text report while maintaining clinical accuracy. To model structured reporting, we present hi-VQA, a novel, hierarchical VQA framework with a streamlined architecture that leverages history context for multi-question and multi-level tasks. The autoregressive formulation and consistent evaluation increase interpretability and mimic the workflow of structured reporting. Moreover, as each prediction takes previous answers into account, it would allow for an interactive workflow, where the model can make predictions and react to corrections while a radiologist fills out a report.</p><p>We set a first baseline for Rad-ReStruct, with particularly good performance on higher-level questions. Although our model has limited performance on the low-level attribute questions, it performed competitive to state-of-the-art on VQARad, indicating the difficulty of our new task. We see this as an opportunity to develop methods for fine-grained understanding of radiology images, rather than solely focusing on higher-level diagnoses. Further, we show the positive effect of history integration, which is crucial for hierarchical and contextdependent tasks such as structured report population. Our work represents a significant step forward in the development of automated structured radiology report population methods, while allowing an accurate and multi-level evaluation of clinical correctness and fostering fine-grained, in-depth radiological image understanding.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of report and question structure.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of our hierarchical VQA framework. The tokens representing the image (I), the history questions (HQ) and answers (HA), and the current question (Q) are encoded, concatenated and fused with a transformer layer. The current prediction is computed over the relevant answers and added to the history before asking the next question.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Number of questions and answer options per level in our template. For Level 2 we further list the different topics. *not every answer is an option for all questions L1 L2 L2-objects L2-diseases L2-signs L2-abnormal regions L3</figDesc><table><row><cell>Nr. questions</cell><cell cols="2">25 216 16</cell><cell>103</cell><cell>65</cell><cell>32</cell><cell>477</cell></row><row><cell cols="2">Nr. unique answers 2 2</cell><cell>2</cell><cell>2</cell><cell>2</cell><cell>2</cell><cell>94*</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Results of hi-VQA with and without history and our visual baseline</figDesc><table><row><cell></cell><cell cols="3">domain-specific pretraining data report acc F1</cell><cell>prec recall</cell></row><row><cell>Visual baseline</cell><cell>none (only general images)</cell><cell>31.3</cell><cell cols="2">30.7 65.6 31.2</cell></row><row><cell>hi-VQA -no history</cell><cell>radiologic reports</cell><cell>26.2</cell><cell cols="2">31.9 59.9 34.1</cell></row><row><cell cols="3">hi-VQA -RoBERTaBASE none (only general text/images) 26.2</cell><cell cols="2">31.6 67.9 32.4</cell></row><row><cell>hi-VQA</cell><cell>radiologic reports</cell><cell>32.6</cell><cell cols="2">31.7 70.7 32.1</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Detailed performance analysis of our model on Rad-ReStruct. F1, precision and recall are computed as macro average over all paths, where a path is a unique position in the structured report combined with an answer option. The number of answers is the mean count of answer options for all questions belonging to a level.</figDesc><table><row><cell></cell><cell cols="4">report acc F1 prec recall #paths avg #answers</cell></row><row><cell>Level 1 -Topic Existence</cell><cell>36.6</cell><cell cols="2">63.8 79.0 63.5 50</cell><cell>2</cell></row><row><cell cols="2">Level 2 -Element Existence (all) 33.7</cell><cell cols="2">72.2 86.0 72.3 432</cell><cell>2</cell></row><row><cell>-Diseases</cell><cell>52.4</cell><cell cols="2">74.6 83.7 74.9 206</cell><cell>2</cell></row><row><cell>-Signs</cell><cell>74.3</cell><cell cols="2">74.1 90.1 74.1 130</cell><cell>2</cell></row><row><cell cols="2">-Abnormal body regions 58.6</cell><cell cols="2">69.1 86.4 69.3 64</cell><cell>2</cell></row><row><cell>-Objects</cell><cell>90.4</cell><cell cols="2">67.8 87.6 67.1 32</cell><cell>2</cell></row><row><cell>Level 3 -Attributes</cell><cell>32.6</cell><cell>3.7 60.3 4.4</cell><cell>1988</cell><cell>4.2</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Results of our proposed model hi-VQA on the VQARad benchmark compared to previous work. *RepsNet used an adapted validation in their paper, where unseen answers in the test set are ignored, as they can not be predicted. We calculate their performance when keeping the unseen samples to enable a fair comparison.</figDesc><table><row><cell></cell><cell>domain-specific pretraining data</cell><cell>acc</cell></row><row><cell>MEVF [17]</cell><cell>radiologic images</cell><cell>66.1</cell></row><row><cell>MMQ [6]</cell><cell>none</cell><cell>67.0</cell></row><row><cell>MM-BERT [11]</cell><cell cols="2">radiologic images and reports (joined PT) 72.0</cell></row><row><cell>CRPD [15]</cell><cell>radiologic images</cell><cell>72.7</cell></row><row><cell>RepsNet [23]</cell><cell>radiologic reports</cell><cell>73.5*</cell></row><row><cell>M3AE [4]</cell><cell cols="2">radiologic images and reports (joined PT) 77.0</cell></row><row><cell>hi-VQA -no history</cell><cell>radiologic reports</cell><cell>74.5</cell></row><row><cell cols="2">hi-VQA -RoBERTa BASE none (only general text/images)</cell><cell>72.5</cell></row><row><cell>hi-VQA</cell><cell>radiologic reports</cell><cell>76.3</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. The authors gratefully acknowledge the financial support by the <rs type="funder">Federal Ministry of Education and Research of Germany (BMBF)</rs> under project <rs type="projectName">DIVA</rs> (<rs type="grantNumber">FKZ 13GW0469C</rs>) and the <rs type="funder">Bavarian Research Foundation (BFS)</rs> under project <rs type="projectName">PandeMIC</rs> (grant <rs type="grantNumber">AZ-1429-20C</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_sAXErtP">
+					<idno type="grant-number">FKZ 13GW0469C</idno>
+					<orgName type="project" subtype="full">DIVA</orgName>
+				</org>
+				<org type="funded-project" xml:id="_htfghm7">
+					<idno type="grant-number">AZ-1429-20C</idno>
+					<orgName type="project" subtype="full">PandeMIC</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43904-9_40.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">VQA: visual question answering</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Antol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2425" to="2433" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Improving pneumonia localization via cross-attention on medical images and reports</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_53</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_53" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="571" to="581" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Pix2Seq: a language modeling framework for object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Saxena</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Fleet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.10852</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Multi-modal masked autoencoders for medical vision-and-language pre-training</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="679" to="689" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Preparing a collection of radiology examinations for distribution and retrieval</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Demner-Fushman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Med. Inform. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="304" to="310" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Multiple meta-model quantifying for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nguyen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-3_7" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="64" to="74" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Medical subject headings</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">B</forename><surname>Rogers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bull. Med. Libr. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="114" to="116" />
+			<date type="published" when="1963">1963</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Content analysis of reporting templates and free-text radiology reports</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Kahn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="843" to="849" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">RATCHET: medical transformer for chest X-ray diagnosis and reporting</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaissis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kainz</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87234-2_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87234-2_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12907</biblScope>
+			<biblScope unit="page" from="293" to="303" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Keicher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mullakaeva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khakzar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.15723</idno>
+		<title level="m">Few-shot structured radiology report generation using natural language prompts</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">MMBert: multimodal BERT pretraining for improved medical VQA</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Khare</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Bagal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mathew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Devi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">D</forename><surname>Priyakumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jawahar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1033" to="1036" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Towards visual dialog for radiology</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Kovaleva</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th SIGBioMed Workshop on Biomedical Language Processing</title>
+		<meeting>the 19th SIGBioMed Workshop on Biomedical Language Processing</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="60" to="69" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Langlotz</surname></persName>
+		</author>
+		<title level="m">RadLex: a new method for indexing online educational materials</title>
+		<imprint>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A self-guided framework for radiology report generation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_56</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-1_56" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="588" to="598" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VIII</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Contrastive pre-training and representation distillation for medical visual question answering based on radiology images</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L.-M</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X.-M</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_20" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="210" to="220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1907.11692</idno>
+		<title level="m">RoBERTa: a robustly optimized BERT pretraining approach</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Overcoming data limitation in medical visual question answering</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32251-9_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32251-9_57" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11767</biblScope>
+			<biblScope unit="page" from="522" to="530" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Structured reporting in radiology: a systematic review to explore its potential</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Nobel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Van Geel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Robben</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Radiol</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Clinically correct report generation from chest X-rays using templates</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Besa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lagos</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87589-3_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87589-3_67" />
+	</analytic>
+	<monogr>
+		<title level="m">MLMI 2021</title>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Lian</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Cao</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Rekik</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Yan</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12966</biblScope>
+			<biblScope unit="page" from="654" to="663" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">CGMVQA: a new classification and generative model for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="50626" to="50636" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Chest X-ray report generation through fine-grained label learning</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Syeda-Mahmood</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59713-9_54</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59713-9_54" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12262</biblScope>
+			<biblScope unit="page" from="561" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">EfficientNet: rethinking model scaling for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6105" to="6114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">RepsNet: combining vision with language for automated medical reports</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Tanwani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Barral</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Freedman</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_68</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-9_68" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="714" to="724" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Consistency-preserving visual question answering in medical imaging</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tascon-Morales</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Márquez-Neila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sznitman</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-1_37" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="386" to="395" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VIII</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">A medical semantic-assisted transformer for radiographic report generation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_63</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-8_63" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="655" to="664" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">RadBERT: adapting transformer-based language models to radiology</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">210258</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

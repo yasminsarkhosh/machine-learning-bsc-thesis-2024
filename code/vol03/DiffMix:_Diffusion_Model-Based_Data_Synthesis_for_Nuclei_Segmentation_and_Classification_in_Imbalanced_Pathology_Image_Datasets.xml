@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">DiffMix: Diffusion Model-Based Data Synthesis for Nuclei Segmentation and Classification in Imbalanced Pathology Image Datasets</title>
+				<funder ref="#_ataZyQR #_2wZTjAa">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_5uVe5hq">
+					<orgName type="full">Korea University Grant</orgName>
+				</funder>
+				<funder ref="#_nUbv4hN">
+					<orgName type="full">National Research Foundation of Korea</orgName>
+				</funder>
+				<funder ref="#_3s25cvM">
+					<orgName type="full">Korea Health Industry Development Institute</orgName>
+				</funder>
+				<funder ref="#_tKsCwsN">
+					<orgName type="full">Korea Institute of Science and Technology</orgName>
+					<orgName type="abbreviated">KIST</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Hyun-Jic</forename><surname>Oh</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">College of Informatics</orgName>
+								<orgName type="department" key="dep2">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<settlement>Seoul</settlement>
+									<country key="KR">South Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Won-Ki</forename><surname>Jeong</surname></persName>
+						</author>
+						<title level="a" type="main">DiffMix: Diffusion Model-Based Data Synthesis for Nuclei Segmentation and Classification in Imbalanced Pathology Image Datasets</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="337" to="345"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">ADBB7BE091FFC49EDD820B75FFB5585B</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_33</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:46+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Diffusion models</term>
+					<term>Data augmentation</term>
+					<term>Nuclei segmentation and classification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Nuclei segmentation and classification is an important process in pathological image analysis. Deep learning-based approaches contribute significantly to the enhanced accuracy of this task. However, these approaches suffer from an imbalanced nuclei data composition, which results in lower classification performance for rare nuclei class. In this study, we proposed a realistic data synthesis method using a diffusion model. We generated two types of virtual patches to enlarge the training data distribution, which balanced the nuclei class variance and increased the chance of investigating various nuclei. Subsequently, we used a semantic label-conditioned diffusion model to generate realistic and high-quality image samples. We demonstrated the efficacy of our method based on experimental results on two imbalanced nuclei datasets, improving the state-of-the-art networks. The experimental results suggest that the proposed method improves the classification performance of the rare type nuclei classification, while showing superior segmentation and classification performance in imbalanced pathology nuclei datasets.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In digital pathology, nuclear segmentation and classification are crucial tasks in disease diagnosis. Because of the diverse nature (e.g., shape, size, and color) and large numbers of nuclei, nuclei analysis in whole-slide images (WSIs) is a challenging task for which computerized processing has become a de facto standard <ref type="bibr" target="#b11">[11]</ref>. With the advent of deep learning, challenges in nuclei analysis, such as color inconsistency, overlapping nuclei, and clustered nuclei, have been effectively addressed through data-driven approaches <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b16">15,</ref><ref type="bibr" target="#b24">23]</ref>. Recent studies have addressed nuclear segmentation and classification simultaneously.</p><p>For example, HoVer-Net <ref type="bibr" target="#b8">[8]</ref> and SONNET <ref type="bibr" target="#b6">[6]</ref> performed nuclei segmentation using a distance map to identify nucleus instances and then assigned an appropriate class to each of them. Although such deep-learning-based algorithms have shown promising performance and have overcome various challenges in nuclei analysis, data imbalance among nuclei types in training data has become a major performance bottleneck <ref type="bibr" target="#b4">[5]</ref>.</p><p>Data augmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b17">16]</ref> can be an effective solution for compensating data imbalance and generalizing DNN by expanding the learnable training distribution using virtual training data. Several studies have been conducted on image classification tasks. Mixup <ref type="bibr" target="#b23">[22]</ref> interpolates pairs of images and labels to generate virtual training data. CutOut <ref type="bibr" target="#b2">[3]</ref> randomly masks square regions of the input during training. CutMix <ref type="bibr" target="#b22">[21]</ref> cuts patches from the original images and pastes them onto other training images. Recently, a generative adversarial network(GAN) <ref type="bibr" target="#b7">[7,</ref><ref type="bibr" target="#b10">10,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b19">18]</ref> has been actively studied for pathology data augmentation. However, training a GAN is challenging owing to its instability and the need for hyper parameter tuning <ref type="bibr" target="#b3">[4]</ref>. Moreover, most previous studies mainly focused on nuclei segmentation without considering nuclei classification. Recently, Doan et al. <ref type="bibr" target="#b4">[5]</ref> proposed a data regularization scheme that addresses the data imbalance problem in pathological images. The main concept is to cut the nuclei from a scarce class image and paste them onto the nuclei from an abundant class image. Because the source and target nuclei differ in size and shape, a distance-based blending scheme is proposed. This method slightly reduces the data-imbalance problem; however, it only considers pixel values for blending and some unrealistic blending, artifacts can be observed, which is the main limitation of this method.</p><p>The main motivation for this study stems from the recent advances in generative models. Recently, the denoising diffusion probabilistic model(DDPM) <ref type="bibr" target="#b9">[9]</ref> has gained considerable attention owing to its superior performance, which surpasses that of conventional GANs, and it has been successfully adopted in conditional environments <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b14">13,</ref><ref type="bibr" target="#b21">20]</ref>. Among these, we were inspired by Wang et al. <ref type="bibr" target="#b20">[19]</ref>, semantic diffusion model(SDM) which can synthesize a semantic image conditioned on the semantic label map. Because data augmentation for nuclei segmentation and classification requires accurate semantic images and label map pairs, we believe that SDM effectively fits the data augmentation scenario of our unbalanced nuclei data while allowing more realistic pathology image generation compared to pixel-blending or GAN-based prior work.</p><p>In this study, we proposed a novel data augmentation technique using a conditioned diffusion model, DiffMix, for imbalanced nuclear pathology datasets. DiffMix consists of the following steps. First, we trained the SDM with semantic map guidance, which consists of instance and class-type maps. Next, we built custom label maps by modifying the existing imbalanced label maps. We changed the nuclei labels and randomly shifted the locations of the nuclei mask to ensure that the number of each class label was balanced and the data distribution expanded. Finally, we synthesized more diverse, semantically realistic, and well-balanced new pathology nuclei images using SDM conditioned on custom label maps. The main contributions of this study are summarized as follows:</p><p>-We introduce a data augmentation framework for imbalanced pathology image datasets that can generate realistic samples using semantic diffusion model conditioned on two custom label maps, which can enlarge the data distribution. -We demonstrate the efficacy and generalization ability of our scheme with experimental results on two imbalanced pathology nuclei datasets, GLySAC <ref type="bibr" target="#b6">[6]</ref> and CoNSeP <ref type="bibr" target="#b8">[8]</ref>, improving the performance of state-of-the-art networks. -Our experiments demonstrated that the optimal approach for data augmentation depends on the level of imbalance, balancing sample numbers, and enlarging the training data distribution, which are critical factors for consideration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>In this section, the proposed method is described in detail. DiffMix operates through several steps. First, we trained the SDM first on the training data. Balancing label maps comprise several rare class labels, and enlarging label maps are composed of randomly shifted nuclei. Finally, using the pre-trained SDM and custom label maps, we synthesized realistic data to train on imbalanced datasets. Before discussing DiffMix, a brief introduction of SDM is presented. An overview of the proposed method is presented in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Preliminaries</head><p>The SDM is a conditional denoising diffusion probabilistic model (CDPM) conditioned on semantic label maps. Based on the CDPM, SDM follows two fundamental diffusion processes i.e., forward and reverse process. The reverse process was a Markov chain with Gaussian transitions. When the added noise is sufficiently large, the reverse process is approximated by a random variable y T ∼ N (0, I), defined as follows:</p><formula xml:id="formula_0">p θ (y 0:T |x) = p(y T ) T t=1 p θ (y t-1 |y t , x)<label>(1)</label></formula><formula xml:id="formula_1">p θ (y t-1 |y t , x) = N (y t-1 ; μ θ (y t , x, t), Σ θ (y t , x, t)) (2)</formula><p>The forward process implements Gaussian noise addition for T timesteps based on variance schedule {β 1 , ...β T } as follows:</p><formula xml:id="formula_2">q(y t |y t-1 ) = N (y t ; 1 -β t y t-1 , β t I)<label>(3)</label></formula><p>For α t := 1β t and ᾱt := t s=1 α s , we can write the marginal distribution as follows, q(y t |y 0 ) = N (y t ;</p><formula xml:id="formula_3">√ ᾱt y 0 , (1 -ᾱt )I)<label>(4)</label></formula><p>The conditional DDPM was optimized to minimize the negative log-likelihood of the data for the particular input and condition information. If noise in the data follows Gaussian distribution with a diagonal covariance matrix Σ θ (y t , x, t) = σ t I, denoising can be the optimization target by removing the noise assumed to be present in data as follows,</p><formula xml:id="formula_4">L t-1 = E y0, [|| -θ ( √ α t y 0 + √ 1 -α t , x, t)|| 2 ]<label>(5)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Semantic Diffusion Model (SDM)</head><p>The SDM is a U-Net-based network that estimates noise from a noisy input image. Contrary to other conditional DDPMs, the denoising network of the SDM processes the semantic label map x and noisy input y t independently. When y t is fed into the encoder, x is injected into the decoder to fully leverage semantic information <ref type="bibr" target="#b20">[19]</ref>. For training, the SDM is trained similarly to the improved DDPM <ref type="bibr" target="#b15">[14]</ref> to ensure that it predicts the noise involved in reconstructing the input image as well as variances to enhance the log-likelihood of the generated images. To improve the sample quality, SDM utilizes classifier-free guidance for inference. SDM replaces the semantic label map x with an empty (null) map ∅ to separate the noise estimated under the label map guidance by θ (y t |x), from the noise estimated in an unconditioned case θ (y t |∅). This strategy allows the inference of the gradient of log probability, expressed as follows:</p><formula xml:id="formula_5">θ (y t |x) -θ (y t |∅) ∝ ∇ yt log p(y t |x) -∇ yt log p(y t ) ∝ ∇ yt log p(x|y t ) (6)</formula><p>During the sampling process, the disentangled component s is increased to improve the samples from the conditional diffusion models, formulated as follows:</p><formula xml:id="formula_6">ˆ (y t |x) = θ (y t |x) + s • ( θ (y t |x) -θ (y t |∅)) (7)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Custom Semantic Label Maps Generation</head><p>Figure <ref type="figure" target="#fig_0">1</ref> illustrates the process of creating custom label maps to condition the semantic diffusion model for synthesizing the desired data based on the original input image label y 0 . We prepared custom semantic label maps to condition the SDM and used it to synthesize data for our imbalanced datasets. Therefore, we considered two types of semantic label maps to improve imbalanced datasets. First, balancing maps to balance the number of nuclei among different nuclei types. GradMix <ref type="bibr" target="#b4">[5]</ref> increased the number of fewest type nuclei in datasets by cutting, pasting, and smoothing both images and labels. However, we used only mixed labels in our experiments. Second, enlarging maps perturbs the positions of the nuclei instances to diversify the datasets. We randomly moved nuclei positions on semantic maps to synthesize diverse image patches with SDM by conditioning them with unfamiliar semantic maps to allow the diffusion model to generate significant patches.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Image Synthesis</head><p>We synthesized the virtual data with a pretrained SDM conditioned on custom semantic label maps x. Figure <ref type="figure" target="#fig_0">1</ref> depicts the data sampling process in the SDM. Before inputting the original image y 0 into diffusion net f , we added noise to y 0 . The semantic label and noisy image y t were used simultaneously. To synthesize virtual images, we built two label maps and trained a semantic diffusion model. Before data synthesis, we added noise to the input image y 0 . Subsequently, we input y t and x to the pretrained denoising network f , y t for the encoder, and x for the decoder. As SDM generates samples, it uses an empty label ∅ to generate the unconditioned output. The image was sampled from an existing noisy patch, depending on the predefined time steps. Therefore, we generated patches conditioned on custom semantic label maps. In this process, we added noise to the input image y 0 ; thus, we input the noisy input y t into the pretrained denoising network f , and following <ref type="bibr" target="#b20">[19]</ref>, we input the custom semantic label maps to the decoder parts. Thereafter, the semantic label maps condition the SDM to synthesize image data that satisfy the label maps. We sampled the new data using the DDIM <ref type="bibr" target="#b18">[17]</ref> process, which reduces the number of sampling steps, but with high-quality data.</p><p>3 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>In this study, we used two imbalanced nuclear segmentation and classification datasets. First, GLySAC <ref type="bibr" target="#b6">[6]</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>We used an NVIDIA RTX A6000 to train the SDM for 10000epochs. For data synthesis, we implemented a DDIM-based diffusion process from 1000 to 100 and added noise to the input image to the SDM, setting T as 55. In our scheme, ∅ is defined as the all-zero vector, as in <ref type="bibr" target="#b20">[19]</ref> and s = 1.5 when sampling both datasets. We conducted experiments on two baseline networks, SONNET <ref type="bibr" target="#b6">[6]</ref> and HoVer-Net <ref type="bibr" target="#b8">[8]</ref>. SONNET was implemented using Tensorflow version 1.15 <ref type="bibr" target="#b0">[1]</ref> as the software framework with two NVIDIA GeForce 2080 Ti GPUs. HoVer-Net was trained using PyTorch 1.11.0, as the software framework, with one NVIDIA GeForce 3090 Ti GPU. We implemented 4-fold cross validation for SONNET and 5-fold cross validation for HoVer-Net.  epochs for DiffMix-B and DiffMix-E, and trained 50 epochs for GradMix and DiffMix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Figure <ref type="figure" target="#fig_2">2</ref> shows a qualitative comparison of the synthesized patches. The original patch is shown on the left, followed by the enlarging, balancing, and GradMix patches. The two types of patches were well harmonized with the surrounding structure compared to GradMix. Moreover, using our scheme, many patches can be synthesized using a semantic diffusion model. For a quantitative evaluation, we implemented two state-of-the-art networks, HoVer-Net and SONNET, on two publicly imbalanced nuclei-type datasets, GLySAC and CoNSeP. Table <ref type="table" target="#tab_0">1</ref> lists the results of the five experiments per network for each dataset. Furthermore, we conducted ablation studies on balanced (DiffMix-B) and enlarged (DiffMix-E) patch datasets. Before analyzing the experimental results, we computed the proportion of the least common nuclei type in each dataset. We found that miscellaneous nuclei accounted for approximately 19% of the nuclei in GLySAC, but only 2.4% in CoNSeP. This indicates that GLySAC is more balanced in terms of nuclei type than CoNSeP. Considering this information, we analyzed the experimental results. DiffMix-E exhibited the highest classification performance on the GLySAC dataset. This result indicates that enlarging semantic map-based data synthesis, such as DiffMix-E, provides sufficient opportunities to enlarge the learning distribution for GLySAC. However, for the CoNSeP dataset, DiffMix-E performed lower than the other methods, suggesting that the dataset is slightly balanced; this, it is important to expand the available data distribution. DiffMix showed the highest performance in most metrics, with 4% and 9% margins from the second-highest result in classifying miscellaneous data, successfully diminishing the classification performance variability among class types. Furthermore, DiffMix improved the segmentation and classification performances of the two state-of-the-art networks, even when compared with GradMix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this study, we introduced DiffMix, a semantic diffusion model-based data augmentation framework for imbalanced pathology nuclei datasets. We experimentally demonstrated that our method can synthesize virtual data that can balance and enlarge imbalanced nuclear pathology datasets. Our method also outperformed the state-of-the-art GradMix in terms of qualitative and quantitative comparisons. Moreover, DiffMix enhances the segmentation and classification performance of two state-of-the-art networks, HoVer-Net and SONNET, even in imbalanced datasets, such as CoNSeP. Our results suggest that DiffMix can be used to improve the performance of medical image processing tasks in various applications. In the future, we plan to improve the performance of the diffusion model to generate various pathological tissue types.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Framework of DiffMix. First, we generate custom semantic label maps(x) and noisy images(yt). Second, we synthesize image samples with a pretrained semantic diffusion model conditioned on the custom masks. Semantic label x is custom mask to enlarge the data distribution. Finally, we utilize the synthesized image and label pairs in the training DNN for nuclear segmentation and classification.</figDesc><graphic coords="3,60,00,53,96,335,38,124,75" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>For a fair comparison, we trained process with the same number of iterations and changed only the epoch numbers depending on the size of training set. DiffMix and GradMix used all the original patches and the same numbers of synthesized patches In case of DiffMix-B, it comprised original data and balancing map-based patches. Similarly, the DiffMix-E training set comprised enlarging map-based patches with the original training set. Therefore, we trained each baseline network for 100 epochs, 75</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative comparison of synthesized patches. From left to right: Original data, enlarging map(ours), balancing map(ours), and GradMix, respectively. Top to bottom: GLySAC and CoNSeP datasets, respectively. Each image and its corresponding semantic label were paired together. In this work, we utilized the same labels for balancing maps and GradMix. Comparing the result of balancing and GradMix patches, our method generates semantically harmonized patches.</figDesc><graphic coords="7,67,14,62,54,325,63,82,18" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results on GLySAC and CoNSeP. We implemented our scheme on two state-of-the-art networks and compared with GradMix. From Dice to PQ metrics state segmentation performance, the metrics from Acc to F s indicate classification performance. The highest scores for the same network and dataset are highlighted in bold. Red indicates cases in which the performance was at least 3% higher than that of the other methods.</figDesc><table><row><cell>, comprising 59 H&amp;E images of size 1000×1000 pixels,</cell></row><row><cell>was split into 34 training images and 25 test images. GLySAC comprised 30875</cell></row><row><cell>nuclei and was grouped into three nuclei types: 12081 lymphocytes, 12287 epithe-</cell></row></table><note><p><p><p>lial, and 6507 miscellaneous. Second, CoNSeP</p><ref type="bibr" target="#b8">[8]</ref></p>, comprising 41 H&amp;E images of size 1000×1000 pixels, was divided into 27 training images and 14 test images. CoNSeP comprised 24319 nuclei, and four nuclei classes: 5537 epithelial nuclei, 3941 inflammatory, 5700 spindle, and 371 miscellaneous nuclei.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was partially supported by the <rs type="funder">National Research Foundation of Korea</rs> (<rs type="grantNumber">NRF-2019M3E5D2A01063819</rs>, <rs type="grantNumber">NRF-2021R1A6A1A 13044830</rs>), the <rs type="institution">Institute for Information &amp; Communications Technology Planning &amp; Evaluation</rs> (<rs type="grantNumber">IITP-2023-2020-0-01819</rs>), the <rs type="funder">Korea Health Industry Development Institute</rs> (<rs type="grantNumber">HI18C0316</rs>), the <rs type="funder">Korea Institute of Science and Technology (KIST) Institutional Program</rs> (<rs type="grantNumber">2E32210</rs> and <rs type="grantNumber">2E32211</rs>), and a <rs type="funder">Korea University Grant</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_nUbv4hN">
+					<idno type="grant-number">NRF-2019M3E5D2A01063819</idno>
+				</org>
+				<org type="funding" xml:id="_ataZyQR">
+					<idno type="grant-number">NRF-2021R1A6A1A 13044830</idno>
+				</org>
+				<org type="funding" xml:id="_3s25cvM">
+					<idno type="grant-number">IITP-2023-2020-0-01819</idno>
+				</org>
+				<org type="funding" xml:id="_tKsCwsN">
+					<idno type="grant-number">HI18C0316</idno>
+				</org>
+				<org type="funding" xml:id="_2wZTjAa">
+					<idno type="grant-number">2E32210</idno>
+				</org>
+				<org type="funding" xml:id="_5uVe5hq">
+					<idno type="grant-number">2E32211</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1_33.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Tensorflow: a system for large-scale machine learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Osdi</title>
+		<meeting><address><addrLine>Savannah, GA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="265" to="283" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Vicinal risk minimization</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Chapelle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bottou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vapnik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="1" to="7" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Improved regularization of convolutional neural networks with cutout</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Devries</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1708.04552</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Diffusion models beat gans on image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="8780" to="8794" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Gradmix for nuclei segmentation and classification in imbalanced pathology image datasets</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">N N</forename><surname>Doan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Kwak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="page" from="171" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_17</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_17" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Sonnet: a self-guided ordinal regression neural network for segmentation and classification of nuclei in large-scale multi-tissue histology images</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">N</forename><surname>Doan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">T</forename><surname>Vuong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Kwak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inf</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="3218" to="3228" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Style consistent image generation for nuclei instance segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Doermann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3994" to="4003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Hover-net: simultaneous segmentation and classification of nuclei in multi-tissue histology images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Graham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page">101563</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Larochelle</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Ranzato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Hadsell</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Balcan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Robust histopathology image analysis: to label or to synthesize?</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Samaras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Kurc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Saltz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="8533" to="8542" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">A comprehensive review of computer-aided whole-slide image analysis: from datasets to feature extraction, segmentation, classification and detection approaches</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Rev</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="4809" to="4878" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">InsMix: towards realistic generative data augmentation for nuclei instance segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">T</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13432</biblScope>
+			<biblScope unit="page" from="140" to="149" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_14" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Glide: towards photorealistic image generation and editing with text-guided diffusion models</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.10741</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Improved denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Nichol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8162" to="8171" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Micro-net: a unified model for segmentation of various objects in microscopy images</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E A</forename><surname>Raza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="page" from="160" to="173" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Transformation invariance in pattern recognition-tangent distance and tangent propagation</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">Y</forename><surname>Simard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">A</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Denker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Victorri</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/3-540-49430-8_13</idno>
+		<ptr target="https://doi.org/10.1007/3-540-49430-8_13" />
+	</analytic>
+	<monogr>
+		<title level="m">Neural Networks: Tricks of the Trade</title>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">B</forename><surname>Orr</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K.-R</forename><surname>Müller</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="1998">1998</date>
+			<biblScope unit="volume">1524</biblScope>
+			<biblScope unit="page" from="239" to="274" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.02502</idno>
+		<title level="m">Denoising diffusion implicit models</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vakanski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shareef</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.02412</idno>
+		<title level="m">Sian: style-guided instance-adaptive normalization for multi-organ histopathology image synthesis</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2207.00050</idno>
+		<title level="m">Semantic image synthesis via diffusion models</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Diffusion models for medical anomaly detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wolleb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bieder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sandkühler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-1_4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="35" to="45" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Cutmix: regularization strategy to train strong classifiers with localizable features</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Oh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Choe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yoo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision (ICCV</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N</forename><surname>Dauphin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lopez-Paz</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1710.09412</idno>
+		<title level="m">mixup: beyond empirical risk minimization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Triple u-net: hematoxylin-aware nuclei segmentation with progressive dense feature aggregation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page">101786</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Motion Transformer for Single Particle Tracking in Fluorescence Microscopy Images</title>
+				<funder ref="#_mhyZj3M">
+					<orgName type="full">Chinese Academy of Sciences</orgName>
+				</funder>
+				<funder ref="#_AWF9Vz4 #_Tk9GhfV">
+					<orgName type="full">Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yudong</forename><surname>Zhang</surname></persName>
+							<email>zhangyudong2020@ia.ac.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Artificial Intelligence</orgName>
+								<orgName type="institution">University of Chinese Academy of Sciences</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Institute of Automation</orgName>
+								<orgName type="laboratory">State Key Laboratory of Multimodal Artificial Intelligence Systems</orgName>
+								<orgName type="institution">Chinese Academy of Sciences</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ge</forename><surname>Yang</surname></persName>
+							<email>ge.yang@ia.ac.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Artificial Intelligence</orgName>
+								<orgName type="institution">University of Chinese Academy of Sciences</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Institute of Automation</orgName>
+								<orgName type="laboratory">State Key Laboratory of Multimodal Artificial Intelligence Systems</orgName>
+								<orgName type="institution">Chinese Academy of Sciences</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Motion Transformer for Single Particle Tracking in Fluorescence Microscopy Images</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">3EF6D41D9B64FDAD20A546CAC7E63B9F</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-349.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:53+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Single particle tracking</term>
+					<term>Transformer</term>
+					<term>Multi-object tracking</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Single particle tracking is an important image analysis technique widely used in biomedical sciences to follow the movement of subcellular structures, which typically appear as individual particles in fluorescence microscopy images. In practice, the low signal-to-noise ratio (SNR) of fluorescence microscopy images as well as the high density and complex movement of subcellular structures pose substantial technical challenges for accurate and robust tracking. In this paper, we propose a novel Transformer-based single particle tracking method called Motion Transformer Tracker (MoTT). By using its attention mechanism to learn complex particle behaviors from past and hypothetical future tracklets (i.e., fragments of trajectories), MoTT estimates the matching probabilities between each live/established tracklet and its multiple hypothesis tracklets simultaneously, as well as the existence probability and position of each live tracklet. Global optimization is then used to find the overall best matching for all live tracklets. For those tracklets with high existence probabilities but missing detections due to e.g., low SNRs, MoTT utilizes its estimated particle positions to substitute for the missed detections, a strategy we refer to as relinking in this study. Experiments have confirmed that this strategy substantially alleviates the impact of missed detections and enhances the robustness of our tracking method. Overall, our method substantially outperforms competing state-of-the-art methods on the ISBI Particle Tracking Challenge datasets. It provides a powerful tool for studying the complex spatiotemporal behavior of subcellular structures. The source code is publicly available at https://github.com/imzhangyd/MoTT.git.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>A commonly used method to observe the dynamics of subcellular structures, such as microtubule tips, receptors, and vesicles, is to label them with fluorescent probes and then collect their videos using a fluorescence microscope. Since these subcellular structures are often smaller than the diffraction limit of visible light, they often appear as individual particles with Airy disk-like patterns in fluorescence microscopy images, as shown e.g., in Fig. <ref type="figure" target="#fig_0">1</ref>. To quantitatively study the dynamic behavior of these structures in live cells, these trajectories need to be recovered using single particle tracking techniques <ref type="bibr" target="#b13">[14]</ref>.</p><p>Most single particle tracking methods follow a two-step paradigm: particle detection and particle linking. Specifically, particles are detected first in each frame of the image sequence. The detected particles are then linked between consecutive frames to recover their complete trajectories. The contributions of this paper focus on particle linking. Classical particle linking methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14]</ref> are usually based on joint probability data association (JPDA) <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b19">20]</ref>, multiple hypothesis tracking (MHT) <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b18">19]</ref>, etc. Many classical methods have been developed and evaluated in the 2012 International Symposium on Biomedical Imaging (ISBI) Particle Tracking Challenge <ref type="bibr" target="#b5">[6]</ref>. However, classical methods require manual tuning of many model parameters and are usually designed for a specific type of dynamics, making it difficult to apply to complex dynamics. In addition, the performance of these methods tends to degrade when tracking dense particles. Deep learning provides a technique for automatically learning feature patterns and has been bringing performance improvements to many tasks. Recently, many deep learning-based single particle tracking methods have been developed. Many methods <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b30">30]</ref> use long short-term memory (LSTM) <ref type="bibr" target="#b12">[13]</ref> modules to learn particle behavior. However, in <ref type="bibr" target="#b30">[30]</ref>, the matching probabilities between each tracklet and its multiple candidates are calculated independently, and there is no information exchange between multiple candidates. In <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b30">30]</ref>, only detections in the next frame are used as candidates, which contain fewer motion features compared to hypothetical future tracklets. In <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b24">25]</ref>, the number of their subnetworks grows exponentially with the depth of the hypothesis tree, making the network huge. And the trajectories will be disconnected due to missing detections. In addition, the source codes of most deep learning-based single particle tracking methods are not available, making them difficult to use for non-experts.</p><p>Cell tracking is closely related to particle tracking. There are different classes of cell tracking methods. An important category is tracking-by-evolution <ref type="bibr" target="#b6">[7]</ref>, which assumes spatiotemporal overlap between corresponding cells. It is not suitable for tracking particles because they generally do not overlap between frames. Another important category is tracking-by-detection. Some methods <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b29">29]</ref> in this category assume coherence in motion of adjacent cells, which is not suitable for tracking particles that move independently from each other. There are also cell tracking methods <ref type="bibr" target="#b1">[2]</ref> that rely on appearance features, which are not suitable for tracking particles because they lack appearance features.</p><p>Transformer <ref type="bibr" target="#b27">[27]</ref> was originally proposed for modeling word sequences in machine translation tasks and has been used in various applications <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4]</ref>. Recently, there have been many Transformer-based methods for motion forecasting <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b22">23]</ref>, which improve the performance of motion forecasting in natural scenes (e.g., pedestrians, cars.). Compared to LSTM, Transformer shows advantages in sequence modeling by using the attention mechanism instead of sequence memory. However, to the best of our knowledge, Transformer has not been used for single particle tracking in fluorescence microscopy images.</p><p>In this paper, we propose a Transformer-based single particle tracking method MoTT, which is effective for different motion modes and different density levels of subcellular structures. The main contributions of our work are as follows: <ref type="bibr" target="#b0">(1)</ref> We have developed a novel Transformer-based single particle tracking method MoTT. The attention mechanism of the Transformer is used to model complex particle behaviors from past and hypothetical future tracklets. To the best of our knowledge, we are the first to introduce Transformer-based networks to single particle tracking in fluorescence microscopy images; <ref type="bibr" target="#b1">(2)</ref> We have designed an effective relinking strategy for those disconnected trajectories due to missed detections. Experiments have confirmed that the relinking strategy substantially alleviates the impact of missed detections and enhances the robustness of our tracking method; (3) Our method substantially outperforms competing state-of-the-art methods on the ISBI Particle Tracking Challenge dataset <ref type="bibr" target="#b5">[6]</ref>. It provides a powerful tool for studying the complex spatiotemporal behavior of subcellular structures.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Our particle tracking approach follows the two-step paradigm: particle detection and particle linking. We first use the detector DeepBlink <ref type="bibr" target="#b7">[8]</ref> to detect particles at each frame. The detections of the first frame are initialized as the live tracklets. On each subsequent frame, we execute our particle linking method in four steps as follows. First (Sect. 2.1), for each live tracklet, we construct a hypothesis tree to generate its multiple hypothesis tracklets. Second (Sect. 2.2), all tracklets are  preprocessed and then fed into the proposed MoTT network to predict matching probabilities between each live tracklet and its multiple hypothesis tracklets, as well as the existence probability and position of each live tracklet in the next frame. Third (Sect. 2.3), we formulate a discrete optimization model to find the overall best matching for all live tracklets by maximizing the sum of the matching probabilities. Finally (Sect. 2.4), we design a track management scheme for trajectory initialization, updating, termination, and relinking.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Hypothesis Tree Construction</head><p>Assuming that the particle linking has been processed up to frame t. In order to find correspondence between the current live tracklets and the detections of frame t + 1, we will build a hypothesis tree of depth d for each live tracklet, with its detection at frame t as the root node. To build the tree beyond the root node, we select m (real) detections of the next frame nearest to the current node as well as another null detection that represents a missing detection as children of the current node. If the current node is null, m (real) detections of the next frame nearest to the parent of the current node are selected. From the hypothesis tree, (m + 1) d hypothesis tracklets will be obtained. Figure <ref type="figure" target="#fig_1">2</ref> shows an example of the hypothesis tree construction with m = 2 and d = 2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">MoTT Network</head><p>As shown in Fig. <ref type="figure" target="#fig_2">3</ref>, We have designed a Transformer-based network, which contains a Transformer and two prediction head modules: classification head and regression head. Compared to the original Transformer, both the query masking and the positional encoding on the decoder are removed, since the input of the decoder is an unordered tracklet set. The classification head and regression head are constructed by fully connected layers.</p><p>For the generated tracklets from the previous step, the preprocessing is performed to make the length of all live tracklets equal to Δt, to convert position sequence to velocity sequence, and to add the existence flag making the coordinate dimension n+1. See supplementary material for the details of preprocessing. Then the preprocessed live tracklet is fed into the Transformer encoder, while the (m + 1) d preprocessed hypothesis tracklets are fed into the Transformer decoder. The self-attention modules in the encoder and decoder are used to extract features of live tracklets and hypothesis tracklets, respectively. The cross-attention module is used to calculate the affinity between the live tracklet and its multiple candidate tracklets. The classification head outputs the predicted matching probabilities between the live tracklet and (m + 1) d hypothesis tracklets. The regression head outputs the predicted existence probability and velocity of each live tracklet in the next frame. The existence probability represents the probability of the live tracklet existence in the next frame. The predicted velocity can be easily converted to the predicted position.</p><p>Training. We train the MoTT network in a supervised way, using the crossentropy (CE) loss to supervise the output of the classification head and the mean square error (MSE) loss to supervise the output of the regression head. The target of classification head output is a class index in the range [0, (m + 1) d ) where (m + 1) d is the number of hypothesis tracklets. The target of regression head output is the ground truth of the concatenation of normalized velocity and the existence flag.</p><p>Inference. In inference, we add a 1D max-pooling layer following the classification head to select the highest probability of the hypothesis tracklets with the same detection at frame t + 1 as the matching probabilities between the live tracklet and the candidate detection at frame t + 1. Then the (m + 1) predicted matching probabilities are normalized by softmax. The matching probabilities between the live tracklet and other detections besides the m + 1 candidate detections are set to zero.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Modeling Discrete Optimization Problem</head><p>To find a one-to-one correspondence solution, we construct a discrete optimization formulation as <ref type="bibr" target="#b0">(1)</ref>, where p ij is the predicted match probabilities between the live tracklet i and the detection j, and a ij ∈ {0, 1} is the indicator variable. In particular, j = 0 represents the null detection. </p><formula xml:id="formula_0">a ij = 1, i = 1, 2, ..., M M i=1 a ij 1, j = 1, 2, ...N (1)</formula><p>The objective function aims at maximizing the sum of matching probabilities under the constraints that each live tracklet is matched to only one detection (real or null), and each real detection is matched by at most one tracklet. This optimization problem is solved by using Gurobi (a solver for mathematical programming) <ref type="bibr" target="#b11">[12]</ref> to obtain a one-to-one correspondence solution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Track Management</head><p>The one-to-one correspondence solution generally includes three situations. For each tracklet matched to a real detection, we add the matched real detection to the end of the live tracklet for updating. For each tracklet matched to a null detection, if the predicted existence probability is greater than a threshold p the predicted position is used to substitute for the null detection, else the live tracklet is terminated. In this way, the disconnected tracklets due to missing detections will be kept and be relinked when their detections emerge. For each detection that is not matched to any of the tracklets, a new live tracklet is initialized with this detection. After finishing particle linking on a whole movie, we remove the trajectories of length one, because they are considered false positive detections. See supplementary material for the details of track management.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head><p>Datasets. The performance of our method is evaluated on ISBI Particle Tracking Challenge datasets (ISBI PTC, http://bioimageanalysis.org/track/) <ref type="bibr" target="#b5">[6]</ref>, which consist of movies of biological particles of four subcellular structures: microtubule tips, vesicles, receptors, and viruses. These movies cover three different particle motion modes, four different SNR levels, three different particle density levels, and two different coordinate dimensions. For each movie in the training set, we use the first 70% frames for training and the last 30% frames for validation.</p><p>Metrics. Metrics α, β, JSC θ , JSC are used to evaluate the method performance <ref type="bibr" target="#b5">[6]</ref>. Metric α ∈ [0, 1] quantifies the matching degree of ground truth and estimated tracks, while β ∈ [0, α] is penalized by false positive tracks additionally compared to α. JSC θ ∈ [0, 1] and JSC ∈ [0, 1] are the Jaccard similarity coefficients for entire tracks and track points, respectively. Higher values of the four metrics indicate better performance.</p><p>Table <ref type="table">1</ref>. Comparison with SOTA methods on microtubule movies of ISBI PTC datasets. Method 5, Method 1, and Method 2 are the overall top-three approaches in the 2012 ISBI Particle Tracking Challenge. See <ref type="bibr" target="#b5">[6]</ref> for details of these three methods. "-" denotes that results are not reported in the papers. Bold represents the best performance. Trackpy <ref type="bibr" target="#b0">[1]</ref>, SORT <ref type="bibr" target="#b28">[28]</ref>, Bytetrack <ref type="bibr" target="#b31">[31]</ref>  Implementation Details. In the following experiments, we set the length of live tracklets Δt + 1 = 7, the extension number m = 4, the depth of hypothesis tree d = 2, and the existence probability threshold p equals the mean of predicted existence probabilities of all live tracklets of current frame. See supplementary material for the ablation study on hyperparameters. We retrained the deepBlink network using simulated data generated by ISBI Challenge Track Generator. The MoTT model is implemented using PyTorch 1.8 and is trained on 1 NVIDIA GEFORCE RTX 2080 Ti with a batch size of 64 and an optimizer of Adam with an initial learning rate lr = 10 -3 , as well as betas = (0.9, 0.98) and eps = 10 -9 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Quantitative Performance</head><p>Comparison with the SOTA Methods. We compared our single particle tracking method with other SOTA methods, and the quantitative results on the microtubule scenario are shown in Table <ref type="table">1</ref>. Generally, our method outperforms other methods. Example visualization of tracking results can be found in Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>Comparison Under the Same Ground Truth Detections. Under the ground truth detections, we compare our particle linking method with LAP <ref type="bibr" target="#b13">[14]</ref> and KF (Kalman filter) <ref type="bibr" target="#b14">[15]</ref>. The results in Table <ref type="table" target="#tab_0">2</ref> show that our method generally outperforms other methods in both medium-density and high-density cases.</p><p>Effectiveness for All Scenarios. We perform our particle linking method using ground truth detections on the four scenarios with three density levels in the ISBI PTC dataset. The results (see the supplementary material) demonstrate the effectiveness of our method for both 2D and 3D single particle tracking.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Robustness Analysis</head><p>There are false positives (FPs) and false negatives (FNs) in actual detection results. Early study shows that FNs affect performance more than FPs <ref type="bibr" target="#b23">[24]</ref>. We evaluated the robustness of our method under different FN levels. The receptor particle with medium density is used in this experiment. We randomly drop 5%, 10%, 15%, 20%, 30%, 40%, 50% detections from ground truth detections. As Fig. <ref type="figure" target="#fig_4">4</ref> shows, the tracking performance with the relinking strategy is better than that without the relinking strategy under different FN levels. Therefore, the proposed relinking strategy alleviates the impact of missed detections and enhances the robustness of our tracking method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we proposed a novel Transformer-based method for single particle tracking in fluorescence microscopy images. We exploited the attention mechanism to model complex particle behaviors from past and hypothetical future tracklets. We designed a relinking strategy to alleviate the impact of missed detections due to e.g., low SNRs, and to enhance the robustness of our tracking method. Our experimental results show that our method is effective for all subcellular structures of ISBI Particle Tracking Challenge datasets, which cover different motion modes and different density levels. And our method achieves state-of-the-art performance on the microtubule movies of ISBI PTC datasets.</p><p>In the future, we will test our method on other live cell fluorescence microscopy image sequences.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Tracking performance of our method. (a-b) ground truth trajectories of microtubule tips in (a) versus trajectories recovered by our method in (b). (c-d) ground truth trajectories of receptors in (c) versus trajectories recovered by our method in (d). (a-d) colors are chosen randomly to differentiate between individual trajectories.</figDesc><graphic coords="2,91,35,339,68,241,54,57,25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. An example of hypothesis tree construction with m = 2 and d = 2.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. MoTT network structure. Δt is the constant length of live tracklets, n + 1 is the dimension number with the existence flag, d is the extended depth of hypothesis trees, m + 1 is the number of hypothesis tracklets. See supplementary material for the details of the MoTT structure.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Robustness analysis under different levels of FN detection. The performance with the relinking strategy (orange) is better than that without the relinking strategy (green) under different FN levels. (Color figure online)</figDesc><graphic coords="9,55,98,54,23,340,18,65,29" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 2 .</head><label>2</label><figDesc>and Ours use the same detections. Comparison using the same ground truth detections on the microtubule, vesicle, and receptor scenarios.</figDesc><table><row><cell cols="2">Density Method</cell><cell cols="2">SNR = 4</cell><cell></cell><cell></cell><cell cols="2">SNR = 7</cell><cell></cell></row><row><cell></cell><cell></cell><cell>α</cell><cell>β</cell><cell cols="3">JSCθ JSC α</cell><cell>β</cell><cell cols="2">JSCθ JSC</cell></row><row><cell>Low</cell><cell>Method5</cell><cell cols="8">0.750 0.728 0.917 0.874 0.803 0.787 0.939 0.894</cell></row><row><cell></cell><cell>Method1</cell><cell cols="8">0.541 0.495 0.874 0.792 0.657 0.621 0.902 0.837</cell></row><row><cell></cell><cell>Method2</cell><cell cols="8">0.562 0.259 0.356 0.369 0.694 0.686 0.959 0.954</cell></row><row><cell></cell><cell>PMMS [22]</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell>DPT [26]</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell cols="9">SEF-GF-DPHT [25] 0.803 0.776 0.928 0.890 0.861 0.848 0.970 0.936</cell></row><row><cell></cell><cell cols="9">DetNet-DPHT [21] 0.811 0.788 0.915 0.884 0.870 0.852 0.945 0.936</cell></row><row><cell></cell><cell>Trackpy [1]</cell><cell cols="8">0.762 0.657 0.749 0.694 0.853 0.789 0.854 0.808</cell></row><row><cell></cell><cell>SORT [28]</cell><cell cols="8">0.661 0.612 0.844 0.658 0.708 0.664 0.851 0.692</cell></row><row><cell></cell><cell>Bytetrack [31]</cell><cell cols="8">0.800 0.793 0.955 0.840 0.801 0.792 0.955 0.813</cell></row><row><cell></cell><cell>Ours</cell><cell cols="8">0.835 0.772 0.823 0.839 0.904 0.870 0.932 0.896</cell></row><row><cell>Med</cell><cell>Method5</cell><cell cols="8">0.460 0.402 0.696 0.523 0.511 0.450 0.739 0.558</cell></row><row><cell></cell><cell>Method1</cell><cell cols="8">0.353 0.264 0.550 0.373 0.400 0.326 0.646 0.448</cell></row><row><cell></cell><cell>Method2</cell><cell cols="8">0.465 0.225 0.363 0.341 0.564 0.535 0.847 0.763</cell></row><row><cell></cell><cell>PMMS [22]</cell><cell cols="5">0.440 0.390 0.700 0.580 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell>DPT [26]</cell><cell cols="5">0.488 0.373 0.556 0.449 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell cols="6">SEF-GF-DPHT [25] 0.655 0.618 0.839 0.723 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell cols="2">DetNet-DPHT [21] -</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell>Trackpy [1]</cell><cell cols="8">0.535 0.432 0.667 0.459 0.563 0.469 0.713 0.486</cell></row><row><cell></cell><cell>SORT [28]</cell><cell cols="8">0.544 0.478 0.733 0.528 0.583 0.523 0.757 0.558</cell></row><row><cell></cell><cell>Bytetrack [31]</cell><cell cols="8">0.555 0.495 0.717 0.552 0.582 0.528 0.721 0.567</cell></row><row><cell></cell><cell>Ours</cell><cell cols="8">0.814 0.719 0.760 0.769 0.869 0.792 0.829 0.823</cell></row><row><cell>High</cell><cell>Method5</cell><cell cols="8">0.314 0.264 0.602 0.371 0.343 0.279 0.613 0.378</cell></row><row><cell></cell><cell>Method1</cell><cell cols="8">0.272 0.210 0.544 0.299 0.293 0.231 0.582 0.322</cell></row><row><cell></cell><cell>Method2</cell><cell cols="8">0.396 0.194 0.361 0.306 0.465 0.427 0.754 0.627</cell></row><row><cell></cell><cell>PMMS [22]</cell><cell cols="5">0.350 0.300 0.630 0.460 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell>DPT [26]</cell><cell cols="5">0.414 0.313 0.524 0.389 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell cols="6">SEF-GF-DPHT [25] 0.548 0.501 0.758 0.605 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell cols="2">DetNet-DPHT [21] -</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell></cell><cell>Trackpy [1]</cell><cell cols="8">0.410 0.311 0.603 0.340 0.410 0.315 0.622 0.335</cell></row><row><cell></cell><cell>SORT [28]</cell><cell cols="8">0.432 0.354 0.645 0.407 0.465 0.390 0.664 0.436</cell></row><row><cell></cell><cell>Bytetrack [31]</cell><cell cols="8">0.385 0.313 0.558 0.377 0.425 0.354 0.593 0.407</cell></row><row><cell></cell><cell>Ours</cell><cell cols="8">0.732 0.611 0.660 0.659 0.814 0.718 0.759 0.753</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported in part by the <rs type="funder">Natural Science Foundation of China</rs> (grants <rs type="grantNumber">31971289</rs>, <rs type="grantNumber">91954201</rs>) and the <rs type="programName">Strategic Priority Research Program</rs> of the <rs type="funder">Chinese Academy of Sciences</rs> (grant <rs type="grantNumber">XDB37040402</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_AWF9Vz4">
+					<idno type="grant-number">31971289</idno>
+				</org>
+				<org type="funding" xml:id="_Tk9GhfV">
+					<idno type="grant-number">91954201</idno>
+					<orgName type="program" subtype="full">Strategic Priority Research Program</orgName>
+				</org>
+				<org type="funding" xml:id="_mhyZj3M">
+					<idno type="grant-number">XDB37040402</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Allan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Caswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Keim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Van Der Wel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W</forename><surname>Verweij</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.7670439</idno>
+		<idno>soft- matter/trackpy: v0.6.1</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.7670439" />
+		<imprint>
+			<date type="published" when="2023-02">February 2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Graph neural network for cell tracking in microscopy videos</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ben-Haim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Raviv</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19803-8_36</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19803-836" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="610" to="626" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">MeMOT: multi-object tracking with memory</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Computer Vision and Pattern Recognition Conference (CVPR)</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="8090" to="8100" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Endto-end object detection with transformers</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Synnaeve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zagoruyko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="213" to="229" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multiple hypothesis tracking for cluttered biological image sequences</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chenouard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bloch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Olivo-Marin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell. (TPAMI)</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2736" to="3750" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Objective comparison of particle tracking methods</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chenouard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="281" to="289" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">active meshes: fast discrete deformable models for cell tracking in 3-D time-lapse microscopy</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dufour</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Thibeaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Labruyere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Guillen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Olivo-Marin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1925" to="1937" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">deep-Blink: threshold-independent detection and localization of diffraction-limited spots</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">T</forename><surname>Eichenberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rempfler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Giorgetti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Chao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nucleic Acids Res</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<biblScope unit="page" from="7292" to="7297" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Multiple dense particle tracking in fluorescence microscopy images based on multidimensional assignment</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Struct. Biol</title>
+		<imprint>
+			<biblScope unit="volume">173</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="219" to="228" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Sonar tracking of multiple targets using joint probabilistic data association</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Fortmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bar-Shalom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Scheffe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Oceanic Eng</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="173" to="184" />
+			<date type="published" when="1983">1983</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Transformer networks for trajectory forecasting</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Giuliari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cristani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Galasso</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Pattern Recognition (ICPR)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10335" to="10342" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">LLC: Gurobi Optimizer Reference Manual</title>
+		<ptr target="https://www.gurobi.com" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Gurobi Optimization</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Long short-term memory</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1735" to="1780" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Robust single-particle tracking in live-cell time-lapse sequences</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jaqaman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="695" to="702" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A new approach to linear filtering and prediction problems</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">E</forename><surname>Kalman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Basic Eng</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="35" to="45" />
+			<date type="published" when="1960">1960</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Multiple hypothesis tracking revisited</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ciptadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Rehg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="4696" to="4704" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Multimodal motion prediction with stacked transformers</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Computer Vision and Pattern Recognition Conference (CVPR)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="7577" to="7586" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Automatically tracking neurons in a moving and deforming brain</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Linder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">S</forename><surname>Plummer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Shaevitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Leifer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Comput. Biol</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">An algorithm for tracking multiple targets</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Reid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Autom. Control</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="843" to="854" />
+			<date type="published" when="1979">1979</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Joint probabilistic data association revisited</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Rezatofighi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Milan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Dick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Reid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="3047" to="3055" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Deep learning for particle detection and tracking in fluorescence microscopy images</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ritter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Spilger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bartenschlager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Rohr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="873" to="876" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Piecewisestationary motion modeling and iterative smoothing to track heterogeneous particle motions in dense environments</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Roudot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jaqaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kervrann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Danuser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process. (TIP)</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="5395" to="5410" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Motion transformer with global intention localization and local movement refinement</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.13508</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Quantitative comparison of multiframe data association techniques for particle tracking in time-lapse fluorescence microscopy</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Smal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Meijering</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="163" to="189" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A recurrent neural network for particle tracking in microscopy images using future information, track hypotheses, and multiple detections</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Spilger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process. (TIP)</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="3681" to="3694" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Deep particle tracker: automatic tracking of particles in fluorescence microscopy images using deep learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Spilger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">DLMIA ML-CDS 2018</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Taylor</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Carneiro</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="128" to="136" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00889-5_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-515" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Neural Information Processing Systems (NeurIPS)</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5998" to="6008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Simple online and realtime tracking with a deep association metric</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wojke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bewley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Paulus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Conference on Image Processing</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="3645" to="3649" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Rapid detection and recognition of whole brain activity in a freely behaving Caenorhabditis elegans</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Comput. Biol</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Deep neural networks for data association in particle tracking</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Smal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Meijering</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="458" to="461" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">ByteTrack: multi-object tracking by associating every detection box</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20047-2_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20047-21" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="21" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

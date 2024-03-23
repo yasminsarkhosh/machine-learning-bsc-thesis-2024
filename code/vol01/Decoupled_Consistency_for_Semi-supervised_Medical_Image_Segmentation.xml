@@ -1,0 +1,852 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Decoupled Consistency for Semi-supervised Medical Image Segmentation</title>
+				<funder ref="#_Zav2H3R">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_AbFKpgx">
+					<orgName type="full">Anhui Province KevLaboratory of Translational Cancer Research</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Faquan</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Schoor of Informatics</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jingjing</forename><surname>Fei</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">SenseTime Research</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yaqi</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Schoor of Informatics</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chenxi</forename><surname>Huang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Schoor of Informatics</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Decoupled Consistency for Semi-supervised Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="551" to="561"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">AB83C8458F86A3F106617989A7834376</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_53</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:30+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Semi-supervised Learning</term>
+					<term>Image Segementation</term>
+					<term>Consistency Regularization</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>By fully utilizing unlabeled data, the semi-supervised learning (SSL) technique has recently produced promising results in the segmentation of medical images. Pseudo labeling and consistency regularization are two effective strategies for using unlabeled data. Yet, the traditional pseudo labeling method will filter out low-confidence pixels. The advantages of both high-and low-confidence data are not fully exploited by consistency regularization. Therefore, neither of these two methods can make full use of unlabeled data. We proposed a novel decoupled consistency semi-supervised medical image segmentation framework. First, the dynamic threshold is utilized to decouple the prediction data into consistent and inconsistent parts. For the consistent part, we use the method of cross pseudo supervision to optimize it. For the inconsistent part, we further decouple it into unreliable data that is likely to occur close to the decision boundary and guidance data that is more likely to emerge near the high-density area. Unreliable data will be optimized in the direction of guidance data. We refer to this action as directional consistency. Furthermore, in order to fully utilize the data, we incorporate feature maps into the training process and calculate the loss of feature consistency. A significant number of experiments have demonstrated the superiority of our proposed method. The code is available at https:// github.com/wxfaaaaa/DCNet.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Deep learning technology can significantly assist clinicians in clinical diagnosis through accurate and robust segmentation of lesions or organs from medical images <ref type="bibr" target="#b0">[1]</ref>. In comparison to natural images, acquiring pixel-level labels of medical images involves input from clinical professionals, making such labels expensive to produce. In order to effectively alleviate the problem of data labeling, many attempts have been made towards semi-supervised medical image segmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b10">11]</ref>. How to fully utilize unlabeled data in this situation becomes crucial.</p><p>Pseudo labeling <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b15">16]</ref> and consistency regularization <ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b20">[21]</ref><ref type="bibr" target="#b22">[22]</ref> are two powerful techniques for using unlabeled data. The traditional pseudo labeling approach employs a high and fixed threshold to select the predicted pixels with high confidence as the pseudo label of unlabeled data <ref type="bibr" target="#b14">[15]</ref>. Nevertheless, with this strategy, only a few samples can exceed the chosen threshold at the start of training. As a result, Zhang et al. <ref type="bibr" target="#b23">[23]</ref>. present the Curriculum Pseudo Labeling (CPL) strategy, which adjusts the flexible threshold of each category dynamically during the training process. Despite the positive outcomes, low-confidence pixels will still be removed. Wang et al. <ref type="bibr" target="#b11">[12]</ref>. demonstrated the importance of low-confidence pixels in model training. Given that consistency regularization appears to utilize data more, this research will focus more on this method.</p><p>Despite using all available prediction data, consistency regularization focuses more on how to get two similar predictions, such as data perturbation <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b9">10]</ref>, model perturbation <ref type="bibr" target="#b25">[25,</ref><ref type="bibr" target="#b28">28]</ref>, feature perturbation <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8]</ref>, etc. Yet, when it comes to prediction optimization, all data is processed uniformly using a consistency loss function, such as L2 Loss. In light of this, we consider if we may decouple the prediction data into data with distinct functions, and optimize the prediction data by playing to each advantage's strengths. The benefit of this is that we can utilize all the data and, more significantly, fully utilize the advantages of various prediction data.</p><p>To sum up, this paper proposed a novel decoupled consistency regularization strategy. Specifically, inspired by CPL, we first designed a consistency threshold related to pixel confidence (Wang et al. <ref type="bibr" target="#b24">[24]</ref> proved that the ideal dynamic threshold should be related to pixel confidence) to distinguish the consistent part from the inconsistent part, and the threshold increased as the training progressed to the maximum threshold. For the consistent part with high confidence, we use the method of cross pseudo supervision <ref type="bibr" target="#b17">[18]</ref> to optimize. For the inconsistent part, we further decouple it into unreliable data that is likely to appear close to the decision boundary and guidance data that is more likely to be present near the high-density area. The guidance data plays the role of guiding the direction, and We don't propagate its gradient back. We refer to this action as directional consistency strategy. Additionally, we incorporate the feature map into the training process, suggest a feature consistency approach, and compute its loss in order to make better use of the data. We evaluated our method on the public PROMISE12 <ref type="bibr" target="#b13">[14]</ref> and ACDC <ref type="bibr" target="#b12">[13]</ref> datasets. Several experimental findings demonstrate that our strategy can significantly boost performance.</p><p>Overall, our contributions are four-fold: (1) we proposed a novel decoupled consistent semi-supervised medical image segmentation framework. The framework fully exploits prediction data, decoupled prediction data into data for various functions, and maximizes each function's advantages. (2) A dynamic threshold is proposed that can separate the prediction data into consistent and inconsistent parts. This threshold can effectively reflect the model's learning state and encourage more diversity of data at the start of training. (3) A novel direction consistency strategy is proposed to optimize the inconsistent part. This strategy focuses on optimizing the data around the decision boundary. The results of the experiment demonstrate that the direction consistency strategy is superior to the conventional consistent regularization. ( <ref type="formula" target="#formula_4">4</ref>) The feature consistency approach is suggested and the feature map is incorporated into the training, allowing for better data utilization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_0">1</ref> shows the overall pipeline of our method. To describe this work precisely, we first define some mathematical terms. Let D = D l ∪D u be the whole provided dataset. We denote an unlabeled image as x i ∈ D u and a labeled image pair as (x i , y i ) ∈ D l , where y i is ground-truth. θ dA and θ dB represent decoder A and decoder B, respectively. θ dA employs bi-linear interpolation for up-sampling, and θ dB employs original transpose convolution for up-sampling. o A and o B represent the outputs of θ dA and θ dB , respectively. p A (p B ) is the segmentation confidence map, which is the network output o A (o B ) after softmax normalization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Dynamic Consistency Threshold</head><p>In recent years, the pseudo labeling method based on threshold has achieved great success. The sampling strategy of this method can be defined as follows: where θ dA uses bi-linear interpolation for up-sampling and θ dB uses transposed convolution for up-sampling. For the labeled data we calculate the loss Lseg between them and ground-truth, for the consistent part we calculate cross pseudo supervision loss Lcps, for the inconsistent part we calculate directional consistency loss L dc , for feature maps, we calculate the feature consistency loss</p><formula xml:id="formula_0">L f . ỹ = 1 [p &gt; γ] (1)</formula><p>where γ ∈ (0, 1) is a threshold used to select pseudo labels. p is the segmentation confidence map. FlexMatch <ref type="bibr" target="#b23">[23]</ref> has proved that in the early stage of training, in order to improve the utilization of unlabeled data and promote the diversification of pseudo labels, γ should be relatively small. As the training progresses, γ should maintain a stable proportion of pseudo labels. Therefore, our consistency threshold is defined as follows:</p><formula xml:id="formula_1">γ t = (1 -λ)γ t-1 + λ 1 B B b=1 max(p) (<label>2</label></formula><formula xml:id="formula_2">)</formula><p>where B is the batch size, λ is the weight coefficient that increases with the training and we set λ = t tmax . In order to sample more unlabeled data, we conduct threshold evaluation on p A and p B and select a smaller threshold as our consistency threshold. We initialize λ t as 1 C , where C indicates the number of classes. The consistency threshold γ t is finally defined and adjusted as:</p><formula xml:id="formula_3">γ t = 1 C , if t = 0 min(γ A t , γ B t ) , otherwise<label>(3)</label></formula><p>where γ A t and γ B t represent the threshold of p A and p B .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Decoupled Consistency</head><p>Inconsistent Part. We decouple the inconsistent part into unreliable data, which is probably going to appear at the decision boundary, and guidance data, which is more likely to occur near the high-density area. These two parts have the same index information. The distinction is that guidance data is more confident than unreliable data. Based on the smoothing assumption, the output of these two parts should be consistent and located in the high-density area. As a result, we should concentrate on optimizing the pixels around the decision boundary in order to bring them closer to the high-density region. We initially sharpen the confidence of these pixels to bring the high-confidence pixels closer to the high-density area. These are the sharpening processes:</p><formula xml:id="formula_4">Sp = sof tmax(o/T )<label>(4)</label></formula><p>where o represents the output of the model and T ∈ (0, 1) represents the sharpening temperature. In the experiment, we set T = 0.5. By comparing Sp A and Sp B , the high-confidence parts hSp A , hSp B (See Appendix Algorithm 2.) and low-confidence parts lSp A , lSp B can be obtained. We take L2 loss as the loss function of this part. Note that we only optimize the low-confidence part and do not back-propagate the gradient of the high-confidence part. Therefore, our loss of directional consistency can be written as:</p><formula xml:id="formula_5">L dc = L2(lSp B , detach(hSp A )) + L2(lSp A , detach(hSp B ))<label>(5)</label></formula><p>Consistent Part. Similar to CPS <ref type="bibr" target="#b17">[18]</ref>, the method of cross pseudo supervision is adopted for optimization. The details are as follows:</p><formula xml:id="formula_6">L cps = CE(o B , P L A ) + CE(o A , P L B )<label>(6)</label></formula><p>where P L A and P L B represent corresponding pseudo labels.</p><p>Feature Part. We incorporate the feature map into the training process to further utilize the data. In order to reduce the amount of computation, we have carried out an average mapping of the feature map to reduce its dimension(R Cm×Hm×Wm -→ R Hm×Wm ). The mapping process is as follows:</p><formula xml:id="formula_7">fm = 1 C C i |f mi | p (7)</formula><p>where, p &gt; 1, f m represents the feature map of m-th layer, and f mi denotes the i-th slice of f m in the channel dimension, fm represents the corresponding mapping result. In the experiment, we set p = 2. Our feature consistency loss is as follows:</p><formula xml:id="formula_8">L f = n m=1 N i=1 || f e mi -f d mi || 2 2 (<label>8</label></formula><formula xml:id="formula_9">)</formula><p>where N is the number of pixels of fmi , n is the number of network layers, f e mi and f d mi represent i-th pixels of m-th feature map of decoder and encoder respectively. In this paper, only feature maps of decoder B were used to calculate the loss.</p><p>Total Loss. The total loss is a weighted sum of the segmentation loss L seg and the other three losses:</p><formula xml:id="formula_10">L total = L seg + αL cps + βL dc + λL f (9)</formula><p>where L seg is a Dice loss, which is applied for the few labeled data. And hyperparameter β is set as an iteration-dependent warming-up function <ref type="bibr" target="#b29">[29]</ref>, β = e (-5(1-t tmax ) 2 ) , λ = 1β, α = 0.3 in the experiment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>We evaluated our methods on ACDC dataset <ref type="bibr" target="#b12">[13]</ref> and PROMERE12 dataset <ref type="bibr" target="#b13">[14]</ref>. For the ACDC dataset, we randomly selected 140 scans from 70 subjects, 20 scans from 10 subjects, and 40 scans from 20 subjects as training, validation, and test sets, ensuring that each set contains data from different subjects. For the PROMISE12 dataset, we randomly divided the data into 35, 5, and 10 cases as training, validation, and test sets. And according to the previous work on datasets <ref type="bibr" target="#b27">[27]</ref>, these two data sets are segmented in 2D (piece by piece). Each slice was resized to 256 × 256, and the intensities of pixels are normalized to the [0, 1] range. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>All comparisons and ablation experiments are performed using the same experimental setting for a fair comparison. They are conducted on PyTorch using an Intel(R) Xeon(R) CPU and NVIDIA GeForce RTX 1080 Ti GPU. We adopt U-net <ref type="bibr" target="#b3">[4]</ref> as our base network. And we use SGD as an optimizer, with a weight attenuation of 0.0005 and momentum of 0.9. The learning rate is 0.01. The batch size is set to 24, in which 12 images are labeled. All methods performed 30000 iterations during training. Moreover, a data augmentation strategy including random flipping and random rotation is exploited to alleviate overfitting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Comparison with Other Semi-supervised Methods. We use the metrics of Dice, Jaccard, 95% Hausdorff Distance (95HD), and Average Surface Distance (ASD) to evaluate the results. Table <ref type="table" target="#tab_0">1</ref> gives the averaged performance of three-class segmentation including the myocardium, left and right ventricles on the ACDC dataset. Table <ref type="table" target="#tab_1">2</ref> shows the segmentation results on the PROMISE12 dataset. It can be seen from the table that our method is superior to other methods. The visualized results in Fig. The visualization result in Fig. <ref type="figure">2</ref> shows that the segmentation result of our model is closer to the ground-truth and effectively eliminates most false-positive predictions on the ACDC (highlighted by yellow boxes at the bottom line). Ablation Study. In order to verify the effectiveness of different loss functions of the model, we conducted experiments on the ACDC dataset with 10% labeled data, and the experimental results are shown in Table <ref type="table" target="#tab_2">3</ref>. It can be seen from the table that the dice scores of L cps , L f and L dc are improved by 2.93%, 3.33%, 3.60%, respectively, compared with only using L seg . On the basis of L seg and L f , L dc is also better than L con , even close to our final results. To investigate the usefulness of directional consistency further, we do not employ a threshold and compare it to classical consistency regularization and cross pseudo supervision. The experimental results are shown in Table <ref type="table" target="#tab_3">4</ref>. It can be seen from the table that the L dc is obviously superior to the other two methods, which fully proves the importance of the division of different pixel functions. Also, we discovered that utilizing threshold would improve the effect of L cps . This further demonstrates the significance of our dynamic threshold. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This paper proposed a framework DC-Net for semi-supervised medical image segmentation. In view of the current problem of insufficient utilization of unlabeled data, our fundamental concept is to fully exploit the benefits of data with various functionalities. Based on this, we decouple the prediction data into consistent and inconsistent parts through a dynamic threshold. Furthermore, the inconsistent part is further decoupled into guidance data and unreliable data, and optimized by a novel directional consistency strategy. Our method yielded excellent outcomes on both the ACDC and PROMISE12 datasets. In addition, directional consistency shows promising potential in the experiment, and future research will further explore the selection and treatment of directions.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Pipeline of our proposed DC-Net. DC-Net contains two decoders θ dA and θ dB ,where θ dA uses bi-linear interpolation for up-sampling and θ dB uses transposed convolution for up-sampling. For the labeled data we calculate the loss Lseg between them and ground-truth, for the consistent part we calculate cross pseudo supervision loss Lcps, for the inconsistent part we calculate directional consistency loss L dc , for feature maps, we calculate the feature consistency loss L f .</figDesc><graphic coords="3,62,46,392,39,291,19,110,29" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="8,42,81,376,97,338,68,175,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with five recent methods on the ACDC dataset. All results are reproduced in the form of<ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b25">[25]</ref><ref type="bibr" target="#b26">[26]</ref><ref type="bibr" target="#b27">[27]</ref><ref type="bibr" target="#b28">[28]</ref> in the same experimental environment for a fair comparison.</figDesc><table><row><cell>Method</cell><cell>#Scans used</cell><cell>Metrics</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="5">Labeled Unlabeled Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓</cell></row><row><cell>SupOnly</cell><cell cols="2">3 (5%) 67 (95%) 49.33</cell><cell>39.19</cell><cell>22.57</cell><cell>9.66</cell></row><row><cell>URPC [28]</cell><cell></cell><cell>55.87</cell><cell>44.64</cell><cell>13.60</cell><cell>3.74</cell></row><row><cell>CPS [18]</cell><cell></cell><cell>56.59</cell><cell>46.51</cell><cell>6.43</cell><cell>1.16</cell></row><row><cell>DTC [25]</cell><cell></cell><cell>56.90</cell><cell>45.67</cell><cell>23.36</cell><cell>7.39</cell></row><row><cell>MCNet [26]</cell><cell></cell><cell>62.85</cell><cell>52.29</cell><cell>7.62</cell><cell>2.33</cell></row><row><cell>SSNet [27]</cell><cell></cell><cell>65.82</cell><cell>55.38</cell><cell>6.67</cell><cell>2.28</cell></row><row><cell>Ours</cell><cell></cell><cell>70.36</cell><cell>60.78</cell><cell>3.94</cell><cell>0.86</cell></row><row><cell>SupOnly</cell><cell cols="2">7 (10%) 63 (90%) 79.37</cell><cell>67.78</cell><cell>10.73</cell><cell>3.12</cell></row><row><cell>URPC [28]</cell><cell></cell><cell>83.10</cell><cell>72.41</cell><cell>4.84</cell><cell>1.53</cell></row><row><cell>CPS [18]</cell><cell></cell><cell>84.78</cell><cell>74.69</cell><cell>7.56</cell><cell>2.39</cell></row><row><cell>DTC [25]</cell><cell></cell><cell>84.29</cell><cell>73.92</cell><cell>12.81</cell><cell>4.01</cell></row><row><cell>MCNet [26]</cell><cell></cell><cell>86.44</cell><cell>77.04</cell><cell>5.50</cell><cell>1.84</cell></row><row><cell>SSNet [27]</cell><cell></cell><cell>86.78</cell><cell>77.67</cell><cell>6.07</cell><cell>1.40</cell></row><row><cell>Ours</cell><cell></cell><cell>89.42</cell><cell>81.37</cell><cell>1.28</cell><cell>0.38</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison with five recent methods on the PROMISE12 dataset. All results are reproduced in the form of<ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b25">[25]</ref><ref type="bibr" target="#b26">[26]</ref><ref type="bibr" target="#b27">[27]</ref><ref type="bibr" target="#b28">[28]</ref> in the same experimental environment for a fair comparison.</figDesc><table><row><cell>Method</cell><cell>#Scans used</cell><cell>Metrics</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="5">Labeled Unlabeled Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓</cell></row><row><cell>SupOnly</cell><cell cols="2">4 (10%) 31 (90%) 46.08</cell><cell>35.40</cell><cell>35.86</cell><cell>11.23</cell></row><row><cell>URPC [28]</cell><cell></cell><cell>52.96</cell><cell>39.93</cell><cell>37.53</cell><cell>11.43</cell></row><row><cell>CPS [18]</cell><cell></cell><cell>49.19</cell><cell>37.27</cell><cell>39.96</cell><cell>11.97</cell></row><row><cell>DTC [25]</cell><cell></cell><cell>57.87</cell><cell>43.80</cell><cell>81.54</cell><cell>25.38</cell></row><row><cell>MCNet [26]</cell><cell></cell><cell>56.91</cell><cell>43.82</cell><cell>23.44</cell><cell>5.91</cell></row><row><cell>SSNet [27]</cell><cell></cell><cell>61.10</cell><cell>47.07</cell><cell>23.73</cell><cell>7.44</cell></row><row><cell>Ours</cell><cell></cell><cell>68.89</cell><cell>54.88</cell><cell>12.93</cell><cell>3.75</cell></row><row><cell>SupOnly</cell><cell cols="2">7 (20%) 28 (80%) 62.28</cell><cell>50.42</cell><cell>16.55</cell><cell>3.56</cell></row><row><cell>URPC [28]</cell><cell></cell><cell>67.04</cell><cell>54.01</cell><cell>11.54</cell><cell>2.11</cell></row><row><cell>CPS [18]</cell><cell></cell><cell>64.50</cell><cell>50.71</cell><cell>12.07</cell><cell>3.09</cell></row><row><cell>DTC [25]</cell><cell></cell><cell>72.03</cell><cell>58.32</cell><cell>11.48</cell><cell>2.65</cell></row><row><cell>MCNet [26]</cell><cell></cell><cell>71.77</cell><cell>59.07</cell><cell>10.76</cell><cell>2.85</cell></row><row><cell>SSNet [27]</cell><cell></cell><cell>71.56</cell><cell>59.35</cell><cell>14.38</cell><cell>3.03</cell></row><row><cell>Ours</cell><cell></cell><cell>78.68</cell><cell>65.44</cell><cell>10.65</cell><cell>2.53</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation studies on ACDC dataset with 10% labeled data.Where Lcps represents cross pseudo supervision, L dc represents direction consistency, and L f represents feature consistency.</figDesc><table><row><cell cols="4">Lseg Lcps L dc L f Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓</cell></row><row><cell>84.98</cell><cell>75.00</cell><cell>12.03</cell><cell>3.31</cell></row><row><cell>87.91</cell><cell>79.13</cell><cell>5.09</cell><cell>1.47</cell></row><row><cell>88.58</cell><cell>80.10</cell><cell>5.35</cell><cell>1.49</cell></row><row><cell>89.29</cell><cell>81.21</cell><cell>3.07</cell><cell>0.92</cell></row><row><cell>88.31</cell><cell>79.67</cell><cell>3.18</cell><cell>1.04</cell></row><row><cell>89.12</cell><cell>80.82</cell><cell>2.63</cell><cell>0.96</cell></row><row><cell>89.39</cell><cell>81.36</cell><cell>2.32</cell><cell>0.82</cell></row><row><cell>89.42</cell><cell>81.37</cell><cell>1.28</cell><cell>0.38</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Comparison of different optimization methods when there is no threshold.Here Lmse represents the classic consistent regularization using the L2 loss function, and Lcps represents the cross pseudo supervision.</figDesc><table><row><cell>84.98</cell><cell>75.00</cell><cell>12.03</cell><cell>3.31</cell></row><row><cell>86.47</cell><cell>77.18</cell><cell>7.31</cell><cell>2.01</cell></row><row><cell>87.61</cell><cell>78.72</cell><cell>7.48</cell><cell>1.87</cell></row><row><cell>88.71</cell><cell>80.31</cell><cell>4.05</cell><cell>0.98</cell></row><row><cell>88.99</cell><cell>80.68</cell><cell>3.09</cell><cell>0.92</cell></row></table><note><p>Lseg Lmse Lcps L dc Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓ Fig. 2. Exemplar results of several semi-supervised segmentation methods and corresponding ground truth (GT) on PROMISE12 dataset (Top two rows) and ACDC dataset (Bottom two rows).</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (Grant No. <rs type="grantNumber">62002304</rs>), and also by <rs type="funder">Anhui Province KevLaboratory of Translational Cancer Research</rs> (<rs type="grantNumber">KFKT 202308</rs>), China.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Zav2H3R">
+					<idno type="grant-number">62002304</idno>
+				</org>
+				<org type="funding" xml:id="_AbFKpgx">
+					<idno type="grant-number">KFKT 202308</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0 53.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A survey on medical image segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Masood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sharif</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Masood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yasmin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Raza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3" to="14" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Transformationconsistent self-ensembling model for semisupervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="523" to="534" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deep co-training for semisupervised image recognition</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Qiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yuille</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the European Conference on Computer Vision (ECCV)</title>
+		<meeting>the European Conference on Computer Vision (ECCV)</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="135" to="152" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Semi-supervised 3d abdominal multi-organ segmentation via deep multi-planar co-training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2019 IEEE Winter Conference on Applications of Computer Vision (WACV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="121" to="140" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">3D semi-supervised learning with uncertainty-aware multi-view cotraining</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3646" to="3655" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross-consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ouali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hudelot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tami</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="12674" to="12684" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Guided collaborative training for pixel-wise semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W H</forename><surname>Lau</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58601-0_26</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58601-026" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12358</biblScope>
+			<biblScope unit="page" from="429" to="445" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Structured consistency loss for semi-supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Park</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2001.04647</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Semi-supervised semantic segmentation needs strong</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>French</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mackiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Finlayson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Automatic choroid layer segmentation from optical coherence tomography images using deep learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Masood</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Semi-supervised semantic segmentation using unreliable pseudolabels supplementary material</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Evaluation of prostate segmentation algorithms for MRI: the promise12 challenge</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Litjens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="359" to="373" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Pseudo-label: the simple and efficient semi-supervised learning method for deep neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Challenges in Representation Learning</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">896</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Pseudolabeling and confirmation bias in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arazo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ortego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>O'connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcguinness</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 International Joint Conference on Neural Networks (IJCNN)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">In defense of pseudo-labeling: an uncertainty-aware pseudo-label selection framework for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Rizve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Duarte</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">S</forename><surname>Rawat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shah</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2101.06329</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross pseudo supervision</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2613" to="2622" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Learning with pseudo-ensembles</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bachman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Alsharif</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Precup</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Regularization with stochastic transformations and perturbations for deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sajjadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Javanmardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tasdizen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Semisupervised medical image segmentation via learning consistency under transformations</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bortsova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Dubost</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hogeweg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Katramados</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11769</biblScope>
+			<biblScope unit="page" from="810" to="818" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32226-7_90</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32226-790" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Dash: Semi-supervised learning with dynamic thresholding</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="11525" to="11536" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">FlexMatch: boosting semi-supervised learning with curriculum pseudo labeling</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="18408" to="18419" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">FreeMatch: self-adaptive thresholding for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2205.07246</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation through dual-task consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="8801" to="8809" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Semi-supervised left atrium segmentation with mutual consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-328" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="297" to="306" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Exploring smoothness and class-separation for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.01324</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Efficient semi-supervised gross target volume of nasopharyngeal carcinoma segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-330" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="318" to="329" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Temporal ensembling for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1610.02242</idno>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

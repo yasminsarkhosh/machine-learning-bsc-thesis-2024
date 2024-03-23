@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">HIGT: Hierarchical Interaction Graph-Transformer for Whole Slide Image Analysis</title>
+				<funder ref="#_H7pyb3k">
+					<orgName type="full">Research Grants Council of the Hong Kong Special Administrative Region, China</orgName>
+				</funder>
+				<funder ref="#_QQw2Ps6">
+					<orgName type="full">The Hong Kong Polytechnic University</orgName>
+				</funder>
+				<funder ref="#_pB9g3zp">
+					<orgName type="full">National Natural Science Fund</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ziyu</forename><surname>Guo</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Weiqin</forename><surname>Zhao</surname></persName>
+							<email>wqzhao98@connect.hku.hk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shujun</forename><surname>Wang</surname></persName>
+							<email>shu-jun.wang@polyu.edu.hk</email>
+							<affiliation key="aff1">
+								<orgName type="institution">The Hong Kong Polytechnic University</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Lequan</forename><surname>Yu</surname></persName>
+							<email>lqyu@hku.hk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">HIGT: Hierarchical Interaction Graph-Transformer for Whole Slide Image Analysis</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="755" to="764"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8152DF160237BFBDD9743AB65EB63838</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_73</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:51+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>WSI analysis</term>
+					<term>Hierarchical representation</term>
+					<term>Interaction</term>
+					<term>Graph neural network</term>
+					<term>Vision transformer</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In computation pathology, the pyramid structure of gigapixel Whole Slide Images (WSIs) has recently been studied for capturing various information from individual cell interactions to tissue microenvironments. This hierarchical structure is believed to be beneficial for cancer diagnosis and prognosis tasks. However, most previous hierarchical WSI analysis works (1) only characterize local or global correlations within the WSI pyramids and (2) use only unidirectional interaction between different resolutions, leading to an incomplete picture of WSI pyramids. To this end, this paper presents a novel Hierarchical Interaction Graph-Transformer (i.e., HIGT) for WSI analysis. With Graph Neural Network and Transformer as the building commons, HIGT can learn both shortrange local information and long-range global representation of the WSI pyramids. Considering that the information from different resolutions is complementary and can benefit each other during the learning process, we further design a novel Bidirectional Interaction block to establish communication between different levels within the WSI pyramids. Finally, we aggregate both coarse-grained and fine-grained features learned from different levels together for slide-level prediction. We evaluate our methods on two public WSI datasets from TCGA projects, i.e., kidney carcinoma (KICA) and esophageal carcinoma (ESCA). Experimental results show that our HIGT outperforms both hierarchical and non-hierarchical stateof-the-art methods on both tumor subtyping and staging tasks.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Histopathology is considered the gold standard for diagnosing and treating many cancers <ref type="bibr" target="#b18">[19]</ref>. The tissue slices are usually scanned into Whole Slide Images (WSIs) and serve as important references for pathologists. Unlike natural images, WSIs typically contain billions of pixels and also have a pyramid structure, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. Such gigapixel resolution and expensive pixel-wise annotation efforts pose unique challenges to constructing effective and accurate models for WSI analysis. To overcome these challenges, Multiple Instance Learning (MIL) has become a popular paradigm for WSI analysis. Typically, MIL-based WSI analysis methods have three steps: (1) crop the huge WSI into numerous image patches; (2) extract instance features from the cropped patches; and (3) aggregate instance features together to obtain slide-level prediction results. Many advanced MIL models emerged in the past few years. For instance, ABMIL <ref type="bibr" target="#b8">[9]</ref> and DeepAttnMIL <ref type="bibr" target="#b17">[18]</ref> incorporated attention mechanisms into the aggregation step and achieved promising results. Recently, Graph-Transformer architecture <ref type="bibr" target="#b16">[17]</ref> has been proposed to learn short-range local features through GNN and long-range global features through Transformer simultaneously. Such Graph-Transformer architecture has also been introduced into WSI analysis <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b19">20]</ref> to mine the thorough global and local correlations between different image patches. However, current Graph-Transformer-based WSI analysis models only consider the representation learning under one specific magnification, thus ignoring the rich multi-resolution information from the WSI pyramids.</p><p>Different resolution levels in the WSI pyramids contain different and complementary information <ref type="bibr" target="#b2">[3]</ref>. The images at a high-resolution level contain cellularlevel information, such as the nucleus and chromatin morphology features <ref type="bibr" target="#b9">[10]</ref>. At a low-resolution level, tissue-related information like the extent of tumorimmune localization can be found <ref type="bibr" target="#b0">[1]</ref>, while the whole WSI describes the entire tissue microenvironment, such as intra-tumoral heterogeneity and tumor invasion <ref type="bibr" target="#b2">[3]</ref>. Therefore, analyzing from only a single resolution would lead to an incomplete picture of WSIs. Some very recent works proposed to characterize and analyze WSIs in a pyramidal structure. H2-MIL <ref type="bibr" target="#b6">[7]</ref> formulated WSI as a hierarchical heterogeneous graph and HIPT <ref type="bibr" target="#b2">[3]</ref> proposed an inheritable ViT framework to model WSI at different resolutions. Whereas these methods only characterize local or global correlations within the WSI pyramids and use only unidirectional interaction between different resolutions, leading to insufficient capability to model the rich multi-resolution information of the WSI pyramids.</p><p>In this paper, we present a novel Hierarchical Interaction Graph-Transformer framework (i.e., HIGT) to simultaneously capture both local and global information from WSI pyramids with a novel Bidirectional Interaction module. Specifically, we abstract the multi-resolution WSI pyramid as a heterogeneous hierarchical graph and devise a Hierarchical Interaction Graph-Transformer architecture to learn both short-range and long-range correlations among different image patches within different resolutions. Considering that the information from different resolutions is complementary and can benefit each other, we specially design a Bidirectional Interaction block in our Hierarchical Interaction ViT mod- ule to establish communication between different resolution levels. Moreover, a Fusion block is proposed to aggregate features learned from the different levels for slide-level prediction. To reduce the tremendous computation and memory cost, we further adopt the efficient pooling operation after the hierarchical GNN part to reduce the number of tokens and introduce the Separable Self-Attention Mechanism in Hierarchical Interaction ViT modules to reduce the computation burden. The extensive experiments with promising results on two public WSI datasets from TCGA projects, i.e., kidney carcinoma (KICA) and esophageal carcinoma (ESCA), validate the effectiveness and efficiency of our framework on both tumor subtyping and staging tasks. The codes are available at https:// github.com/HKU-MedAI/HIGT.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Figure <ref type="figure" target="#fig_0">1</ref> depicts the pipeline of HIGT framework for better exploring the multiscale information in hierarchical WSI pyramids. First, we abstract each WSI as a hierarchical graph, where the feature embeddings extracted from multiresolution patches serve as nodes and the edge denotes the spatial and scaling relationships of patches within and across different resolution levels. Then, we feed the constructed graph into several hierarchical graph convolution blocks to learn the short-range relationship among graph nodes, following pooling operations to aggregate local context and reduce the number of nodes. We further devise a Separable Self-Attention-based Hierarchical Interaction Transformer architecture equipped with a novel Bidirectional Interaction block to learn the long-range relationship among graph nodes. Finally, we design a fusion block to aggregate the features learned from the different levels of WSI pyramids for final slide-level prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Graph Construction</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, a WSI is cropped into numerous non-overlapping 512 × 512 image patches under different magnifications (i.e., ×5, ×10) by using a sliding window strategy, where the OTSU algorithm <ref type="bibr" target="#b3">[4]</ref> is used to filter out the background patches. Afterwards, we employ a pre-trained KimiaNet <ref type="bibr" target="#b15">[16]</ref> to extract the feature embedding of each image patch. The feature embeddings of the slide-level T (Thumbnail), region-level R (×5), and the patch-level P (×10) can be represented as,</p><formula xml:id="formula_0">T = {t}, R = {r 1 , r 2 , • • • , r N }, P = {P 1 , P 2 , • • • , P N }, P i = {p i,1 , p i,2 , • • • , p i,M }, (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where t, r i , p i,j ∈ R 1×C correspond to the feature embeddings of each patch in thumbnail, region, and patch levels, respectively. N is the total number of the region nodes and M is the number of patch nodes belonging to a certain region node, and C denotes the dimension of feature embedding (1,024 in our experiments). Based on the extracted feature embeddings, we construct a hierarchical graph to characterize the WSI, following previous H 2 -MIL work <ref type="bibr" target="#b6">[7]</ref>. Specifically, the cropped patches serve as the nodes of the graph and we employ the extracted feature embedding as the node embeddings. There are two kinds of edges in the graph: spatial edges to denote the 8-adjacent spatial relationships among different patches in the same levels, and scaling edges to denote the relationship between patches across different levels at the same location.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Hierarchical Graph Neural Network</head><p>To learn the short-range relationship among different patches within the WSI pyramid, we propose a new hierarchical graph message propagation operation, called RAConv+. Specifically, for any source node j in the hierarchical graph, we define the set of it all neighboring nodes at resolution k as N k and k ∈ K.</p><p>Here K means all resolutions. And the h k is the mean embedding of the node j's neighboring nodes in resolution k. And h j is the embedding of the neighboring nodes of node j in resolution k and h j ∈ N k . The formula for calculating the attention score of node j in resolution-level and node-level:</p><formula xml:id="formula_2">α k = exp a • LeakyReLU ([U h j U h k ]) k ∈K exp (a • LeakyReLU ([U h j U h k ])) , α j = exp b • LeakyReLU ([V h j V h j ]) hj ∈N k exp b • LeakyReLU ([V h j V h j ]) , α j,j = α k + α j ,<label>(2)</label></formula><p>where α j,j is the attention score of the node j to node j and h j is the source node j embedding. And U , V , a and b are four learnable layers. The main difference from H2-MIL <ref type="bibr" target="#b5">[6]</ref> is that we pose the non-linear LeakyReLU between a and U , b and V , to generate a more distinct attention score matrix which increases the feature differences between different types of nodes <ref type="bibr" target="#b1">[2]</ref>. Therefore, the layer-wise graph message propagation can be represented as:</p><formula xml:id="formula_3">H (l+1) = σ A • H (l) • W (l) , (<label>3</label></formula><formula xml:id="formula_4">)</formula><p>where A represents the attention score matrix, and the attention score for the j-th row and j -th column of the matrix is given by Eq. ( <ref type="formula" target="#formula_2">2</ref>). At the end of the hierarchical GNN part, we use the IHPool <ref type="bibr" target="#b5">[6]</ref> progressively aggregate the hierarchical graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Hierarchical Interaction ViT</head><p>We further propose a Hierarchical Interaction ViT (HIViT) to learn long-range correlation within the WSI pyramids, which includes three key components: Patch-level (PL) blocks, Bidirectional Interaction (BI) blocks, and Region-level (RL) blocks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Patch-Level Block.</head><p>Given the patch-level feature set P = N i=1 P i , the PL block learns long-term relationships within the patch level:</p><formula xml:id="formula_5">P l+1 = P L(P l )<label>(4)</label></formula><p>where l = 1, 2, ..., L is the index of the HIViT block. P L(•) includes a Separable Self Attention (SSA) <ref type="bibr" target="#b12">[13]</ref>, 1×1 Convolution, and Layer Normalization in sequence. Note that here we introduced SSA into the PL block to reduce the computation complexity of attention calculation from quadratic to linear while maintaining the performance <ref type="bibr" target="#b12">[13]</ref>.</p><p>Bidirectional Interaction Block. We propose a Bidirectional Interaction (BI) block to establish communication between different levels within the WSI pyramids. The BI block performs bidirectional interaction, and the interaction progress from region nodes to patch nodes is:</p><formula xml:id="formula_6">r l i ∈ R l , R l = SE(R l ) • R l , P l+1 i = {p l+1 i,1 , p l+1 i,2 , • • • , p l+1 i,k }, p l+1 i,k = pl+1 i,k + r l i ,<label>(5)</label></formula><p>where the SE(•) means the Sequeeze-and-Excite layer <ref type="bibr" target="#b7">[8]</ref> and the r l i means the i-th region node in R l , and pl+1 i,k is the k-th patch node linked to the i-th region node after the interaction. Besides, another direction of the interaction is,</p><formula xml:id="formula_7">P = { P l+1 1 , P l+1 2 , • • • , P l+1 n }, P l+1 i = MEAN( P l+1 i ) Rl+1 = SE( P l+1 ) • P l+1 + R l , (<label>6</label></formula><formula xml:id="formula_8">)</formula><p>where the MEAN(•) is the operation to get the mean value of patch nodes set P l+1 i associated with the i-th region node and P l+1 1 ∈ R 1×C and the C is the feature channel of nodes, and Rl+1 is the region nodes set after interaction.</p><p>Region-Level Block. The final part of this module is to learn the long-range correlations of the interacted region-level nodes:</p><formula xml:id="formula_9">R l+1 = RL( Rl+1 )<label>(7)</label></formula><p>where l = 1, 2, ..., L is the index of the HIViT module,</p><formula xml:id="formula_10">R = {r 1 , r 2 , • • • , r N },</formula><p>and RL(•) has a similar structure to P L(•).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Slide-Level Prediction</head><p>In the final stage of our framework, we design a Fusion block to combine the coarse-grained and fine-grained features learned from the WSI pyramids. Specifically, we use an element-wise summation operation to fuse the coarse-grained thumbnail feature and patch-level features from the Hierarchical Interaction GNN part, and then further fuse the fine-grained patch-level features from the HIViT part with a concatenation operation. Finally, a 1 × 1 convolution and mean operation followed by a linear projection are employed to produce the slide-level prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Datasets and Evaluation Metrics. We assess the efficacy of the proposed HIGT framework by testing it on two publicly available datasets (KICA and ESCA) from The Cancer Genome Atlas (TCGA) repository. The datasets are described below in more detail:</p><p>-KICA dataset. The KICA dataset consists of 371 cases of kidney carcinoma, of which 279 are classified as early-stage and 92 as late-stage. For the tumor typing task, 259 cases are diagnosed as kidney renal papillary cell carcinoma, while 112 cases are diagnosed as kidney chromophobe. -ESCA dataset. The ESCA dataset comprises 161 cases of esophageal carcinoma, with 96 cases classified as early-stage and 65 as late-stage. For the tumor typing task, there are 67 squamous cell carcinoma cases and 94 adenocarcinoma cases.</p><p>Experimental Setup. The proposed framework was implemented by PyTorch <ref type="bibr" target="#b13">[14]</ref> and PyTorch Geometric <ref type="bibr" target="#b4">[5]</ref>. All experiments were conducted on a workstation with eight NVIDIA GeForce RTX 3090 (24 GB) GPUs. The shape of all nodes' features extracted by KimiaNet is set to 1 × 1024. All methods are trained with a batch size of 8 for 50 epochs. The learning rate was set as 0.0005, with Adam optimizer. The accuracy (ACC) and area under the curve (AUC) are used as the evaluation metric. All approaches were evaluated with five-fold cross-validations (5-fold CVs) from five different initializations. Comparison with State-of-the-Art Methods. We first compared our proposed HIGT framework with two groups of state-of-the-art WSI analysis methods: (1) non-hierarchical methods including: ABMIL <ref type="bibr" target="#b8">[9]</ref>, CLAM-SB <ref type="bibr" target="#b11">[12]</ref>, Deep-AttnMIL <ref type="bibr" target="#b17">[18]</ref>, DS-MIL <ref type="bibr" target="#b10">[11]</ref>, LA-MIL <ref type="bibr" target="#b14">[15]</ref>, and (2) hierarchical methods including: H2-MIL <ref type="bibr" target="#b6">[7]</ref>, HIPT <ref type="bibr" target="#b2">[3]</ref>. For LA-MIL <ref type="bibr" target="#b14">[15]</ref> method, it was introduced with a single-scale Graph-Transformer architecture. For H2-MIL <ref type="bibr" target="#b6">[7]</ref> and HIPT <ref type="bibr" target="#b2">[3]</ref>, they were introduced with a hierarchical Graph Neural Network and hierarchical Transformer architecture, respectively. The results for ESCA and KICA datasets are summarized in Table <ref type="table" target="#tab_0">1</ref> and Table <ref type="table" target="#tab_1">2</ref>, respectively. Overall, our model achieves a content result both in AUC and ACC of classifying the WSI, and especially in predicting the more complex task (i.e. Staging) compared with the SOTA approaches. Even for the non-hierarchical Graph-Transformer baseline LA-MIL and hierarchical transformer model HIPT, our model approaches at least around 3% and 2% improvement on AUC and ACC in the classification of the Staging of the KICA dataset. Therefore we believe that our model benefits a lot from its used modules and mechanisms.</p><p>Ablation Analysis. We further conduct an ablation study to demonstrate the effectiveness of the proposed components. The results are shown in Table <ref type="table" target="#tab_2">3</ref>. In its first row, we replace the RAConv+ with the original version of this operation. And in the second row, we replace the Separable Self Attention with a canonical transformer block. The third row changes the bidirectional interaction mechanism into just one direction from region-level to patch-level. And the last row, we remove the fusion block from our model. Finally, the ablation analysis results show that all of these modules we used actually improved the prediction effect of the model to a certain extent. Computation Cost Analysis. We analyze the computation cost during the experiments to compare the efficiency between our methods and existing state-ofthe-art approaches. Besides we visualized the model size (MB) and the training memory allocation of GPU (GB) v.s. performance in KICA's typing and staging task plots in Fig. <ref type="figure">2</ref>. All results demonstrate that our model is able to maintain the promising prediction result while reducing the computational cost and model size effectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose HIGT, a framework that simultaneously and effectively captures local and global information from the hierarchical WSI. Firstly, the constructed hierarchical data structure of the multi-resolution WSI is able to offer multi-scale information to the later model. Moreover, the redesigned H2-MIL and HIViT capture the short-range and long-range correlations among varying magnifications of WSI separately. And the bidirectional interaction mechanism and fusion block can facilitate communication between different levels in the Transformer part. We use IHPool and apply the Separable Self Attention to deal with the inherently high computational cost of the Graph-Transformer model. Extensive experimentation on two public WSI datasets demonstrates the effectiveness and efficiency of our designed framework, yielding promising results. In the future, we will evaluate on other complex tasks such as survival prediction and investigate other techniques to improve the efficiency of our framework.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed HIGT framework. A WSI pyramid will be constructed as a hierarchical graph. Our proposed Hierarchical Interaction GNN and Hierarchical Interaction ViT block can capture the local and global features, and the Bidirectional Interaction module in the latter allows the nodes from different levels to interact. And finally, the Fusion block aggregates the coarse-grained and fine-grained features to generate the slide-level prediction.</figDesc><graphic coords="3,59,49,60,17,334,45,162,52" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with other methods on ESCA. Top results are shown in bold.</figDesc><table><row><cell>Method</cell><cell cols="2">Staging</cell><cell cols="2">Typing</cell></row><row><cell></cell><cell>AUC</cell><cell>ACC</cell><cell>AUC</cell><cell>ACC</cell></row><row><cell>ABMIL [9]</cell><cell>6 4 .53 ± 4.80</cell><cell>64.39 ± 5.05</cell><cell>94.11 ± 2.69</cell><cell>93.07 ± 2.68</cell></row><row><cell>CLAM-SB [12]</cell><cell>67.45 ± 5.40</cell><cell>67.29 ± 5.18</cell><cell>93.79 ± 5.52</cell><cell>93.47 ± 5.77</cell></row><row><cell cols="2">DeepAttnMIL [18] 67.96 ± 5.52</cell><cell>67.53 ± 4.96</cell><cell>95.68 ± 1.94</cell><cell>94.43 ± 3.04</cell></row><row><cell>DS-MIL [11]</cell><cell>6 6 .92 ± 5.28</cell><cell>66.83 ± 5.57</cell><cell>95.96 ± 3.07</cell><cell>94.77 ± 4.10</cell></row><row><cell>LA-MIL [15]</cell><cell>6 3 .93 ± 6.19</cell><cell>63.45 ± 6.19</cell><cell>95.23 ± 3.75</cell><cell>94.69 ± 3.94</cell></row><row><cell>H2-MIL [7]</cell><cell>6 3 .20 ± 8.36</cell><cell>62.72 ± 8.32</cell><cell>91.88 ± 4.17</cell><cell>91.31 ± 4.18</cell></row><row><cell>HIPT [3]</cell><cell>6 8 .59 ± 5.62</cell><cell>68.45 ± 6.39</cell><cell>94.62 ± 2.34</cell><cell>93.01 ± 3.28</cell></row><row><cell>Ours</cell><cell>71.11 ± 6.04</cell><cell>70.53 ± 5.41</cell><cell>96.81 ± 2.49</cell><cell>96.16 ± 2.85</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison with other methods on KICA. Top results are shown in bold.</figDesc><table><row><cell>Method</cell><cell cols="2">Staging</cell><cell cols="2">Typing</cell></row><row><cell></cell><cell>AUC</cell><cell>ACC</cell><cell>AUC</cell><cell>ACC</cell></row><row><cell>ABMIL [9]</cell><cell>7 7 .40 ± 3.87</cell><cell>75.94 ± 5.06</cell><cell>97.76 ± 1.74</cell><cell>98.86 ± 0.69</cell></row><row><cell>CLAM-SB [12]</cell><cell>77.16 ± 3.64</cell><cell>76.61 ± 4.31</cell><cell>96.76 ± 3.42</cell><cell>97.13 ± 2.99</cell></row><row><cell cols="2">DeepAttnMIL [18] 76.77 ± 1.94</cell><cell>75.94 ± 2.41</cell><cell>97.44 ± 1.04</cell><cell>96.30 ± 2.63</cell></row><row><cell>DS-MIL [11]</cell><cell>7 7 .33 ± 4.11</cell><cell>76.57 ± 5.14</cell><cell>98.03 ± 1.13</cell><cell>97.31 ± 1.85</cell></row><row><cell>LA-MIL [15]</cell><cell>6 9 .37 ± 5.27</cell><cell>68.73 ± 5.09</cell><cell>98.34 ± 0.98</cell><cell>97.71 ± 1.76</cell></row><row><cell>H2-MIL [7]</cell><cell>6 5 .59 ± 6.65</cell><cell>64.48 ± 6.20</cell><cell>98.06 ± 1.43</cell><cell>96.99 ± 3.01</cell></row><row><cell>HIPT [3]</cell><cell>7 5 .93 ± 2.01</cell><cell>75.34 ± 2.31</cell><cell>98.71 ± 0.49</cell><cell>97.32 ± 2.24</cell></row><row><cell>Ours</cell><cell>78.80 ± 2.10</cell><cell>76.80 ± 2.30</cell><cell>98.90 ± 0.60</cell><cell>97.90 ± 1.40</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation analysis on KICA dataset.</figDesc><table><row><cell>Method</cell><cell>Staging</cell><cell></cell><cell>Typing</cell></row><row><cell></cell><cell>AUC</cell><cell>ACC</cell><cell>AUC</cell><cell>ACC</cell></row><row><cell cols="5">H2-MIL + HIViT 77.35 ± 3.41 77.16 ± 3.29 98.56 ± 1.01 95.00 ± 1.75</cell></row><row><cell>Ours w/o SSA</cell><cell cols="4">73.45 ± 8.48 71.47 ± 3.21 97.94 ± 2.51 97.42 ± 2.65</cell></row><row><cell>Ours w/o BI</cell><cell cols="4">72.42 ± 2.09 71.34 ± 7.23 98.04 ± 8.30 96.54 ± 2.80</cell></row><row><cell cols="5">Ours w/o Fusion 77.87 ± 2.09 76.80 ± 2.95 98.46 ± 0.88 97.35 ± 1.81</cell></row><row><cell>Ours</cell><cell cols="3">78.80 ± 2.10 76.80 ± 2.30 98</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>.90 ± 0.60 97.90 ± 1.40 Fig</head><label></label><figDesc></figDesc><table /><note><p>. 2. Computational analysis of our framework and some selected SOTA methods. From left to right are scatter plots of Typing AUC v.s. GPU Memory Allocation, Staging AUC v.s. GPU Memory Allocation, Typing AUC v.s. Model Size, Staging AUC v.s. Model Size.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. The work described in this paper was partially supported by grants from the <rs type="funder">National Natural Science Fund</rs> (<rs type="grantNumber">62201483</rs>), the <rs type="funder">Research Grants Council of the Hong Kong Special Administrative Region, China</rs> (<rs type="grantNumber">T45-401/22-N</rs>), and <rs type="funder">The Hong Kong Polytechnic University</rs> (<rs type="grantNumber">P0045999</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_pB9g3zp">
+					<idno type="grant-number">62201483</idno>
+				</org>
+				<org type="funding" xml:id="_H7pyb3k">
+					<idno type="grant-number">T45-401/22-N</idno>
+				</org>
+				<org type="funding" xml:id="_QQw2Ps6">
+					<idno type="grant-number">P0045999</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43987-2 73.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Geospatial immune variability illuminates differential evolution of lung adenocarcinoma</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Abduljabbar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Med</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1054" to="1062" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">How attentive are graph attention networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Brody</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Alon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Yahav</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2105.14491</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Scaling vision transformers to gigapixel images via hierarchical self-supervised learning</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2022-06">June 2022</date>
+			<biblScope unit="page" from="16144" to="16155" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Whole slide images are 2D Point Clouds: context-aware survival prediction using patch-based graph convolutional networks</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87237-3_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87237-333" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2021: 24th International Conference</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Strasbourg, France; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer International Publishing</publisher>
+			<date type="published" when="2021-10-01">September 27 -October 1, 2021. 2021</date>
+			<biblScope unit="page" from="339" to="349" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VIII</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Fast graph representation learning with pytorch geometric</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Lenssen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1903.02428</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Early neoplasia identification in Barrett&apos;s esophagus via attentive hierarchical aggregation and self-distillation</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2021.102092</idno>
+		<ptr target="https://doi.org/10.1016/j.media.2021.102092" />
+	</analytic>
+	<monogr>
+		<title level="j">Medical Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">102092</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">H 2 -mil: Exploring hierarchical representation with heterogeneous multiple instance learning for whole slide image analysis</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="933" to="941" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Squeeze-and-excitation networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="7132" to="7141" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Attention-based deep multiple instance learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ilse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tomczak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="2127" to="2136" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A dataset and a technique for generalized nuclear segmentation for computational pathology</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Verma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bhargava</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vahadane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sethi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1550" to="1560" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Dual-stream multiple instance learning network for whole slide image classification with self-supervised contrastive learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>Eliceiri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="14318" to="14328" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Data-efficient and weakly supervised computational pathology on whole-slide images</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Williamson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barbieri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mahmood</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="555" to="570" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Separable self-attention for mobile vision transformers</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mehta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rastegari</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.02680</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Pytorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Local attention graphbased transformer for multi-target genetic alteration prediction</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Reisenbüchler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Wagner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Boxberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Peng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-737" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer Nature Switzerland</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="377" to="386" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Fine-tuning and training of densenet for histopathology image representation using TCGA diagnostic slides</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Riasatian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">102032</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Representing long-range context for graph neural networks with global attention</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wright</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mirhoseini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Stoica</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="13266" to="13279" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Whole slide images based cancer survival prediction using attention guided deep multiple instance learning networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jonnagaddala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Hawkins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page">101789</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Pathological evidence for residual SARS-CoV-2 in pulmonary tissues of a ready-for-discharge patient</title>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">H</forename><surname>Yao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell Res</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="541" to="543" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A graph-transformer for whole slide image classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3003" to="3015" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

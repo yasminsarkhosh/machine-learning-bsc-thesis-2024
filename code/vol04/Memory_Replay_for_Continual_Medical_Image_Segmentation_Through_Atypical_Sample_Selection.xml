@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Memory Replay for Continual Medical Image Segmentation Through Atypical Sample Selection</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Sutanu</forename><surname>Bera</surname></persName>
+							<email>sutanu.bera@iitkgp.ac.in</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vinay</forename><surname>Ummadi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Debashis</forename><surname>Sen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Subhamoy</forename><surname>Mandal</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Prabir</forename><forename type="middle">Kumar</forename><surname>Biswas</surname></persName>
+						</author>
+						<title level="a" type="main">Memory Replay for Continual Medical Image Segmentation Through Atypical Sample Selection</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="513" to="522"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">1767F81E102A803E387C95679DAD5C40</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_49</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:49+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Memory Replay</term>
+					<term>Continual Learning</term>
+					<term>Medical Image Segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Medical image segmentation is critical for accurate diagnosis, treatment planning and disease monitoring. Existing deep learning-based segmentation models can suffer from catastrophic forgetting, especially when faced with varying patient populations and imaging protocols. Continual learning (CL) addresses this challenge by enabling the model to learn continuously from a stream of incoming data without the need to retrain from scratch. In this work, we propose a continual learningbased approach for medical image segmentation using a novel memory replay-based learning scheme. The approach uses a simple and effective algorithm for image selection to create the memory bank by ranking and selecting images based on their contribution to the learning process. We evaluate our proposed algorithm on three different problems and compare it with several baselines, showing significant improvements in performance. Our study highlights the potential of continual learningbased algorithms for medical image segmentation and underscores the importance of efficient sample selection in creating memory banks.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is an essential task in clinical practice, enabling accurate diagnosis, treatment planning, and disease monitoring. However, existing medical segmentation methods often encounter challenges related to changes in imaging protocols and variations in patient populations. These challenges can significantly impact the performance and generalizability of segmentation models. For instance, a segmentation model trained on MRI images from a specific S. Bera and V. Ummadi-These authors contributed equally to this work and share the first authorship. patient population may not perform well when applied to a different population with distinct demographic and clinical characteristics. Similarly, variations in imaging protocols, such as the use of different contrast agents or imaging parameters, can also affect the model's accuracy and reliability. To ensure accurate segmentation, it is necessary to retrain or fine-tune the model with current data before deploying it. However, this process often leads to catastrophic forgetting, where the model loses previously acquired knowledge while being trained on the current data. Catastrophic forgetting occurs due to the neural network's inability to learn from a continuous stream of data without disregarding previously learned information. Retraining the network using the complete training set, including both old and current data, is not always feasible or practical due to reasons such as the unavailability of old data or data privacy concerns. Moreover, training the network from scratch every time for every perturbation is a resource-intensive and time-sensitive process. Continual learning aims to address this limitation of catastrophic forgetting by enabling the model to learn continuously from a stream of incoming data without the need to retrain the model from scratch. Continual learning algorithms have gained significant interest lately for computer vision tasks like image denoising, superresolution, and image classification. However, the development of efficient continual learning algorithms specifically designed for medical image segmentation has been largely overlooked in the literature. To address the above gap, our study proposes a continual learning based approach for medical image segmentation, which can be used to train any backbone network. In our approach, we leverage the recently proposed concept of the memory replay-based continual learning (MBCL) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b16">17]</ref>. In MBCL, a memory buffer is used to store and replay previously learned data, enabling the model to retain important information while learning from new data. MBCL is, however, hampered by a few bottlenecks associated with medical images that pose a serious obstacle to its proper use in medical image segmentation. The efficiency of MBCL largely depends on the images stored in the memory bank <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b17">18]</ref>, as the stored images must faithfully represent the previous task. It is known that medical image segmentation faces a major challenge of class imbalance. If an image with an under-representation of the positive class is stored in the memory bank, then it impedes the network from effectively remembering the previous task. In addition, not all medical images for training contribute equally to the learning process. So, images that pose greater challenges for the segmentation network should be saved in the memory bank. The importance of identifying atypical examples before creating memory banks cannot be overstated.</p><p>We propose a simple yet effective algorithm for image selection while creating the memory bank. Two different ranking mechanisms, which address the bottlenecks related to medical images discussed above, are proposed to rank all the images present in the training set. Then, images to be stored in the memory bank are selected using a combined ranking. Further, we suggest the cropping of the images around the organ of interest in order to minimize the size of the memory bank. An extensive evaluation is performed on three different problems, i.e., continual prostrate segmentation, continual hippocampus segmentation, and task incremental segmentation of the prostate, hippocampus and spleen. We consider several baselines including EWC <ref type="bibr" target="#b11">[12]</ref>, L2 regularization-based <ref type="bibr" target="#b9">[10]</ref>, and representation learning-based <ref type="bibr" target="#b15">[16]</ref>. Our method is found to outperform the conventional MBCL, and all the baseline mentioned above by a significant margin, creating a new benchmark for continual learning-based medical image segmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Proposed Methodology</head><p>We are given a sequential stream of images from K sites, which are sequentially used to train a segmentation model. In a round k ∈ [1, K] of this continual learning procedure, we can only obtain images and ground truths {(x k,i , y k,i )} n k i=1 from a new incoming site (dataset) D k without access to old data from previous sites D k-1 . Due to catastrophic forgetting, this type of sequential learning results in a drop in performance for all the previous sites (≤ D k-1 ) after training with images from D k site as the parameters of the previous site or task are overwritten while learning a new task. In naive memory replay-based continual learning, a memory buffer, M, is used to store a small number of examples of past sites (≤ D k-1 ), which can be used to train the model along with the new data. Unlike other tasks like image classification or image restoration, for downstream tasks like medical image segmentation, the selection of images for storing in the M is very crucial. A medical image segmentation (like hippocampus segmentation) approach typically has a very small target organ. It is very likely that randomly selected images for storage in the M will have an under-representation of the positive (hippocampus) class. Further, the contribution of each training sample is not equal towards the learning, as a network usually learns more from examples that are challenging to segment. Based on the above observations, we propose two image ranking schemes to sort the images for storing in M (see Fig. <ref type="figure" target="#fig_0">1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Positive Class Based Ranking (PCR)</head><p>In this ranking scheme, we rank an input image volume according to the percentage of voxels corresponding to the positive class available in the volume.</p><p>Let cr k,i be the positive class based ranking score for the sample input-ground truth pair (x k,i , y k,i ) from the dataset D k . We use the ground truth label y k,i to calculate the score of each volume. Let H, W and D respectively be the height, width and number of slices in the 3D volume of y k,i . The voxel value at location (h, w, d) in the ground truth label y k,i is represented by y k,i h,w,d ∈ 0, 1. If the voxel value at a location (h, w, d) is equal to 1, then the voxel belongs to the positive class. Let us use |y k,i | to represent the total number of voxels in the 3D volume. For a sample pair (x k,i , y k,i ), cr k,i is computed as follows:</p><formula xml:id="formula_0">cr k,i = H-1 h=0 W -1 w=o D-1 d=0 (y k,i h,w,d ) |y k,i | (1)</formula><p>The rationale behind this ranking scheme is that by selecting volumes with a higher positive class occupancy, we can minimize the risk of underrepresentation of the positive class leading to a continuously trained network that remembers previous tasks more faithfully.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Gradient Based Ranking (GBR)</head><p>Here, we intend to identify the examples which the segmentation network finds hard to segment. In this ranking, we leverage the relationship between example difficulty and gradient variance, which has been previously observed in other studies <ref type="bibr" target="#b1">[2]</ref>. Specifically, the neural network tends to encounter high gradients on examples that are hard to learn. With this motivation, we devise a simple method for calculating the score of every sample based on gradients, outlined in Algorithm 1. This algorithm enables the calculation of the gradient-based score during the network's training in real-time. In the algorithm, f (θ) refers to the image segmentation network with parameter θ and end for 13: end for gradients for the current sample are represented by cg, and gr k,i accumulates the absolute gradient difference between cg and previous gradients pg k,i for all training epochs. Essentially, a high value of gr k,i signifies a large gradient variance and implies that the example is difficult.</p><formula xml:id="formula_1">L k (θ) = 1 n k n k i=1 l(f (θ; x k,i ), y k,i ) denotes the loss function employed to train f (θ). gr k,i is the gradient based score assigned to a sample D k,i , where i ∈ [1, n k ] and k ∈ [1, K]. The corresponding Algorithm 1. Gradient-based Sample Score 1: for k = 1 . . . K do Incoming dataset D k 2: n k = |D k | 3: θ ← θ0</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Gradient Plus Class Score (GPCS) Sampling for Memory</head><p>Once the score gr k,i and cr k,i are available for a dataset D k , they are normalized to [0, 1] range and stored for future use. If p samples are to be selected for the replay memory M, then p 2 will be selected using gr k,i and other p 2 using cr k,i . However, we do not store entire image volumes in the memory. We propose a straightforward yet effective strategy to optimally utilize the memory bank size for continual medical segmentation tasks. Typically, the organ of interest in these tasks occupies only a small portion of the entire image, resulting in significant memory wastage when storing the complete volume. For example, the hippocampus, which is a common region of interest in medical image segmentation, occupies less than 0.5% of the total area. We propose to store only a volumetric crop of the sequence where the region of interest is present rather than the complete volume. This enables us to make more efficient use of the memory, allowing significant amounts of memory for storing additional crops within a given memory capacity. Thus, we can reduce memory wastage and optimize memory usage for medical image segmentation.</p><p>Consider that an image-label pair (x k,i , y k,i ) from a dataset D k has dimensions H ×W ×D (height×width×sequence length). Instead of a complete imagelabel pair, a crop-sequence of dimension h c ×w c ×d c with h c ≤ H, w c ≤ W, d c ≤ D is stored. We also use an additional hyperparameter, foreground background ratio fbr ∈ [0, 1] to store some background areas, as described below fbr =</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Number of crops having RoI Number of crops not having RoI</head><p>(2)</p><p>Using only foreground regions in problems such as task incremental learning may result in a high degree of false positive segmentation. In such cases, having a few crops of background regions helps in reducing the forgetting in background regions as discussed in Sect. 3.3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Details</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We conduct experiments to evaluate the effectiveness of our methods in two different types of incremental learning tasks. To this end, we use seven openly available datasets for binary segmentation tasks: four prostate datasets (Prostate158 <ref type="bibr" target="#b0">[1]</ref>, NCI-ISBI <ref type="bibr" target="#b2">[3]</ref>, Promise12 <ref type="bibr" target="#b13">[14]</ref>, and Decathlon <ref type="bibr" target="#b4">[5]</ref>), two hippocampus datasets (Drayd <ref type="bibr" target="#b7">[8]</ref> and HarP <ref type="bibr" target="#b6">[7]</ref>), and one Spleen dataset from Decathlon <ref type="bibr" target="#b4">[5]</ref>. The first set of experiments involved domain incremental prostate segmentation, with the datasets being trained in the following order: Prostate158 → ISBI → Promise12 → Decathlon. The second experiment involved domain incremental hippocampus segmentation, with the datasets being trained in the order HarP → Drayd. Finally, we conducted task incremental segmentation for three organs -prostate, spleen, and hippocampus -following the sequence: Promise12 (prostate) → MSD (spleen) → Drayd (hippocampus).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Evaluation Metrics</head><p>To evaluate the effectiveness of our proposed methods against baselines, we use the segmentation evaluation metric Dice Similarity Coefficient (DSC) along with standard continual learning (CL) metrics. The CL metrics <ref type="bibr" target="#b8">[9]</ref> comprise Average Accuracy (ACC), Backward Transfer (BWT) <ref type="bibr" target="#b12">[13]</ref>, and Average Forgetting (AFGT) <ref type="bibr" target="#b18">[19]</ref>. BWT measures the model's ability to apply newly learned knowledge to previously learned tasks, While AFGT measures the model's retention of previously learned knowledge after learning a new task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Training Details</head><p>In this work, we consider a simple segmentation backbone network UNet, which is widely used in medical image segmentation. Both the proposed and baseline methods were used to train a Residual UNet <ref type="bibr" target="#b10">[11]</ref>. All the methods for comparison (Tables 2, 3 and 4), except for Sequential (SGD), are trained using the Adam optimizer with a learning rate of 0.001, a momentum of 0.9, and a weight decay of 0.00001. Sequential(SGD) employs an SGD optimizer with the same hyperparameters as Adam. The training loss used is DiceCELoss, which combines Dice loss and Cross Entropy loss. During task incremental segmentation training using GPCC, the fbr parameter is set to 0.7, while the default value of 1.0 is used for other tasks. In parts of our GPCC experiments, where we examine continual prostate segmentation as well as continual prostate, spleen, and hippocampus segmentation, both the height (h c ) and width (w c ) of each volume are fixed to 160. In continual hippocampus segmentation experiments, these values are reduced to 128. Note that although we perform the experiments using UNet network, any sophisticated network like VNet, or DeepMedic can also be trained continually using our method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results and Discussion</head><p>Ablation Study of Our Atypical Sample Selection: <ref type="foot" target="#foot_0">1</ref> In order to evaluate the effectiveness of every module proposed in our work, an ablation study is conducted. The results of the analysis shown in Table <ref type="table" target="#tab_1">1</ref> indicates that randomly storing samples leads to a significant decrease in performance during in the earlier trained domains due to insufficient representation of the domain distributions. Both PCR and GBR shows improvements in ACC over random replay Next, the objective comparison of different methods of continual hippocampus segmentation is shown in Table <ref type="table" target="#tab_3">3</ref>. This task poses a significant challenge due to the small region of interest (RoI) in whole brain MRI scans. Our proposed approach outperforms all other baseline methods in terms of CL metrics. When comparing GPCC Replay with six crops of 128 × 128 × D images to Random Replay(3) using full-size images of 233 × 189 × D, we find that GPCC Replay is more memory-efficient consuming 26% less memory while still achieving an 1.1% ACC performance improvement. While some baselines showed higher DSC scores on the second domain, a high value of AFGT indicates their inability to  retain previously learned knowledge, which suggests limitations in their ability to perform continual training of the backbone. We finally assess the performance of our method on an even more challenging task of incremental learning segmentation. This involves continuously training a single model to accurately segment various organs while incorporating new organs as segmentation targets during each episode. Utilizing a single model for segmenting multiple organs offers potential advantages, particularly when there are constraints such as limited annotation data that hinder joint training. Task or class incremental learning becomes invaluable in such scenarios, as it allows us to incorporate new organs as segmentation targets without requiring a complete retraining process. To investigate the feasibility of this concept, we dedicate a section in our study to experimental analysis. The results of this analysis are presented in Table <ref type="table" target="#tab_4">4</ref>. We find that GPCC replay <ref type="bibr" target="#b11">(12)</ref> shows substantial improvement by increasing the ACC score by 45.4% over Sequential(SGD) and achieves a 5% increase in ACC compared to Random Replay(3), outperforming all the baselines. In this case, GPCC Replay is also lighter in memory consumption by up to 32%.</p><p>Visually analyzing the predictions for a test sample in Fig. <ref type="figure">2</ref> from the task of incremental segmentation, L2 regression and Random Replay(3) are seen to produce only partial segmentation of RoI. On the other hand, GPCC predictions outperform joint learning and are very close to Ground Truths, with a DSC score ≥ 90%. More visual comparison among different methods is given in the supplementary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>This paper proposes a novel approach to address the challenge of catastrophic forgetting in medical image segmentation using continual learning. The paper presents a memory replay-based continual learning paradigm that enables the model to learn continuously from a stream of incoming data without the need to retrain from scratch. The proposed algorithm includes an effective image selection method that ranks and selects images based on their contribution to the learning process and faithful representation of the task. The study evaluates the proposed algorithm on three different problems and demonstrates significant performance improvements compared to several relevant baselines.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Graphical summary of the concept of the proposed method. Positive Class Ranking and Gradient Based Ranking are computed online while training. Both rankings are used to create crops and stored in memory. The stored crops are to be used for replay while training on future datasets.</figDesc><graphic coords="2,85,29,53,81,253,39,77,89" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Ablation study on continual prostate segmentation. The best DSC, ACC and AFGT are presented in bold. GPCC gives the best performance in general. We consider several benchmark continual learning algorithms including L2 Regularization, EWC and Representation Replay as our baselines. First, we compare the performance of our method on continual prostate segmentation tasks. The objective comparison among different methods on this task is shown in Table2. The proposed methods perform on par or better with joint learning, which is considered an upper bound in continual learning settings. Compared with Sequential (SGD) and Random Replay<ref type="bibr" target="#b2">(3)</ref> </figDesc><table><row><cell cols="3">Learning Method Dataset wise DSC scores (%)</cell><cell></cell><cell></cell><cell>CL Metrics</cell></row><row><cell></cell><cell cols="5">Prostate158 (↑) NCI-ISBI (↑) Promise12 (↑) Decathlon (↑) ACC (↑)</cell><cell>BWT (↑) AFGT (↓)</cell></row><row><cell cols="2">Random Replay(3) 67.5 ± 3.3</cell><cell>85.7 ± 3.0</cell><cell>74.8 ± 10.3</cell><cell>85.7 ± 1.3</cell><cell cols="2">78.4 ± 2.8 -6.8 ± 3.2 7.7 ± 2.9</cell></row><row><cell>PCR Replay(3)</cell><cell>82.9 ± 1.4</cell><cell>81.6 ± 1.6</cell><cell>77.5 ± 3.8</cell><cell>82.8 ± 1.8</cell><cell cols="2">81.2 ± 2.5 -3.6 ± 1.3 4.6 ± 1.4</cell></row><row><cell>GBR Replay(3)</cell><cell>82.4 ± 1.2</cell><cell>83.9 ± 1.8</cell><cell>78.6 ± 3.4</cell><cell>81.6 ± 1.4</cell><cell cols="2">81.6 ± 2.2 -2.1 ± 0.9 2.7 ± 0.7</cell></row><row><cell>GPCC Replay(6)</cell><cell>82.1 ± 1.8</cell><cell>85.9 ± 2.3</cell><cell>80.8 ± 5.2</cell><cell>86.3 ± 1.5</cell><cell cols="2">82.8 ± 1.3 -1.6 ± 0.7 2.3 ± 0.3</cell></row><row><cell cols="7">by 2.8% and 3.2%, respectively. GPCC provides further enhancements across</cell></row><row><cell cols="7">all domains, resulting in a final accuracy gain of 4.4% over the random replay.</cell></row><row><cell cols="3">Comparison with Baselines:</cell><cell></cell><cell></cell><cell></cell></row></table><note><p><p><p><p>2 </p>, our method with GPCC</p><ref type="bibr" target="#b5">(6)</ref> </p>shows an ACC improvement of 9.2% and 4.4% respectively. With a memory footprint, GPCC with six crops of 160 × 160 × D is 65% lighter compared to Random Replay (3) with an average image size of 384 × 384 × D.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Objective comparison of different methods on continual prostate segmentation. The best DSC (in continual), ACC and AFGT are presented in bold.</figDesc><table><row><cell>Learning Method</cell><cell cols="2">Dataset wise DSC scores(%)</cell><cell></cell><cell></cell><cell>CL Metrics</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="5">Prostate158 (↑) NCI-ISBI (↑) Promise12 (↑) Decathlon (↑) ACC (↑)</cell><cell>BWT (↑)</cell><cell>AFGT (↓)</cell></row><row><cell>Individual</cell><cell>82.3 ± 1.3</cell><cell>79.4 ± 1.6</cell><cell>87.5 ± 2.3</cell><cell>81.5 ± 2.1</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Joint</cell><cell>83.5 ± 1.4</cell><cell>86.8 ± 1.8</cell><cell>82.6 ± 2.6</cell><cell>86.4 ± 1.5</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Sequential(SGD)</cell><cell>61.8 ± 2.7</cell><cell>82.4 ± 2.4</cell><cell>66.4 ± 9.4</cell><cell>83.6 ± 1.5</cell><cell cols="3">73.6 ± 2.3 -10.6 ± 1.4 11.8 ± 1.2</cell></row><row><cell>L2 Regularization</cell><cell>36.7 ± 1.6</cell><cell>59.8 ± 5.2</cell><cell>59.3 ± 10.6</cell><cell>78.9 ± 4.8</cell><cell cols="2">58.7 ± 3.8 0.13 ± 0.0</cell><cell>0.1 ± 0.0</cell></row><row><cell>EWC</cell><cell>61.6 ± 3.2</cell><cell>82.6 ± 2.6</cell><cell>64.2 ± 10.9</cell><cell>85.3 ± 1.3</cell><cell cols="3">73.4 ± 3.1 -4.6 ± 1.7 6.07 ± 1.8</cell></row><row><cell cols="2">Representation Replay 60.2 ± 2.3</cell><cell>65.6 ± 3.2</cell><cell>58.3 ± 6.7</cell><cell>72.1 ± 2.6</cell><cell cols="3">64.0 ± 6.2 -10.3 ± 2.5 11.3 ± 3.4</cell></row><row><cell>Random Replay(3)</cell><cell>67.5 ± 3.3</cell><cell>85.7 ± 3.0</cell><cell>74.8 ± 10.3</cell><cell>85.7 ± 1.3</cell><cell cols="3">78.4 ± 2.8 -6.8 ± 3.2 7.7 ± 2.9</cell></row><row><cell>GPCC Replay(6)</cell><cell>82.1 ± 1.8</cell><cell>85.9 ± 2.3</cell><cell>80.8 ± 5.2</cell><cell>86.3 ± 1.5</cell><cell cols="3">82.8 ± 1.3 -1.6 ± 0.7 2.3 ± 0.3</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Objective comparison of different methods on continual hippocampus segmentation. The best DSC (in continual), ACC and AFGT are presented in bold.</figDesc><table><row><cell>Learning Method</cell><cell cols="2">Dataset wise DSC scores (%) CL Metrics</cell><cell></cell><cell></cell></row><row><cell></cell><cell>HarP (↑) Drayd (↑)</cell><cell>ACC (↑)</cell><cell cols="2">BWT (↑) AFGT (↓)</cell></row><row><cell>Individual</cell><cell>80.5 ± 2.0 79.1 ± 1.1</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Joint</cell><cell>82.1 ± 0.9 80.2 ± 0.8</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Sequential(SGD)</cell><cell>55.2 ± 2.3 76.5 ± 1.2</cell><cell cols="3">63.4 ± 1.5 -15 ± 2.1 15.3 ± 1.9</cell></row><row><cell>EWC</cell><cell>71.3 ± 0.8 83.4 ± 0.7</cell><cell cols="3">77.3 ± 1.1 -7.6 ± 1.2 7.8 ± 1.3</cell></row><row><cell cols="2">Representation Replay 70.8 ± 1.2 83.6 ± 1.5</cell><cell cols="3">77.2 ± 1.4 -8.2 ± 1.3 8.3 ± 1.5</cell></row><row><cell>L2 Regularization</cell><cell>75.2 ± 0.6 79.1 ± 0.8</cell><cell cols="3">77.3 ± 0.7 -2.2 ± 0.9 2.2 ± 0.9</cell></row><row><cell>Random Replay(3)</cell><cell>83.5 ± 1.8 73.5 ± 1.7</cell><cell cols="3">78.7 ± 1.4 -4.5 ± 0.8 4.5 ± 0.9</cell></row><row><cell>GPCC Replay (6)</cell><cell>83.0 ± 0.7 77.1 ± 0.4</cell><cell>79.</cell><cell></cell><cell></cell></row></table><note><p><p><p><p><p>8 ± 0.6 -2.1 ± 0.5 2.1 ± 0.5 Fig.</p>2</p>. Qualitative results for task incremental segmentation of prostate, spleen, and hippocampus using the methods in Table</p>4</p>. Ground truths are in yellow borders and predictions are in peach. The bolded method has the highest DSC score.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>Comparison of Baselines for Task Incremental Segmentation. The best DSC (in continual), ACC and AFGT are presented in bold. ± 2.5 15.2 ± 3.5 49.4 ± 3.3 -17.2 ± 2.6 17.2 ± 2.6 Random Replay(3) 66.5 ± 2.5 83.7 ± 2.3 80.1 ± 1.5 78.3 ± 1.3 -13.1 ± 1.1 13.1 ± 1.1 GPCC Replay (12) 78.4 ± 1.6 87.9 ± 1.4 80.5 ± 1.5 83.3 ± 1.3 -4.2 ± 1.2 4.2 ± 1.2</figDesc><table><row><cell>Learning Method</cell><cell cols="3">Dataset wise DSC scores (%)</cell><cell>CL Metrics</cell><cell></cell></row><row><cell></cell><cell>Promise12</cell><cell>MSD</cell><cell>Drayd</cell><cell>ACC (↑)</cell><cell>BWT (↑)</cell><cell>AFGT (↓)</cell></row><row><cell></cell><cell cols="3">Prostate (↑) Spleen(↑) Hippocampus(↑)</cell><cell></cell><cell></cell></row><row><cell>Individual</cell><cell>81.5 ± 2.1</cell><cell cols="2">91.5 ± 1.6 79.1 ± 1.1</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Joint</cell><cell>80.5 ± 0.7</cell><cell cols="2">80.5 ± 0.8 79.1 ± 0.6</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell>Sequential(SGD)</cell><cell>0.0 ± 0.0</cell><cell>0.0 ± 0.0</cell><cell>67.5 ± 2.4</cell><cell cols="2">37.9 ± 1.7 -80 ± 1.8</cell><cell>80 ± 1.7</cell></row><row><cell>EWC</cell><cell>0.0 ± 0.0</cell><cell>0.0 ± 0.0</cell><cell>80.8 ± 1.4</cell><cell cols="3">42.6 ± 1.3 -87.3 ± 1.6 87.2 ± 1.7</cell></row><row><cell cols="2">Representation Replay 0.0 ± 0.0</cell><cell>0.0 ± 0.0</cell><cell>80.1 ± 2.4</cell><cell cols="3">42.2 ± 1.3 -86.3 ± 1.2 86.3 ± 1.0</cell></row><row><cell>L2 Regularization</cell><cell>49.7 ± 3.2</cell><cell>56.7</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>All experimental values reported here are the average over four random seeds.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>3 (the number within brackets) is number of volumes stored in memory buffer.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43901-8 49.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Prostate158-an expert-annotated 3T MRI dataset and algorithm for prostate cancer detection</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Adams</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">148</biblScope>
+			<biblScope unit="page">105817</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Estimating example difficulty using variance of gradients</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>D'souza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hooker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="10368" to="10378" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><surname>Nci-Isbi</surname></persName>
+		</author>
+		<ptr target="https://wiki.cancerimagingarchive.net/display/Public/NCI-ISBI+2013+Challenge+-+Automated+Segmentation+of+Prostate+Structures" />
+		<title level="m">segmentation of prostate structures</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Gradient based sample selection for online continual learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Aljundi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Goujaud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The medical segmentation decathlon</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Antonelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4128</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Balaji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Farajtabar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.02418</idno>
+		<title level="m">The effectiveness of memory replay in large scale continual learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Training labels for hippocampal segmentation based on the EADC-ADNI harmonized hippocampal protocol</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Boccardi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Alzheimer&apos;s Dement</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="175" to="183" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Data from: hippocampal replay of experience at real-world speeds</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Denovellis</surname></persName>
+		</author>
+		<idno type="DOI">10.7272/Q61N7ZC3</idno>
+		<ptr target="https://doi.org/10.7272/Q61N7ZC3" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">N</forename><surname>Díaz-Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lomonaco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Filliat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Maltoni</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.13166</idno>
+		<title level="m">Don&apos;t forget, there is more than forgetting: new metrics for continual learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Re-evaluating continual learning scenarios: a categorization and case for strong baselines</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">C</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">C</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ramasamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Kira</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.12488</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Left-ventricle quantification using residual U-Net</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kerfoot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Clough</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Oksuz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-12029-0_40</idno>
+		<idno>978-3-030-12029-0 40</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">STACOM 2018</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Pop</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11395</biblScope>
+			<biblScope unit="page" from="371" to="380" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Overcoming catastrophic forgetting in neural networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kirkpatrick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci</title>
+		<meeting>Natl. Acad. Sci</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="3521" to="3526" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Learning without forgetting</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hoiem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2935" to="2947" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Evaluation of prostate segmentation algorithms for MRI: the promise12 challenge</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Litjens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="359" to="373" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Gradient episodic memory for continual learning</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lopez-Paz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ranzato</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Latent replay for realtime continual learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pellegrini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Graffieti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lomonaco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Maltoni</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/IROS45743.2020.9341460</idno>
+		<ptr target="https://doi.org/10.1109/IROS45743.2020.9341460" />
+	</analytic>
+	<monogr>
+		<title level="m">2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="10203" to="10209" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Experience replay for continual learning</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rolnick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ahuja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schwarz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lillicrap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wayne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">GCR: gradient coreset based replay buffer selection for continual learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tiwari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Killamsetty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Iyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Shenoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="99" to="108" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Continual learning through synaptic intelligence</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zenke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Poole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ganguli</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="3987" to="3995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

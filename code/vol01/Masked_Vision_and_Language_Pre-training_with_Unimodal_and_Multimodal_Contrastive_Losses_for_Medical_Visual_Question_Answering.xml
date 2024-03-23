@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Masked Vision and Language Pre-training with Unimodal and Multimodal Contrastive Losses for Medical Visual Question Answering</title>
+				<funder ref="#_QGcD2v9">
+					<orgName type="full">Natural Science Foundation of Heilongjiang Province</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Pengfei</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Harbin Engineering University</orgName>
+								<address>
+									<settlement>Harbin</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Gang</forename><surname>Liu</surname></persName>
+							<email>liugang@hrbeu.edu.com</email>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Harbin Engineering University</orgName>
+								<address>
+									<settlement>Harbin</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jinlong</forename><surname>He</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Harbin Engineering University</orgName>
+								<address>
+									<settlement>Harbin</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Zixu</forename><surname>Zhao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Harbin Engineering University</orgName>
+								<address>
+									<settlement>Harbin</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shenjun</forename><surname>Zhong</surname></persName>
+							<email>shenjun.zhong@monash.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Monash Biomedical Imaging</orgName>
+								<orgName type="institution">Monash University</orgName>
+								<address>
+									<settlement>Clayton</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Masked Vision and Language Pre-training with Unimodal and Multimodal Contrastive Losses for Medical Visual Question Answering</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="374" to="383"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">008EC5548CECDB819D47719DFAE13E2F</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_36</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:30+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Medical Visual Question Answering</term>
+					<term>Masked Vision Language Pre-training</term>
+					<term>Unimodal and Multimodal Contrastive Losses</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Medical visual question answering (VQA) is a challenging task that requires answering clinical questions of a given medical image, by taking consider of both visual and language information. However, due to the small scale of training data for medical VQA, pre-training fine-tuning paradigms have been a commonly used solution to improve model generalization performance. In this paper, we present a novel self-supervised approach that learns unimodal and multimodal feature representations of input images and text using medical image caption datasets, by leveraging both unimodal and multimodal contrastive losses, along with masked language modeling and image text matching as pre-training objectives. The pre-trained model is then transferred to downstream medical VQA tasks. The proposed approach achieves state-of-the-art (SOTA) performance on three publicly available medical VQA datasets with significant accuracy improvements of 2.2%, 14.7%, and 1.7% respectively. Besides, we conduct a comprehensive analysis to validate the effectiveness of different components of the approach and study different pre-training settings. Our codes and models are available at https://github.com/pengfeiliHEU/MUMC.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical VQA is a specialized domain of VQA that aims to generate answers to natural language questions about medical images. It is very challenging to train deep learning based medical VQA models from scratch, since the medical VQA datasets available for research are relatively small in scale. Many existing works are proposed to leverage pre-trained visual encoders with external datasets to solve downstream medical VQA tasks, such as utilizing denoising autoencoders <ref type="bibr" target="#b0">[1]</ref> and meta-models <ref type="bibr" target="#b1">[2]</ref>. These methods mainly transfer feature encoders that are separately pre-trained on unimodal (image or text) tasks.</p><p>Unlike unimodal pretraining approaches, both image and text feature presentations can be enhanced by learning through the visual and language interactions, given relatively richer resources of medical image caption datasets <ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref>. Liu et al. followed the work of MOCO <ref type="bibr" target="#b18">[19]</ref> that trained teacher model for visual encoder via contrastive loss of different image views (by data augmentations) to improve the generalization of medical VQA <ref type="bibr" target="#b5">[6]</ref>. <ref type="bibr">Eslami et al.</ref> utilized CLIP <ref type="bibr" target="#b6">[7]</ref> for visual model initialization, and learned cross-modality representations from medical image-text pairs by maximizing the cosine similarity between the extracted features of medical images and their corresponding captions <ref type="bibr" target="#b7">[8]</ref>. <ref type="bibr">Cong et al. devised</ref> an innovative framework, which featured a semantic focusing module to emphasize image regions that were pertinent to the caption and a progressive cross-modality comprehension module that iteratively enhanced the comprehension of the correlation between the image and caption <ref type="bibr" target="#b8">[9]</ref>. Chen et al. proposed a medical vision language pre-training approach that used both masked image modelling and masked language modelling to jointly learn representations of medical images and their corresponding descriptions <ref type="bibr" target="#b9">[10]</ref>. However, to the best of our knowledge, there have been no existing methods that explore learning both unimodal and multimodal features at the pre-training stage for downstream medical VQA tasks.</p><p>In this paper, we proposed a new self-supervised vision language pre-training (VLP) approach that applied Masked image and text modeling with Unimodal and Multimodal Contrastive losses (MUMC) in the pre-training phase for solving downstream medical VQA tasks. The model was pretrained on image caption datasets for aligning visual and text information, and transferred to downstream VQA datasets. The unimodal and multimodal contrastive losses in our work are applied to (1) align image and text features;</p><p>(2) learn unimodal image encoders via momentum contrasts of different views of the same image (i.e. different views are generated by different image masks); (3) learn unimodal text encoder via momentum contrasts. We also introduced a new masked image strategy by randomly masking the patches of the image with a probability of 25%, which serves as a data augmentation technique to further enhance the performance of the model. Our approach outperformed existing methods and sets new benchmarks on three medical VQA datasets <ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref>, with significant enhancements of 2.2%, 14.7%, and 1.7% respectively. Besides, we conducted an analysis to verify the effectiveness of different components and find the optimal masking probability. We also conducted a qualitative analysis on the attention maps using Grad-CAM <ref type="bibr" target="#b13">[14]</ref> to validate whether the corresponding part of the image is attended when answering a question.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>In this section, we provide the detailed description of the proposed approach, which includes the network architectures, self-supervised pre-training objectives, and the way to fine-tune on downstream medical VQA tasks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Model Architecture</head><p>In the pre-training phase, the network architecture comprises an image encoder, a text encoder, and a multimodal encoder, which are all based on the transformer architecture <ref type="bibr" target="#b14">[15]</ref>. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>(a), the image encoder leverages a 12-layer Vision Transformer (ViT) <ref type="bibr" target="#b15">[16]</ref> to extract visual features from the input images, while the text encoder employs a 6-layer transformer which is initialized by the first 6 layers of pre-trained BERT <ref type="bibr" target="#b16">[17]</ref>. The last 6 layers of BERT are utilized as the multimodal encoder and incorporated cross-attention at each layer, which fuses the visual and linguistic features to facilitate learning of multimodal interactions. The model is trained on medical image-caption pairs. An image is partitioned into patches of size 16 × 16, and 25% of the patches are randomly masked. The remaining unmasked image patches are converted into a sequence of embeddings by an image encoder. The text, i.e. the image caption is tokenized into a sequence of tokens using a WordPiece <ref type="bibr" target="#b17">[18]</ref> tokenizer and fed into the BERT-based text encoder. In addition, the special tokens, [CLS] are appended to the beginning of both the image and text sequence. To transfer the models trained on image caption datasets to the downstream medical VQA tasks, we utilize the weights from the pre-training stage to initialize the image encoder, text encoder and multimodal encoder, as shown in Fig. <ref type="figure" target="#fig_0">1(b</ref>). To generate answers, we add an answering decoder with a 6-layer transformer-based decoder to the model, which receives the multimodal embeddings and output text tokens. A [CLS] token serves as the initial input token for the decoder, and a [SEP] token is appended to signify the end of the generated sequence. The downstream VQA model is fine-tuned via the masked language model (MLM) loss <ref type="bibr" target="#b16">[17]</ref>, using ground-truth answers as targets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Unimodal and Multimodal Contrastive Losses</head><p>The proposed self-supervised objective attempts to capture the semantic discrepancy between positive and negative samples across both unimodal and multimodal domains at the same time. The unimodal contrastive loss (UCL) aims to differentiate between examples of one modality, such as images or text, in a latent space to make similar examples close. And the multimodal contrastive loss (MCL) learns the alignments between both modalities by maximizing the similarity between images and their corresponding text captions, while separating from the negative examples. In the implementation, we maintain two momentum models for image and text encoders respectively to generate different perspectives or representations of the same input sample, which serve as positive samples for contrastive learning.</p><p>In detail, we denote the image and caption embeddings from the unimodal image encoder and text encoder as v cls and t cls , which are further processed through the transformations g v and g t , to normalize and map the image and text embeddings to be lowerdimensional representations. The embeddings are inserted into a lookup table, and only the most recent 65,535 pairs of image-text embedding are stored for contrastive learning. We utilize the momentum update technique originally proposed in MoCo <ref type="bibr" target="#b18">[19]</ref>, which is updated every k iterations where k is a hyperparameter. We denote the ground-truth one-hot similarity by y i2i (V ), y t2t (T ), y i2t (V ), and y t2i (T ), where the probability of negative pairs is 0 and the probability of the positive pair is 1. The unimodal contrastive losses and multimodal contrastive losses can be defined as the cross-entropy H given as follows:</p><formula xml:id="formula_0">L ucl = 1 2 E (V ,T )D H y i2i (V ), exp(s(V , V i )/τ ) N n=1 exp(s(V , V i )/τ ) + H y t2t (T ), exp(s(T , T i )/τ ) N n=1 exp(s(T , T i )/τ ) (<label>1</label></formula><formula xml:id="formula_1">)</formula><formula xml:id="formula_2">L mcl = 1 2 E (V ,T )D H y i2t (V ), exp(s(V , T i )/τ ) N n=1 exp(s(V , T i )/τ ) + H y t2i (T ), exp(s(T , V i )/τ ) N n=1 exp(s(T , V i )/τ )<label>(2)</label></formula><p>where s denotes cosine similarity function,</p><formula xml:id="formula_3">s(V, V i ) = g v (v cls ) T g v (v cls ) i , s(T, T i ) = g t (t cls ) T g t (t cls ) i , s(V, T i ) = g v (v cls ) T g t (t cls ) i , s(T, V i ) = g t (t cls ) T g v (v cls ) i</formula><p>and τ is a learnable temperature parameter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Image Text Matching</head><p>We adopt the image text matching (ITM) strategy similar to prior works <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21]</ref> as one of the training objectives, by creating a binary classification task with negative text labels randomly sampled from the same minibatch. The joint representation of the image and text are encoded by the multimodal encoder, and utilized as input to the binary classification head. The ITM task is optimized using the cross-entropy loss:</p><formula xml:id="formula_4">L itm = E (V ,T )D H (y itm , p itm (V , T ))<label>(3)</label></formula><p>the function H (, ) represents a cross-entropy computation, where y itm denotes the groundtruth label and p itm (V , T ) is a function for predicting the class.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Masked Language Modeling</head><p>Masked Language Modeling (MLM) is another pre-trained objective in our approach, that predicts masked tokens in text based on both the visual and unmasked contextual information. For each caption text, 15% of tokens are randomly masked and replaced with the special token, <ref type="bibr">[MASK]</ref>. Predictions of the masked tokens are conditioned on both unmasked text and image features. We minimize the cross-entropy loss for MLM:</p><formula xml:id="formula_5">L mlm = E V , T D H (y mlm , p mlm (V , T )) (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where H (, ) is a cross-entropy calculation, T denotes the masked text token, y mlm represents the ground-truth of the masked text token and p mlm (V , T ) is the predicted probability of a masked token.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Masked Image Strategy</head><p>Besides the training objectives, we introduce a masked image strategy as a data augmentation technique. In our experiment, input images are partitioned into patches which are randomly masked with a probability of 25%, and only the unmasked patches are passed through the network. Unlike the previous methods <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b21">22]</ref>, we do not utilize reconstruction loss <ref type="bibr" target="#b22">[23]</ref>, but use this only as a data augmentation method. This enables us to process more samples at each step, resulting in a more efficient pre-training of vision-language models with a similar memory footprint.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>Our model is pre-trained on three datasets: ROCO <ref type="bibr" target="#b2">[3]</ref>, MedICaT <ref type="bibr" target="#b3">[4]</ref>, and the Image-CLEF2022 Image Caption Dataset <ref type="bibr" target="#b4">[5]</ref>. ROCO comprises over 80,000 image-caption pairs. MedICaT includes over 217,000 medical images and their corresponding captions. ImageCLEF2022 is another well-known dataset that has nearly 90,000 pairs of medical images and captions.</p><p>For the downstream medical VQA task, we fine-tune and validate the model on three public medical VQA datasets: VQA-RAD <ref type="bibr" target="#b10">[11]</ref>, PathVQA <ref type="bibr" target="#b11">[12]</ref> and SLAKE <ref type="bibr" target="#b12">[13]</ref>. VQA-RAD has 315 radiology images with 3064 question-answer pairs, with 451 pairs used for testing. SLAKE has 14,028 pairs of samples which are further divided into 70% training, 15% validation, and 15% testing subsets. PathVQA is the largest dataset, containing 32,799 pairs of data that are split into training (50%), validation (30%), and test (20%) sets.</p><p>There are two types of questions: closed-ended questions that have limited answer choices (e.g. "yes" or "no") and open-ended questions that VQA models are required to generate answers in free text, which are more challenging.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>Our method was implemented in Python 3.8 and PyTorch 1.10. The experiments were conducted on a server with an Intel Xeon(R) Platinum 8255C and 2 NVIDIA Tesla V100 GPUs with 32 GB memory each. We pre-trained our model on three medical image caption datasets for 40 epochs with a batch size of 64. AdamW <ref type="bibr" target="#b23">[24]</ref> optimizer was used with a weight decay of 0.002 and an initial learning rate of 1e -4 , which decayed to 2e -5 by following the cosine schedule. We utilized randomly cropped images of 256 × 256 resolution as input, and also applied RandAugment to augment more training samples <ref type="bibr" target="#b24">[25]</ref>.</p><p>For downstream medical VQA tasks, we fine-tuned our model for 30 epochs with a batch size of 8. We used the AdamW optimizer with a reduced learning rate of 2e -5 , which decayed to 1e -8 . Besides, we increased image inputs from a resolution of 256 × 256 to 384 × 384 and interpolated the positional encoding following <ref type="bibr" target="#b15">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison with the State-of-the-Arts</head><p>We performed a comparative evaluation of our model against the existing approaches <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b25">26]</ref> on three benchmark datasets, VQA-RAD, PathVQA and SLAKE. Consistent with previous research <ref type="bibr">[1, 2, 6, 8-10, 26, 27]</ref>, we adopt accuracy as the performance metric. We treated VQA as a generative task by calculating similarities between the generated answers and candidate list answers, selecting the highest score as the final answer. As shown in Table <ref type="table" target="#tab_0">1</ref>, our approach outperformed all other methods on all the three datasets in terms of overall performance, and yielded the best accuracy for openended or closed-ended answers. On the VQA-RAD dataset <ref type="bibr" target="#b10">[11]</ref>, our method achieved an absolute margin of 2.2% overall over the current state-of-the-art method, M3AE, with improvements of 4.3% and 0.7% on open-ended and closed-ended answers respectively. On the largest dataset, PathVQA <ref type="bibr" target="#b11">[12]</ref>, our method significantly outperformed the previous state-of-the-art model, AMAM <ref type="bibr" target="#b25">[26]</ref>, by a substantial margin with improvements of 20.8%, 6.0% and 14.7% on the closed-ended, open-ended, and overall answers, respectively. Moreover, on the SLAKE dataset <ref type="bibr" target="#b12">[13]</ref>, the proposed approach exhibited superior performance compared to the existing state-of-the-art model, M3AE, by a margin of 1.7% in terms of overall answer accuracy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Ablation Study</head><p>To further verify the effectiveness of the proposed methods in learning multimodal representations, we conducted an ablation study across all three medical VQA datasets. Table <ref type="table" target="#tab_1">2</ref> shows the overall performance of the medical VQA tasks using various pretraining approaches. Compared to the baseline pre-training tasks (i.e., MLM + ITM), integrating either UCL or MCL significantly improved the performance of the pre-trained model across all medical VQA datasets. Notably, the simultaneous use of UCL and MCL achieved a performance increase of 1.1%, 1.0%, and 0.9% on VQA-RAD, PathVQA, and SLAKE dataset, respectively. Furthermore, to assess the performance of the proposed masked image strategy and identify the optimal masking probability, experiments were conducted by varying the masking probabilities of input images at levels of 0%, 25%, 50% and 75%. As presented in Table <ref type="table" target="#tab_2">3</ref>, the results are consistent among all the three datasets. With 25% masking probability, the model yielded the best results, compared to no masking applied. The performance decreased if 50% and 75% masking probabilities were used.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Visualization</head><p>We utilized Grad-CAM <ref type="bibr" target="#b13">[14]</ref> to visualize the cross-attention maps between the questions and images, and analyzed the relevance of the attended image regions for generating the answers. In Fig. <ref type="figure" target="#fig_1">2</ref>, it showed some attention maps that overlayed on the original images. For answering open-ended questions, the model accurately attended to the relevant infarct regions, as shown in Fig. <ref type="figure" target="#fig_1">2a</ref> and Fig. <ref type="figure" target="#fig_1">2b</ref>. In Fig. <ref type="figure" target="#fig_1">2a</ref>, to answer the question, "Where is/are the infarct located?", the model highlighted the areas that well covered the infarction. Interestingly, the model attended to infarct areas on both hemispheres (Fig. <ref type="figure" target="#fig_1">2b</ref>) and generated the answer, "Bilateral". Besides the position-related questions, in Fig. <ref type="figure" target="#fig_1">2c</ref>, it showed the attention map to answer the closed form question, "Is there any region in the brain that is lesioned?". The model successfully attended to the lesion area and provided the correct answer of "Yes". Moreover, the model demonstrated its ability to attend to the regions of ribs to answer the counting-related question in Fig. <ref type="figure" target="#fig_1">2d</ref>, where the question was "Are there more than 12 ribs?", and the model accurately outputted the answer "Yes". </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a new method to tackle the challenge of medical VQA tasks, which is pre-trained on the medical image caption datasets and then transferred to the downstream medical VQA tasks. The proposed self-supervised pre-training approach with unimodal and multimodal contrastive losses leads to significant performance improvement on three public VQA datasets. Also, using masked images as a data augmentation technique is proven to be effective for learning representations on medical visual and language tasks. As a result, our proposed method not only outperformed the state-of-the-art methods by a significant margin, but also demonstrated the potential for model interpretability.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the network architecture in both pre-training and fine-tuning phases.</figDesc><graphic coords="3,41,79,219,98,340,33,191,83" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visualizations of the image attention maps on medical VQA tasks.</figDesc><graphic coords="8,55,98,279,83,340,21,233,38" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparisons with the state-of-the-art methods on the VQA-RAD, PathVQA and SLAKE test set.</figDesc><table><row><cell>Methods</cell><cell cols="2">VQA-RAD</cell><cell></cell><cell cols="2">PathVQA</cell><cell></cell><cell>SLAKE</cell></row><row><cell></cell><cell>Open</cell><cell>Closed</cell><cell>Overall</cell><cell>Open</cell><cell>Closed</cell><cell>Overall</cell><cell>Overall</cell></row><row><cell>MEVF [1]</cell><cell>43.9</cell><cell>75.1</cell><cell>62.6</cell><cell>8.1</cell><cell>81.4</cell><cell>44.8</cell><cell>78.6</cell></row><row><cell>MMQ [2]</cell><cell>52.0</cell><cell>72.4</cell><cell>64.3</cell><cell>11.8</cell><cell>82.1</cell><cell>47.1</cell><cell>-</cell></row><row><cell>VQAMix [27]</cell><cell>56.6</cell><cell>79.6</cell><cell>70.4</cell><cell>13.4</cell><cell>83.5</cell><cell>48.6</cell><cell>-</cell></row><row><cell>AMAM [26]</cell><cell>63.8</cell><cell>80.3</cell><cell>73.3</cell><cell>18.2</cell><cell>84.4</cell><cell>50.4</cell><cell>-</cell></row><row><cell>CPRD [6]</cell><cell>61.1</cell><cell>80.4</cell><cell>72.7</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>82.1</cell></row><row><cell>PubMedCLIP [8]</cell><cell>60.1</cell><cell>80.0</cell><cell>72.1</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>80.1</cell></row><row><cell>MTL [9]</cell><cell>69.8</cell><cell>79.8</cell><cell>75.8</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>82.5</cell></row><row><cell>M3AE [10]</cell><cell>67.2</cell><cell>83.5</cell><cell>77.0</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>83.2</cell></row><row><cell>MUMC (Ours)</cell><cell>71.5</cell><cell>84.2</cell><cell>79.2</cell><cell>39.0</cell><cell>90.4</cell><cell>65.1</cell><cell>84.9</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation Study on Different Pre-training Objective Settings.</figDesc><table><row><cell>Training tasks</cell><cell>VQA-RAD</cell><cell>PathVQA</cell><cell>SLAKE</cell></row><row><cell></cell><cell>(Overall)</cell><cell>(Overall)</cell><cell>(Overall)</cell></row><row><cell>ITM + MLM</cell><cell>74.5</cell><cell>61.5</cell><cell>82.0</cell></row><row><cell>ITM + MLM + UCL</cell><cell>77.3</cell><cell>63.5</cell><cell>83.2</cell></row><row><cell>ITM + MLM + MCL</cell><cell>78.1</cell><cell>64.1</cell><cell>84.0</cell></row><row><cell>MUMC(ITM + MLM + UCL + MCL)</cell><cell>79.2</cell><cell>65.1</cell><cell>84.9</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Study of different masked image probabilities.</figDesc><table><row><cell>Masking probability</cell><cell>VQA-RAD</cell><cell>PathVQA</cell><cell>SLAKE</cell></row><row><cell></cell><cell>(Overall)</cell><cell>(Overall)</cell><cell>(Overall)</cell></row><row><cell>75%</cell><cell>76.9</cell><cell>63.4</cell><cell>82.6</cell></row><row><cell>50%</cell><cell>78.6</cell><cell>64.3</cell><cell>83.7</cell></row><row><cell>25%</cell><cell>79.2</cell><cell>65.1</cell><cell>84.9</cell></row><row><cell>0%</cell><cell>77.8</cell><cell>64.0</cell><cell>83.2</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work is supported by <rs type="funder">Natural Science Foundation of Heilongjiang Province</rs> under grant number <rs type="grantNumber">LH2021F015</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_QGcD2v9">
+					<idno type="grant-number">LH2021F015</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Overcoming data limitation in medical visual question answering</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32251-9_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32251-9_57" />
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="522" to="530" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Multiple meta-model quantifying for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nguyen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-3_7" />
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="64" to="74" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Intravascular Imaging and Computer Assisted Stenting and Large-Scale Annotation of Biomedical Data and Expert Label Synthesis. LABELS CVII STENT</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Pelka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Koitka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rückert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Nensa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Friedrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01364-6_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01364-6_20" />
+	</analytic>
+	<monogr>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<imprint>
+			<biblScope unit="volume">11043</biblScope>
+			<biblScope unit="page" from="180" to="189" />
+			<date type="published" when="2018">2018 2018 2018. 2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Radiology objects in context (ROCO): a multimodal image dataset</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Medicat: a dataset of medical images, captions, and textual references</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bogin</surname></persName>
+		</author>
+		<ptr target="https://github.com/allenai/medicat" />
+	</analytic>
+	<monogr>
+		<title level="j">Findings of the Association for Computational Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">2020</biblScope>
+			<biblScope unit="page" from="2112" to="2120" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Overview of ImageCLEF medical 2022caption prediction and concept detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ruckert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Abacha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Herrera</surname></persName>
+		</author>
+		<ptr target="https://www.imageclef.org/2022" />
+	</analytic>
+	<monogr>
+		<title level="m">Experimental IR Meets Multilinguality, Multimodality, and Interaction</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Contrastive pre-training and representation distillation for medical visual question answering based on radiology images</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">M</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_20" />
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="210" to="220" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hallacy</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Does clip benefit visual question answering in the medical domain as much as it does in the general domain</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Eslami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>De Melo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Meinel</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.13906</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Caption-aware medical VQA via semantic focusing and progressive cross-modality comprehension</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Cong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>ACM Multimedia</publisher>
+			<biblScope unit="page" from="3569" to="3577" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Multi-modal masked autoencoders for medical visionand-language pre-training</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_65</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-9_65" />
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="679" to="689" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A dataset of clinically generated visual questions and answers about radiology images</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Lau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gayen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Abacha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Demner-Fushman</surname></persName>
+		</author>
+		<ptr target="https://osf.io/bd" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">96</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Towards visual question answering on pathology images</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<ptr target="https://github.com/UCSD-AI4H/PathVQA" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing, ACL/IJCNLP</title>
+		<meeting>the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing, ACL/IJCNLP</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="708" to="718" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Slake: a semantically-labeled knowledge-enhanced dataset for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xu</surname></persName>
+		</author>
+		<ptr target="https://www.med-vqa.com/slake/" />
+		<editor>ISBI, IEEE</editor>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1650" to="1654" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Grad-cam: visual explanations from deep networks via gradient-based localization</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cogswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Das</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="618" to="626" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">An image is worth 16 × 16 words: Transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Beyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kolesnikov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">BERT: pre-training of deep bidirectional transformers for language understanding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Devlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Toutanova</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="4171" to="4186" />
+		</imprint>
+		<respStmt>
+			<orgName>NAACL</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sennrich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Haddow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Birch</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1508.07909</idno>
+		<title level="m">Neural machine translation of rare words with subword units</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Girshick: momentum contrast for unsupervised visual representation learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9726" to="9735" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Align before fuse: Vision and language representation learning with momentum distillation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gotmare</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="9694" to="9705" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Blip: bootstrapping language-image pre-training for unified vision-language understanding and generation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<publisher>PMLR</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="12888" to="12900" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Masked autoencoders are scalable vision learners</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="15979" to="15988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2212.00794</idno>
+		<title level="m">Scaling Language-Image Pre-training via Masking</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Randaugment: practical automated data augmentation with a reduced search space</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Cubuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zoph</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shlens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR Workshops</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3008" to="3017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.05101</idno>
+		<title level="m">Decoupled weight decay regularization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">AMAM: an attention-based multimodal alignment model for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl.-Based Syst</title>
+		<imprint>
+			<biblScope unit="volume">255</biblScope>
+			<biblScope unit="page">109763</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">VQAMix: conditional triplet mixup for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3332" to="3343" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

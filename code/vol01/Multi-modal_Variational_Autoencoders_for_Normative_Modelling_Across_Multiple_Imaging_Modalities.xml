@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Multi-modal Variational Autoencoders for Normative Modelling Across Multiple Imaging Modalities</title>
+				<funder>
+					<orgName type="full">EPSRC</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ana</forename><surname>Lawry Aguila</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">James</forename><surname>Chapman</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University College London</orgName>
+								<address>
+									<postCode>WC1E 6BT</postCode>
+									<settlement>London</settlement>
+									<country key="GB">England</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Andre</forename><surname>Altmann</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University College London</orgName>
+								<address>
+									<postCode>WC1E 6BT</postCode>
+									<settlement>London</settlement>
+									<country key="GB">England</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Multi-modal Variational Autoencoders for Normative Modelling Across Multiple Imaging Modalities</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="425" to="434"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">0BC22D554B14AE03F704BD91311B2CC9</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_41</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:30+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Unsupervised learning</term>
+					<term>Normative modelling</term>
+					<term>Multimodal modelling</term>
+					<term>multi-view VAEs</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>One of the challenges of studying common neurological disorders is disease heterogeneity including differences in causes, neuroimaging characteristics, comorbidities, or genetic variation. Normative modelling has become a popular method for studying such cohorts where the 'normal' behaviour of a physiological system is modelled and can be used at subject level to detect deviations relating to disease pathology. For many heterogeneous diseases, we expect to observe abnormalities across a range of neuroimaging and biological variables. However, thus far, normative models have largely been developed for studying a single imaging modality. We aim to develop a multi-modal normative modelling framework where abnormality is aggregated across variables of multiple modalities and is better able to detect deviations than uni-modal baselines. We propose two multi-modal VAE normative models to detect subject level deviations across T1 and DTI data. Our proposed models were better able to detect diseased individuals, capture disease severity, and correlate with patient cognition than baseline approaches. We also propose a multivariate latent deviation metric, measuring deviations from the joint latent space, which outperformed feature-based metrics.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Normative modelling is a popular method to study heterogeneous brain disorders. Normative models assume disease cohorts sit at the tails of a healthy population distribution and quantify individual deviations from healthy brain patterns. Typically, a normative analysis constructs a normative model per variable, e.g., using Gaussian Process Regression (GPR) <ref type="bibr" target="#b8">[9]</ref>. Recently, to model complex non-linear interactions between features, deep-learning approaches using adversarial (AAE) and variational autoencoder (VAE) models have been proposed <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b10">11]</ref>. These models have a uni-modal structure with a single encoder and decoder network. So far, almost all deep-learning normative models have modelled only one modality. However, many brain disorders show deviations from the norm in features of multiple imaging modalities to a varying degree. Often it is unknown which modality will be the most sensitive. Thus, it is advantageous to develop normative models suitable for multiple modalities.</p><p>Most previous deep-learning normative and anomaly detection models measure deviations in the feature space <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b10">11]</ref>. However, for multi-modal models built from modalities containing highly different, but complementary information (e.g., T1 and DTI features as used here), we may not expect to see significantly greater deviations in the feature space compared to uni-modal methods. Indeed previous work has shown that, when using VAEs, even for one modality, measuring deviation in the latent space outperforms metrics in the feature space <ref type="bibr" target="#b7">[8]</ref> and provides a single measure of abnormality. As such, we develop a latent deviation metric suitable to measuring deviations in multi-modal data.</p><p>There are many approaches to extending VAEs to integrate information from multiple modalities and learn informative joint latent representations. Most multi-modal VAE frameworks learn separate encoder and decoder networks for each modality and aggregate the encoding distributions to learn a joint latent representation. Wu and Goodman <ref type="bibr" target="#b15">[16]</ref> introduced a multi-modal VAE (mVAE) where each encoding distribution is treated as an 'expert' and the Productof-Experts (PoE), which takes a product of the experts' densities, is used to approximate a joint encoding distribution. The PoE approach treats all experts as equally credible taking a uniform contribution from every modality. In practice, however, different levels of noise, complexity and information are present in different modalities. Furthermore, if we have an overconfident miscalibrated expert, i.e. a sharp, shifted probability distribution, the joint distribution will have low density in the region observed by the other experts and a biased mean prediction. This can result in a suboptimal latent space and data reconstruction. Shi et al. <ref type="bibr" target="#b12">[13]</ref> address this problem by combining latent representations across modalities using a Mixture-of-Experts (MoE) approach. For MoE, the joint distribution is given by a mixture of the experts' densities so that the density is spread over all regions covered by the experts and overconfident experts do not monopolize the resulting prediction. However, MoE is less sensitive to consensus across modalities and will give lower probability to regions where experts are in agreement than PoE. Alternatively, we propose a mVAE modelling the joint encoding distribution as a generalised Product-of-Experts (gPoE) <ref type="bibr" target="#b1">[2]</ref>. We optimise modality specific weightings to account for different information content between experts and enable the model to down-weight experts which cause erroneous predictions. Depending on the application, either MoE or gPoE will be most appropriate and so we consider both methods for normative modelling.</p><p>As far as we are aware, only one other multi-modal VAE normative modelling framework has been proposed in the literature which uses the PoE (PoE-normVAE) <ref type="bibr" target="#b6">[7]</ref>. However, Kumar et al. <ref type="bibr" target="#b6">[7]</ref> rely on measuring deviations in the feature space, which we argue does not leverage the benefits of multi-modal models. Here, we present an improved factorisation of the joint representation by modelling it as a weighted product or sum of each encoding distribution.</p><p>Our contributions are two-fold. Firstly, we present two novel multi-modal normative modelling frameworks, MoE-normVAE and gPoE-normVAE, which capture the joint distribution between different imaging modalities. Our proposed models outperform baseline methods on two neuroimaging datasets. Secondly, we present a deviation metric, based on the latent space, suitable for detecting deviations in multi-modal normative distributions. We show that our metric better leverages the benefits of multi-modal normative models compared to feature space-based metrics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>Multi-modal Variational Autoencoder (mVAE). Let X = {x m } M m=1 be the observations of M modalities. We use a mVAE to learn a multi-modal generative model (Fig. <ref type="figure" target="#fig_0">1c</ref>), where modalities are conditionally independent given a common latent variable, of the form p θ (X, z) = p(z) M m=1 p θm (x m | z). The likelihood distributions p θm (x m | z) are parameterised by decoder networks with parameters θ = {θ 1 , . . . , θ M }. The goal of VAE training is to maximise the marginal likelihood of the data. However, as this is intractable, we instead optimise an evidence lower bound (ELBO):</p><formula xml:id="formula_0">L = E q φ (z|X) M m=1 log p θ (x m | z) -D KL (q φ (z | X)|p(z))<label>(1)</label></formula><p>where the second term is the KL divergence between the approximate joint posterior q φ (z | X) and the prior p(z). We model the posterior, likelihood, and prior distributions as isotropic gaussians.</p><p>Approximate Joint Posterior. To train the mVAE, we must specify the form of the joint approximate posterior q φ (z | X). Wu and Goodman <ref type="bibr" target="#b15">[16]</ref> choose to factorise the joint posterior as a Product-of-Experts (PoE);</p><formula xml:id="formula_1">q φ (z | X) = 1 K M m=1 q φm (z | x m )</formula><p>, where the experts, i.e., individual posterior distributions q φm (z | x m ), are parameterised by encoder networks with parameters</p><formula xml:id="formula_2">φ = {φ 1 , . . . , φ M }. K is a normalisation term. Assuming each encoder network follows a Gaussian distribution q (z | x m ) = N (μ m , σ 2 m I</formula><p>), the parameters of joint posterior distribution can be computed <ref type="bibr" target="#b4">[5]</ref>;</p><formula xml:id="formula_3">μ = M m=1 μ m /σ 2 m M m=1 1/σ 2 m and σ 2 = 1 M m=1 1/σ 2 m</formula><p>(see Supp. for proofs). However, overconfident but miscalibrated experts may bias the joint posterior distribution (see Fig. <ref type="figure" target="#fig_0">1b</ref>) which is undesirable for learning informative latent representations between modalities <ref type="bibr" target="#b12">[13]</ref>.</p><p>Shi et al. <ref type="bibr" target="#b12">[13]</ref> instead factorise the approximate joint posterior as a Mixtureof-Experts (MoE); q</p><formula xml:id="formula_4">Φ (z | X) = 1 K M m=1 1 M q φm (z | x m ) .</formula><p>In the MoE setting, each uni-modal posterior q φ (z | x m ) is evaluated with the generative model p θ (X, z) such that the ELBO becomes:</p><formula xml:id="formula_5">L = M m=1 E q φ (z|xm) M m=1 log p θ (x m | z) -D KL (q φ (z | x m )|p(z)) .</formula><p>(2)</p><p>However, this approach only takes each uni-modal encoding distribution separately into account during training. Thus, there is no explicit aggregation of information from multiple modalities in the latent representation for reconstruction by the decoder networks. For modalities with a high degree of modality-specific variation, this enforces an undesirable upperbound on the ELBO potentially leading to a sub-optimal approximation of the joint distribution <ref type="bibr" target="#b2">[3]</ref>.</p><p>Generalised Product-of-Experts Joint Posterior. We propose an alternative approach to mitigate the problem of overconfident experts by factorising the joint posterior as a generalised Product-of-Experts (gPoE) <ref type="bibr" target="#b1">[2]</ref>;</p><formula xml:id="formula_6">q φ (z | X) = 1 K M m=1 q αm φm (z | x m )</formula><p>where α m is a weighting for modality m such that M m=1 α m = 1 for each latent dimension and 0 &lt; α m &lt; 1. We optimise α during training allowing the model to weight experts in such a way as to learn an approximate joint posterior q φ (z | X) where the likelihood distribution p θ (X | z) is maximised. This provides a means to down-weigh overconfident experts. Furthermore, as α is learnt per latent dimension, different modality weightings can be learnt for different vectors, thus explicitly incorporating modality specific variation in addition to shared information in different dimensions of the joint latent space. Similarly to the PoE approach, we can compute the parameters of the joint posterior distribution;</p><formula xml:id="formula_7">μ = M m=1 μ m α m/σ 2 m M m=1 α m/σ 2 m and σ 2 = M m=1 1 α m/σ 2 m .</formula><p>Recently, a gPoE mVAE was proposed for learning joint representations of hand-poses and surgical videos <ref type="bibr" target="#b5">[6]</ref>. However, we emphasize that our approach differs in application and offers a more lightweight implementation (Joshi et al. <ref type="bibr" target="#b5">[6]</ref> require training of auxiliary networks to learn α per sample).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Multi-modal Normative Modelling.</head><p>We propose two mVAE normative modelling frameworks shown in Fig. <ref type="figure" target="#fig_0">1a</ref>. MoE-normVAE, which uses a MoE joint posterior distribution, and gPoE-normVAE, which uses a gPoE joint posterior distribution. For both models, the encoder φ and decoder θ parameters are trained to characterise a healthy population cohort. normVAE models assume abnormality due to disease effects can be quantified by measuring deviations in the latent space <ref type="bibr" target="#b7">[8]</ref> or the feature space <ref type="bibr" target="#b10">[11]</ref>. At test time, the clinical cohort is passed through the encoder and decoder networks. Deviations of test subjects from the multi-modal latent space of the healthy controls and data reconstruction errors are measured. We compare our methods to the previously proposed PoE-normVAE <ref type="bibr" target="#b6">[7]</ref> and three uni-modal models; two single modality and one multi-modality with a concatenated input.</p><p>To compare our normVAE models to a classical normative approach, we trained one GPR (using the PCNToolkit) per feature on a sub-set of 2000 healthy UK Biobank individuals and used extreme value statistics to calculate subjectlevel abnormality index <ref type="bibr" target="#b8">[9]</ref>. We used a top 5% abnormality threshold (set using the healthy training cohort) to calculate a significance ratio (see Eq. 6). Multi-modal Latent Deviation Metric. Previous works using autoencoders as normative models mostly relied on feature-space based deviation methods <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b10">11]</ref>. That is, they compare the input value for subject j for the i-th brain region x ij to the value reconstructed by the autoencoder x ij :</p><formula xml:id="formula_8">d ij = (x ij -x ij )</formula><p>2 . Kumar et al. <ref type="bibr" target="#b6">[7]</ref> propose the following normalised z-score metric on the data reconstruction (a univariate feature space metric):</p><formula xml:id="formula_9">D uf = d ij -μ norm d norm ij σ norm d norm ij (<label>3</label></formula><formula xml:id="formula_10">)</formula><p>where μ norm d norm ij is the mean and σ norm d norm ij the standard deviation of the deviations d norm ij of a holdout healthy control cohort. However, in the multi-modal setting, feature space-based deviation metrics may not highlight the benefits of multi-modal models over their uni-modal counterparts. The goal of the joint latent representation is to capture information from all modalities. Thus, decoders for each modality must extract the information from the joint latent representation, which now carries information from all other modalities as well. Therefore, data reconstructions capture only information relevant to a particular modality and may also be poorer compared to uni-modal methods. As such, particularly when incorporating modalities with a high degree of modality-specific variation, we believe latent space deviation metrics would better capture deviations from normative behaviour across multiple modalities. Then, once an abnormal subject has been identified, feature space metrics can be used to identify deviating brain regions (e.g. Supp. Fig. <ref type="figure">3</ref>).</p><p>We propose a latent deviation metric to measure deviations from the joint normative distribution. To account for correlation between latent vectors and derive a single multivariate measure of deviation, we measure the Mahalanobis distance from the encoding distribution of the training cohort:</p><formula xml:id="formula_11">D ml = (z j -μ(z norm )) T Σ(z norm ) -1 (z j -μ(z norm ))<label>(4)</label></formula><p>where z j ∼ q (z j | X j ) is a sample from the joint posterior distribution for subject j, μ(z norm ) is the mean and Σ(z norm ) the covariance of the healthy cohort latent position. We use robust estimates of the mean and covariance to account for outliers within the healthy control cohort. For closer comparison with D ml , we derive the following multivariate feature space metric:</p><formula xml:id="formula_12">D mf = (d j -μ(d norm )) T Σ(d norm ) -1 (d j -μ(d norm ))<label>(5)</label></formula><p>where d j = {d ij , . . . , d Ij } is the reconstruction error for subject j for brain regions (i = 1, ..., I), μ(d norm ) is the mean and Σ(d norm ) the covariance of the healthy cohort reconstruction error.</p><p>Assessing Deviation Metric Performance. For each model, we calculated D ml and D mf for a healthy holdout cohort and disease cohort. For each deviation metric, we identified individuals whose deviations were significantly different from the healthy training distribution (p &lt; 0.001) <ref type="bibr" target="#b14">[15]</ref>. Ideally, we want a model which correctly identifies disease individuals as outliers and healthy individuals as sitting within the normative distribution. As such, we use the following significance ratio (positive likelihood ratio) to assess model performance:</p><formula xml:id="formula_13">significance ratio = True positive rate False positive rate = TPR FPR = N disease (outliers) N disease N holdout (outliers) N holdout<label>(6)</label></formula><p>In order to calculate significance ratios, we calculated D uf relative to the training cohort for the healthy holdout and disease cohorts (Bonferroni adjusted p=0.05/N features ) <ref type="bibr" target="#b6">[7]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Data Processing. To train the normVAE models, we used 10,276 healthy subjects from the UK Biobank <ref type="bibr" target="#b13">[14]</ref> (application number: 70047). We used preprocessed (provided by the UK Biobank <ref type="bibr" target="#b0">[1]</ref>) grey-matter volumes for 66 cortical (Desikan-Killiany atlas) and 16 subcortical brain regions, and Fractional Anisotropy (FA) and Mean Diffusivity (MD) measurements for 35 white matter tracts (John Hopkins University atlas). At test time, we used 2,568 healthy controls from a holdout cohort and 122 individuals with one of several neurodegenerative disorders; motor neuron disease, multiple sclerosis, Parkinson's disease, dementia/Alzheimer/cognitive-impairment and other demyelinating disease.</p><p>We also tested the models using an external dataset. We extracted 213 subjects from the Alzheimer's Disease Neuroimaging Initiative (ADNI) 1 [10] dataset with significant memory concern (SMC; N=27), early mild cognitive impairment (EMCI; N=63), late mild cognitive impairment (LMCI; N=34), Alzheimer's disease (AD; N=43) as well as healthy controls (HC; N=45). We used the healthy controls to fine-tune the models in a transfer learning approach. The same T1 and DTI features as for the UK Biobank were extracted for the ADNI dataset.</p><p>Rather than conditioning on covariates as done in some related work <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8]</ref>, we adjusted for confounding effects prior to analysis. Non-linear age and linear ICV affects where removed from the DTI and T1 MRI features of both datasets <ref type="bibr" target="#b11">[12]</ref>. Each brain ROI was normalised by removing the mean and dividing by the standard deviation of the healthy control cohort brain regions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>UK Biobank Results.</head><p>As expected, we see greater significance ratios for all models when using D ml rather than D mf (Table <ref type="table">1</ref>). When using D mf or D uf , Table <ref type="table">1</ref>. Significance ratio calculated from D ml , D mf , and D uf for the UK Biobank. See Supp. for results in figure form. Using GPR, we observed a significance ratio of 6.01, poorer performance than our models (using D ml ). all models perform similiarly. Using D ml over D mf leads to a 4-fold increase in the signficance ratio. Further, our proposed models give the best overall performance across different L dim with the highest significance ratio for gPoE-normVAE with L dim =10. Generally, all multi-modal normVAE showed better performance than the uni-modal models suggesting that by modelling the joint distribution between modalities, we can learn better normative models.</p><p>ADNI Results. Previous work <ref type="bibr" target="#b7">[8]</ref> explored the ability of a uni-modal T1 nor-mVAE to detect deviations in the ADNI cohorts. Figure <ref type="figure" target="#fig_2">2a</ref> shows the latent deviation D ml for different diagnosis in the ADNI cohort for the T1 normVAE, DTI normVAE, PoE-normVAE and gPoE-normVAE models. All models reflect the increasing disease severity with increasing disease stage. The gPoE-normVAE model showed greater sensitivity to disease stage as suggested by the higher F statistic and p-values from an ANOVA analysis. We measured the Pearson correlation with composite measures of memory and executive function (Fig. <ref type="figure" target="#fig_2">2b</ref>) and found that our proposed model exhibited greater correlation with both cognition scores than baseline approaches. Finally, we see that the sensitivity to disease severity for the gPoE-normVAE model extends to the feature space where we see a general increase in average D uf from the LMCI to AD cohort (Supp. Figs. 3a and 3b respectively).   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion and Further Work</head><p>We have built on recent works <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b10">11]</ref> and introduced two novel mVAE normative models, which provide an alternative method of learning the joint normative distribution between modalities to address the limitations of current approaches.</p><p>Our models provide a more informative joint representation compared to baseline methods as evidenced by the better significance ratio for the UK Biobank dataset and greater sensitivity to disease staging and correlation with cognitive measures in the ADNI dataset. We also proposed a latent deviation metric suitable for detecting deviations in the multivariate latent space of multi-modal normative models which gave an approximately 4-fold performance increase over metrics based on the feature space. Further work will involve extending our models to more data modalities, such as genetic variants, to better characterise the behaviour of a physiological system. We note that, for fair comparison across models, we remove the effects of confounding variables prior to analysis. However, confounding effects could be removed during analysis via condition variables <ref type="bibr" target="#b7">[8]</ref>. Another limitation of normVAE models introduced here is the use of ROI level data. Data processing software, such as FreeSurfer, may fail to accurately capture abnormality in images, particularly if large lesions are present. Further work involves creating normative models designed for voxel level data to better capture disease effects.</p><p>Normative models have been successfully applied to the study of a range of heterogeneous diseases. Diseases often present abnormalities across a range of neuroimaging, biological and physiological features which provide different information about the underlying disease process. Normative systems that incorporate features from different data modalities offer a holistic picture of the disease and will be capable of detecting abnormalities across a broad range of different diseases. Furthermore, multi-modal normative modelling captures the relationship between different modalities in healthy individuals, with disruption to this relationship potentially leading to a disease signal. Code is publicly available at https://github.com/alawryaguila/multimodal-normative-models.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) gPoE-normVAE and MoE-normVAE normative framework. All normVAE models were implemented using parameter settings; maximum epochs=2000, batch size=256, learning rate=10 -4 , early stopping=50 epochs, encoder layers=[20, 40], decoder layers=[20, 40]. A ReLU activation function was applied between layers. Models were trained with a range of latent space sizes (L dim ) from 5 to 20. Models with L dim =10 were fine-tuned (maximum 100 epochs) using the ADNI healthy cohort. Learnt α values are given in Supp. Table 1. (b) Example PoE and gPoE joint distributions. (c) Graphical model.</figDesc><graphic coords="5,57,48,112,94,337,39,166,69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>score (r) Memory score (p) Executive function score (r) Executive function score (p) T1 normVAE -0.201754</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. (a) D ml by disease label (L dim =10). Statistical annotations were generated using Welch's t-tests between pairs of disease groups; ns : 0.05 &lt; p &lt;= 1, * : 0.01 &lt; p &lt;= 0.05, * * : 0.001 &lt; p &lt;= 0.01, * * * : 0.0001 &lt; p &lt;= 0.001, * * * * : p &lt;= 0.0001. Robust estimates of the mean and covariance were not used to calculate D ml due to the small healthy cohort size. (b) Pearson correlation between D ml and patient cognition represented by age adjusted memory and executive function composite scores.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Significance ratio, Dml Significance ratio, Dmf Significance ratio, Duf Data used in preparation of this article were obtained from the Alzheimer's Disease Neuroimaging Initiative (ADNI) database (adni.loni.usc.edu). As such, the investigators within the ADNI contributed to the design and implementation of ADNI and/or provided data but did not participate in analysis or writing of this report. A complete listing of ADNI investigators can be found at: http://adni.loni.usc.edu/ wp-content/uploads/how to apply/ADNI Acknowledgement List.pdf.</figDesc><table><row><cell>Latent dimension</cell><cell>5</cell><cell>10</cell><cell>15</cell><cell>20</cell><cell>5</cell><cell>10</cell><cell>15</cell><cell>20</cell><cell>5</cell><cell>10</cell><cell>15</cell><cell>20</cell></row><row><cell>gPoE-normVAE (ours)</cell><cell cols="4">7.89 9.24 7.02 7.6</cell><cell cols="4">1.62 1.62 1.61 1.7</cell><cell cols="4">1.37 1.41 1.37 1.56</cell></row><row><cell>MoE-normVAE (ours)</cell><cell cols="12">7.25 8.77 7.09 7.94 1.67 1.7 1.59 1.68 1.44 1.46 1.46 1.44</cell></row><row><cell>PoE-normVAE</cell><cell>7.4</cell><cell cols="11">8.06 5.71 6.96 1.6 1.62 1.66 1.71 1.45 1.42 1.39 1.41</cell></row><row><cell>concatenated normVAE</cell><cell cols="12">7.63 6.21 5.43 3.55 1.61 1.59 1.57 1.58 1.48 1.4 1.39 1.44</cell></row><row><cell>T1 normVAE</cell><cell cols="4">5.26 4.43 2.63 2.44</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>DTI normVAE</cell><cell cols="4">6.82 7.35 3.96 2.61</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Average T1&amp;DTI normVAE</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="8">1.63 1.7 1.64 1.64 1.47 1.53 1.45 1.45</cell></row><row><cell>1</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>. This work is supported by the <rs type="funder">EPSRC</rs>-funded <rs type="affiliation">UCL Centre for Doctoral Training in Intelligent, Integrated Imaging in Healthcare (i4health</rs>) and the <rs type="institution">Department of Health's NIHR-funded Biomedical Research Centre at University College London Hospitals</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0 41.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Image processing and quality control for the first 10,000 brain imaging datasets from UK biobank</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Alfaro-Almagro</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2017.10.034</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811917308613" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">166</biblScope>
+			<biblScope unit="page" from="400" to="424" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Generalized product of experts for automatic and principled fusion of gaussian process predictions</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Fleet</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.1410.7827</idno>
+		<ptr target="https://arxiv.org/abs/1410.7827" />
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">On the limitations of multimodal vaes</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Daunhawer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Sutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chin-Cheong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Palumbo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Vogt</surname></persName>
+		</author>
+		<idno>CoRR abs/2110.04121</idno>
+		<ptr target="https://arxiv.org/abs/2110.04121" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Deep anomaly detection with outlier exposure</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mazeika</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">G</forename><surname>Dietterich</surname></persName>
+		</author>
+		<idno>CoRR abs/1812.04606</idno>
+		<ptr target="http://arxiv.org/abs/1812.04606" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multi-view representation learning via total correlation objective</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hwang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E</forename><surname>Kim</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paper/2021/file/65" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Ranzato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Beygelzimer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Dauphin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Liang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Vaughan</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="12194" to="12207" />
+		</imprint>
+	</monogr>
+	<note>a99bb7a3115fdede20da98b08a370f-Paper.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Generalized product-of-experts for learning multimodal representations in noisy environments</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Joshi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bhattarai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Modi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3536221.3556596</idno>
+		<ptr target="https://doi.org/10.1145/3536221.3556596" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2022 International Conference on Multimodal Interaction</title>
+		<meeting>the 2022 International Conference on Multimodal Interaction<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="83" to="93" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Normative modeling using multimodal variational autoencoders to identify abnormal brain structural patterns in alzheimer disease</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Payne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sotiras</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.2110.04903</idno>
+		<ptr target="https://arxiv.org/abs/2110.04903" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Conditional vaes for confound removal and normative modelling of neurodegenerative diseases</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lawry Aguila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chapman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Janahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Altmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022: 25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="430" to="440" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part I</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Understanding heterogeneity in clinical cohorts using normative models: Beyond case-control studies</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Marquand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Rezek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Buitelaar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Beckmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biol. Psych</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="552" to="561" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Alzheimer&apos;s disease neuroimaging initiative (adni): clinical characterization</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Petersen</surname></persName>
+		</author>
+		<idno type="DOI">10.1212/wnl.0b013e3181cb3e25</idno>
+		<ptr target="https://europepmc.org/articles/PMC2809036" />
+	</analytic>
+	<monogr>
+		<title level="j">Neurology</title>
+		<imprint>
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="201" to="209" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+	<note>b013e3181cb3e25</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Using normative modelling to detect disease progression in mild cognitive impairment and alzheimer&apos;s disease in a cross-sectional multi-cohort study</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Pinaya</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Reports</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">15746</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Harmonization of large mri datasets for the analysis of brain imaging patterns throughout the lifespan</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pomponio</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2019.116450</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811919310419" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">208</biblScope>
+			<biblScope unit="page">116450</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Variational mixture-of-experts autoencoders for multi-modal deep generative models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Siddharth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Paige</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H S</forename><surname>Torr</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.1911.03393</idno>
+		<ptr target="https://arxiv.org/abs/1911.03393" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Uk biobank: an open access resource for identifying the causes of a wide range of complex diseases of middle and old age</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sudlow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Med</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">1001779</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Using multivariate statistics, 7th edn. Pearson</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">G</forename><surname>Tabachnick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">S</forename><surname>Fidell</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Upper Saddle River, NJ</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Multimodal generative models for scalable weaklysupervised learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">D</forename><surname>Goodman</surname></persName>
+		</author>
+		<idno>CoRR abs/1802.05335</idno>
+		<ptr target="http://arxiv.org/abs/1802" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

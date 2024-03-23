@@ -1,0 +1,883 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Contrastive Feature Decoupling for Weakly-Supervised Disease Detection</title>
+				<funder ref="#_28yZRTx">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_9v4gvek">
+					<orgName type="full">National Science and Technology Council of Taiwan</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jhih-Ciang</forename><surname>Wu</surname></persName>
+							<idno type="ORCID">0000-0003-4071-3980</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Information Science</orgName>
+								<orgName type="institution">Academia Sinica</orgName>
+								<address>
+									<settlement>Taipei</settlement>
+									<country key="TW">Taiwan</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">National Taiwan University</orgName>
+								<address>
+									<settlement>Taipei</settlement>
+									<country key="TW">Taiwan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ding-Jie</forename><surname>Chen</surname></persName>
+							<idno type="ORCID">0000-0003-4071-3980</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Information Science</orgName>
+								<orgName type="institution">Academia Sinica</orgName>
+								<address>
+									<settlement>Taipei</settlement>
+									<country key="TW">Taiwan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chiou-Shann</forename><surname>Fuh</surname></persName>
+							<idno type="ORCID">0000-0002-6174-2556</idno>
+							<affiliation key="aff1">
+								<orgName type="institution">National Taiwan University</orgName>
+								<address>
+									<settlement>Taipei</settlement>
+									<country key="TW">Taiwan</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Contrastive Feature Decoupling for Weakly-Supervised Disease Detection</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">6C8FFB86ED74E867F2516E8CD3A1BE57</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-925.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:50+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Disease detection</term>
+					<term>Multiple instance learning</term>
+					<term>Weakly-supervised learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Machine learning based Computer-Aided Diagnosis (CAD) aims to assist clinicians in the pathological diagnosis process. While dealing with video pathological diagnosis such as colonoscopy polyp detection, the recent SOTA method employs Weakly-supervised Video Anomaly Detection (WVAD) in the Multiple Instance Learning (MIL) scenarios to concern the temporal correlation within data and to formulate the concept of the interest disease simultaneously. Such a MIL-based WVAD method leverages video-level annotations to detect frame-level diseases and shows promising results. This paper casts the video pathological diagnosis as a MIL-based WVAD task and introduces Contrastive Feature Decoupling (CFD) network to decouple normal and abnormal feature ingredients per snippet. With such decoupled features, we are able to highlight the abnormal feature ingredients for accurately reasoning the disease score per snippet. The core components within our CFD model are the memory bank and contrastive loss. The former is used to learn atoms for representing normal features, and the latter is used to encourage our model to gain robust disease detection. We demonstrate that our CFD network is achieving new SOTA performance on the existing Polyp dataset and the introduced PANDA-MIL dataset. Our dataset are available at https://github.com/Jhih-Ciang/PANDA-MIL.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Computer-aided diagnosis utilizes machine learning techniques to conduct a pathological diagnosis concerning biomedical imaging data collected from various pathological modalities, such as computed tomography <ref type="bibr" target="#b20">[19]</ref>, magnetic resonance imaging <ref type="bibr" target="#b10">[11]</ref>, ultrasound <ref type="bibr" target="#b25">[23]</ref>, and angiography <ref type="bibr" target="#b8">[9]</ref>. With the assistance of CAD techniques, the clinicians merely need to check the possible pathological regions narrowed down by computer-aided diagnosis method, significantly reducing the entire diagnosis time. With the recent success of deep learning, researchers are able to raise the reliability of CAD methods and assist clinicians in diagnosing more complex clinical tasks. However, a reliable machine learning-based CAD method usually relies on the supervision of abundant annotated training data. Yet diseased pathological data are rare and diverse, and acquiring reliable pathological annotations are labor-intensive and expertise-required. As a result, the difficulty of data collection restricts the development of the supervised CAD.</p><p>Due to the difficulty of acquiring the abundant annotated training data, the current SOTA method, i.e., CSM <ref type="bibr" target="#b14">[14]</ref>, proposes a MIL-based WVAD manner to specifically tackle one specific disease detection task, i.e., colorectal cancer diagnosis via colonoscopy. Considering the case of colonoscopy, the CSM's anomaly detection setting is used to handle the rare and diverse diseased pathological data by commonly assuming that only video-level annotations are available for training. Furthermore, its video setting concerns the temporal correlation within data. The setting of such MIL-based weakly supervision prevents the need for abundant annotated training data by assuming that merely the video-level annotations, including normal and diseased ones, are available for training.</p><p>Similar to the previous MIL-based WVAD methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b14">14]</ref>, our model assumes all training snippets (consecutive video frames) within a non-diseased video are all normal snippets, yet each diseased video has at least one abnormal snippet. Furthermore, the proposed contrastive feature decoupling network treats disease detection as an out-of-distribution task. Precisely, our CFD learns a memory bank to learn normal features. A snippet that failed to be well reconstructed with these normal features is considered diseased. On the other hand, the residual of a snippet and its reconstructed one reveals the snippet's abnormal ingredients. Consequently, we are able to decouple each snippet as normal ingredients (reconstructed parts) and abnormal ingredients (residual parts) by leveraging the memory bank. With the decoupled snippet-level feature ingredients, our CFD employs both the normal and abnormal feature ingredients via a contrastive learning paradigm to concurrently optimize video-level and snippetlevel disease scores for pursuing more accurate detection.</p><p>To assess the proposed contrastive feature decoupling network, we conduct experiments on two datasets, i.e., Polyp and PANDA-MIL. The main contributions are summarized as follows.</p><p>-Our contrastive feature decoupling network learns a memory bank to learn normal atoms for decoupling each snippet as normal and diseased feature ingredients as opposite contrastive learning samples. Such a feature decoupling intrinsically fits the contrastive learning paradigm for optimizing MIL objectives on bags and instances. 2 Related Work</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Disease Detection</head><p>With the evolution of artificial intelligence techniques in the past decades, deep learning has shown its potential for computer-aided diagnosis of various symptoms <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b17">17,</ref><ref type="bibr" target="#b23">22]</ref>. For example, Li et al. <ref type="bibr" target="#b7">[8]</ref> established a large-scale attentionbased database and designed a specialized model using retinal fundus images for detecting glaucoma. Windsor et al. <ref type="bibr" target="#b17">[17]</ref> constructed a transformer-based model to detect spinal cancer for MRI scans. More recently, Tian et al. <ref type="bibr" target="#b14">[14]</ref> formulated polyp detection in a WVAD scheme while tackling polyp detection using colonoscopy videos to search colon polyps in the temporal sequence. Unlike previous methods of handling one specific pathological modality, we simultaneously address disease detection across pathological modalities of colonoscopy videos and prostate tissue biopsies using our contrastive feature decoupling network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Contrastive Learning</head><p>The characteristics of self-supervised learning are defining the proxy objective or addressing pretext tasks using pseudo labels for the unlabeled instances. One popular branch is contrastive learning which shows a remarkable ability to obtain the desired semantic representation from various perspectives. For example, CoLA <ref type="bibr" target="#b22">[21]</ref> tackled action localization by proposing snippet contrast loss to refine the feature representations of hard snippets according to the easily discriminative snippets. CSM <ref type="bibr" target="#b14">[14]</ref> borrowed the concept from CoLA and defined the hard/easy snippets for representing normal/abnormal from colonoscopy videos. They empirically selected hard snippets based on the transitional edge and missed disease snippets, such as an occlusive polyp. In this work, we employ a similar contrastive learning strategy as CSM while preventing their rule-based contrastive training samples selection by intrinsically leveraging the decoupled features derived from our feature decoupling process via memory bank.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Method</head><p>We aim to design a MIL-based WVAD model for tackling disease detection across different pathological modalities. Our model contains an offline trained memory bank to store feature atoms before the CFD training procedure, which associates a contrastive loss to boost the model performance using decoupled features per instance. Winin the MIL scenario, our model employs two classifiers to enable reasoning of the disease scores at instance and bag levels. Figure <ref type="figure" target="#fig_0">1</ref> overviews the working flow of the proposed contrastive feature decoupling network. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Memory Bank Construction</head><p>Given dataset D comprising normal sub-dataset D 0 and abnormal sub-dataset D 1 , we first encode all instances per bag B ∈ D into instance-level feature set F = {f t } T t=1 ∈ R T ×C via a pre-trained feature extractor E. That is, F = E(B), T is the number of instances, and C represents the instance-level feature dimension. We then collect all normal instance-level features f ∈ R 1×C from D 0 to learn the memory bank M by using the dictionary learning technique <ref type="bibr" target="#b6">[7]</ref> </p><formula xml:id="formula_0">via argmin M,{wt} B∈D0 T t=1 ( f t -Mw t 2 + λ w t 0 ) ,<label>(1)</label></formula><p>where D 0 is the normal sub-dataset collected from the training split, w t is the learned weights within the memory bank learning process, and λ is a hyperparameter to constrain the memory bank sparsity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Contrastive Feature Decoupling</head><p>With the learned normal instance features stored in the memory bank M, we are able to reconstruct a normal version for any given bag-level feature F. Such a normal version is denoted as a normal-like feature F H . To this end, we reconstruct a given F concerning M via the following equation</p><formula xml:id="formula_1">F H = σ φ q (F)φ k (M) φ v (M) ,<label>(2)</label></formula><p>where σ stands for the softmax function; φ q , φ k , and φ v respectively represent the query, key, and value linear projections, as introduced in the self-attention framework <ref type="bibr" target="#b15">[15]</ref>. To make a robust learning process by mining the hard and easy instances for the subsequent contrastive loss, CSM <ref type="bibr" target="#b14">[14]</ref> designed a rule-based instances selection concerning the transitional edge and missed disease instances, such as occlusion or invisibility from the polyp. Different from the CSM model, we generate the disease-like feature F D referring to F H as follows:</p><formula xml:id="formula_2">F D = ω F ,<label>(3)</label></formula><p>where ω ∈ R 1×C is the weight for reweighting F by channel-wise multiplication.</p><p>For depicting the degree of disease/abnormal to estimate the channel-wise weight ω, we consider attending to the distant features with respect to the normal ones, i.e., F H . In practice, we estimate the degree of disease/abnormal based on the difference between F and F H by</p><formula xml:id="formula_3">ω = sigmoid(φ d (G(Ψ (F) -Ψ (F H )))) , (<label>4</label></formula><formula xml:id="formula_4">)</formula><p>where φ d , G, and Ψ are linear projections, global average pooling, and the multiscale temporal network <ref type="bibr" target="#b13">[13]</ref>, respectively. With the decoupled features F H and F D , our MIL-based instance-level classifier aims to carry out the discriminating decision, and the bag-level classifier seeks the prediction as fitting annotation y as possible. Following recent MILbased methods, we select top-K instances of normal and abnormal in each bag to form the separation loss as</p><formula xml:id="formula_5">L sep = F D i ∈D0 F D j ∈D1 K ( δ -{F D i } K 2 + {F D j } K 2 ) , (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>where δ is the hyperparameter for constrained margin and {•} K is the operator that selects top-K instances. The other common loss used in the recent MILbased works is the classification loss building upon the binary cross entropy</p><formula xml:id="formula_7">L cls = BCE({S} K , y) + BCE(s, y) , (<label>6</label></formula><formula xml:id="formula_8">)</formula><p>where S = φ I (F D ) represents the instance-level prediction inferred by an instance-level classifier φ I and s = φ B (G((1ω) F H )) means the bag-level prediction resulting from a bag-level classifier φ B .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Regularization</head><p>Motivated by the recent WVAD methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b18">18]</ref>, which adopt auxiliary losses to regularize the learning procedure, we consider the conventional regularization losses, such as temporal smoothness and sparsity, as follows</p><formula xml:id="formula_9">L smooth = D i=1 1 T -1 T -1 t=1 f t+1 i -f t i 2 , L sparse = D i=1 1 T T t=1 f t i . (<label>7</label></formula><formula xml:id="formula_10">)</formula><p>By using the decoupled features F H and F D , we are ready to regularize the opposite decoupled features across bags with the aid of a contrastive loss. An expected contrastive loss aims to make our model attract features from the same category while distracting the features from distinct classes. In practice, we formulate such a contrastive loss by</p><formula xml:id="formula_11">L con = F D i ,F H j ∈D0 log exp 1 τ (F D i ) F H j exp 1 τ (F D i ) (F H j ) + F H k ∈D1 exp 1 τ (F D i ) (F H k ) ,<label>(8)</label></formula><p>where τ denotes the temperature parameter in the normalized temperaturescaled loss. Notice that ( <ref type="formula" target="#formula_11">8</ref>) is simplified for the sake of clarity. A complete objective should consider the symmetric form by switching D 1 and D 0 in (8).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Dataset and Metric</head><p>We evaluate our model against SOTAs on the existing Polyp <ref type="bibr" target="#b14">[14]</ref> dataset and the PANDA-MIL dataset introduced in this work. We employ the same evaluation criteria as the previous work for a fair comparison. Please refer to the supplementary material for the statistics of the two datasets.</p><p>Polyp. This dataset collects colonoscopy videos from Hyper-Kvasir <ref type="bibr" target="#b0">[1]</ref> and LDPolypVideo <ref type="bibr" target="#b9">[10]</ref>. Its training split contains 163 videos of video-level annotations, and the testing split includes 90 videos of frame-level annotations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>PANDA-MIL.</head><p>The Prostate cANcer graDe Assessment (PANDA) challenge <ref type="bibr" target="#b1">[2]</ref> comprises over 10K whole-slide images (WSIs) of digitized hematoxylin and eosin-stained biopsies originating from Radboud University Medical Center and Karolinska Institute. PANDA-MIL collects the eosin-stained biopsies with region-based masks indicating the benign (normal) and cancerous (abnormal) tissue, combined by stroma and epithelium. To fit the MIL-based WVAD task, we non-overlapped partition each WSI (bag) into patches (instances) and only keep those patches comprising tissue over the 50% patch size. Each kept patch gets its patch-level annotations from PANDA, and a WSI comprising any abnormal patch is treated as an abnormal WSI. In sum, PANDA-MIL's training split contains 3,925 bags of bag-level annotations, and the testing split includes 975 bags of instance-level annotations.</p><p>Metric. We follow the previous methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b14">14]</ref> to employ the instant-level Area Under Curve (AUC) and the Average Precision (AP) for a fair comparison. The larger values of both metrics mean better disease detection performance. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Implementation Details</head><p>All the evaluated methods in the experiment used the same feature encoder, i.e., I3D <ref type="bibr" target="#b2">[3]</ref> pre-trained on Kinetics-400 <ref type="bibr" target="#b4">[5]</ref>, for a fair comparison. Our method is trained using Adam optimizer with the learning rate of 0.001, batch size 32, and 200 epochs. Each bag/video is encoded into T = 32 snippets among both datasets via linear interpolation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Comparison Results</head><p>Table <ref type="table" target="#tab_1">1</ref> shows the compared results of our CFD model against recent WVAD methods [4, <ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b18">18]</ref> for tackling the disease detection task. The results in Table <ref type="table" target="#tab_1">1</ref> demonstrate that our CFD consistently outperforms all the other methods on two datasets. Precisely, our model achieves the new SOTA by 1.1% AUC and 1.5% AP improvements on the Polyp dataset and 1.09% AUC and 2.45% AP improvements on the PANDA-MIL dataset. Please refer to the supplementary material for the completed results, including more WVAD methods <ref type="bibr" target="#b12">[12,</ref><ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b21">20,</ref><ref type="bibr" target="#b26">24]</ref>. Figure <ref type="figure" target="#fig_1">2</ref> visualizes one disease detection result of our CFD model on the PANDA-MIL dataset. The disease score per instance/patch predicted by our method is close to the ground-truth annotations, in which the clear margin between cancerous and benign validates the robust prediction of the proposed CFD model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Ablation Study</head><p>We analysis on why the CFD network performs better than other methods listed in Table <ref type="table" target="#tab_1">1</ref> by ablating the contributed components in CFD. The ablation study in Table <ref type="table" target="#tab_2">2</ref> is conducted on the PANDA-MIL dataset to evaluate the effectiveness of the memory bank and loss functions in our model. Row one in Table <ref type="table" target="#tab_2">2</ref> indicates our CFD model without regularization, yet it has shown better AUC values than other methods besides the S3R. While employing the three loss functions for regularization, as described in Sect. 3.3, each loss function shows its improvement in our model performance. The contrastive loss contributes the most to AUC improvement, enabling our model to achieve the SOTA performance.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>This paper casts disease detection as a MIL-based WVAD task and introduces Contrastive Feature Decoupling (CFD) network to learn a memory bank boosted with contrastive learning. With the learned feature atoms stored in the memory bank, our contrastive feature decoupling is able to decouple each snippet as normal and abnormal proxies. Further, the decoupled abnormal proxies highlight the abnormal feature ingredients for better reasoning the disease score. Our feature decoupling intrinsically fits the contrastive learning paradigm to define opposite training samples for model optimization. Besides, we introduce a new dataset of prostate cancer detection, i.e., PANDA-MIL, to provide a biomedical imaging dataset concerning a different pathological modality. Experiments demonstrate that our CFD network achieves new SOTA performance on the Polyp and PANDA-MIL datasets, indicating that our method effectively addresses the disease detection task across different pathological modalities.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of our contrastive feature decoupling (CFD) network. Given a bag composing multiple instances (also known as a video comprising snippets in Polyp or a WSI consisting of patches in PANDA-MIL), our CFD employs I3D as feature encoder E to generate bag-level feature F, which subsequently decoupled as the normal proxy F H and abnormal proxy F D through the offline trained memory bank M. The gray dotted arrows indicate the required normal features for constructing M. Besides the regular MIL-based losses, i.e., Lsep and L cls , we employ auxiliary losses of L smooth and Lsparse to regularize the decoupled features within each bag and employ contrastive loss Lcon to regularize the opposite decoupled features across bags. The notations φ B and φ I denote the bag-level and instance-level classifiers, respectively. The green box indicates a normal bag/instance, while the red box represents abnormal ones.</figDesc><graphic coords="4,68,85,54,59,325,00,133,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative results of our CFD model on one testing prostate tissue biopsy of the PANDA-MIL dataset. Our disease detection results are close to the ground-truths.</figDesc><graphic coords="8,70,95,53,72,236,44,136,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Comparison with AUC and AP metrics on Polyp and PANDA-MIL datasets.</figDesc><table><row><cell>Method</cell><cell cols="2">Publication Polyp</cell><cell>PANDA-MIL</cell></row><row><cell></cell><cell></cell><cell>AUC AP</cell><cell>AUC AP</cell></row><row><cell>MIST [4]</cell><cell>CVPR'21</cell><cell cols="2">94.53 72.85 82.84 75.45</cell></row><row><cell cols="2">RTFM [13] ICCV'21</cell><cell cols="2">96.30 77.96 85.12 78.17</cell></row><row><cell>S3R [18]</cell><cell>ECCV'22</cell><cell cols="2">98.32 86.21 86.19 78.33</cell></row><row><cell cols="4">CSM [14] MICCAI'22 98.41 86.63 76.52 73.12</cell></row><row><cell>CFD</cell><cell></cell><cell cols="2">99.51 88.13 87.28 80.78</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Ablation study on model components with the AUC metric on PANDA-MIL.</figDesc><table><row><cell>M Lsparse L smooth Lcon AUC</cell></row><row><cell>85.36</cell></row><row><cell>85.79</cell></row><row><cell>86.15</cell></row><row><cell>87.28</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This research was supported by <rs type="funder">National Science and Technology Council of Taiwan</rs>, <rs type="person">R.O.C.</rs>, under Grants <rs type="grantNumber">NSTC 112-2221-E-002-189-MY2</rs> and <rs type="grantNumber">MOST 111-2221-E-002-174</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_9v4gvek">
+					<idno type="grant-number">NSTC 112-2221-E-002-189-MY2</idno>
+				</org>
+				<org type="funding" xml:id="_28yZRTx">
+					<idno type="grant-number">MOST 111-2221-E-002-174</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Hyperkvasir, a comprehensive multi-class image and video dataset for gastrointestinal endoscopy</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Borgli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">283</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">The PANDA challenge: prostate cANcer graDe assessment using the Gleason grading system</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bulten</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.3715938</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.3715938" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Quo vadis, action recognition? A new model and the kinetics dataset</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Carreira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="6299" to="6308" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">MIST: multiple instance self-training framework for video anomaly detection</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">T</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Zheng</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="14009" to="14018" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kay</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1705.06950</idno>
+		<title level="m">The kinetics human action video dataset</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Anomaly-aware multiple instance learning for rare anemia disorder classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kazeminia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sadafi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makhro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bogdanova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Albarqouni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Marr</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-1" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page">33</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Dictionary learning algorithms for sparse representation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kreutz-Delgado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Murray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Engan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">W</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Sejnowski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="349" to="396" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Attention based glaucoma detection: a large-scale database and CNN model</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="10571" to="10580" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">DSP-NET: deeply-supervised pseudo-siamese network for dynamic angiographic image matching</title>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_5</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-15" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="44" to="53" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">LDPolypVideo benchmark: a largescale colonoscopy video dataset of diverse polyps</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Sun</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-337" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="387" to="396" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Weakly supervised registration of prostate MRI and histopathology images</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="98" to="107" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-110" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Real-world anomaly detection in surveillance videos</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Sultani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shah</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="6479" to="6488" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Weaklysupervised video anomaly detection with robust temporal feature magnitude learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Verjans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Carneiro</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4975" to="4986" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Contrastive transformer-based multiple instance learning for weakly supervised polyp frame detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-89" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="88" to="98" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NIPS</title>
+		<imprint>
+			<biblScope unit="page" from="5998" to="6008" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Weakly supervised video anomaly detection via center-guided discriminative learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICME</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="6" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Context-aware transformers for spinal cancer detection and radiological grading</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Windsor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jamaludin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kadir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_26</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-826" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="271" to="281" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Self-supervised sparse representation for video anomaly detection</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">Y</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Fuh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">L</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13673</biblScope>
+			<biblScope unit="page" from="729" to="745" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19778-9_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19778-942" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Effective pancreatic cancer screening on non-contrast CT scans via anatomy-aware transformers</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_25</idno>
+		<idno>978-3-030-87240-3 25</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="259" to="269" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">CLAWS: clustering assisted weakly supervised learning with normalcy suppression for anomalous event detection</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Z</forename><surname>Zaheer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mahmood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Astrid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S.-I</forename><surname>Lee</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58542-6_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58542-622" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12367</biblScope>
+			<biblScope unit="page" from="358" to="376" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Cola: weakly-supervised temporal action localization with snippet contrastive learning</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zou</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="16010" to="16019" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">A multi-task network with weight decay skip connection training for anomaly detection in retinal fundus images</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13432</biblScope>
+			<biblScope unit="page" from="656" to="666" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_63</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-763" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Towards unsupervised ultrasound video clinical quality assessment with multi-modality data</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-822" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page" from="228" to="237" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Graph convolutional label noise cleaner: train a plug-and-play action classifier for anomaly detection</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">X</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="1237" to="1246" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

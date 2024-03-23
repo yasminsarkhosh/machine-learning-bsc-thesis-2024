@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learning Ontology-Based Hierarchical Structural Relationship for Whole Brain Segmentation</title>
+				<funder ref="#_2ydbYNc #_9XcXYwD #_HKezR3E">
+					<orgName type="full">Shenzhen Science and Technology Innovation Committee</orgName>
+				</funder>
+				<funder ref="#_8FUTMpA">
+					<orgName type="full">Shenzhen Science and Technology Program</orgName>
+				</funder>
+				<funder ref="#_7mU7ksS">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Junyan</forename><surname>Lyu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic and Electrical Engineering</orgName>
+								<orgName type="institution">Southern University of Science and Technology</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Queensland Brain Institute</orgName>
+								<orgName type="institution">The University of Queensland</orgName>
+								<address>
+									<settlement>Brisbane</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Pengxiao</forename><surname>Xu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic and Electrical Engineering</orgName>
+								<orgName type="institution">Southern University of Science and Technology</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fatima</forename><surname>Nasrallah</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Queensland Brain Institute</orgName>
+								<orgName type="institution">The University of Queensland</orgName>
+								<address>
+									<settlement>Brisbane</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Xiaoying</forename><surname>Tang</surname></persName>
+							<email>tangxy@sustech.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic and Electrical Engineering</orgName>
+								<orgName type="institution">Southern University of Science and Technology</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learning Ontology-Based Hierarchical Structural Relationship for Whole Brain Segmentation</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">BEF8C7A71C2AD024B892AE816399B7D4</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-837.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:50+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Whole brain segmentation</term>
+					<term>Hierarchical ontology</term>
+					<term>U-Net</term>
+					<term>Triplet loss</term>
+					<term>Structural MRI</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Whole brain segmentation is vital for a variety of anatomical investigations in brain development, aging, and degradation. It is nevertheless challenging to accurately segment fine-grained brain structures due to the low soft-tissue contrast. In this work, we propose and validate a novel method for whole brain segmentation. By learning ontology-based hierarchical structural knowledge with a triplet loss enhanced by graph-based dynamic violate margin, our method can mimic experts' hierarchical perception of the brain anatomy and capture the relationship across different structures. We evaluate the whole brain segmentation performance of our method on two publicly-accessible datasets, namely JHU Adult Atlas and CANDI, respectively possessing fine-grained (282) and coarse-grained (32) manual labels. Our method achieves mean Dice similarity coefficients of 83.67% and 88.23% on the two datasets. Quantitative and qualitative results identify the superiority of the proposed method over representative state-of-the-art whole brain segmentation approaches. The code is available at https://github.com/CRazorback/OHSR.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Quantitative analysis of structural MRI of the human brain is essential in various anatomical investigations in brain development, aging, and degradation. Accurate segmentation of brain structures is a prerequisite for quantitative and particularly morphometric analysis <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b22">23]</ref>. However, whole brain segmentation is challenging due to the low soft-tissue contrast, the high anatomical variability, and the limited labeled data, especially for fine-grained structures.</p><p>During the past decade, MRI based whole brain segmentation approaches have been explored. Multi-atlas based methods <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b23">24]</ref> are shown to be simple yet effective and serve as the de facto standard whole brain segmentation methods. With a limited number of labeled data, multi-atlas based methods propagate labels from the atlas images to the target images through registration (mostly non-linear or even diffeomorphic registration), joint label fusion, and possibly corrective learning. With diffeomorphic registration, multi-atlas based methods are empowered of enhanced segmentation accuracy and topology-preserving capabilities that well accommodate the potential need of incorporating shape prior <ref type="bibr" target="#b3">[4]</ref>. Nevertheless, multi-atlas based methods suffer from low computational efficiency and fail to leverage sophisticated contextual information when the tissue contrast in the structural MRI data is low.</p><p>Recently, deep learning has demonstrated state-of-the-art (SOTA) performance on various medical image segmentation tasks <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b15">16]</ref>, also serving as an alternative solution to the whole brain segmentation task. QuickNAT <ref type="bibr" target="#b20">[21]</ref> trains three 2D U-Nets respectively on the axial, coronal and sagittal views, and then aggregates them to infer the final segmentation. Pre-training with auxiliary labels derived from Freesurfer is conducted to alleviate QuickNAT's reliance on manually annotated data. SLANT <ref type="bibr" target="#b10">[11]</ref> applies multiple independent 3D U-Nets to segment brain structures in overlapped MNI subspace, followed by label fusion. Wu et al. <ref type="bibr" target="#b25">[26]</ref> propose a multi-atlas and diffeomorphism based encoding block to determine the most similar atlas patches to a target patch and propagate them into 3D fully convolutional networks. These deep learning methods improve over conventional multi-atlas based methods by considerable margins in terms of both computational efficiency and segmentation accuracy.</p><p>However, existing methods tend to ignore the ontology-based hierarchical structural relationship (OHSR) of the human brain's anatomy. Most of them assume all brain structures are disjoint and use multiple U-Nets to separately perform voxel-wise predictions for each of multiple structures of interest. It has been suggested that neuroanatomical experts recognize and delineate brain anatomy in a coarse-to-fine manner (Fig. <ref type="figure" target="#fig_0">1</ref>) <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b17">18]</ref>. Concretely, at the highest level of the most coarse granularity (Level 1 in Fig. <ref type="figure" target="#fig_0">1</ref>), the brain can be simply decomposed into telencephalon, diencephalon, mesencephalon, metencephalon, and myelencephalon. At a lower level, the cerebral cortex, cerebral nuclei and white matter can be identified within the telencephalon. At the lowest level of the most fine granularity, namely Level 5 in Fig. <ref type="figure" target="#fig_0">1</ref>, the most fine-grained structures such as the hippocampus and the amygdala in the limbic system are characterized. It shall be most desirable if a neural network can learn brain anatomy in a similar fashion. Inspired by OHSR of brain anatomy, in the manifold space of a neural network, the distance between the feature vectors of the hippocampus and the amygdala should be smaller than that between the feature vectors of the hippocampus and any other structure that does not also belong to the limbic system. In other words, embeddings of fine-grained structures labeled as a same class at a higher level are supposed to be more similar than those of finegrained structures labeled as different classes at the same higher level. Such prior knowledge on brain anatomy has been ignored or only implicitly learned in both multi-atlas based and deep learning based whole brain segmentation methods. Moreover, image contrast is not the only anatomical clue to discriminate structure boundary, especially for fine-grained structures. For instance, the anterior limb and posterior limb of the internal capsule are both part of white matter, which cannot be separated based on intensities and contrasts but can be differentiated by the sharp bend and feature-rich neighboring gray matter anatomy. This further suggests the importance of exploring and capturing OHSR.</p><p>To mimic experts' hierarchical perception of the brain anatomy, we here propose a novel approach to learn brain's hierarchy based on ontology, for a purpose of whole brain segmentation. Specifically, we encode the multi-level ontology knowledge into a voxel-wise embedding space. Deep metric learning is conducted to cluster contextually similar voxels and separate contextually dissimilar ones using a triplet loss with dynamic violate margin. By formatting the brain hierarchy into a directed acyclic graph, the violate margin can be easily induced by the height of the tree rooted at triplet's least common subsumer. As a result, the network is able to exploit the hierarchical relationship across different brain structures. The feature prototypes in the latent space are hierarchically organized following the brain hierarchy. To the best of our knowledge, this is the first work to incorporate ontology-based brain hierarchy into deep learning segmentation models. We evaluate our method on two whole brain segmentation datasets with different granularity and successfully establish SOTA performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>The proposed approach builds upon standard 3D U-Net and makes use of multilevel ontology knowledge from the brain hierarchy to enhance the whole brain segmentation performance. In subsequent subsections, we first revisit the standard triplet loss <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b13">14]</ref> and its dilemma in learning brain hierarchy. Then we describe how we construct the brain hierarchy graph and how we measure the semantic similarity between brain structures based on the constructed graph. After that, we introduce dynamic violate margin to the triplet loss. An intuitive illustration of hierarchy-based triplet loss and its corresponding toy example graph of brain hierarchy. The loss tends to group structures labeled as a same class at a higher ontology level.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Triplet Loss</head><p>The goal of the triplet loss is to learn a feature embedding space wherein distances between features correspond to semantic dissimilarities between objects. Given a triplet T i = {f i , f + i , f - i } comprising an anchor voxel-wise feature vector f i , a positive voxel-wise feature vector f + i which is semantically similar to the anchor vector, and a negative voxel-wise feature vector f - i which is semantically dissimilar to the anchor vector, the triplet loss is formulated as</p><formula xml:id="formula_0">l triplet (T i ) = [ f i , f + i -f i , f - i + M] + , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where •, • is a distance function to evaluate the semantic dissimilarity between two feature vectors. The violate margin M is a hyperparameter that defines the minimum distance between positive and negative samples. It forces the gap between f, f + and f, f -to be larger than M and ensures the model does not learn trivial solutions. [•] + = max{0, •} is the hinge loss, which prevents the model from being updated when the triplet is already fulfilled. During training, the overall objective of the voxel-wise triplet loss is to minimize the sum of the loss over all triplets in a mini-batch, namely</p><formula xml:id="formula_2">L triplet = 1 N Ti∈T l triplet (T i ), (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where N is the total number of triplets in a mini-batch. Note that a triplet is allowed to consist of voxel-wise feature vectors from different subjects when the batch size is larger than 1. This strategy of sampling an anchor's neighbor enables the model to learn the global context in the brain instead of the local context in a subspace of the brain, since it is infeasible to train a 3D U-Net with whole brain MRI data.</p><p>However, it is challenging to apply the standard triplet loss to learn brain hierarchy: postive or negative is ill-defined with a fixed violate margin. For instance, the violate margin between f hippo , f amyg and f hippo , f fimb is certainly different from that between f hippo , f amyg and f hippo , f IIIvent : the hippocampus, the amygdala, and the fimbria all belong to the limbic system while the third ventricle belongs to cerebrospinal fluid (CSF). As such, a distance function d G (•, •) is required to measure the semantic dissimilarity between two brain structures, and can be then used to determine the corresponding violate margin.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Measuring Semantic Dissimilarity</head><p>Let G = (V, E) be a directed acyclic graph with vertices V and edges E ⊆ V 2 . It specifies the hyponymy relationship between structures at different ontology levels. An edge (u, v) ∈ E indicates u is an ancestor vertex of v. Specifically, v belongs to u at a higher ontology level. The structures of interest S = {s 1 , ..., s n } ⊆ V are of the lowest ontology level. An example is shown in Fig. <ref type="figure">2</ref>.</p><p>A common measure for the dissimilarity d G : S 2 → R between two structures is the height of the tree rooted at the least common subsumer (LCS) divided by the height of the whole brain hierarchy tree, namely</p><formula xml:id="formula_4">d G (u, v) = h(lcs(u, v)) h(G) ,<label>(3)</label></formula><p>where the height of a tree h(•) = max v∈V ψ(•, v) is defined as the length of the longest path from the root to a leaf. ψ(•, •) is defined as the number of edges in the shortest path between two vertices. lcs(•, •) refers to the ancestor shared by two vertices that do not have any child also being an ancestor of the same two vertices. With respect to the example hierarchy in Fig. <ref type="figure">2</ref>, the LCS of the hippocampus and the amygdala is the limbic and the LCS of the hippocampus and the third ventricle is the brain. Given the height of the example hierarchy is 4, we can easily derive that d G (hippo, amyg) = 1 4 and d G (hippo, IIIvent) = 1. Non-negativity, symmetry, identity of indiscernibles, and triangle inequality always hold for d G (•, •) since the brain hierarchy is a tree and all structures of interest are leaf vertices, thus being a proper metric <ref type="bibr" target="#b1">[2]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Dynamic Violate Margin</head><p>With d G (•, •), we can define positive and negative samples and their violate margin in the triplet loss. We sample triplet</p><formula xml:id="formula_5">T i = {f i , f + i , f - i } satisfying d G (v i , v - i ) &gt; d G (v i , v + i )</formula><p>, where f, f + i , f - i are the feature vectors of the voxels respectively labeled as v, v + i , v - i . Then the violate margin M can be determined dynamically M = 0.5(M τ + M ),</p><formula xml:id="formula_6">M τ = d G (v i , v - i ) -d G (v i , v + i ), M = 1 N v (N v -1) a,b∈v f a , f b . (<label>4</label></formula><formula xml:id="formula_7">)</formula><p>M τ ∈ (0, 1] is the hierarchy-induced margin required between negative pairs and positive pairs in terms of d G (•, •). M is the tolerance of the intra-class variance, which is computed as the average distance between samples in v. In this work, we adopt the cosine distance as our distance function in latent space:</p><formula xml:id="formula_8">f a , f b = 1 2 (1 -fa•f b fa f b ) ∈ (0, 1]</formula><p>. The triplet loss can thus be reformulated as</p><formula xml:id="formula_9">l triplet (T i ) = [ f i , f + i -f i , f - i + M] + . (<label>5</label></formula><formula xml:id="formula_10">)</formula><p>Collectively, the overall training objective to learn OHSR is</p><formula xml:id="formula_11">L = L seg + λL triplet , (<label>6</label></formula><formula xml:id="formula_12">)</formula><p>where λ is a hyperparameter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and Implementation</head><p>We evaluate our method on two public-accessible datasets with manually labeled fine-grained or coarse-grained brain structures. The first one is JHU Adult Atlas <ref type="bibr" target="#b24">[25]</ref>, containing 18 subjects with an age range of 27-55 years. T1-weighted MRI images are acquired in the MPRAGE sequence at Johns Hopkins University using 3T Philips scanners. All images are normalized to the MNI152 1mm space. The images are initially segmented into 289 structures using a single-subject atlas followed by substantial manual corrections. The optic tract, skull and bone marrow are excluded from our experiment, ending up with 282 structures. Two types of five-level OHSR are provided. Type I is based on classical definitions of the brain ontology and Type II is more commonly used in clinical descriptions <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b9">10]</ref>. The second one is Child and Adolescent Neuro Development Initiative (CANDI) <ref type="bibr" target="#b12">[13]</ref>, consisting of 103 1.5T T1-weighted MRI scans with 32 labeled structures. The subjects are aged 4-17 and come from both healthy and neurological disorder groups. A two-level hierarchical relationship is built by grouping the 32 structures into white matter, gray matter or CSF. For JHU Adult Atlas, 8, 2 and 8 images are randomly selected and used for training, validation and testing. For CANDI, we split the dataset into training (60%), validation (10%), and testing (30%) sets following a previous study <ref type="bibr" target="#b14">[15]</ref>. Foreground image patches of size 96 × 112 × 96 are randomly cropped as the input of our model. To enlarge the training set, random scaling, gamma correction and rotation are applied. Image intensities are normalized using Z-score normalization. AdamW with a batch size of 4 is used to optimize the training objective, wherein L seg = L dice + L ce . L dice and L ce are respectively the Dice loss and the cross entropy loss. The hyperparameter λ ∈ [0, 0.5] is scheduled following a cosine annealing policy. The initial learning rate is 5 × 10 -4 and decays following a polynomial function. The model is trained for 30,000 steps, with the best model saved based on the validation Dice. All experiments are conducted using PyTorch 1.13.1 with NVIDIA Tesla V100 GPUs. More dataset and implementation details are provided in the supplementary material.</p><p>Table <ref type="table">1</ref>. Comparisons with SOTA for segmenting 282 fine-grained brain structures on JHU Adult Atlas, in terms of DSC. "S" denotes small structures with a size smaller than 1000 mm 3 . "M" denotes medium structures with a size between 1000 mm 3 and 5000 mm 3 . "L" denotes large structures with a size larger than 5000 mm  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Evaluation Results</head><p>We now report quantitative and qualitative evaluation results. The Dice similarity coefficient (DSC) is used to quantitatively measure the segmentation accuracy. We compare our proposed method with SOTA methods and conduct several ablation studies to demonstrate the effectiveness of our method.</p><p>Comparisons with SOTA. To fairly compare with SOTA methods, we use the identical 3D U-Net and data augmentation hyperparameters as the "3d fullres nnUNetTrainerV2 noMirroring" configuration in nnU-Net. As summarized in Table <ref type="table">1</ref>, our method obtains the highest overall mean DSC of 83.67% on JHU Adult Atlas, with an improvement of 0.70% over previous best method, i.e., nnU-Net. The improvements are consistent over small, medium and large brain structures, demonstrating the robustness of our method. The boxplot comparison results are illustrated in Fig. <ref type="figure" target="#fig_2">3</ref>. Detailed improvement of each structure is presented in the supplementary material. Table <ref type="table" target="#tab_0">2</ref> shows the results on CANDI. Please note all compared results except for nnU-Net in that table are directly copied from ACEnet paper <ref type="bibr" target="#b14">[15]</ref> since CANDI has been explored more than JHU  Adult Atlas. Our method achieves an average DSC of 88.23%, performing not only better than the hyperparameter-tuning method nnU-Net, but also better than ACEnet encoding anatomical context via an attention mechanism. These results also suggest that our method can leverage both simple (two-level) and sophisticated (five-level) hierarchies to enhance whole brain segmentation.</p><p>Ablation Studies. We first evaluate the effectiveness of incorporating OHSR into U-Net. The experiments are conducted on JHU Adult Atlas. As shown in Table <ref type="table" target="#tab_1">3</ref>, learning OHSR using a triplet loss with graph-based dynamic margin improves U-Net by 3.52% in DSC. This indicates our method can empower a relatively small network to segment fine-grained brain structures with considerable accuracy. Our method even outperforms nnU-Net by 0.70% in DSC, clearly demonstrating its superiority. We further compare the performance between two types of OHSR. As tabulated in Table <ref type="table" target="#tab_1">3</ref>, Type II ontology achieves bet-ter performance, indicating mimicking clinicians to understand brain hierarchy is of greater help.</p><p>Qualitative Results. Qualitative comparisons are demonstrated in Fig. <ref type="figure" target="#fig_3">4</ref>.</p><p>From the axial view, we can clearly see the external capsule is well-segmented by our proposed method, while other methods can hardly differentiate its boundary. From the coronal and sagittal views, we observe that our method can better capture and preserve the overall shape of the lateral frontal-orbital gyrus.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a novel approach to learn brain hierarchy based on ontology for whole brain segmentation. By introducing graph-based dynamic violate margin into the triplet loss, we encode multi-level ontology knowledge into a voxel-wise embedding space and mimic experts' hierarchical perception of the brain anatomy. We successfully demonstrate that our proposed method outperforms SOTA methods both quantitatively and qualitatively. We consider introducing hierarchical information into the output space as part of our future efforts.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of the five-level ontology-based hierarchical structural relationship. The labels are created in a corase-to-fine manner.</figDesc><graphic coords="2,56,31,66,89,311,20,72,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Fig.2. An intuitive illustration of hierarchy-based triplet loss and its corresponding toy example graph of brain hierarchy. The loss tends to group structures labeled as a same class at a higher ontology level.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. DSC boxplots of small, medium, large and all structures from different methods on JHU Adult Atlas.</figDesc><graphic coords="7,256,77,241,97,114,52,56,50" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative comparisons between our proposed method and SOTA. The regions of interest are highlighted in bounding boxes.</figDesc><graphic coords="8,76,74,195,56,282,85,163,78" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>.69 83.51 ± 13.13 85.52 ± 5.38 83.67 ± 11.26Table 2 .</head><label>2</label><figDesc>3 . "A" indicates all structures. The best results are highlighted in bold. Please note all compared results are based on self-reimplementation. Comparisons with SOTA for segmenting 32 coarse-grained brain structures on CANDI, in terms of DSC. The best result is highlighted in bold.</figDesc><table><row><cell>Method</cell><cell>DSC(%)</cell><cell></cell><cell></cell></row><row><cell></cell><cell>S</cell><cell>M</cell><cell>L</cell><cell>A</cell></row><row><cell>U-Net [3]</cell><cell>66.56 ± 15.31</cell><cell>73.37 ± 16.22</cell><cell cols="2">78.58 ± 6.79 73.82 ± 14.07</cell></row><row><cell cols="2">QuickNAT [21] 69.30 ± 19.55</cell><cell>72.09 ± 20.76</cell><cell cols="2">78.97 ± 9.15 74.25 ± 17.25</cell></row><row><cell>nnU-Net [12]</cell><cell>80.04 ± 14.60</cell><cell>82.85 ± 13.06</cell><cell cols="2">84.79 ± 5.84 82.97 ± 11.56</cell></row><row><cell>Proposed</cell><cell>80.76 ± 13</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 3 .</head><label>3</label><figDesc>Analysis of the effect of OHSR on JHU Adult Atlas.</figDesc><table><row><cell>Method</cell><cell>DSC(%)</cell></row><row><cell>U-Net</cell><cell>73.82 ± 14.07</cell></row><row><cell>U-Net + OHSR (Type I)</cell><cell>77.34 ± 14.52 (+3.52)</cell></row><row><cell>U-Net + OHSR (Type II)</cell><cell>77.99 ± 12.93 (+4.17</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This study was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (<rs type="grantNumber">62071210</rs>); the <rs type="funder">Shenzhen Science and Technology Program</rs> (<rs type="grantNumber">RCYX20210609103056042</rs>); the <rs type="funder">Shenzhen Science and Technology Innovation Committee</rs> (<rs type="grantNumber">KCXFZ2020122117340001</rs>); the <rs type="programName">Shenzhen Basic Research Program</rs> (<rs type="grantNumber">JCYJ20200925153847004</rs>, <rs type="grantNumber">JCYJ20190809120205578</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_7mU7ksS">
+					<idno type="grant-number">62071210</idno>
+				</org>
+				<org type="funding" xml:id="_8FUTMpA">
+					<idno type="grant-number">RCYX20210609103056042</idno>
+				</org>
+				<org type="funding" xml:id="_2ydbYNc">
+					<idno type="grant-number">KCXFZ2020122117340001</idno>
+					<orgName type="program" subtype="full">Shenzhen Basic Research Program</orgName>
+				</org>
+				<org type="funding" xml:id="_9XcXYwD">
+					<idno type="grant-number">JCYJ20200925153847004</idno>
+				</org>
+				<org type="funding" xml:id="_HKezR3E">
+					<idno type="grant-number">JCYJ20190809120205578</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ackerman</surname></persName>
+		</author>
+		<title level="m">Discovering the brain</title>
+		<imprint>
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Hierarchy-based image embeddings for semantic image retrieval</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Barz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Denzler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Winter Conference on Applications of Computer Vision</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="638" to="647" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">MONAI: an open-source framework for deep learning in healthcare</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.02701</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Computational analysis of LDDMM for brain mapping</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ceritoglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">151</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Fully automatic hippocampus segmentation and classification in Alzheimer&apos;s disease and mild cognitive impairment applied on data from ADNI</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chupin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Gérardin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cuingnet</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hippocampus</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="579" to="587" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">AssemblyNet: a large ensemble of CNNs for 3D whole brain MRI segmentation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Coupé</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">219</biblScope>
+			<biblScope unit="page">117026</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Tools for multiple granularity analysis of brain MRI data for individualized image analysis</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Djamanakova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="168" to="176" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Exercise training increases size of hippocampus and improves memory</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">I</forename><surname>Erickson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Voss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Prakash</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci</title>
+		<imprint>
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="3017" to="3022" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep metric learning with hierarchical triplet loss</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the European Conference on Computer Vision</title>
+		<meeting>the European Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="269" to="285" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Multi-granularity wholebrain segmentation based functional network analysis using resting-state fMRI</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">942</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">3D whole brain segmentation using spatially localized atlas network tiles</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">194</biblScope>
+			<biblScope unit="page" from="105" to="119" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">CANDIShare: a resource for pediatric neuroimaging data</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">N</forename><surname>Kennedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Haselgrove</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Hodge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Rane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Makris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Frazier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="319" to="322" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep hierarchical semantic segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1246" to="1257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">ACEnet: anatomical context-encoding network for neuroanatomy segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Medi. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">101991</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">AADG: automatic augmentation for domain generalization on retinal image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lyu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="3699" to="3711" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Atlas of the Human Brain</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Mai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Majtanik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Paxinos</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>Academic Press</publisher>
+			<pubPlace>Cambridge</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A developmental ontology for the mammalian brain based on the prosomeric model</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Puelles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Paxinos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Watson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="570" to="578" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Bayesian parameter estimation and segmentation in the multi-atlas random orbit model</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">65591</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Alzheimer&apos;s Disease Neuroimaging Initiative: QuickNAT: a fully convolutional network for quick and accurate segmentation of neuroanatomy</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Roy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Conjeti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wachinger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">186</biblScope>
+			<biblScope unit="page" from="713" to="727" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Recalibrating fully convolutional networks with spatial and channel &quot;squeeze and excitation&quot; blocks</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Roy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wachinger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="540" to="549" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Shape and diffusion tensor imaging based integrative analysis of the hippocampus and the amygdala in Alzheimer&apos;s disease</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mag. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1087" to="1099" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multi-atlas segmentation with joint label fusion and corrective learning-an open source implementation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Yushkevich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neuroinf</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">27</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Resource atlases for multi-atlas brain segmentations with multiple ontology levels based on T1-weighted MRI</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">125</biblScope>
+			<biblScope unit="page" from="120" to="130" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Brain segmentation based on multi-atlas and diffeomorphism guided 3D fully convolutional network ensembles</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recognit</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page">107904</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

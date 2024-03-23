@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Segmentation of Kidney Tumors on Non-Contrast CT Images Using Protuberance Detection Network</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Taro</forename><surname>Hatsutani</surname></persName>
+							<email>taro.hatsutani@fujifilm.com</email>
+							<affiliation key="aff0">
+								<orgName type="department">Medical Systems Research and Development Center</orgName>
+								<orgName type="institution">FUJIFILM Corporation</orgName>
+								<address>
+									<settlement>Tokyo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Akimichi</forename><surname>Ichinose</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Medical Systems Research and Development Center</orgName>
+								<orgName type="institution">FUJIFILM Corporation</orgName>
+								<address>
+									<settlement>Tokyo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Keigo</forename><surname>Nakamura</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Medical Systems Research and Development Center</orgName>
+								<orgName type="institution">FUJIFILM Corporation</orgName>
+								<address>
+									<settlement>Tokyo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yoshiro</forename><surname>Kitamura</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Medical Systems Research and Development Center</orgName>
+								<orgName type="institution">FUJIFILM Corporation</orgName>
+								<address>
+									<settlement>Tokyo</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Segmentation of Kidney Tumors on Non-Contrast CT Images Using Protuberance Detection Network</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="13" to="22"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">C5DD6C5BD162228B4FB1295C80675278</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_2</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:56+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Renal Cancer</term>
+					<term>Tumor Segmentation</term>
+					<term>Non-Contrast CT</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Many renal cancers are incidentally found on non-contrast CT (NCCT) images. On contrast-enhanced CT (CECT) images, most kidney tumors, especially renal cancers, have different intensity values compared to normal tissues. However, on NCCT images, some tumors called isodensity tumors, have similar intensity values to the surrounding normal tissues, and can only be detected through a change in organ shape. Several deep learning methods which segment kidney tumors from CECT images have been proposed and showed promising results. However, these methods fail to capture such changes in organ shape on NCCT images. In this paper, we present a novel framework, which can explicitly capture protruded regions in kidneys to enable a better segmentation of kidney tumors. We created a synthetic mask dataset that simulates a protuberance, and trained a segmentation network to separate the protruded regions from the normal kidney regions. To achieve the segmentation of whole tumors, our framework consists of three networks. The first network is a conventional semantic segmentation network which extracts a kidney region mask and an initial tumor region mask. The second network, which we name protuberance detection network, identifies the protruded regions from the kidney region mask. Given the initial tumor region mask and the protruded region mask, the last network fuses them and predicts the final kidney tumor mask accurately. The proposed method was evaluated on a publicly available KiTS19 dataset, which contains 108 NCCT images, and showed that our method achieved a higher dice score of 0.615 (+0.097) and sensitivity of 0.721 (+0.103) compared to 3D-UNet. To the best of our knowledge, this is the first deep learning method that is specifically designed for kidney tumor segmentation on NCCT images.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Over 430,000 new cases of renal cancer were reported in 2020 in the world <ref type="bibr" target="#b0">[1]</ref> and this number is expected to rise <ref type="bibr" target="#b21">[22]</ref>. When the tumor size is large (greater than 7 cm) often the whole kidney is removed, however, when the tumor size is small (less than 4 cm), partial nephrectomy is the preferred treatment <ref type="bibr" target="#b19">[20]</ref> as it could preserve kidney's function. Thus, early detection of kidney tumors can help to improve patient's prognosis. However, early-stage renal cancers are usually asymptomatic, therefore they are often incidentally found during other examinations <ref type="bibr" target="#b18">[19]</ref>, which includes non-contrast CT (NCCT) scans.</p><p>Segmentation of kidney tumors on NCCT images adds challenges compared to contrast-enhanced CT (CECT) images, due to low contrast and lack of multiphase images. On CECT images, the kidney tumors have different intensity values compared to the normal tissues. There are several works that demonstrated successful segmentation of kidney tumors with high precision <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b20">21]</ref>. However, on NCCT images, as shown in Fig. <ref type="figure" target="#fig_0">1b</ref>, some tumors called isodensity tumors, have similar intensity values to the surrounding normal tissues. To detect such tumors, one must compare the kidney shape with tumors to the kidney shape without the tumors so that one can recognize regions with protuberance.</p><p>3D U-Net <ref type="bibr" target="#b2">[3]</ref> is the go-to network for segmenting kidney tumors on CECT images. However, convolutional neural networks (CNNs) are biased towards texture features <ref type="bibr" target="#b4">[5]</ref>. Therefore, without any intervention, they may fail to capture the protuberance caused by isodensity tumors on NCCT images.</p><p>In this work, we present a novel framework that is capable of capturing the protuberances in the kidneys. Our goal is to segment kidney tumors including isodensity types on NCCT images. To achieve this goal, we create a synthetic dataset, which has separate annotations for normal kidneys and protruded regions, and train a segmentation network to separate the protruded regions from the normal kidney regions. In order to segment whole tumors, our framework consists of three networks. The first is a base network, which extracts kidneys and an initial tumor region masks. The second protuberance detection network receives the kidney region mask as its input and predicts a protruded region mask. The last fusion network receives the initial tumor mask and the protruded region mask to predict a final tumor mask. This proposed framework enables a better segmentation of isodensity tumors and boosts the performance of segmentation of kidney tumors on NCCT images. The contribution of this work is summarized as follows:</p><p>1. Present a pioneering work for segmentation of kidney tumors on NCCT images. 2. Propose a novel framework that explicitly captures protuberances in a kidney to enable a better segmentation of tumors including isodensity types on NCCT images. This framework can be extended to other organs (e.g. adrenal gland, liver, pancreas). 3. Verify that the proposed framework achieves a higher dice score compared to the standard 3D U-Net using a publicly available dataset. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>The release of two public CT image datasets with kidney and tumor masks from the 2019/2021 Kidney and Kidney Tumor Segmentation challenge <ref type="bibr" target="#b7">[8]</ref> (KiTS19, KiTS21) attracted researchers to develop various methods for segmentation.</p><p>Looking at the top 3 teams from each challenge <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b20">21]</ref>, all teams utilized 3D U-Net <ref type="bibr" target="#b2">[3]</ref> or V-Net <ref type="bibr" target="#b15">[16]</ref>, which bears a similar architecture. The winner of KiTS19 <ref type="bibr" target="#b12">[13]</ref> added residual blocks <ref type="bibr" target="#b6">[7]</ref> to 3D U-Net and predicted kidney and tumor regions directly. However, the paper notes that modifying the architecture resulted in only slight improvement. The other 5 teams took a similar approach to nnU-Net's coarse-to-fine cascaded network <ref type="bibr" target="#b11">[12]</ref>, where it predicts from a low-resolution image in the first stage and then predicts kidneys and tumors from a high-resolution image in the second stage. Thus, although other attempts were made, using 3D U-Net is the go-to method for predicting kidneys and tumors. In our work, we also make use of 3D U-Net, but using this network alone fails to learn some isodensity tumors. To overcome this issue, we developed a framework that specifically incorporates protuberances in kidneys, allowing for an effective segmentation of tumors on NCCT images.</p><p>In terms of focusing on protruded regions in kidneys, our work is close to <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b14">15]</ref>. <ref type="bibr" target="#b13">[14]</ref> developed a computer-aided diagnosis system to detect exophytic kidney tumors on NCCT images using belief propagation and manifold diffusion to search for protuberances. An exophytic tumor is located on the outer surface of the kidney that creates a protrusion. While this method demonstrated high sensitivity (95%), its false positives per patient remained high (15 false positives per patient). In our work, we will not only segment protruded tumors but also other tumors as well. The first base network is responsible for predicting kidney and tumor region masks. Our architecture is based on 3D U-Net, which has an encoder-decoder style architecture, with few modifications. To reduce the required size of GPU memory, we only use the encoder that has only 16 channels at the first resolution, but instead we make the architecture deeper by having 1 strided convolution and 4 max-pooling layers. In the decoder, we replace the up-convolution layers with a bilinear up-sampling layer and a convolution layer. In addition, by only having a single convolution layer instead of two in the original architecture at each resolution, we keep the decoder relatively small. Throughout this paper, we refer this architecture as our 3D U-Net.</p><p>The second protuberance detection network is the same as the base network except it starts from 8 channels instead of 16. We train this network using synthetic datasets. The details of the dataset and training procedures are described in Sect. 3.2.</p><p>The last fusion network combines the outputs from the base network and the protuberance detection network and makes the final tumor prediction. In detail, we perform a summation of the initial tumor mask and the protruded region mask, and then concatenate the result with the input image. This is the input of the last fusion network, which also has the same architecture as the base network with an exception of having two input channels. This fusion network do not just combine the outputs but also is responsible for removing false positives from the base network and the protuberance detection network.</p><p>Our combined three network is fully differentiable, however, to train efficiently, we train the model in 3 steps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Step1: Training Base Network</head><p>In the first step, we train the base network, which is a standard segmentation network, to extract kidney and tumor masks from the images. We use a sigmoid function for the last layer. And as a loss function, we use the dice loss <ref type="bibr" target="#b15">[16]</ref> and the cross-entropy loss equally.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Step2: Training Protuberance Detection Network</head><p>In the second step, we train the protuberance detection network alone to separate protruded regions from the normal kidney masks. Here, we only use the crossentropy loss and label smoothing with a smoothing factor of = 0.01. Synthetic Dataset. To enable a segmentation of protruded regions only, a separate annotation of each region is usually required. However, annotating such areas is time-consuming and preparing a large number of data is challenging. Alternatively, we create a synthetic dataset that mimics a kidney with protrusions. The synthetic dataset is created through the following steps:</p><p>1. Randomly sample a kidney mask without protuberance and a tumor mask. 2. Apply random rotation and scaling to the tumor mask. 3. Randomly insert the tumor mask into the kidney mask. 4. If both of the following conditions are met, append to the dataset.</p><formula xml:id="formula_0">i k i t i i k i &lt; 0.3,<label>(1)</label></formula><formula xml:id="formula_1">i k i t i i t i &lt; 0.95,<label>(2)</label></formula><p>where k i is a voxel value (0 or 1) in the kidney mask and t i is a voxel value in the tumor mask. Equation 1 ensures that only up to 30% of the kidney is covered with a tumor. Equation <ref type="formula" target="#formula_1">2</ref>ensures that not all tumors are covered by the kidney (at least 5% of the tumor is protruded from the kidney).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Step3: End-to-End Training with Fusion Network</head><p>In the final step, we train the complete network jointly. Although our network is fully differentiable, since there is no separate annotation for protruded regions other from the synthetic dataset, we freeze the parameters in protuberance detection network.</p><p>The output of the protuberance detection network will likely have more false positives than the base network since it has no access to the input image. Thus, when the output of the protuberance detection network is concatenated with the output of the base network, the fusion network can easily reduce the loss by ignoring the protuberance detection network's output, which is suboptimal. To avoid this issue, we perform summation not concatenation to avoid the model from ignoring all output from the protuberance detection network. We then clip the value of the mask to the range of 0 and 1. As a result, the input to the fusion network has two channels. The first channel is the input image, and the second channel is the result of summation of the initial tumor mask and the protruded region mask. We concatenate the input image so that the last network can remove false positives from the predicted masks as well as predicting the missing tumor regions from the protuberance detection network.</p><p>We use the dice loss and the cross-entropy loss as loss functions for the fusion network. We also keep the loss functions in the base network for predicting kidneys and tumors. The loss function for tumors in the base network acts like an intermediate supervision. Our network shares some similarities with the stacked hourglass network <ref type="bibr" target="#b17">[18]</ref> where the network consists of multiple U-Net like hourglass modules and has intermediate supervision at the end of each hourglass module. By having multiple modules in this manner, the network can fix the initial mistakes in early modules and corrects in later modules.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>No prior work exists that uses NCCT images from KiTS19 <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b8">9]</ref>. Thus, we first created our baseline model and compared the performance with existing methods on CECT images. This allows us to ensure that our baseline model and training procedure is appropriate. We then trained the model using NCCT images and compared with our proposed method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets and Preprocessing</head><p>We used a dataset from KiTS19 <ref type="bibr" target="#b7">[8]</ref> which contains both CECT and NCCT images. For CECT images, there are 210 images for training and validation and, 90 images for testing. For NCCT images, there are 108 images, which are different series of the 210 images. The ground truth masks are only available for the 210 CECT images. Thus, we transfer the masks to NCCT images. This is achieved by extracting kidney masks and adjusting the height of each kidney. The ground truth mask contains a kidney label and a kidney tumor label. Cysts are not annotated separately and included in the kidney label on this dataset. The data can be downloaded from The Cancer Imaging Archive (TCIA) <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">9]</ref>.</p><p>The images were first clipped to the intensity value range of [-90, 210] and normalized from -1 to 1. The voxel spacings were normalized to 1 mm. During the training, the images were randomly cropped to a patch size of 128×128×128 voxels. We applied random rotation, random scaling and random noise addition as data augmentation.</p><p>During the Step2 phase of the training, where we used the synthetic dataset, we created 10,000 masks using the method from Sect. 3.2. We applied some augmentations during training to input masks to simulate the incoming inputs from the base network. The output of the base network is not binarized to keep gradient from flowing, so the values are in the range [0, 1] and the edge of kidneys are usually smooth. Therefore, we applied gaussian blurring, gaussian noise addition and intensity value shifting. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Training Details and Evaluation Metrics</head><p>Our model was trained using SGD with a 0.9 momentum and a weight decay of 1e-7. We employed a learning rate scheduler, which we warm-up linearly from 0.0001 to 0.1 during the first 30% (for Step1 and Step3) or 10% (for Step2) of the total training steps and decreased following the cosine decay learning rate.</p><p>A mini-batch size of 8, 16 and 4 were used, and trained for 250k, 100k and 100k steps during Step1 to 3 respectively. We conducted our experiments using JAX (v.0.4.1) <ref type="bibr" target="#b1">[2]</ref> and Haiku (v.0.0.9) <ref type="bibr" target="#b9">[10]</ref>. We trained the model using a single NVIDIA RTX A5000 GPU.</p><p>For the experiment on CECT images, we used the dice score as our evaluation metrics following the same formula from KiTS19. For the experiment on NCCT images, we also evaluated the sensitivity and false positives per image (FPs/image). We calculated as true positive when the predicted mask has the dice score greater than 0.5, otherwise we calculated as false negative. On the other hand, false positives were counted when the predicted mask did not overlap with any ground truth masks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Performance on CECT Images</head><p>To show that our model is properly tuned, we compare our baseline model with an existing method using CECT images. As can be seen from Table <ref type="table" target="#tab_0">1</ref>, our model showed comparable scores to the winner of KiTS19 challenge. We used this baseline model as our base network for the experiments on NCCT images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Performance on NCCT Images</head><p>Table <ref type="table" target="#tab_1">2</ref> shows our experimental results and ablation studies on NCCT images. The proposed method (Table <ref type="table" target="#tab_1">2</ref>-bottom) outperformed the baseline model (Table <ref type="table" target="#tab_1">2</ref>-top). The ablation studies show that adding each component (CECT images and the protuberance detection network) resulted in an increase in the performance. While adding CECT images contributed the most for the increase in tumor dice and sensitivity, adding the protuberance detection network further pushed the performance. However, the false positives per image (FPs/image)  increased from 0.283 to 0.421. The protuberance detection network cannot distinguish the protrusions that were caused by tumors or cysts, so the output from this network has many FPs at this stage. Thus, the fusion network has to eliminate cysts by looking again the input image, however, it may have failed to eliminate some cysts (Fig. <ref type="figure" target="#fig_2">3</ref> second row).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>In this paper, we proposed a novel framework for kidney tumor segmentation on NCCT images. To cope with isodensity tumors, which have similar intensity values to their surrounding tissues, we created a synthetic dataset to train a network that extracts protuberance from the kidney masks. We combined this network with the base network and fusion network. We evaluated our method using the publicly available KiTS19 dataset, and showed that the proposed method can achieve a higher sensitivity than existing approach. Our framework is not limited to kidney tumors but can also be extended to other organs (e.g., adrenal gland, liver, pancreas).</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Example CECT and NCCT images. Some kidney tumors have similar intensity values to its surrounding tissues. a) CECT image. b) NCCT image. c) Output of the protuberance detection network. d) Output of our model. e) Ground truth mask.</figDesc><graphic coords="3,55,98,53,78,340,24,80,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of our framework.</figDesc><graphic coords="4,44,31,53,72,335,86,136,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Output examples from our model. The first row shows true positive results and the second row shows false positive results.</figDesc><graphic coords="8,82,29,150,95,259,21,116,38" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Dice performance of existing method and our baseline model. Evaluated using CECT images from KiTS19. Composite dice is an average dice between kidney and tumor dice. The results were obtained by submitting our predicted masks to the Grand Challenge page.</figDesc><table><row><cell>Method</cell><cell cols="3">Composite Dice Kidney Dice Tumor Dice</cell></row><row><cell cols="2">Isensee and Maier-Hein [13] 0.9123</cell><cell>0.9737</cell><cell>0.8509</cell></row><row><cell>Our baseline model</cell><cell>0.8832</cell><cell>0.9728</cell><cell>0.7935</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Result of our proposed method on NCCT images from KiTS19. The values are average values of a five-fold cross-validation. Protuberance Detection Network with CECT images Tumor Dice Sensitivity FPs/Image</figDesc><table><row><cell>✗</cell><cell>✗</cell><cell>0.518</cell><cell>0.618</cell><cell>0.283</cell></row><row><cell>✗</cell><cell>✓</cell><cell>0.585</cell><cell>0.686</cell><cell>0.340</cell></row><row><cell>✓</cell><cell>✓</cell><cell>0.615</cell><cell>0.721</cell><cell>0.421</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_0"><p>Proposed MethodTo capture the protuberances in kidneys, we specifically train a protuberance detection network, which receives a kidney region mask as an input and separates protruded regions from it. This enables us to extract a part of tumors that forms protuberance, but our goal is segmenting all visible kidney tumors on NCCT images. Thus, we make use of three networks as shown in Fig.2.</p></note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Estimated number of new cases in 2020, world, both sexes</title>
+		<ptr target="https://gco.iarc.fr/today/online-analysis-table/" />
+		<imprint>
+			<date type="published" when="2023-02-27">27 Feb 2023</date>
+		</imprint>
+	</monogr>
+	<note>all ages (excl. nmsc</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">JAX: composable transformations of Python+NumPy programs</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bradbury</surname></persName>
+		</author>
+		<ptr target="http://github.com/google/jax" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">3D U-Net: learning dense volumetric segmentation from sparse annotation</title>
+		<author>
+			<persName><forename type="first">Ö</forename><surname>Abdulkadir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lienkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Brox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_49</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page">49</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The cancer imaging archive (TCIA): maintaining and operating a public information repository</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Clark</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1045" to="1057" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Imagenet-trained CNNs are biased towards texture; increasing shape bias improves accuracy and robustness</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Geirhos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rubisch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Michaelis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bethge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>Wichmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Brendel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of International Conference on Learning Representations</title>
+		<meeting>International Conference on Learning Representations</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">An ensemble of 3D U-net based models for segmentation of kidney and masses in CT scans</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Golts</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Khapun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shats</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shoshan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gilboa-Solomon</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-98385-7_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-98385-714" />
+	</analytic>
+	<monogr>
+		<title level="m">KiTS 2021</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Heller</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Trofimova</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Tejpaul</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Papanikolopoulos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Weight</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13168</biblScope>
+			<biblScope unit="page" from="103" to="115" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The state of the art in kidney and kidney tumor segmentation in contrast-enhanced CT imaging: results of the kits19 challenge</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Heller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="page">101821</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">N</forename><surname>Heller</surname></persName>
+		</author>
+		<title level="m">C4KC kits challenge kidney tumor segmentation dataset</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Haiku: Sonnet for JAX</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hennigan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Norman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Babuschkin</surname></persName>
+		</author>
+		<ptr target="http://github.com/deepmind/dm-haiku" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Cascaded semantic segmentation for kidney and tumor. Submissions to the</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chunmei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Kidney Tumor Segmentation Challenge: KiTS</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">nnU-net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">An attempt at beating the 3D U-NET. Submissions to the</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Kidney Tumor Segmentation Challenge: KiTS</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Computer-aided detection of exophytic renal lesions on non-contrast CT images</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Linguraru</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="15" to="29" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Manifold diffusion for exophytic kidney lesion detection on non-contrast CT images</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Linguraru</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-40811-3_43</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-40811-3" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2013</title>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Mori</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Sakuma</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Sato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Barillot</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">8149</biblScope>
+			<biblScope unit="page">43</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">V-net: fully convolutional neural networks for volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Ahmadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Fourth International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2016">2016. 2016</date>
+			<biblScope unit="page" from="565" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Segmentation of kidney tumor by multi-resolution VB-Nets. Submissions to the</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Mu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Kidney Tumor Segmentation Challenge: KiTS</title>
+		<imprint>
+			<biblScope unit="page">19</biblScope>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Stacked hourglass networks for human pose estimation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Newell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46484-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46484-8" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9912</biblScope>
+			<biblScope unit="page">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Incidental renal tumours on low-dose CT lung cancer screening exams</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Pinsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Screen</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="104" to="109" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The expanding role of partial nephrectomy: a critical analysis of indications, results, and complications</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Touijer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Urol</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="214" to="222" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A coarse-to-fine framework for the 2021 kidney and kidney tumor segmentation challenge</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-98385-7_8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-98385-78" />
+	</analytic>
+	<monogr>
+		<title level="m">KiTS 2021</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Heller</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Trofimova</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Tejpaul</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Papanikolopoulos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Weight</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13168</biblScope>
+			<biblScope unit="page" from="53" to="58" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">International variations and trends in renal cell carcinoma incidence and mortality</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Znaor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lortet-Tieulent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Laversanne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jemal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bray</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Urol</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="519" to="530" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

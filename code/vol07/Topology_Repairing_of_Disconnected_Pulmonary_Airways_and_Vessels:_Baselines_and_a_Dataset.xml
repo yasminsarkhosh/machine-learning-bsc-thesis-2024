@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Topology Repairing of Disconnected Pulmonary Airways and Vessels: Baselines and a Dataset</title>
+				<funder>
+					<orgName type="full">Swiss National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ziqiao</forename><surname>Weng</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science</orgName>
+								<orgName type="institution">University of Sydney</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Jiancheng</forename><surname>Yang</surname></persName>
+							<email>jiancheng.yang@epfl.ch</email>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Computer Vision Laboratory</orgName>
+								<orgName type="department" key="dep2">Swiss Federal Institute of Technology Lausanne (EPFL)</orgName>
+								<address>
+									<settlement>Lausanne</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dongnan</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science</orgName>
+								<orgName type="institution">University of Sydney</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Weidong</forename><surname>Cai</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science</orgName>
+								<orgName type="institution">University of Sydney</orgName>
+								<address>
+									<settlement>Sydney</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Topology Repairing of Disconnected Pulmonary Airways and Vessels: Baselines and a Dataset</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="382" to="392"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">1DC653567CEC6EAC89FFF4D4FF2AE5DA</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_36</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:56+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate segmentation of pulmonary airways and vessels is crucial for the diagnosis and treatment of pulmonary diseases. However, current deep learning approaches suffer from disconnectivity issues that hinder their clinical usefulness. To address this challenge, we propose a post-processing approach that leverages a data-driven method to repair the topology of disconnected pulmonary tubular structures. Our approach formulates the problem as a keypoint detection task, where a neural network is trained to predict keypoints that can bridge disconnected components. We use a training data synthesis pipeline that generates disconnected data from complete pulmonary structures. Moreover, the new Pulmonary Tree Repairing (PTR) dataset is publicly available, which comprises 800 complete 3D models of pulmonary airways, arteries, and veins, as well as the synthetic disconnected data. Our code and data are available at https://github.com/M3DV/pulmonary-tree-repairing.</p><p>Keywords: pulmonary airways • pulmonary vessels • tree structure repairing • geometric deep learning • shape analysis</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Pulmonary diseases pose significant health risks, and computed tomography (CT) analysis of pulmonary airways and vessels has become a valuable clinical tool for revealing tomographic patterns <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b25">25]</ref>. Precise representation of the airway tree is essential for quantifying morphological changes, diagnosing respiratory disorders such as bronchial stenosis, acute respiratory distress syndrome, idiopathic pulmonary fibrosis, chronic obstructive pulmonary disease (COPD), obliterative bronchiolitis, and pulmonary contusion, as well as for virtual bronchoscopy and endobronchial navigation in surgery <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b9">10]</ref>. Furthermore, accurate modeling pulmonary arteries and veins improves computer-aided diagnosis of pulmonary embolism, chronic pulmonary hypertension <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b16">17]</ref>, and lobectomy/segmentectomy <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b26">26,</ref><ref type="bibr" target="#b27">27]</ref>.</p><p>In recent years, deep learning methods have spawned research on airway and vessel segmentation. Convolutional neural networks (CNNs) have been widely employed in various existing studies to learn robust and discriminative features for automatic airway/artery/vein segmentation <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b25">25]</ref>. However, accurately reconstructing complete airway or vessel tree branches remains a major challenge. Current state-of-the-art segmentation models, such as nnU-Net <ref type="bibr" target="#b4">[5]</ref>, still suffer from inadequate precision due to the minute scale and scattered spatial distribution of peripheral bronchi and vessels, which causes a severe class imbalance between the foreground and background, leading to degraded segmentation accuracy. The implications of such degraded performance can have negative consequences on clinical judgments and diagnoses, as it can lead to disconnections of pulmonary tubular structures of airways or vessels, as depicted in Fig. <ref type="figure" target="#fig_0">1</ref>, potentially impeding accurate medical assessments.</p><p>In this paper, we formulate the problem of disconnected pulmonary tubular structures as a key point detection task. The primary objective is to repair the topology structures of two disconnected components by accurately identifying the centers of the disconnected parts located at both ends of the components. Endpoints corresponding to the broken centerline of the pulmonary tubular structure are treated as two key points. The identification of these key points is critical in recognizing disconnections in pulmonary tubular structures for diagnosing pulmonary diseases, which has significant research implications.</p><p>To address this issue, we propose a training data synthesis pipeline that generates disconnected data from complete pulmonary structures. We further explore the training strategy and thus build a strong basline based on 3D-UNet to predict the key points that can bridge disconnected components. Our contributions can be briefly summarized as follows:</p><p>-A novel formulation of a practical research problem: We have formulated the problem of pseudo disconnection pulmonary tubular structures as a key point detection task, which is a significant contribution to the field as it has not been extensively explored before. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>In this section, we present a comprehensive analysis of our approach for detecting pulmonary tubular interruptions as a keypoint detection task. We start by formulating the problem, followed by a description of the data simulation process used to construct the dataset. The dataset construction process is explained in detail to provide insight into the methods used for generating realistic data samples. We then introduce the simple two-channel 3D-UNet, and describe its architecture, key features, training objective, and implementation details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Problem Formulation</head><p>Segmentation of thoracic tubular structures, such as airways and vessels, from lung Computed Tomography (CT) scans is vital for diagnosing pulmonary diseases. Over the years, various deep learning-based segmentation methods have demonstrated the potential of Convolutional Neural Networks (CNNs) in handling this task. However, accurately segmenting pulmonary airways, arteries, and veins without interruption remains challenging due to the unique properties of the thoracic tubular structure. The trachea and blood vessels constitute only a small fraction of the whole thoracic CT image, which leads to severe class imbalance between the tubular foreground and background, hindering 3-D CNNs learning from sufficient supervisory signals <ref type="bibr" target="#b14">[15]</ref>. Moreover, airways and vessels are complex tree-like structures with numerous bifurcations and branches of various sizes and lengths, making it difficult for CNNs to capture fine-grained patterns without encountering memory/parameter explosion and overfitting <ref type="bibr" target="#b9">[10]</ref>. Segmentation networks often produce unsatisfactory predictions, resulting in disconnection or interruption of the estimated tubular structure, which could affect clinicians' judgment in clinical practice. Therefore, identifying the location of disconnections is of great research importance. In this paper, we have formulated the problem as a key point detection task, with the two endpoints of the interrupted centerline of the tubular structure serving as the two key points. We aim to use neural networks to predict the location of the disconnection part of vessels/airways, which has significant research implications. Keypoint detection is a popular computer vision technique for identifying object parts in images, with applications ranging from face recognition, pose estimation to medical landmark detection <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b22">23]</ref>. Heatmap regression has emerged as a standard approach for keypoint detection, where ground-truth heatmaps are generated for each keypoint using a Gaussian kernel <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b24">24]</ref>. The network outputs multi-channel heatmaps, with each channel corresponding to a specific keypoint. Our work adopts this approach for detecting two keypoints located at the endpoints of interrupted airway/vessel.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Training Data Synthesis</head><p>We generated synthetic data from lung CT scans with carefully annotated pulmonary airways, arteries, and veins, as no public medical dataset was available for the task at hand. The synthetic data simulates the scenario of vascular/trachea disconnection and serves as a benchmark dataset for the keypoint detection task. To generate the data, binary masks of the tubular structures were extracted from 800 CT scans <ref type="bibr" target="#b5">[6]</ref>, and VesselVio software <ref type="bibr" target="#b1">[2]</ref> was used to identify the centerlines of binarized airway/vessel volumes and create tree-like graphs. Random sampling was performed to select a branch of the vessel or airway, and two keypoints were sampled along the pre-extracted centerline. The keypoints were then subjected to morphological operations (from SimpleITK Python library <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b21">22]</ref>) to create near-true vascular disconnections. The resulting keypoints were labeled KP 1 and KP 2 , and the data was visualized in Fig. <ref type="figure" target="#fig_0">1</ref>. It is important to note that discontinuities in real-world scenarios are mainly observed in thinner blood vessels. Due to the random sampling process and the prevalence of small branches within the entire tubular structure, the generated discontinuities are predominantly manifested in small blood vessels. Including the subfigures in Fig. <ref type="figure" target="#fig_0">1(b</ref>) aims to clearly illustrate the visual appearance of these generated discontinuities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">The Keypoint Detection Network</head><p>The framework and training pipeline of our network are depicted in Fig. <ref type="figure" target="#fig_1">2</ref>. In the following sections, we will introduce each component in detail.</p><p>Data Sampling. The generated raw data is too large for training the network due to the high-resolution nature of CT scans, which have dimensions of 512 × 512 for the x-y plane and variable dimensions for the z plane. Directly feeding the entire 3-D volume into the network can cause significant memory overhead and slow down the training convergence, especially with limited computing resources. Therefore, we crop a subvolume with a size of 80 × 80 × 80 around where the disconnection occurs from the original volume. Specifically, since the location of interrupted blood vessels cannot be known in advance and the small connected component where KP 2 is located can be found using morphological operations, we randomly select a point in that small object as the center point of our subvolume. This approach also serves as a new form of data augmentation. For each selected branch in an original volume, we randomly crop one subvolume for training purposes and three subvolumes for validation and testing.</p><p>Network Design. We propose an encoder-decoder network that is based on the widely used 3D U-Net architecture. As depicted in Fig. <ref type="figure" target="#fig_1">2</ref>, the inputs to the network are obtained by cropping subvolumes of the same size as the original volume. The first input contains only KP 1 and its connected component in the whole volume but is presented in a subvolume view. The second input exclusively comprises the small vessel/airway segment of KP 2 . The output heatmaps of the two keypoints correspond to the KP 1 input and KP 2 input, respectively, which avoids learning ambiguity. The 3D U-Net is a neural network architecture that features three encoder and three decoder stages. Each stage includes a convolution block and a downsampling or upsampling layer. The convolution block consists of two convolution layers, each using a kernel size of 3 × 3 × 3, followed by batch normalization and rectified linear unit (ReLU) activation.</p><p>The network receives two binarized subvolumes I ∈ R 2×D×H×W as inputs, where D, H, W represent the spatial dimensions of the cropped volume. In this study, we decided to set the output heatmaps to the same size as the inputs, without downsampling, in order to avoid the loss of coordinate accuracy.</p><p>In the neural network design phase, we prioritized formulating the problem, constructing an open-source dataset, and proposing a comprehensive training and testing pipeline. We refrained from incorporating sophisticated modules, such as attention mechanisms, transformer blocks, or distillation, and fine-tuning hyper-parameters. Hence, we do not delve into detailed network architecture design in this paper. However, we obtained promising results using a simple two-channel 3D-UNet model and explored various training techniques. Our work lays a solid foundation for future researchers to improve upon our findings by incorporating advanced techniques and innovative modules.</p><p>Loss Function. We adopt the state-of-the-art keypoint detection framework to represent the problem as heatmap estimation, where the coordinate with the highest confidence in each heatmap of H ∈ R k×D×H×W corresponds to the location of the kth keypoint. The ground-truth heatmaps are generated by placing a 3D Gaussian kernel at the center of each ground-truth keypoint location. For simplicity, we define the Keypoint Mean-Squared Error (KMSE) loss function as follows:</p><formula xml:id="formula_0">L kmse = 1 K K k =1 δ (V k &gt; 0) • H k -Ĥk 2 2 , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where H k and Ĥk refer to the ground-truth and the predicted heatmaps for the kth keypoint, and K is fixed to 2 in our study. To reduce memory cost, we limit the size of subvolumes to 80 × 80 × 80, which may result in invisible keypoints if the branch is long and the two keypoints are too far apart. Here, V k indicates the visibility of the ground truth keypoint, where V k = 1 and δ(V k ) = 1 if the keypoint is visible, and vice versa.</p><p>Implementation Details. During the training phase, we employ a sampling strategy that randomly crops one volume, which introduces data augmentation, mitigates overfitting, and ensures training convergence. To reduce testing time and enable fair comparisons between models, we generate and save three random crops for each vessel branch during validation and testing. The size of the groundtruth heatmaps is 80 × 80 × 80, and the sigma of the 3D Gaussian kernel used to generate them is set to 2.5. All networks were trained using AdamW optimizer with a learning rate of 0.0001 and beta hyperparameters of 0.5 and 0.999. The training was performed on a single NVIDIA 3090ti GPU with a batch size of 16.</p><p>PyTorch framework was used for implementation, and early stopping strategy was adopted to prevent overfitting. To speed up training, we initialize the artery and vessel models with the trained airway model. We combined artery and vein training data to increase the training samples and reduce the training time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Model Inference</head><p>Models trained using our proposed training paradigm may not be directly applicable to real-world data due to several assumptions made during training. Specifically, during training, we assume that the interrupted segmentation mask consists of only two continuous components representing KP 1 and KP 2 , and that the location of KP 2 is known a priori, which is used to randomly crop subvolumes. Additionally, we limit the subvolume's size to ensure efficient training.</p><p>However, in real-world scenarios, the location of KP 1 and KP 2 components is unknown, and there may be small disconnected objects and noises scattered throughout the volume's entire original size. The only prior knowledge available is that KP 1 is located in the volume's largest connected component (i.e., the main vessel/airway), and KP 2 is in one of the small isolated components. To address this issue, we have developed an algorithm that bridges the gap between model training and inference, and accurately predicts disconnections in realworld situations. The pseudo-code of the inference algorithm is detailed in the supplementary materials.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>A total of 800 CT scans with annotations of pulmonary airways, arteries, and veins are utilized to construct our dataset. The CT scans from multiple medical centers are manually annotated by a junior radiologist and confirmed by a senior radiologist <ref type="bibr" target="#b5">[6]</ref>. The data is divided into training, validation, and test subsets with a ratio of 7:1:2. Each CT scan is pre-processed into three binarized volumes of airways, arteries, and veins. Subsequently, 30 distinct branches per volume were randomly selected for each binarized volume under specific criteria to create 30 volumes with vascular interruptions. The Pulmonary Tree Repairing (PTR) dataset includes 3D models represented by binarized ground-truth segmentation masks, centerlines, disconnected volumes, and a corresponding json file for each subject. The json file contains comprehensive information, such as the coordinates of bifurcations, endpoints, and all points along each branch, capturing diverse characteristics specific to each blood vessel. Note that the keypoint detection of airways, arteries, and veins disconnection is treated as three independent tasks, with each task having a dataset size of 800 × 30. The results are optimized on the validation set and reported on the test set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Evaluation Metrics</head><p>Based on the definition of Object Keypoint Similarity (OKS) in pose estimation tasks, we have adapted this metric to align with the features of our dataset. Our modifications to the OKS are reflected in the following metric formulations:</p><formula xml:id="formula_2">OKS k = exp -d 2 k /2Sλ 2 , E d k = exp -d 2 k ,<label>(2)</label></formula><p>Here d k is the Euclidean distance between the predicted keypoint and the ground-truth keypoint, along with the vessel volume S of the corresponding branch. To maintain a consistent scale for OKS, we have introduced λ, a constant which we set to 0.2. OKS k refers to the OKS of kth keypoint (k = 2 in our study).</p><formula xml:id="formula_3">OKS i = k OKS k • δ (V k &gt; 0) k δ (V k &gt; 0) , (<label>3</label></formula><formula xml:id="formula_4">)</formula><p>where OKS i denotes the OKS of ith sample and V k is the visibility flag.</p><formula xml:id="formula_5">AP τ = i δ (OKS i &gt; τ) i 1 , (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where we use standard AP τ , which measures prediction precision of a model given a specific threshold τ . In order to provide a comprehensive and nuanced evaluation of the model's performance, we report average precision across various thresholds. Specifically, we report AP 50 (AP at τ = 0.5), AP 75 (AP at τ = 0.75), AP (the mean AP across 10 τ positions, where τ = {0.5, 0.55, ..., 0.95}), AP S (for small vessels with edge radius within the range of (0, 2]), AP M (for medium vessels with edge radius within the range of (2, 3]), AP L (for large vessels with edge radius greater than 3), AP k1 (AP for KP 1 ), AP k2 (AP for KP 2 ), E d (mean </p><formula xml:id="formula_7">E d k ), E d k1 , E d k2 (E d for KP 1 , KP 2 ).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>To analyze the performance of our methods on topology repairing of disconnected pulmonary airways and vessels, we report several methods on the proposed PTR dataset, as shown in Table <ref type="table" target="#tab_1">1</ref>. The keypoint heatmap visualization is provided in the supplementary materials.</p><p>The study demonstrates that the two-channel 3D-UNet model surpasses the performance of the one-channel counterpart on airway and vessel segmentation tasks. Specifically, the two-channel model yields significant improvements in AP of approximately 7%, 9%, and 15% for airway, artery, and vein tasks, respectively. Additionally, the two-channel model achieves the highest performance on all evaluation metrics for all three tasks. These results suggest that the separation of KP 1 and KP 2 components as two-channel input can effectively improve their interaction in multiple feature levels, leading to improved performances. This is likely due to the high correlation between these two keypoints throughout the topological structure. However, detecting KP 1 was significantly challenging due to the random selection of cropping center points during data sampling, leading to a weaker performance for E d and AP metrics. Additionally, the sparse distribution of keypoints on small pulmonary vessels posed a considerable challenge for capturing subtle features. Notably, the two-channel networks exhibited superior performance over one-channel methods by a substantial margin, which emphasizes the advantages of separating the two components. In the future work, it will be beneficial to design models that capture this characteristic.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this study, we introduce a data-driven post-processing approach that addresses the challenge of disconnected pulmonary tubular structures, which is crucial for the diagnosis and treatment of pulmonary diseases. The proposed approach utilizes the newly created Pulmonary Tree Repairing (PTR) dataset, comprising 800 complete 3D models of pulmonary structures and synthetic disconnected data. A two-channel simple yet effective neural network is trained to detect keypoints that bridge disconnected components, utilizing a training data synthesis pipeline that generates disconnected data from complete pulmonary structures. Our approach yields promising results and holds great potential for clinical applications. While our study primarily focuses on addressing the disconnection issue, we recognize that more complex scenarios, such as handling multiple disconnected components, distinguishing between arteries and veins, and implementing our method in real-world settings, require further investigation in future work. Point or implicit representations <ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b20">[21]</ref> learning the geometric structures have high potentials in this application.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Visualizations of the PTR dataset. (a): Examples of disconnected predictions from nnU-Net. (b): From left to right: original volumes, centerlines extracted by Vesselvio (with different edge radii indicated by colors), disconnection synthesis, subvolume views of disconnected parts, and corresponding original parts. The volumes have been smoothed for better visualization. The average edge radius, measured in micrometers, is denoted by "R" in the figures. Airways, arteries, and veins are respectively colored in gray, red, and blue.</figDesc><graphic coords="2,85,98,339,98,280,48,163,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Keypoint Detection Network. Given two disconnected components, the 3D-UNet outputs two heatmaps corresponding to KP1 and KP2 .</figDesc><graphic coords="5,76,80,451,01,270,88,109,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>-An effective yet simple baseline with efficient 3D-UNet: We</head><label></label><figDesc></figDesc><table><row><cell>propose</cell></row><row><cell>a two-channel 3D neural network that efficiently identifies key points and</cell></row><row><cell>bridges disconnected components. Our model demonstrates decent perfor-</cell></row><row><cell>mance, providing a strong baseline for future studies.</cell></row><row><cell>-An open-source benchmark: To evaluate the proposed model, we have</cell></row><row><cell>constructed a new pulmonary dataset named Pulmonary Tree Repairing</cell></row><row><cell>(PTR), and designed proper metrics for performance examination. This</cell></row><row><cell>dataset will be publicly available soon and will enable reproducibility and</cell></row><row><cell>comparison of future studies in this field.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 . Keypoint detection performance on the PTR dataset.</head><label>1</label><figDesc>UNet 1 : The input is one subvolume with both KP1 and KP2 components; UNet 2 : The inputs are two concatenated subvolumes of KP1 and KP2 components; Metrics are expressed in percentage (%) format. AP k2 AP 50 AP 75 AP S AP M AP L E d E d k1 E d k2 Airway UNet 1 80.89 79.23 86.32 94.21 90.47 75.15 85.32 80.02 18.81 15.39 22.07 UNet 2 87.18 83.80 90.88 98.48 94.89 79.56 90.29 93.17 28.54 23.47 33.37 Artery UNet 1 71.32 70.19 81.90 85.99 78.89 62.98 81.11 68.97 16.71 12.55 20.65</figDesc><table><row><cell>Task</cell><cell>Method AP AP k1 UNet 2 80.58 77.46 87.07 94.09 86.85 70.45 88.31 84.25 25.49 20.83 29.90</cell></row><row><cell>Vein</cell><cell>UNet 1 69.10 69.09 79.79 82.80 76.97 59.17 78.25 69.38 15.49 12.26 18.54</cell></row><row><cell></cell><cell>UNet 2 78.78 76.27 85.45 93.23 84.95 67.26 85.71 85.22 24.40 20.81 27.79</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgment. This research was supported by Australian Government Research</head><p>Training Program (RTP) scholarship, and supported in part by a <rs type="funder">Swiss National Science Foundation</rs> grant.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43990-2 36.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Image segmentation, registration and characterization in R with simpleitk</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Beare</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lowekamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yaniv</surname></persName>
+		</author>
+		<idno type="DOI">10.18637/jss.v086.i08</idno>
+		<ptr target="https://doi.org/10.18637/jss.v086.i08" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Stat. Softw</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Open-source analysis and visualization of segmented vasculature datasets with vesselvio</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Bumgarner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Nelson</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.crmeth.2022.100189</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S2667237522000443" />
+	</analytic>
+	<monogr>
+		<title level="j">Cell Rep. Methods</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">100189</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Pulmonary airways: 3-D reconstruction from multislice CT and clinical investigation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Fetita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Prêteux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Beigelman-Aubry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Grenier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1353" to="1364" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Automatic airway segmentation from computed tomography using robust and efficient 3-D convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Garcia-Uceda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Selvan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Saghir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">A</forename><surname>Tiddens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">What makes for automatic reconstruction of pulmonary segments</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16431-6_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16431-6" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13431</biblScope>
+			<biblScope unit="page">47</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Rethinking the heatmap regression for bottom-up human pose estimation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep 3D vessel segmentation based on cross transformer network</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE International Conference on Bioinformatics and Biomedicine</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1115" to="1120" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep learning based airway segmentation using key point prediction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">3501</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Learning tubule-sensitive CNNs for pulmonary airway and arteryvein segmentation in CT</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1603" to="1617" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Pulmonary vascular morphology as an imaging biomarker in chronic thromboembolic pulmonary hypertension</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Rahaghi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pulm. Circ</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="70" to="81" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Segmentectomy versus lobectomy in small-sized peripheral nonsmall-cell lung cancer (JCOG0802/WJOG4607L): a multicentre, open-label, phase 3, randomised, controlled, non-inferiority trial</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Saji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lancet</title>
+		<imprint>
+			<biblScope unit="volume">399</biblScope>
+			<biblScope unit="page" from="1607" to="1617" />
+			<date type="published" when="2022">10335. 2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Deep high-resolution representation learning for human pose estimation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deepvesselnet: Vessel segmentation, centerline prediction, and bifurcation detection in 3-D angiographic volumes</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Tetteh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neurosci</title>
+		<imprint>
+			<biblScope unit="page">1285</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Naviairway: a bronchiolesensitive deep learning-based airway segmentation pipeline for planning of navigation bronchoscopy</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Poon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">N</forename><surname>Lee</surname></persName>
+		</author>
+		<idno type="DOI">10.36227/techrxiv.19228296</idno>
+		<ptr target="https://doi.org/10.36227/techrxiv" />
+		<imprint>
+			<date type="published" when="2022">2022. 19228296</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv Preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Deep high-resolution representation learning for visual recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="3349" to="3364" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Acute pulmonary embolism: effect of a computer-assisted detection prototype on diagnosis-an observer study</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wittenberg</surname></persName>
+		</author>
+		<idno type="DOI">10.1148/radiol.11110372</idno>
+		<ptr target="https://doi.org/10.1148/radiol.11110372" />
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">262</biblScope>
+			<biblScope unit="page" from="305" to="313" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Simple baselines for human pose estimation and tracking</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">European Conference on Computer Vision</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">RibSeg dataset and strong point cloud baselines for rib segmentation from CT scans</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pfister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_58</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-258" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="611" to="621" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Neural annotation refinement: development of a new 3D dataset for adrenal gland analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wickramasinghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page">48</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Implicitatlas: learning deformable shape templates in medical imaging</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wickramasinghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="15861" to="15871" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Simpleitk image-analysis notebooks: a collaborative environment for education and reproducible research</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yaniv</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Lowekamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">J</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Beare</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="290" to="303" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">One-shot medical landmark detection</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Quan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="177" to="188" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_17</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-317" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Heatmap regression via randomized rounding</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="8276" to="8289" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Multi-site, multi-domain airway tree modeling (ATM&apos;22): a public benchmark for pulmonary airway segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno>arXiv Preprint</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">3D deep learning from CT scans predicts tumor invasiveness of subcentimeter pulmonary adenocarcinomas</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Can. Res</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">24</biblScope>
+			<biblScope unit="page" from="6881" to="6889" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Invasiveness assessment by artificial intelligence against intraoperative frozen section for pulmonary nodules ≤ 3 CM</title>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">R</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cancer Res. Clin. Oncol</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="7" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

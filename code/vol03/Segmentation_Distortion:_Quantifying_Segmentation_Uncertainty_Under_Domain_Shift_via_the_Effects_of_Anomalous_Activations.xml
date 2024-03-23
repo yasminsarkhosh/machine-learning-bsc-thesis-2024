@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Segmentation Distortion: Quantifying Segmentation Uncertainty Under Domain Shift via the Effects of Anomalous Activations</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jonathan</forename><surname>Lennartz</surname></persName>
+							<email>lennartz@cs.uni-bonn.de</email>
+							<idno type="ORCID">0009-0003-0827-943X</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Bonn</orgName>
+								<address>
+									<settlement>Bonn</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Lamarr Institute for Machine Learning and Artificial Intelligence</orgName>
+								<address>
+									<settlement>Bonn</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Thomas</forename><surname>Schultz</surname></persName>
+							<email>schultz@cs.uni-bonn.de</email>
+							<idno type="ORCID">0000-0002-1200-7248</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Bonn</orgName>
+								<address>
+									<settlement>Bonn</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Lamarr Institute for Machine Learning and Artificial Intelligence</orgName>
+								<address>
+									<settlement>Bonn</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Segmentation Distortion: Quantifying Segmentation Uncertainty Under Domain Shift via the Effects of Anomalous Activations</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="316" to="325"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">5B9DE07049A8BE5705B26DC52D2AD2A2</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_31</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:46+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Uncertainty Quantification</term>
+					<term>Image Segmentation</term>
+					<term>Anomaly Propagation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Domain shift occurs when training U-Nets for medical image segmentation with images from one device, but applying them to images from a different device. This often reduces accuracy, and it poses a challenge for uncertainty quantification, when incorrect segmentations are produced with high confidence. Recent work proposed to detect such failure cases via anomalies in feature space: Activation patterns that deviate from those observed during training are taken as an indication that the input is not handled well by the network, and its output should not be trusted. However, such latent space distances primarily detect whether images are from different scanners, not whether they are correctly segmented. Therefore, we propose a novel segmentation distortion measure for uncertainty quantification. It uses an autoencoder to make activations more similar to those that were observed during training, and propagates the result through the remainder of the U-Net. We demonstrate that the extent to which this affects the segmentation correlates much more strongly with segmentation errors than distances in activation space, and that it quantifies uncertainty under domain shift better than entropy in the output of a single U-Net, or an ensemble of U-Nets.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The U-Net <ref type="bibr" target="#b16">[16]</ref> is widely used for medical image segmentation, but its results can deteriorate when changing the image acquisition device <ref type="bibr" target="#b7">[7]</ref>, even when the resulting differences in image characteristics are so subtle that a human would not be confused by them <ref type="bibr" target="#b19">[19]</ref>. This is particularly critical when failure is silent <ref type="bibr" target="#b10">[10]</ref>, i.e., incorrect results are produced with high confidence <ref type="bibr" target="#b11">[11]</ref>.</p><p>It has been proposed that anomalous activation patterns within the network, which differ from those that were observed during training, indicate problematic inputs <ref type="bibr" target="#b15">[15]</ref>. In the context of medical image segmentation, one such approach was recently shown to provide high accuracy for the detection of images that come from a different source <ref type="bibr" target="#b10">[10]</ref>.</p><p>Our work introduces segmentation distortion, a novel and more specific measure of segmentation uncertainty under domain shift. It is motivated by the observation that latent space distances reliably detect images from a different scanner, but do not correlate strongly with segmentation errors within a given domain, as illustrated in Fig. <ref type="figure" target="#fig_2">3</ref>. This suggests that not all anomalies have an equal effect on the final output. Our main idea is to better assess their actual effect by making anomalous activations more similar to those that were observed during training, propagating the result through the remainder of the network, and observing how strongly this distorts the segmentation.</p><p>This yields a novel image-level uncertainty score, which is a better indicator of segmentation errors in out-of-distribution data than activation space distances or mean entropy. At the same time, it can be added to any existing U-Net, since it neither requires modification of its architecture nor its training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>The core of our method is to modify activation maps so that they become more similar to those that were observed during training, and to observe the effect of this after propagating the result through the remainder of the network. We use autoencoders for this, based on the observation that the difference r(x) -x between the reconstruction r(x) of a regularized autoencoder and its input x points towards regions of high density in the training data <ref type="bibr" target="#b0">[1]</ref>.</p><p>This has previously motivated the use of autoencoders for unsupervised anomaly segmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b4">4,</ref><ref type="bibr" target="#b8">8]</ref>. In contrast to these works, the autoencoder in our work acts on activation maps, not on the original image, and the anomalies we are looking for are irregular activation patterns that arise due to the domain shift, not pathological abnormalities in the image.</p><p>Conditional variational autoencoders have been integrated into the U-Net to quantify uncertainty that arises from ambiguous labels <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b14">14]</ref>. Their architecture and goal differ from ours, since we assume non-ambiguous training data, and aim to quantify uncertainty from domain shifts. Merging their idea with ours to account for both sources of uncertainty remains a topic for future investigation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Autoencoder Architecture, Placement, and Loss</head><p>We adapted a U-shaped autoencoder architecture which was successfully used in a recent comparative study <ref type="bibr" target="#b4">[4]</ref> to the higher number of channels and lower resolution of activation maps as compared to images. Specifically, our encoder uses two blocks of four 3 × 3 kernels each with stride one, LayerNorm, and a LeakyReLU activation function. At the end of each block, we reduce spatial resolution with a stride of two. After passing through a dense bottleneck, spatial resolution is restored with a mirrored set of convolutional and upsampling layers.</p><p>Using autoencoders to make activations more similar to those observed in the training data requires regularization <ref type="bibr" target="#b0">[1]</ref>. We tried denoising autoencoders, as well as variational autoencoders <ref type="bibr" target="#b13">[13]</ref>, but they provided slightly worse results than a standard autoencoder in our experiments. We believe that the narrow bottleneck in our architecture provides sufficient regularization by itself.</p><p>Since we want to use the difference between propagating the reconstruction r(x) instead of x through the remainder of the network as an indicator of segmentation uncertainty due to domain shift, the autoencoder should reconstruct activations from the training set accurately enough so that it has a negligible effect on the segmentation. However, the autoencoder involves spatial subsampling and thus introduces a certain amount of blurring. This proved problematic when applying it to the activations that get passed through the U-Net's skip connections, whose purpose it is to preserve resolution. Therefore, we only place an autoencoder at the lowest resolution level, as indicated in Fig. <ref type="figure" target="#fig_0">1</ref>. This agrees with recent work on OOD detection in U-Nets <ref type="bibr" target="#b10">[10]</ref>.</p><p>While autoencoders are often trained with an 1 or 2 (MSE) loss, we more reliably met our goal of preserving the segmentation on the training data by introducing a loss that explicitly accounts for it. Specifically, let U (I) denote the logits (class scores before softmax) obtained by applying the U-Net U to an input image I without the involvement of the autoencoder, while U d • r(x) indicates that we apply the U-Net's decoder U d after replacing bottleneck activations x with the reconstruction r(x). We define the segmentation preservation loss as</p><formula xml:id="formula_0">L seg := ||U (I) -U d • r(x)|| 2 2 (1)</formula><p>and complement it with the established 2 loss</p><formula xml:id="formula_1">L mse := ||x -r(x)|| 2 2 (2)</formula><p>to induce a degree of consistency with the underlying activation space. Since in our experiments, the optimization did not benefit from an additional balancing factor, we aggregate both terms into our training objective</p><formula xml:id="formula_2">L := L seg + L mse (3)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Segmentation Distortion</head><p>We train the autoencoder so that, on in distribution (ID) images, it has almost no effect on the segmentation. Out of distribution (OOD), reconstructions diverge from the original activation. It is the goal of our segmentation distortion measure to quantify how much this affects the segmentation. Therefore, we define segmentation distortion (SD) by averaging the squared differences of class probabilities P (C p |U ) that are estimated by the U-Net U at pixel p ∈ P with and without the autoencoder, over pixels and classes c ∈ C:</p><formula xml:id="formula_3">SD := 1 |P| 1 |C| p∈P c∈C [P (C p = c | U (I)) -P (C p = c | U d • r(x))] 2<label>(4)</label></formula><p>SD is defined similarly as the multi-class Brier score <ref type="bibr" target="#b6">[6]</ref>. However, while the Brier score measures the agreement between probabilistic predictions and actual outcomes, SD measures the agreement between two predictions, with or without the autoencoder. In either case, a zero score indicates a perfect match.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Implementation Details</head><p>Optimizing the autoencoder with respect to L seg requires gradient flow through the U-Net's decoder. Our implementation makes use of PyTorch's pre-forward hook functionality to compute it while keeping the weights of the U-Net intact. The U-Nets and the corresponding autoencoders were trained on identical training sets, with Adam and default parameters, until the loss converged on a respective validation set. We crop images to uniform shape to accommodate our AEs with fixed-size latent dimension. This facilitated some of our ablations, but is not a requirement of our method itself, and might be avoided by fully convolutional AE architectures in future work. Our AEs were trained on single TITAN X GPUs for approximately three hours and exhausted the 11GB of VRAM through appropriate batching. Our code is publicly available on github. 4 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Experimental Setup</head><p>We show results for two segmentation tasks, which are illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>. The first one, Calgary-Campinas-359 (CC-359), is brain extraction in head MRI. It uses a publicly available multi-vendor, multi-field strength brain imaging dataset <ref type="bibr" target="#b18">[18]</ref>, containing T1 weighted MR scans of 359 subjects. Images are from three scanner manufacturers (GE, Philips, Siemens), each with field strengths of 1.5T and 3T. For training and evaluation, we used the brain masks that are provided with the dataset. The second task, ACDC/M&amp;MS, is the segmentation of left and right ventricle cavities, and left ventricle myocardium, in cardiac MRI. Here, we train on data from the Automated Cardiac Diagnosis Challenge (ACDC) that was held at MICCAI 2017 <ref type="bibr" target="#b5">[5]</ref>. It contains images from a 1.5T and a 3T Siemens scanner. We test on data from the multi-center, multi-vendor and multi-disease cardiac segmentation (M&amp;MS) challenge <ref type="bibr" target="#b7">[7]</ref>, which was held at MICCAI 2020. It contains MR scans from four different vendors with scans taken at different field strengths. We again use segmentation masks provided with the data. In addition to the differences between MRI scanners, images in M&amp;MS include pathologies, which makes this dataset much more challenging than CC-359. Datasets for each task are publicly available (download links: CC-359, ACDC, M&amp;MS).</p><p>For both tasks, we train U-Nets on one of the domains, with an architecture similar to previous work on domain shift in image segmentation <ref type="bibr" target="#b17">[17]</ref> (Fig. <ref type="figure" target="#fig_0">1</ref>). We use the Adam optimizer with default parameters and a learning rate of 1e-3, until convergence on a held-out validation set from the same domain. Similar to previous work <ref type="bibr" target="#b17">[17]</ref>, we study the effects of domain shift both with and without data augmentation during training. Specifically, results on the easier CC-359 dataset are without augmentation, while we use the same augmentations as the nnU-Net <ref type="bibr" target="#b12">[12]</ref> when training on ACDC. For CC-359, a bottleneck dimension of 64 in our autoencoders was sufficient, while we used 128 for M&amp;MS.</p><p>Figure <ref type="figure" target="#fig_1">2</ref> shows example segmentations, with errors highlighted in red, and reports the mean Dice scores across the whole dataset below the examples. To average out potential artefacts of individual training runs, we report the standard deviation of mean Dice after repeating the training 10 times. These 10 runs also underly the following results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Correlation with Segmentation Errors</head><p>The goal of our proposed segmentation distortion (SD) is to identify images in which segmentation errors arise due to a domain shift. To quantify whether this goal has been met, we report rank correlations with (1-Dice), so that positive correlations will indicate a successful detection of errors. The use of rank correlation eliminates effects from any monotonic normalization or re-calibration of our uncertainty score.</p><p>Figure <ref type="figure" target="#fig_2">3</ref> compares segmentation distortion to a recently proposed distancebased method for uncertainty quantification under domain shift <ref type="bibr" target="#b10">[10]</ref>. It is based on the same activations that are fed into our autoencoder, but pools them into low-dimensional vectors and computes the Mahalanobis distance with respect to the training distribution to quantify divergence from in-distribution activations. We label it Pooling Mahalanobis (PM). To better understand the difference between that approach and ours, we also introduce the Latent Mahalanobis (LM) method that is in between the two: It also uses the Mahalanobis distance, but computes it in the latent space (on the bottleneck vectors) of our autoencoder.</p><p>On both segmentation tasks, SD correlates much more strongly with segmentation errors than PM. The correlation of LM is usually in between the two, indicating that the benefit from our method is not just due to replacing the simpler pooling strategy with an autoencoder, but that passing its reconstruction through the remainder of the U-Net is crucial for our method's effectiveness.</p><p>As another widely used uncertainty measure, Fig. <ref type="figure" target="#fig_2">3</ref> includes the entropy in the model output. We compute it based on the per-pixel class distributions, and average the result to obtain a per-image uncertainty score. We evaluate the entropy for single U-Nets, as well as for ensembles of five. In almost all cases, SD showed a stronger correlation with segmentation error than both entropy based approaches, which do not specifically account for domain shift.</p><p>We note that ensembling affects not just the uncertainty estimates, but also the underlying segmentations, which are now obtained by averaging over all ensemble members. This leads to slight increases in Dice, and makes the results from ensembling less directly comparable to the others.</p><p>We also investigated the effects of our autoencoder on downstream segmentation accuracy in out-of-distribution data, but found that it led to a slight reduction in Dice. Therefore, we keep the segmentation masks from the unmodified U-Net, and only use the autoencoder for uncertainty quantification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Out-of-Distribution Detection</head><p>The distance-based method PM was initially introduced for out-of-distribution (OOD) detection, i.e., detecting whether a given image has been taken with the same device as the images that were used for training <ref type="bibr" target="#b9">[9]</ref>. To put the weak correlation with segmentation errors that was observed in Fig. <ref type="figure" target="#fig_2">3</ref> into perspective, we will demonstrate that, compared to the above-described alternatives, it is highly successful at this task.</p><p>For this purpose, we report the AUROC for the five uncertainty scores based on their classification of images as whether they were drawn from a target domain or an in-domain validation set. As before, we evaluate each target domain separately for all independently trained U-Nets. For the M&amp;MS dataset, results are displayed in Fig. <ref type="figure" target="#fig_3">4</ref> (left). Since all methods achieved near-perfect AUROC on CC-359, those results are not presented as a figure.</p><p>This experiment confirms the excellent results for OOD detection that were reported previously for the PM method <ref type="bibr" target="#b9">[9]</ref>. In contrast, our SD has not been designed for OOD detection, and is not as effective for that task. Similarly, mean entropy in the segmentation map is not a reliable indicator for OOD inputs.</p><p>Of course, a method that successfully solves OOD detection can be used to reject OOD inputs, and thereby avoid silent failures that arise due to domain shifts. However, it can be seen from Fig. <ref type="figure" target="#fig_3">4</ref> (right) that this comes at the cost of filtering out many images that would be segmented sufficiently well. This figure shows the distributions of Dice scores on all domains. It illustrates that, even though scanner changes go along with an increased risk for inaccurate segmentation, many images from other scanners are still segmented as well as those from the one that was used for training. Note that results for Siemens (ACDC) are from a separate validation subset, but from the same scanner as the training data. Siemens (M&amp;MS) is a different scanner.</p><p>It is a known limitation of the PM method, which our Segmentation Distortion seeks to overcome, that "many OOD cases for which the model did produce adequate segmentation were deemed highly uncertain" <ref type="bibr" target="#b10">[10]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion and Conclusion</head><p>In this work, we introduced Segmentation Distortion as a novel approach for the quantification of segmentation uncertainty under domain shift. It is based on using an autoencoder to modify activations in a U-Net so that they become more similar to activations observed during training, and quantifying the effect of this on the final segmentation result.</p><p>Experiments on two different datasets, which we re-ran multiple times to assess the variability in our results, confirm that our method more specifically detects erroneous segmentations than anomaly scores that are based on latent space distances <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b15">15]</ref>. They also indicate a benefit compared to mean entropy, which does not explicitly account for domain shift. This was achieved on pretrained U-Nets, without constraining their architecture or having to interfere with their training, and held whether or not data augmentation had been used.</p><p>Finally, we observed that different techniques for uncertainty quantification under domain shift have different strengths, and we argue that they map to different use cases. If safety is a primary concern, reliable OOD detection should provide the strongest protection against the risk of silent failure, at the cost of excluding inputs that would be adequately processed. On the other hand, a stronger correlation with segmentation errors, as it is afforded by our approach, could be helpful to prioritize cases for proofreading, or to select cases that should be annotated to prepare training data for supervised domain adaptation.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Our method sends the final activation maps at the lowest resolution level of a U-Net through an autoencoder (AE) to make them more similar to activations that were observed on its training data. Our proposed Segmentation Distortion measure is based on propagating the reconstruction through the remainder of the U-Net, and quantifying the effect on the final segmentation.</figDesc><graphic coords="3,56,31,54,32,311,23,198,40" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Example segmentations from all domains in the CC-359 (top row) and ACDC/M&amp;MS (bottom row) datasets, with errors highlighted in red. Numbers below the examples indicate mean Dice across the respective domain. The strong effect of domain shift on CC-359 is due to the absence of data augmentation, while errors in ACDC/M&amp;MS arise despite data augmentation. (Color figure online)</figDesc><graphic coords="5,41,79,54,62,340,21,165,07" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Rank correlation between different uncertainty measures and (1-Dice) for Mahalanobis distances of pooled activations [10], Mahalanobis distances of autoencoder latent representations, average entropy in a single U-Net or U-Net ensemble, and our proposed Segmentation Distortion.</figDesc><graphic coords="6,56,97,54,11,338,56,161,59" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Left: A comparison of the AUROC that the same five methods as in Fig. 3 achieve on an OOD detection task. Right: The distributions of Dice scores on images from the ACDC source domain (Siemens val) and the four M&amp;Ms target domains overlap greatly.</figDesc><graphic coords="8,61,98,53,90,328,42,158,80" type="bitmap" /></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">What regularized auto-encoders learn from the datagenerating distribution</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Alain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="3743" to="3773" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Variational autoencoder based anomaly detection using reconstruction probability</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>An</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cho</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Special Lecture on IE</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">PHiSeg: capturing uncertainty in medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Baumgartner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="119" to="127" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_14" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Autoencoders for unsupervised anomaly segmentation in brain MR images: a comparative study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Baur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Denner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wiestler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Albarqouni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">101952</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2018.2837502</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2018.2837502" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Verification of forecasts expressed in terms of probability</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Brier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mon. Weather Rev</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="3" />
+			<date type="published" when="1950">1950</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Multi-centre, multi-vendor and multi-disease cardiac segmentation: the M&amp;Ms challenge</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Campello</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="3543" to="3554" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Unsupervised detection of lesions in brain MRI using constrained adversarial auto-encoders</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning (MIDL</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Detecting when pre-trained nnU-Net models fail silently for Covid-19 lung lesion segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Gotkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bucher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Fischbach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Kaltenborn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mukhopadhyay</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87234-2_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87234-2_29" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12907</biblScope>
+			<biblScope unit="page" from="304" to="314" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Distance-based detection of out-of-distribution silent failures for Covid-19 lung lesion segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>González</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2022.102596</idno>
+		<ptr target="https://doi.org/10.1016/j.media.2022.102596" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102596</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">On calibration of modern neural networks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pleiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings International Conference on Machine Learning (ICML)</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Precup</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><forename type="middle">W</forename><surname>Teh</surname></persName>
+		</editor>
+		<meeting>International Conference on Machine Learning (ICML)</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page" from="1321" to="1330" />
+		</imprint>
+	</monogr>
+	<note>Proceedings of Machine Learning Research</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Auto-encoding variational bayes</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations (ICLR</title>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A probabilistic U-Net for segmentation of ambiguous images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kohl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems (NeurIPS)</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="6965" to="6975" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A simple unified framework for detecting outof-distribution samples and adversarial attacks</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems (NeurIPS)</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">M</forename><surname>Wallach</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Larochelle</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Grauman</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Cesa-Bianchi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Garnett</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="7167" to="7177" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">First U-Net layers contain more domain specific information than the last ones</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shirokikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Zakazov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chernyavskiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Fedulova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Belyaev</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-60548-3_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-60548-3_12" />
+	</analytic>
+	<monogr>
+		<title level="m">DART/DCL -2020</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Albarqouni</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12444</biblScope>
+			<biblScope unit="page" from="117" to="126" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">An open, multi-vendor, multi-field-strength brain MR dataset and analysis of publicly available skull stripping methods agreement</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Souza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="page" from="482" to="494" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Anatomy of domain shift impact on U-Net layers in MRI segmentation</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Zakazov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shirokikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chernyavskiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Belyaev</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4_20" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="211" to="220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SwIPE: Efficient and Robust Medical Image Segmentation with Implicit Patch Embeddings</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yejia</forename><surname>Zhang</surname></persName>
+							<email>yzhang46@nd.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<postCode>46556</postCode>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Pengfei</forename><surname>Gu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<postCode>46556</postCode>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nishchal</forename><surname>Sapkota</surname></persName>
+							<email>nsapkota@nd.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<postCode>46556</postCode>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Danny</forename><forename type="middle">Z</forename><surname>Chen</surname></persName>
+							<email>dchen@nd.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<postCode>46556</postCode>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SwIPE: Efficient and Robust Medical Image Segmentation with Implicit Patch Embeddings</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="315" to="326"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">CC7D1F87A781D972CFB7DDAE70DF5A1E</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-9_31</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:50+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Medical Image Segmentation</term>
+					<term>Deep Implicit Shape Representations</term>
+					<term>Patch Embeddings</term>
+					<term>Implicit Shape Regularization</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Modern medical image segmentation methods primarily use discrete representations in the form of rasterized masks to learn features and generate predictions. Although effective, this paradigm is spatially inflexible, scales poorly to higher-resolution images, and lacks direct understanding of object shapes. To address these limitations, some recent works utilized implicit neural representations (INRs) to learn continuous representations for segmentation. However, these methods often directly adopted components designed for 3D shape reconstruction. More importantly, these formulations were also constrained to either point-based or global contexts, lacking contextual understanding or local fine-grained details, respectively-both critical for accurate segmentation. To remedy this, we propose a novel approach, SwIPE (Segmentation with Implicit Patch Embeddings), that leverages the advantages of INRs and predicts shapes at the patch level-rather than at the point level or image levelto enable both accurate local boundary delineation and global shape coherence. Extensive evaluations on two tasks (2D polyp segmentation and 3D abdominal organ segmentation) show that SwIPE significantly improves over recent implicit approaches and outperforms state-of-theart discrete methods with over 10x fewer parameters. Our method also demonstrates superior data efficiency and improved robustness to data shifts across image resolutions and datasets. Code is available on Github.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Segmentation is a critical task in medical image analysis. Known approaches mainly utilize discrete data representations (e.g., rasterized label masks) with convolutional neural networks (CNNs) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b26">26]</ref> or Transformers <ref type="bibr" target="#b9">[9,</ref><ref type="bibr" target="#b10">10]</ref> to classify image entities in a bottom-up manner. While undeniably effective, this paradigm suffers from two primary limitations. (1) These approaches have limited spatial flexibility and poor computational scaling. Retrieving predictions at higher resolutions would require either increasing the input size, which decreases performance and incurs quadratic or cubic memory increases, or interpolating output predictions, which introduces discretization artifacts. (2) Per-pixel or voxel learning inadequately models object shapes/boundaries, which are central to both robust computer vision methods and our own visual cortical pathways <ref type="bibr" target="#b23">[23]</ref>. This often results in predictions with unrealistic object shapes and locations <ref type="bibr" target="#b24">[24]</ref>, especially in settings with limited annotations and out-ofdistribution data.</p><p>Instead of segmenting structures with discrete grids, we explore the use of Implicit Neural Representations (INRs) which employ continuous representations to compactly capture coordinate-based signals (e.g., objects in images). INRs represent object shapes with a parameterized function f θ : (p, z) → [0, 1] that maps continuous spatial coordinates p = (x, y, z), x, y, z ∈ [-1, 1] and a shape embedding vector z to occupancy scores. This formulation enables direct modeling of object contours as the decision boundary of f θ , superior memory efficiency <ref type="bibr" target="#b4">[5]</ref>, and smooth predictions at arbitrary resolutions that are invariant to input size. INRs have been adopted in the vision community for shape reconstruction <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b22">22]</ref>, texture synthesis <ref type="bibr" target="#b21">[21]</ref>, novel view synthesis <ref type="bibr" target="#b20">[20]</ref>, and segmentation <ref type="bibr" target="#b11">[11]</ref>. Medical imaging studies have also used INRs to learn organ templates <ref type="bibr" target="#b32">[31]</ref>, synthesize cell shapes <ref type="bibr" target="#b29">[29]</ref>, and reconstruct radiology images <ref type="bibr" target="#b27">[27]</ref>.</p><p>The adoption of INRs for medical image segmentation, however, has been limited where most existing approaches directly apply pipelines designed for 3D reconstruction to images. These works emphasize either global embeddings z or point-wise ones. OSSNet <ref type="bibr" target="#b25">[25]</ref> encodes a global embedding from an entire volume and an auxiliary local image patch to guide voxel-wise occupancy prediction. Although global shape embeddings facilitate overall shape coherence, they neglect the fine-grained details needed to delineate local boundaries. The local patches partially address this issue but lack contextual understanding beyond the patches and neglect mid-scale information. In an effort to enhance local acuity and contextual modeling, IFA <ref type="bibr" target="#b11">[11]</ref>, IOSNet <ref type="bibr" target="#b16">[16]</ref>, and NUDF <ref type="bibr" target="#b28">[28]</ref> each extract a separate embedding for every input coordinate by concatenating point-wise features from multi-scale CNN feature maps. Although more expressive, point-wise features still lack sufficient global contextual understanding and suffer from the same unconstrained prediction issues observed in discrete segmentation methods. Moreover, these methods use components designed for shape reconstruction-a domain where synthetic data is abundant and the modeling of texture, multiclass discrimination, and multi-scale contexts are less crucial.</p><p>To address these limitations, we propose SwIPE (Segmentation with Implicit Patch Embeddings) which learns continuous representations of foreground shapes at the patch level. By decomposing objects into parts (i.e., patches), we aim to enable both accurate local boundary delineation and global shape coherence. This also improves model generalizability and training efficiency since local curvatures often reoccur across classes or images. SwIPE first encodes an image into descriptive patch embeddings and then decodes the point-wise occupancies using these embeddings. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>The core idea of SwIPE (overviewed in Fig. <ref type="figure" target="#fig_0">1</ref>) is to use patch-wise INRs for semantic segmentation. To formulate this, we first discuss the shift from discrete to implicit segmentation, then delineate the intermediate representations needed for such segmentation, and overview the major components involved in obtaining these representations. Note that for the remainder of the paper, we present formulations for 2D data but the descriptions are conceptually congruous in 3D.</p><p>In a typical discrete segmentation setting with C classes, an input image X is mapped to class probabilities with the same resolution f : X ∈ R H×W ×3 → Ŷ ∈ R H×W ×C . Segmentation with INRs, on the other hand, maps an image X and a continuous image coordinate p i = (x, y), x, y ∈ [-1, 1], to the coordinate's class-wise occupancy probability ôi ∈ R C , yielding f θ : (p i , X) → ôi , where f θ is parameterized by a neural network with weights θ. As a result, predictions of arbitrary resolutions can be obtained by modulating the spatial granularity of the input coordinates. This formulation also enables the direct use of discrete pixel-wise losses like Cross Entropy or Dice with the added benefit of boundary modeling. Object boundaries are represented as the zero-isosurface in f θ 's prediction space or, more elegantly, f θ 's decision boundary.</p><p>SwIPE builds on the INR segmentation setting (e.g., in <ref type="bibr" target="#b16">[16]</ref>), but operates on patches rather than on points or global embeddings (see Table <ref type="table" target="#tab_1">1</ref> &amp; left of Table <ref type="table" target="#tab_3">3</ref> for empirical justifications) to better enable both local boundary details and global shape coherence. This involves two main steps: (1) encode shape embeddings from an image, and (2) decode occupancies for each point while conditioning on its corresponding embedding(s). In our case, f θ includes an encoder E b (or backbone) that extracts multi-scale feature maps from an input image, a context aggregation module E n (or neck) that aggregates the feature maps into vector embeddings for each patch, and MLP decoders D P (decoder for local patches where P is for patch) &amp; D I (decoder for entire images where I is for image) that output smoothly-varying occupancy predictions given embedding &amp; coordinate pairs. To encode patch embeddings in step ( <ref type="formula">1</ref>), E b and E n map an input image X to a global image embedding z I and a matrix Z P containing a local patch embedding z P at each planar position. For occupancy decoding in step (2), D P decodes the patch-wise class occupancies o P i using relevant local and global inputs while D I predicts occupancies o I i for the entire image using only image coordinates p I i and the image embedding z I . Below, we detail the encoding of image &amp; patch embeddings (Sect. §2.1), the point-wise decoding process (Sec. §2.2), and the training procedure for SwIPE (Sect. §2.3).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Image Encoding and Patch Embeddings</head><p>The encoding process utilizes the backbone E b and neck E n to obtain a global image embedding z I and a matrix Z P of patch embeddings. We define an image patch as an isotropic grid cell (i.e., a square in 2D or a cube with identical spacing in 3D) of length S from non-overlapping grid cells over an image. Thus, an image X ∈ R H×W ×3 with a patch size S will produce H S • W S patches. For simplicity, we assume that the image dimensions are evenly divisible by S.</p><p>A fully convolutional encoder backbone E b (e.g., Res2Net-50 <ref type="bibr" target="#b7">[7]</ref>) is employed to generate multi-scale features from image X. The entire image is processed as opposed to individual crops <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b15">15,</ref><ref type="bibr" target="#b25">25]</ref> to leverage larger receptive fields and integrate intra-patch information. Transformers <ref type="bibr" target="#b9">[9]</ref> also model cross-patch relations and naturally operate on patch embeddings, but are data-hungry and lack helpful spatial inductive biases (we affirm this in Sec. §3.5). E b outputs four multi-scale feature maps from the last four stages,</p><formula xml:id="formula_0">{F n } 5 n=2 (F n ∈ R Cn×Hn×Wn , H n = H 2 n , W n = W 2 n ). The encoder neck E n aggregates E b 's multi-scale outputs {F n } 5</formula><p>n=2 to produce z I (the shape embedding for the entire image) and Z P (the grid of shape embeddings for patches). The feature maps are initially fed into a modified Receptive Field Block <ref type="bibr" target="#b17">[17]</ref> (dubbed RFB-L or RFB-Lite) that replaces symmetric convolutions with a series of efficient asymmetric convolutions (e.g.,</p><formula xml:id="formula_1">(3 × 3) → (3 × 1) + (1 × 3)).</formula><p>The context-enriched feature maps are then fed through multiple cascaded aggregation and downsampling operations (see E n in Fig. <ref type="figure" target="#fig_0">1</ref>) to obtain four multi-stage intermediate embeddings with identical shapes,</p><formula xml:id="formula_2">{F n } 5 n=2 ∈ R H 32 × W 32 ×d . To convert the intermediate embeddings {F n } 5</formula><p>n=2 to patch embeddings Z P , we first resize them to Z P 's final shape via linear interpolation to produce {F n } 5 n=2 , which contain low-level (F 2 ) to high-level (F 5 ) information. Resizing enables flexibility in designing appropriate patch coverage, which may differ across tasks due to varying structure sizes and shape complexities. Note that this is different from the interpolative sampling in <ref type="bibr" target="#b16">[16]</ref> and more similar to <ref type="bibr" target="#b11">[11]</ref>, except the embeddings' spatial coverage in SwIPE are larger and adjustable. To prevent the polarization of embeddings toward either local or global scopes, we propose a multi-stage embedding attention (MEA) module to enhance representational power and enable dynamic focus on the most relevant abstraction level for each patch. Given four intermediate embedding vectors {e n } 5 n=2 from corresponding positions in {F n } 5 n=2 , we compute the attention weights via W = Sof tmax(MLP 1 (cat(MLP 0 (e 2 ), MLP 0 (e 3 ), MLP 0 (e 4 ), MLP 0 (e 5 )))), where W ∈ R 4 is a weight vector, cat indicates concatenation, and MLP 0 is followed by a ReLU activation. The final patch embedding is obtained by</p><formula xml:id="formula_3">z P = MLP 2 ( 5 n=2 e n + 5 n=2 w n-2 • e n )</formula><p>, where w i is the ith weight of W.</p><p>Compared to other spatial attention mechanisms like CBAM <ref type="bibr" target="#b31">[30]</ref>, our module separately aggregates features at each position across multiple inputs and predicts a proper probability distribution in W instead of an unconstrained score. The output patch embedding matrix Z P is populated with z P at each position and models shape information centered at the corresponding patch in the input image (e.g., if S = 32, Z P [0, 0] encodes shape information of the top left patch of size 32 × 32 in X). Finally, z I is obtained by average-pooling F 5 into a vector.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Implicit Patch Decoding</head><p>Given an image coordinate p I i and its corresponding patch embedding z P i , the patch-wise occupancy can be decoded with decoder D P : (p P i , z P i ) → ôP i , where D P is a small MLP and p P i is the patch coordinate with respect to the patch center c i associated with z P i and is obtained by p P i = p I ic i . But, this design leads to poor global shape predictions and discontinuities around patch borders.</p><p>To encourage better global shape coherence, we also incorporate a global image-level decoder D I . This image decoder, D I : (p I i , z I ) → ôI i , predicts occupancies for the entire input image. To distill higher-level shape information into patch-based predictions, we also condition D P 's predictions on p I i and z I . Furthermore, we find that providing the source coordinate gives additional spatial context for making location-coherent predictions. In a typical segmentation pipeline, the input image X is a resized crop from a source image and we find that giving the coordinate p S i (S for source) from the original uncropped image improves performance on 3D tasks since the additional positional information may be useful for predicting recurring structures. Our enhanced formulation for patch decoding can be described as D P : (p P i , z P i , p I i , z I , p S i ) → ôP i . To address discontinuities at patch boundaries, we propose a training technique called Stochastic Patch Overreach (SPO) which forces patch embeddings to make predictions for coordinates in neighboring patches. For each patch point and embedding pair (p P i , z P i ), we create a new pair (p P i , z P i ) by randomly selecting a neighboring patch embedding and updating the local point to be relative to the new patch center. This regularization is modulated by the set of valid choices to select a neighboring patch (connectivity, or con) and the number of perturbed points to sample per batch point (occurrence, or N SPO ). con = 4 means all adjoining patches are neighbors while con = 8 includes corner patches as well. Note that SPO differs from the regularization in <ref type="bibr" target="#b2">[3]</ref> since no construction of a KD-Tree is required and we introduce a tunable stochastic component which further helps with regularization under limited-data settings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Training SwIPE</head><p>To optimize the parameters of f θ , we first sample a set of point and occupancy pairs {p S i , o i } i∈I for each source image, where I is the index set for the selected points. We obtain an equal number of points for each foreground class using Latin Hypercube sampling with 50% of each class's points sampled within 10 pixels of the class object boundaries. The point-wise occupancy loss, written as</p><formula xml:id="formula_4">L occ (o i , ôi ) = 0.5 • L ce (o i , ôi ) + 0.5 • L dc (o i , ôi ), is an equally weighted sum of Cross Entropy loss L ce (o i , ôi ) = -log ôc i and Dice loss L dc (o i , ôi ) = 1 -1 C c 2•o c i •ô c i +1 (o c i ) 2 +(ô c i ) 2 +1</formula><p>, where ôc i is the predicted probability for the target occupancy with class label c. Note that in practice, these losses are computed in their vectorized forms; for example, the Dice loss is applied with multiple points per image instead of an individual point (similar to computing the Dice loss between a flattened image and its flattened mask). The loss for patch and image decoder predictions is</p><formula xml:id="formula_5">L PI (o i , ôP i , ôI i ) = αL occ (o i , ôP i )+(1-α)L occ (o i , ôI i ),</formula><p>where α is a local-global balancing coefficient. Similarly, the loss for the SPO occupancy prediction</p><formula xml:id="formula_6">ô i is L SPO (o i , ô i ) = L occ (o i , ô i ).</formula><p>Finally, the overall loss for a coordinate is formulated as</p><formula xml:id="formula_7">L = L PI + βL SPO + λ(||z P i || 2 2 + ||z I i || 2 2 )</formula><p>, where β scales SPO and the last term (scaled by λ) regularizes the patch &amp; image embeddings, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>This section presents quantitative results from four main studies, analyzing overall performance, robustness to data shifts, model &amp; data efficiency, and ablation &amp; component studies. For more implementation details, experimental settings, and qualitative results, we refer readers to the Supplementary Material. The losses for both tasks are optimized with AdamW <ref type="bibr" target="#b18">[18]</ref> and use α = 0.5, β = 0.1, and λ = 0.0001. For inference, we adopt MISE like prior works <ref type="bibr" target="#b16">[16,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b25">25]</ref> and evaluate on a reconstructed prediction mask equal in size to the input image. D P segments boundaries better than D I , and is used to produce final predictions.</p><p>For fair comparisons, all the methods are trained using the same equallyweighted Dice and Cross Entropy loss for 30,000 and 50,000 iterations on 2D Sessile and 3D BCV, resp. The test score at the best validation epoch is reported. Image input sizes were 384 × 384 for Sessile and 96 × 96 × 96 for BCV. All the implicit methods utilize the same pre-sampled points for each image. For IOSNet <ref type="bibr" target="#b16">[16]</ref>, both 2D and 3D backbones were upgraded from three downsampling stages to five for fair comparisons and empirically confirmed to outperform the original. We omit comparisons against IFA <ref type="bibr" target="#b11">[11]</ref> to focus on medical imaging approaches; plus, IFA did not outperform IOSNet <ref type="bibr" target="#b16">[16]</ref> on either task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Study 1: Performance Comparisons</head><p>The results for 2D Polyp Sessile and 3D CT BCV organ segmentation are presented in Table <ref type="table" target="#tab_1">1</ref>. FLOPs are reported from the forward pass on a single image during training.</p><p>On the smaller polyp dataset, we observe notable improvements over the bestknown implicit approaches (+6.7% Dice) and discrete methods (+2.5% Dice) with much fewer parameters (9% of PraNet <ref type="bibr" target="#b5">[6]</ref> and 66% of IOSNet <ref type="bibr" target="#b16">[16]</ref>). For BCV, the performance gains are more muted; however, we still marginally outperform UNETR <ref type="bibr" target="#b10">[10]</ref> with over 20x fewer parameters and comparable FLOPs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Study 2: Robustness to Data Shifts</head><p>In this study, we explore the robustness of various methods to specified target resolutions and dataset shifts. The left-most table in Table <ref type="table" target="#tab_2">2</ref> contains results for the former study conducted on 2D Sessile, where we first analyze the effect of directly resizing outputs (Table <ref type="table" target="#tab_2">2</ref> left, rows 1 to 6) when given an input image that is standard during training (384 × 384). The discrete method, PraNet, outputs 384 × 384 predictions which are interpolated to the target size (Table <ref type="table" target="#tab_2">2</ref> left, rows 1 &amp; 4). This causes more performance drop-offs than the implicit methods which can naturally vary the output size by changing the resolution of the input coordinates. We also vary the input size so that no manipulations of predictions are required (Table <ref type="table" target="#tab_2">2</ref> left, rows 7 &amp; 8), which results in steep accuracy drops.</p><p>The results for the dataset shift study are given in the middle of Table <ref type="table" target="#tab_2">2</ref>, where CVC is another binary poly segmentation task and the liver class is evaluated on all CT scans in AMOS. Both discrete methods outperform IOSNet, which may indicate that point-based features are more prone to overfitting due to a lack of contextual regularization. Also, we highlight our method's consistent outperformance over both discrete methods and IOSNet in all of the settings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Study 3: Model Efficiency and Data Efficiency</head><p>To analyze the model efficiency (the right-most column of charts in Table <ref type="table" target="#tab_2">2</ref>), we report on 2D Sessile and vary the backbone size in terms of depth and width. For data efficiency, we train using 10%, 25%, 50%, and 100% of annotations. Not only do we observe outperformance across the board in model sizes &amp; annotation amounts, but the performance drop-off is more tapered with our method. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Study 4: Component Studies and Ablations</head><p>The left side of Table <ref type="table" target="#tab_3">3</ref> presents our ablation studies, showing the benefits enabled by context aggregation within E n , global information conditioning, and adoption of MEA &amp; SPO. We also explore alternative designs on the right side of Table <ref type="table" target="#tab_3">3</ref> for our three key components, and affirm their contributions on achieving superior performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>SwIPE represents a notable departure from conventional discrete segmentation approaches and directly models object shapes instead of pixels and utilizes continuous rather than discrete representations. By adopting both patch and image embeddings, our approach enables accurate local geometric descriptions and improved shape coherence. Experimental results show the superiority of SwIPE over state-of-the-art approaches in terms of segmentation accuracy, efficiency, and robustness. The use of local INRs represents a new direction for medical image segmentation, and we hope to inspire further research in this direction.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. At a high level, SwIPE first encodes an input image into patch z P and image z I shape embeddings, and then employs these embeddings along with coordinate information p to predict class occupancy scores via the patch D P and image D I decoders.</figDesc><graphic coords="4,44,31,53,87,335,08,136,84" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>To avoid polarization of patch embeddings toward either local or global features in the encoding step, we introduce a context aggregation mechanism that fuses multi-scale feature maps and propose a Multi-stage Embedding Attention (MEA) module to dynamically extract relevant features from all scales. This is driven by the insight that different object parts necessitate variable focus on</figDesc><table><row><cell>either global/abstract (important for object interiors) or local/fine-grained infor-</cell></row><row><cell>mation (essential around object boundaries). To enhance global shape coherence</cell></row><row><cell>across patches in the decoding step, we augment local embeddings with global</cell></row><row><cell>information and propose Stochastic Patch Overreach (SPO) to improve con-</cell></row><row><cell>tinuity around patch boundaries. Comprehensive evaluations are conducted on</cell></row><row><cell>two tasks (2D polyp and 3D abdominal organ segmentation) across four datasets.</cell></row><row><cell>SwIPE outperforms the best-known implicit methods (+6.7% &amp; +4.5% F1 on</cell></row><row><cell>polyp and abdominal, resp.) and beats task-specific discrete approaches (+2.5%</cell></row><row><cell>F1 on polyp) with 10x fewer parameters. We also demonstrate SwIPE's supe-</cell></row><row><cell>rior model &amp; data efficiency in terms of network size &amp; annotation budgets,</cell></row><row><cell>and greater robustness to data shifts across image resolutions and datasets. Our</cell></row><row><cell>main contributions are as follows.</cell></row><row><cell>1. Away from discrete representations, we are the first to showcase the merits of</cell></row><row><cell>patch-based implicit neural representations for medical image segmentation.</cell></row><row><cell>2. We propose a new efficient attention mechanism, Multi-stage Embedding</cell></row><row><cell>Attention (MEA), to improve contextual understanding during the encoding</cell></row><row><cell>step, and Stochastic Patch Overreach (SPO) to address boundary continuities</cell></row><row><cell>during occupancy decoding.</cell></row><row><cell>3. We perform detailed evaluations of SwIPE and its components on two tasks</cell></row><row><cell>(2D polyp segmentation and 3D abdominal organ segmentation). We not</cell></row><row><cell>only outperform state-of-the-art implicit and discrete methods, but also yield</cell></row><row><cell>improved data &amp; model efficiency and better robustness to data shifts.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Overall results versus the state-of-the-art. Starred* items indicate a state-of-the-art discrete method for each task. The Dice columns report foregroundaveraged scores and standard deviations (±) across 6 runs (6 different seeds were used while train/val/test splits were kept consistent). , 256] latent MLP dimensions for D P , [256, 128] latent dimensions for D I , d = 128, S = 32, and con = 8. 3D BCV training uses a Res2Net-50 backbone, [256, 256, 256, 256] latent MLP dimensions for D P , [256, 256, 128] latent MLP dimensions for D I , d = 512, S = 8, and con = 6 (all adjoining patches in 3D).</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell>2D Polyp Sessile</cell><cell></cell><cell></cell><cell></cell><cell>3D CT BCV</cell></row><row><cell>Method</cell><cell></cell><cell>Params (M)</cell><cell>FLOPs (G)</cell><cell>Dice (%)</cell><cell>Method</cell><cell cols="2">Params (M) FLOPs (G)</cell><cell>Dice (%)</cell></row><row><cell cols="2">Discrete Approaches</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">U-Net15 [26]</cell><cell>7.9</cell><cell>83.3</cell><cell cols="2">63.89±1.30 U-Net15 [26]</cell><cell>16.3</cell><cell>800.9</cell><cell>74.47±1.57</cell></row><row><cell>PraNet  *  20</cell><cell>[6]</cell><cell>30.5</cell><cell>15.7</cell><cell cols="2">82.56 ± 1.08 UNETR  *  21 [10]</cell><cell>92.6</cell><cell>72.6</cell><cell>81.14 ± 0.85</cell></row><row><cell cols="2">Res2UNet21 [7]</cell><cell>25.4</cell><cell>17.8</cell><cell cols="2">81.62 ± 0.97 Res2UNet21 [7]</cell><cell>38.3</cell><cell>44.2</cell><cell>79.23 ± 0.66</cell></row><row><cell cols="2">Implicit Approaches</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">OSSNet21 [25]</cell><cell>5.2</cell><cell>6.4</cell><cell cols="2">76.11 ± 1.14 OSSNet21 [25]</cell><cell>7.6</cell><cell>55.1</cell><cell>73.38 ± 1.65</cell></row><row><cell cols="2">IOSNet22 [16]</cell><cell>4 . 1</cell><cell>5.9</cell><cell cols="2">78.37 ± 0.76 IOSNet22 [16]</cell><cell>6.2</cell><cell>46.2</cell><cell>76.75 ± 1.37</cell></row><row><cell cols="2">SwIPE (ours)</cell><cell>2.7</cell><cell>10.2</cell><cell cols="2">85.05 ± 0.82 SwIPE (ours)</cell><cell>4.4</cell><cell>71.6</cell><cell>81.21 ± 0.94</cell></row><row><cell cols="7">3.1 Datasets, Implementations, and Baselines</cell><cell></cell></row><row><cell cols="9">We evaluate performance on two tasks: 2D binary polyp segmentation and 3D</cell></row><row><cell cols="9">multi-class abdominal organ segmentation. For polyp segmentation, we train on</cell></row><row><cell cols="9">the challenging Kvasir-Sessile dataset [13] (196 colored images of small sessile</cell></row><row><cell cols="9">polyps), and use CVC-ClinicDB [2] to test model robustness. For 3D organ</cell></row><row><cell cols="9">segmentation, we train on BCV [1] (30 CT scans, 13 annotated organs), and</cell></row><row><cell cols="9">use the diverse CT images in AMOS [14] (200 training CTs, the same setting</cell></row><row><cell cols="9">used in [32]) to evaluate model robustness. All the datasets are split with a</cell></row><row><cell cols="9">60:20:20 train:validation:test ratio. For each image in Sessile [in BCV, resp.],</cell></row><row><cell cols="9">we obtain 4000 [20,000] background points and sample 2000 [4000] foreground</cell></row><row><cell cols="9">points for each class with half of every class' foreground points lying within 10</cell></row><row><cell cols="4">pixels [voxels] of the boundary.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="9">2D Sessile Polyp training uses a modified Res2Net [7] backbone with 28 layers,</cell></row><row><cell>[256, 256</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Left and Middle: Robustness to data shifts. Right: Efficiency studies.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Left: Ablation studies. Right: Design choice experiments.</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">Alternative Designs</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>Description</cell><cell>Dice (%)</cell></row><row><cell></cell><cell></cell><cell cols="4">Ablation Studies on 2D Sessile</cell><cell></cell><cell></cell><cell></cell><cell>Backbone</cell><cell></cell></row><row><cell cols="2">Component</cell><cell></cell><cell></cell><cell cols="2">Incorporation</cell><cell></cell><cell></cell><cell></cell><cell>1 CCT [9]</cell><cell>78.30</cell></row><row><cell>En</cell><cell>RFB-Lite</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>2 U-Net [26]</cell><cell>79.94</cell></row><row><cell>En</cell><cell>Cascade</cell><cell></cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell cols="2">MEA Replacements for Feature Fusion</cell></row><row><cell>En</cell><cell>MEA</cell><cell></cell><cell></cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>3 Addition</cell><cell>84.19</cell></row><row><cell>D I</cell><cell>z I , p I</cell><cell></cell><cell></cell><cell></cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>4 Concat. + 1x1 Conv</cell><cell>83.58</cell></row><row><cell>D P</cell><cell>z I , p I</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>5 Self-Attention</cell><cell>68.23</cell></row><row><cell>D P</cell><cell>p S</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>✓</cell><cell>✓</cell><cell>SPO</cell><cell></cell></row><row><cell>D P</cell><cell>SPO</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>✓</cell><cell>6 No = 0</cell><cell>83.75</cell></row><row><cell>Dice (%)</cell><cell></cell><cell cols="7">76.44 76.57 78.19 80.33 80.92 82.28 83.75 85.05</cell><cell>7 No = 4, Con = 4</cell><cell>83.71</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>8 No = 4, Con = 8</cell><cell>83.94</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>9 No = 8, Con = 4</cell><cell>84.43</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43904-9_31.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Multi-atlas labeling beyond the cranial vault</title>
+		<ptr target="https://www.synapse.org/#!Synapse:syn3193805/wiki/89480" />
+		<imprint>
+			<date type="published" when="2015-01">2015. Jan 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">WM-DOVA maps for accurate polyp highlighting in colonoscopy: Validation vs. saliency maps from physicians</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bernal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Sánchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Fernández-Esparrach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Vilariño</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computerized Med. Imaging Graph</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="99" to="111" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deep local shapes: learning local SDF priors for detailed 3D reconstruction</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chabra</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58526-6_36</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58526-6_36" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12374</biblScope>
+			<biblScope unit="page" from="608" to="625" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Implicit functions in feature space for 3D shape reconstruction and completion</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chibane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Alldieck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pons-Moll</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6968" to="6979" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dupont</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goliński</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Alizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">W</forename><surname>Teh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Doucet</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2103.03123</idno>
+		<title level="m">COIN: COmpression with Implicit Neural representations</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">PraNet: parallel reverse attention network for polyp segmentation</title>
+		<author>
+			<persName><forename type="first">D.-P</forename><surname>Fan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12266</biblScope>
+			<biblScope unit="page" from="263" to="273" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59725-2_26</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59725-2_26" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Res2Net: a new multi-scale backbone architecture</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Gao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TPAMI</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="652" to="662" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">k CBAC-Net: Deeply Supervised Complete Bipartite Networks with Asymmetric Convolutions for Medical Image Segmentation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_32" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="337" to="347" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Escaping the big data paradigm with compact Transformers</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hassani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Walton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abuduweili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shi</surname></persName>
+		</author>
+		<idno>ArXiV:2104.05704</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">UNETR: transformers for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="574" to="584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Learning implicit feature alignment function for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19818-2_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19818-2_28" />
+		<editor>ECCV</editor>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="487" to="505" />
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a selfconfiguring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A comprehensive study on colorectal polyp segmentation with ResUNet++, conditional random field and test-time augmentation</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="2029" to="2040" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">AMOS: a large-scale abdominal multi-organ benchmark for versatile medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<idno>ArXiv:2206.08023</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makadia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nießner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Funkhouser</surname></persName>
+		</author>
+		<title level="m">Local implicit grid representations for 3D scenes</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6001" to="6010" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Implicit neural representations for medical imaging segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Receptive field block net for accurate and fast object detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Huang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="385" to="400" />
+		</imprint>
+		<respStmt>
+			<orgName>ECCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Decoupled weight decay regularization</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Occupancy networks: learning 3D reconstruction in function space</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mescheder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Oechsle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niemeyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nowozin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Geiger</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4455" to="4465" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">NeRF: representing scenes as neural radiance fields for view synthesis</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mildenhall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">P</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tancik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Barron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ramamoorthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58452-8_24</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58452-8_24" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12346</biblScope>
+			<biblScope unit="page" from="405" to="421" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Texture fields: learning texture representations in function space</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Oechsle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mescheder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niemeyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Strauss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Geiger</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="4531" to="4540" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">DeepSDF: learning continuous signed distance functions for shape representation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Florence</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Straub</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Newcombe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lovegrove</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="165" to="174" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The neural basis of image segmentation in the primate brain</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pasupathy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroscience</title>
+		<imprint>
+			<biblScope unit="volume">296</biblScope>
+			<biblScope unit="page" from="101" to="109" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Deep implicit statistical shape models for 3D medical image delineation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Raju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Miao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Harrison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="2135" to="2143" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">OSS-Net: memory efficient high resolution semantic segmentation of 3D medical data</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Reich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Prangemeier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Cetin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Koeppl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">British Machine Vision Conference</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">NeRP: implicit neural representation learning with prior embedding for sparsely sampled image reconstruction</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pauly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Networks Learn. Syst</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">NUDF: neural unsigned distance fields for high resolution 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sørensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Camara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Backer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kofoed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Paulsen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ISBI</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="5" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Implicit neural representations for generative modeling of living cell shapes</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wiesner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Suk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dummer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Svoboda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wolterink</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page" from="58" to="67" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_6</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8_6" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">CBAM: convolutional block attention module</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Woo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Kweon</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>ECCV</publisher>
+			<biblScope unit="page" from="3" to="19" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">ImplicitAtlas: learning deformable shape templates in medical imaging</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wickramasinghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="15861" to="15871" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Keep your friends close &amp; enemies farther: Debiasing contrastive learning with spatial priors in 3D radiology images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sapkota</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">Z</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE International Conference on Bioinformatics and Biomedicine (BIBM)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1824" to="1829" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Ariadne’s Thread: Using Text Prompts to Improve Segmentation of Infected Areas from Chest X-ray Images</title>
+				<funder ref="#_5XhtyTR">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_CNvZEmJ">
+					<orgName type="full">NSFC</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yi</forename><surname>Zhong</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Beijing University of Posts and Telecommunications</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mengqiu</forename><surname>Xu</surname></persName>
+							<email>xumengqiu@bupt.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Beijing University of Posts and Telecommunications</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kongming</forename><surname>Liang</surname></persName>
+							<email>liangkongming@bupt.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Beijing University of Posts and Telecommunications</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kaixin</forename><surname>Chen</surname></persName>
+							<email>chenkaixin@bupt.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Beijing University of Posts and Telecommunications</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ming</forename><surname>Wu</surname></persName>
+							<email>wuming@bupt.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Beijing University of Posts and Telecommunications</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Ariadne’s Thread: Using Text Prompts to Improve Segmentation of Infected Areas from Chest X-ray Images</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="724" to="733"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">C700A6BB9189EAAAE48716B57F9B4C28</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_69</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:49+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Multi-modal Learning • Medical Image Segmentation</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Segmentation of the infected areas of the lung is essential for quantifying the severity of lung disease like pulmonary infections. Existing medical image segmentation methods are almost uni-modal methods based on image. However, these image-only methods tend to produce inaccurate results unless trained with large amounts of annotated data. To overcome this challenge, we propose a language-driven segmentation method that uses text prompt to improve to the segmentation result. Experiments on the QaTa-COV19 dataset indicate that our method improves the Dice score by 6.09% at least compared to the uni-modal methods. Besides, our extended study reveals the flexibility of multi-modal methods in terms of the information granularity of text and demonstrates that multi-modal methods have a significant advantage over image-only methods in terms of the size of training data required.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Radiology plays an important role in the diagnosis of some pulmonary infectious diseases, such as the COVID-19 pneumonia outbreak in late 2019 <ref type="bibr" target="#b0">[1]</ref>. With the development of deep learning, deep neural networks are more and more used to process radiological images for assisted diagnosis, such as disease classification, lesion detection and segmentation, etc. With the fast processing of radiological images by deep neural networks, some diagnoses can be obtained immediately, such as the classification of bacterial or viral pneumonia and the segmentation mask for pulmonary infections, which is important for quantifying the severity of the disease as well as its progression <ref type="bibr" target="#b1">[2]</ref>. Besides, these diagnoses given by the AI allow doctors to predict risks and prognostics in a "patient-specific" way <ref type="bibr" target="#b2">[3]</ref>. Radiologists usually take more time to complete lesion annotation than AI, and annotation results can be influenced by individual bias and clinical experience <ref type="bibr" target="#b3">[4]</ref>.</p><p>Ariadne's thread, the name comes from ancient Greek myth, tells of Theseus walking out of the labyrinth with the help of Ariadne's golden thread.</p><p>Therefore, it is of importance to design automatic medical image segmentation algorithms to assist clinicians in developing accurate and fast treatment plans.</p><p>Most of the biomedical segmentation methods <ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref> are improved based on U-Net <ref type="bibr" target="#b9">[10]</ref>. However, the performance of these image-only methods is constrained by the training data, which is also a dilemma in the medical image field. Radford et al. proposed CLIP <ref type="bibr" target="#b10">[11]</ref> in 2021, where they used 4M image-text pairs for contrastive learning. With the rise of multi-modal learning in the recent years, there are also methods <ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref> that focus on vision-language pretraining/processing and applying them on local tasks. Li et al. proposed a language-driven medical image segmentation method LViT <ref type="bibr" target="#b15">[16]</ref>, using a hybrid CNN-Transformer structure to fuse text and image features. However, LViT uses an early fusion approach and the information contained in the text is not well represented. In this paper, we propose a multi-modal segmentation method that using independent text encoder and image encoder, and design a GuideDecoder to fuse the features of both modalities at decoding stage. Our main contributions are summarized as follow:</p><p>-We propose a language-driven segmentation method for segmenting infected areas from lung x-ray images. Source code of our method see: https://github.com/Junelin2333/LanGuideMedSeg-MICCAI2023 -The designed GuideDecoder in our method can adaptively propagate sufficient semantic information of the text prompts into pixel-level visual features, promoting consistency between two modalities. -We have cleaned the errors contained in the text annotations of QaTa-COV19 <ref type="bibr" target="#b16">[17]</ref> and contacted the authors of LViT to release a new version. -Our extended study reveals the impact of information granularity in text prompts on the segmentation performance of our method, and demonstrates the significant advantage of multi-modal method over image-only methods in terms of the size of training data required.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>The overview of our proposed method is shown in Fig. <ref type="figure" target="#fig_0">1</ref>(a). The model consists of three main components: Image Encoder, Text Encoder and GuideDecoder that enables multi-modal information fusion. As you can see, our proposed method uses a modular design. Compared to early stage fusion in LViT, our proposed method in modular design is more flexible. For example, when our method is used for brain MRI images, thanks to the modular design, we could first load pre-trained weights trained on the corresponding data to separate visual and text encoders, and then only need to train GuideDecoders.</p><p>Visual Encoder and Text Encoder. The Visual Encoder used in the model is ConvNeXt-Tiny <ref type="bibr" target="#b17">[18]</ref>. For an input image I ∈ R H×W ×1 , we extract multiple visual features from the four stages of ConvNeXt-Tiny, which are defined as Note that C is the feature dimension, H and W are the height and width of the original image. For an input text prompt T ∈ R L , We adopt the CXR-BERT <ref type="bibr" target="#b18">[19]</ref> to extract text features g t ∈ R L×C . Note that C is the feature dimension, L is the length of the text prompt.</p><formula xml:id="formula_0">f 4 ∈ R H 4 × W 4 ×C1 , f 8 ∈ R H 8 × W 8 ×C2 , f 16 ∈ R H 16 × W 16 ×C3 and f 32 ∈ R H 32 × W 32 ×C4 ,</formula><p>GuideDecoder. Due to our modular design, visual features and textual features are encoded independently by different encoders. Therefore, the design of the decoder is particularly important, as we can only fuse multi-modal features from different encoders in post stage. The structure of GuideDecoder is shown in Fig. <ref type="figure" target="#fig_0">1(b</ref>). The GuideDecoder first processes the input textual features and visual features before performing multi-modal interaction.</p><p>The input textual features first go through a projection module (i.e. Project in the figure) that aligns the dimensionality of the text token with that of the image token and reduces the number of text tokens. The projection process is shown in Eq. 1.</p><formula xml:id="formula_1">f t = σ(Conv(T W T ))<label>(1)</label></formula><p>where W T is a learnable matrix, Conv(•) denotes a 1 × 1 convolution layer, and σ(•) denotes the ReLU activation function. Given an input feature T ∈ R L×D , the output projected features is</p><formula xml:id="formula_2">f t ∈ R M ×C1</formula><p>, where M is the number of tokens after projection and C 1 is the dimension of the projected features, consistent with the dimension of the image token.</p><p>For the input visual features I ∈ R H×W ×C1 , after adding the position encoding we use self-attention to enhance the visual information in them to obtain the evolved visual features. The process is shown in Eq. 2.</p><formula xml:id="formula_3">f i = I + LN (MHSA(I))<label>(2)</label></formula><p>where MHSA(•) denotes Multi-Head Self-Attention layer, LN (•) denotes Layer Normalization, and finally the evolved visual features f i ∈ R H×W ×C1 with residuals could be obtained.</p><p>After those, the multi-head cross-attention layer is adopted to propagate fine-grained semantic information into the evolved image features. To obtain the multi-modal feature f c ∈ R H×W ×C1 , the output further computed by layer normalization and residual connection:</p><formula xml:id="formula_4">f c = f i + α(LN (MHCA(f i , f t )))<label>(3)</label></formula><p>where MHCA(•) denotes multi-head cross-attention and α is a learnable parameter to control the weight of the residual connection.</p><p>Then, the multi-modal feature f c ∈ R (H×W )×C1 would be reshaped and upsampling to obtain f c ∈ R H ×W ×C1 . Finally the f c is concatenated with f s ∈ R H ×W ×C2 on the channel dimension, where f s is the low-level visual feature obtained from visual encoder via skip connection. The concatenated features are processed through a convolution layer and a ReLU activation function to obtain the final decoded output</p><formula xml:id="formula_5">f o ∈ R H ×W ×C2 f c = U psample(Reshape(f c )) f o = σ(Conv([f c , f s ]))<label>(4)</label></formula><p>where [•, •] represents the concatenate operation on the channel dimension.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>The dataset used to evaluate our method performance is the QaTa-COV19 dataset <ref type="bibr" target="#b16">[17]</ref>, which is compiled by researchers from Qatar University and Tampere University. It consists of 9258 COVID-19 chest radiographs with pixel-level manual annotations of infected lung areas, of which 7145 are in the training set and 2113 in the test set. However, the original QaTa-COV19 dataset does not contain any matched text annotations. Li et al. <ref type="bibr" target="#b15">[16]</ref> have made significant contributions by extending the text annotations of the dataset, their endeavors are worthy of commendation. We conducted a revisitation of the text annotations and found several notable features. Each sentence consists of three parts, containing position information at different granularity. However, these sentences cannot be considered as medical reports for lacking descriptions of the disease, we consider them as a kind of "text prompt" just as the title of the paper states.</p><p>Besides, we found some obvious errors (e.g. misspelled words, grammatical errors and unclear referents) in the extended text annotations. We have fixed these identified errors and contacted the authors of LViT to release a new version of the dataset. Dataset see Github link: https://github.com/HUANGLIZI/LViT.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experiment Settings</head><p>Following the file name of the subjects in the original train set, we split the training set and the validation set uniformly in the ratio of 80% and 20%. Therefore, the training set has a total of 5716 samples, the validation set has 1429 samples and the test set has 2113 samples. All images are cropped to 224 × 224 and the data is augmented using a random zoom with 10% probability.</p><p>We used a number of open source libraries including but not limited to PyTorch, MONAI <ref type="bibr" target="#b19">[20]</ref> and Transformers <ref type="bibr" target="#b20">[21]</ref> to implement our method and baseline approach. We use PyTorch Lightning for the final training and inference wrapper. All the methods are training on one NVIDIA Tesla V100 SXM3 32 GB VRAM GPU. We use the Dice loss plus Cross-entropy loss as the loss function, and train the network using AdamW optimization with a batch size of 32. We utilize the cosine annealing learning rate policy, the initial learning rate is set to 3e-4 and the minimal learning rate is set to 1e-6.</p><p>We used three metrics to evaluate the segmentation results objectively: Accuracy, Dice coefficient and Jaccard coefficient. Both Dice and Jaccard coefficient calculate the intersection regions over the union regions of the given predicted mask and ground truth, where the Dice coefficient is more indicative of the segmentation performance of small targets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison Experiments</head><p>We compared our method with common mono-modal medical image segmentation methods and with the LViT previously proposed by Li et al. The quantitative results of the experiment are shown in Table <ref type="table" target="#tab_0">1</ref>. UNet++ achieves the best performance of the mono-modal approach. Comparing to UNet++, our method improves accuracy by 1.44%, Dice score by 6.09% and Jaccard score by 9.49%. Our method improves accuracy by 1.28%, Dice score by 4.86% and Jaccard coefficient by 7.66% compared to the previous multi-modal method LViT. In general, using text prompts could significantly improve segmentation performance. The results of the qualitative experiment are shown in Fig. <ref type="figure">2</ref>. The imageonly mono-modal methods tend to generate some over-segmentation, while the multi-modal approach refers to the specific location of the infected region through text prompts to make the segmentation results more accurate.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Ablation Study</head><p>Our proposed method introduces semantic information of text in the decoding process of image features and designs the GuideDecoder to let the semantic information in the text guide the generation of the final segmentation mask. We performed an ablation study on the number of GuideDecoder used in the model and the results are shown in the Table <ref type="table">2</ref>.</p><p>Table <ref type="table">2</ref>. Ablation studies on QaTa-COV19 test set. We used different numbers (0-3) of GuideDecoders in the model to verify the effectiveness of the GuideDecoder. Note that the GuideDecoder in the model is replaced in turn by the Decoder in the UNet, 'w/o text' means without text and the model use UNet Decoders only.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method Acc</head><p>Dice Jaccard w/o text 0.9610 0.8414 0.7262 1 layer 0.9735 0.8920 0.8050 2 layers 0.9748 0.8963 0.8132 3 layers 0.9752 0.8978 0.8144</p><p>As can be seen from the Table <ref type="table">2</ref>, the segmentation performance of the model improves as the number of GuideDecoders used in the model increases. The effectiveness of GuideDecoder could be proved by these results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Extended Study</head><p>Considering the application of the algorithm in clinical scenarios, we conducted several interesting extension studies based on the QaTa-COV19 dataset with the text annotations. It is worth mentioning that the following extended studies were carried out on our proposed method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Impact of Text Prompts at Different Granularity on Segmentation</head><p>Performance. In Sect. 3.1 we mention that each sample is extended to a text annotation with three parts containing positional information at different granularity, as shown in the Fig. <ref type="figure">3</ref>. Therefore we further explored the impact of text prompts at different granularity on segmentation performance of our method and the results are shown in Table <ref type="table" target="#tab_1">3</ref>. The results in the table show that the segmentation performance of our proposed method is driven by the granularity of the position information contained in the text prompt. Our proposed method achieved better segmentation performance when given a text prompt with more detailed position information. Meanwhile, we observed that the performance of our method is almost identical when using two types of text prompts, i.e. Stage3 alone and Stage1 + Stage2 + Stage3. It means the most detailed position information in the text prompt plays the most significant role in improving segmentation performance. But this does not mean that other granularity of position information in the text prompt does not contribute to the improvement in segmentation performance. Even when the input text prompts contain only the coarsest location information (Stage1 + Stage2 items in the Table <ref type="table" target="#tab_1">3</ref>), our proposed method yielded a 1.43% higher Dice score than the method without text prompt.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Impact of the Size of Training Data on Segmentation Performance.</head><p>As shown in Table <ref type="table" target="#tab_2">4</ref>, our proposed method demonstrates highly competitive performance even with a reduced amount of training data. With only a quarter of the training data, our proposed method achieves a 2.69% higher Dice score than UNet++, which is the best performing mono-modal model trained on the full dataset. This provides sufficient evidence for the superiority of multimodal approaches and the fact that suitable text prompts could significantly help improve the segmentation performance. We observed that when the training data was reduced to 10%, our method only began to exhibit inferior performance compared to UNet++, which was trained with all available data. Similar experiments could be found in the LViT paper. Therefore, it can be argued that multi-modal approaches require only a small amount of data (less than 15% in the case of our method) to achieve performance equivalent to that of mono-modal methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a language-driven method for segmenting infected areas from lung x-ray images. The designed GuideDecoder in our method can adaptively propagate sufficient semantic information of the text prompts into pixel-level visual features, promoting consistency between two modalities. The experimental results on the QaTa-COV19 dataset indicate that the multi-modal segmentation method based on text-image could achieve better performance compared to the image-only segmentation methods. Besides, we have conducted several extended studies on the information granularity of the text prompts and the size of the training data, which reveals the flexibility of multi-modal methods in terms of the information granularity of text and demonstrates that multi-modal methods have a significant advantage over image-only methods in terms of the size of training data required.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. The overview of the our proposed method (a) and the detail of the GuideDecoder in out method. Our proposed approach uses a modular design where the model consists mainly of an image encoder, a text encoder and several GuideDecoders. The GuideDecoder is used to adaptively propagate semantic information from textual features to visual features and output decoded visual features.</figDesc><graphic coords="3,58,80,54,62,306,28,167,08" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparisons with some mono-modal methods and previous multimodal method on QaTa-COV19 test set. ' * ' denotes these methods use text prompt and CXR-BERT as the text embedding encoder.</figDesc><table><row><cell>Method</cell><cell>Acc</cell><cell>Dice</cell><cell>Jaccard</cell></row><row><cell>Mono-Modal Unet</cell><cell cols="3">0.9584 0.8299 0.7092</cell></row><row><cell>Unet++</cell><cell cols="3">0.9608 0.8369 0.7196</cell></row><row><cell cols="4">Attention Unet 0.9567 0.8240 0.7006</cell></row><row><cell cols="4">Swin UNETR 0.9511 0.8002 0.6669</cell></row><row><cell>Multi-Modal* LViT</cell><cell cols="3">0.9624 0.8492 0.7379</cell></row><row><cell>Our Method</cell><cell cols="3">0.9752 0.8978 0.8145</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 3 .</head><label>3</label><figDesc>Study of text prompts at different granularity and segmentation performance. The term w/o text in the table means without text, while Stage1, Stage2, and Stage3 represent the three parts of each text annotation. See Fig. 3 for examples of the different Stages.</figDesc><table><row><cell>Stage of Text Prompt</cell><cell>Acc</cell><cell>Dice</cell><cell>Jaccard</cell></row><row><cell>w/o text</cell><cell cols="3">0.9610 0.8414 0.7262</cell></row><row><cell>stage1 + stage2</cell><cell cols="3">0.9648 0.8557 0.7479</cell></row><row><cell>stage3</cell><cell cols="3">0.9753 0.8981 0.8151</cell></row><row><cell cols="4">stage1 + stage2 + stage3 0.9752 0.8978 0.8145</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 4 .</head><label>4</label><figDesc>Study of the size of training data and segmentation of performance. Note that the performance of UNet++ is used as a comparative reference.</figDesc><table><row><cell>Method</cell><cell>Acc</cell><cell>Dice</cell><cell>Jaccard</cell></row><row><cell cols="4">Unet++ (using 10% training data) 0.9425 0.7706 0.6268</cell></row><row><cell>Ours (using 10% training data)</cell><cell cols="3">0.9574 0.8312 0.7111</cell></row><row><cell cols="4">Unet++ (using 100% training data) 0.9608 0.8369 0.7196</cell></row><row><cell>Ours (using 15% training data)</cell><cell cols="3">0.9636 0.8503 0.7395</cell></row><row><cell>Ours (using 25% training data)</cell><cell cols="3">0.9673 0.8638 0.7602</cell></row><row><cell>Ours (using 50% training data)</cell><cell cols="3">0.9719 0.8821 0.7891</cell></row><row><cell>Ours (using 100% training data)</cell><cell cols="3">0.9752 0.8978 0.8145</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by <rs type="funder">NSFC</rs> under Grant <rs type="grantNumber">62076093</rs> and <rs type="projectName">MoE-CMCC "Artificial Intelligence</rs>" Project No. <rs type="grantNumber">MCM20190701</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_CNvZEmJ">
+					<idno type="grant-number">62076093</idno>
+					<orgName type="project" subtype="full">MoE-CMCC &quot;Artificial Intelligence</orgName>
+				</org>
+				<org type="funding" xml:id="_5XhtyTR">
+					<idno type="grant-number">MCM20190701</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">SD-UNet: a novel segmentation framework for CT images of lung infections</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Electronics</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">130</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Automatic COVID-19 lung infected region segmentation and measurement using CT-scans images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oulefki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Agaian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Trongtirakul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Laouar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page">114</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Progressive global perception and local polishing network for lung infection segmentation of COVID-19 CT images</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">120</biblScope>
+			<biblScope unit="page">108168</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Inf-Net: automatic COVID-19 lung infection segmentation from CT images</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Fan</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2020.2996645</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2020.2996645" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="2626" to="2637" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Swin-Unet: Unet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25066-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25066-8_9" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision-ECCV 2022 Workshops: Tel</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Karlinsky</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Michaeli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Nishino</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Aviv, Israel; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-10-27">23-27 October 2022. 2023</date>
+			<biblScope unit="page" from="205" to="218" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Swin UNETR: Swin transformers for semantic segmentation of brain tumors in MRI images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Nath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-08999-2_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-08999-2_22" />
+	</analytic>
+	<monogr>
+		<title level="m">Brainlesion: Glioma, Multiple Sclerosis, Stroke and Traumatic Brain Injuries: 7th International Workshop, BrainLes 2021, Held in Conjunction with MICCAI 2021, Virtual Event</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Crimi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021-09-27">27 September 2021. 2022</date>
+			<biblScope unit="page" from="272" to="284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">UNet++: redesigning skip connections to exploit multiscale features in image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M R</forename><surname>Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1856" to="1867" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Attention U-Net: learning where to look for the pancreas</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Oktay</surname></persName>
+		</author>
+		<idno>CoRR abs/1804.03999</idno>
+		<ptr target="http://arxiv.org/abs/1804.03999" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">UNETR: transformers for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="574" to="584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer-Assisted Intervention-MICCAI 2015: 18th International Conference</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Munich, Germany; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015-10-09">5-9 October 2015. 2015</date>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">CRIS: clip-driven referring image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11686" to="11695" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">DenseCLIP: language-guided dense prediction with context-aware prompting</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Rao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="18082" to="18091" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Improving Pneumonia localization via cross-attention on medical images and reports</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_53</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_53" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2021: 24th International Conference</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Strasbourg, France; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021-10-01">27 September-1 October 2021. 2021</date>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="571" to="581" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Radiological reports improve pretraining for localized imaging tasks on chest X-rays</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaissis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_62</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-9_62" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="647" to="657" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">LViT: language meets vision transformer in medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.14718</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">OSegNet: operational segmentation network for Covid-19 detection using chest X-ray images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Degerli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kiranyaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Chowdhury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gabbouj</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE International Conference on Image Processing</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2306" to="2310" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A ConvNet for the 2020s</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Feichtenhofer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11976" to="11986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Making the most of text semantics to improve biomedical vision-language processing</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Boecking</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20059-5_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20059-5_1" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision-ECCV 2022: 17th European Conference</title>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Tel Aviv, Israel; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-10-27">23-27 October 2022. 2022</date>
+			<biblScope unit="page" from="1" to="21" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part XXXVI</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">MONAI: an open-source framework for deep learning in healthcare</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.02701</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Transformers: state-of-the-art natural language processing</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wolf</surname></persName>
+		</author>
+		<ptr target="https://www.aclweb.org/anthology/2020.emnlp-demos.6" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations</title>
+		<meeting>the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations<address><addrLine>Online</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020-10">October 2020</date>
+			<biblScope unit="page" from="38" to="45" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational Linguistics</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

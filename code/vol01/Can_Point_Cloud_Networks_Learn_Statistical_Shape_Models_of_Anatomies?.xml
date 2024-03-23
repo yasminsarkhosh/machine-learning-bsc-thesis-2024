@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Can Point Cloud Networks Learn Statistical Shape Models of Anatomies?</title>
+				<funder ref="#_j9fxuBM #_NaZhjXE #_bKUww7Q #_E3Qfnxv">
+					<orgName type="full">National Institutes of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jadie</forename><surname>Adams</surname></persName>
+							<email>jadie.adams@utah.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shireen</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+							<email>shireen@utah.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Can Point Cloud Networks Learn Statistical Shape Models of Anatomies?</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="486" to="496"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D54ECAC6EA060D15E3668CB30E5531C1</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_47</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:30+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Statistical Shape Modeling</term>
+					<term>Point Cloud Deep Networks</term>
+					<term>Morphometrics</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Statistical Shape Modeling (SSM) is a valuable tool for investigating and quantifying anatomical variations within populations of anatomies. However, traditional correspondence-based SSM generation methods have a prohibitive inference process and require complete geometric proxies (e.g., high-resolution binary volumes or surface meshes) as input shapes to construct the SSM. Unordered 3D point cloud representations of shapes are more easily acquired from various medical imaging practices (e.g., thresholded images and surface scanning). Point cloud deep networks have recently achieved remarkable success in learning permutation-invariant features for different point cloud tasks (e.g., completion, semantic segmentation, classification). However, their application to learning SSM from point clouds is to-date unexplored. In this work, we demonstrate that existing point cloud encoder-decoder-based completion networks can provide an untapped potential for SSM, capturing population-level statistical representations of shapes while reducing the inference burden and relaxing the input requirement. We discuss the limitations of these techniques to the SSM application and suggest future improvements. Our work paves the way for further exploration of point cloud deep learning for SSM, a promising avenue for advancing shape analysis literature and broadening SSM to diverse use cases.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Statistical Shape Modeling (SSM) enables population-based morphological analysis, which can reveal patterns and correlations between shape variations and clinical outcomes. SSM can help researchers understand the differences between healthy and pathological anatomy, assess the effectiveness of treatments, and identify biomarkers for diseases (e.g., <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b15">16]</ref>). The traditional pipeline for constructing SSM entails the segmentation of 3D images to acquire either binary volumes or meshes and then aligning these shapes. SSM can then be constructed explicitly via finding surface-to-surface correspondences across the cohort or implicitly via deforming a predefined atlas to each shape sample. Correspondence-based shape models are widely used due to their intuitive interpretation <ref type="bibr" target="#b21">[22]</ref>; they comprise of sets of landmarks or correspondence points that are defined consistently using invariant points across populations that vary in their form. Historically, correspondence points were established manually to capture biologically significant features. This cumbersome, subjective process has since been replaced via automated optimization, which defines dense sets of correspondence points, aka a Point Distribution Model (PDM). PDM optimization schemes have been defined using metrics such as entropy and minimum description length <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref> and via parametric representations <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b23">24]</ref>. A significant drawback of these methods is that PDM optimization must be performed on the entire shape cohort of interest, which is time-consuming and hinders inference. To evaluate a new patient scan using PDM, the new scan must undergo segmentation and alignment, and the PDMs must be optimized again for the entire population of shapes. Moreover, current approaches require a complete, high-resolution mesh or binary volume representation of the shape that is free from noise and artifacts. Therefore, lightweight shape acquisition methods (such as thresholding clinical images, anatomical surface scanning, and shape acquired from stacked or orthogonal 2D slices) cannot be directly used for SSM <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref>. Deep learning solutions have been proposed to mitigate these limitations by predicting PDMs directly from unsegmented 3D images using convolutional neural networks <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b6">7]</ref>. However, these frameworks require PDM supervision and, hence, need the traditional optimization-based workflow to acquire training data.</p><p>Effective SSM from point clouds would be widely applicable in clinical research, from artery disease progression from point clouds acquired via biplane angiographic and intravascular ultrasound image data fusion <ref type="bibr" target="#b25">[26]</ref>, to orthopedics implant design from point clouds acquired via 3D body scanning <ref type="bibr" target="#b26">[27]</ref>. Applying existing methods for SSM generation from point clouds requires converting them to meshes or rasterizing them into segmentations, which is nontrivial given that point clouds are unordered and do not retain surface normals. SSM directly from point clouds would enable many clinical studies. Recently point cloud deep learning has gained attention, with significant efforts focused on effective point completion networks (PCNs) for generating complete point clouds from partial observations. Most point-completion methods use order-invariant feature encoding and two-stage coarse-to-fine decoding. An important outcome of such networks, which has been overlooked and not reported, is that the learned coarse point clouds are ordered and provide correspondence. In this work, we acknowledge this missed potential and explore the use of PCNs to predict PDM from 3D point clouds in an unsupervised manner. We investigate state-of-the-art PCNs as potential solutions for generating PDMs that (1) accurately represent shapes via uniformly distributed points constrained to the surface and (2) provide good correspondences that capture population-level statistics. <ref type="foot" target="#foot_0">1</ref> We discuss the benefits of this approach, its robustness to missingness and training size, current limitations, and possible improvements. This discussion will bring awareness to the community about the potential for learning SSM from point clouds and ultimately make SSM a more accessible, viable option in future clinical research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Background</head><p>Point Distribution Models. The goal of SSM is to capture the inherent characteristics or underlying parameters of a shape class that remain when global geometrical information is removed. Given a PDM, correspondence points can be averaged across subjects to provide a mean shape, and principal component analysis (PCA) can be performed to compute the modes of shape variation, which can then be visualized and used in downstream medical tasks. Furthermore, if a PDM contains sub-populations, such as disease versus control, the differences in mean shapes can be quantified and visualized, providing group characterization.</p><p>Point Cloud Deep Learning. Deep learning from 3D point clouds is an emerging area of research with numerous applications in computer vision, robotics, and medicine (e.g., classification, object tracking, segmentation, registration, pose estimation) <ref type="bibr" target="#b2">[3]</ref>. PointNet <ref type="bibr" target="#b19">[20]</ref> pioneered a Multi-Layer Perceptron (MLP) and max-pooling-based approach for permutation invariant feature learning from raw point clouds. FoldingNet <ref type="bibr" target="#b30">[31]</ref> proposed a point cloud auto-encoder with a foldingbased decoder that utilizes 2D grid deformation for reconstruction. Several convolutional approaches have been proposed, including mapping point clouds to voxel grids to directly apply 3D CNNs <ref type="bibr" target="#b14">[15]</ref> and graph-based methods <ref type="bibr" target="#b28">[29]</ref>.</p><p>The initial point cloud completion network, PCN <ref type="bibr" target="#b32">[33]</ref>, utilized PointNet <ref type="bibr" target="#b19">[20]</ref> and FoldingNet <ref type="bibr" target="#b30">[31]</ref> with a coarse-to-fine decoder. Since then, numerous point cloud completion approaches have been proposed, including point MLP and folding-based extensions, 3D convolution approaches, graph-based methods, generative modeling approaches (including generative adversarial network GANbased and variational autoencoder VAE-based), and transformer-based methods. See <ref type="bibr" target="#b13">[14]</ref> for a recent survey. Many approaches follow the general framework of first encoding the point cloud into a permutation-invariant feature representation, then decoding the encoded shape feature to acquire a coarse or sparse point cloud, and finally, refining the coarse point cloud to acquire the dense complete prediction. The general architecture of these methods is shown in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Point Completion Networks for SSM</head><p>Our experiments demonstrate that when coarse-to-fine point completion networks are trained on anatomical shapes, the bottleneck captures a populationspecific shape prior. Directly decoding the shape feature representation results in a consistent ordering of the intermediate coarse point cloud across samples, providing a PDM. This phenomenon can be intuitively understood as an application of Occam's razor, where the model prefers to learn the simplest solution, resulting in consistent output ordering. Many point completion networks contain skip connections from the feature and/or input space to the refinement network. In the case where the unordered input point cloud is fed to the refinement network, the ordering of the output dense point cloud is understandably lost.  To study whether point completion networks can learn anatomical SSM, we first extract point clouds from mesh vertices, then train point completion models, and finally evaluate the effectiveness of the predicted coarse point clouds as PDMs. Note this approach is not restricted to input point clouds obtained from meshes; point clouds from any acquisition process can be used. Global geometric information is factored out by aligning all shapes via iterative closest points <ref type="bibr" target="#b5">[6]</ref> to a reference shape. We utilized the open-source toolkit ShapeWorks <ref type="bibr" target="#b10">[11]</ref> for this step. In our experiments, the aligned, unordered mesh vertices serve as ground truth complete point clouds. The ground truth points are randomly downsampled to 2048 points and permuted to provide input point clouds. As is standard, the point clouds are uniformly scaled to be between -1 and 1 to assist network training. We consider a state-of-the-art model from the major point completion approach categories:</p><p>-PCN <ref type="bibr" target="#b32">[33]</ref> Point completion network loss is based on the L1 Chamfer Distance (CD) <ref type="bibr" target="#b13">[14]</ref>, which defines the minimum distance between two sets of points. The loss is typically defined as a combination of coarse and dense loss with weighting parameter α, which we consistently set across models. All model's hyperparameters are set to the original implementation values, and training is run until convergence (as assessed by training CD).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Evaluation Metrics</head><p>In addition to CD, Fscore <ref type="bibr" target="#b24">[25]</ref> is typically used in point completion to quantify the percentage of points that are reconstructed correctly. In analyzing accurate surface sampling for SSM, we quantify the point-to-face distance (P2F) from each point in the predicted point cloud to the closest surface of the ground truth mesh. To analyze point uniformity, we quantify the variance in the distance of each point to its six nearest neighbors. A uniform PDM would result in a small variance in the point nearest neighbor distance.</p><p>We also consider PDM correspondence analysis metrics. An ideal PDM is compact, meaning that it represents the distribution of the training data using the minimum number of parameters. We quantify compactness as the number of PCA modes required to capture 99% of the variation in the correspondences. A good PDM should also generalize well from training examples to unseen examples. The generalization metric is defined as the reconstruction error (L2) between predicted correspondences of a held-out point cloud and the correspondences reconstructed via the training PDM. Finally, effective SSM is specific, generating only valid instances of the shape class in the training set. The average distance between correspondences sampled from the training PDM and the closest existing training correspondences provides the specificity metric.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>We use five datasets in experiments -one synthetic ellipsoid dataset for a proofof-concept and four real anatomical shapes: proximal femurs, left atrium of the heart, spleen, and pancreas. These datasets vary greatly in size (see Table <ref type="table" target="#tab_1">1</ref>, Column 1) and shape variation. Details and visualization of these cohorts are provided in the supplementary materials. In all experiments, the input point cloud size is 2048, the coarse output size is 512, and the dense output size is 2048. The real datasets were split (90%/10%) into training and testing sets. Stratified sampling via clustering was used to define the test set to ensure it is representative, given the low sample size.</p><p>Proof-of-Concept: Ellipsoids. As a proof-of-concept, we generate 3D axisaligned ellipsoid shapes with fixed z-radius and random x and y-radius. A testing set of 30 and a training set of just 50 were randomly defined to emulate the scarce data scenario. The results in Table <ref type="table" target="#tab_1">1</ref> show that all of the model variants performed well with low S2F distance (&lt;0.1mm), and all PDMs correctly captured just two modes of variation (x and y-radius). Results from the PCN <ref type="bibr" target="#b32">[33]</ref> model are shown in Fig. <ref type="figure" target="#fig_2">2</ref>.</p><p>Femur. The femur dataset is comprised of 56 femoral heads segmented from CT scans, nine of which have the cam-FAI pathology characterized by an abnormal bone growth lesion that causes hip osteoarthritis <ref type="bibr" target="#b4">[5]</ref>. We utilize this pathology to analyze if PDM from point completion networks can correctly characterize  group differences. Table <ref type="table" target="#tab_1">1</ref> shows the predicted coarse particles are close to the surfaces (P2F distance of 0.1mm), and the PCN <ref type="bibr" target="#b32">[33]</ref> model performs best in this regard. The PCN <ref type="bibr" target="#b32">[33]</ref> predictions were used to analyze the difference between the normal and CAM pathology mean shapes. Figure <ref type="figure" target="#fig_3">3</ref> shows the pathology is correctly characterized, and the Linear Discrimination of Variation (LDA) plot shows the difference in normal and CAM distributions captured by the PDM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Region of CAM lesion</head><p>Difference from normal to CAM group mean captured by PDM 0 0.5  Left Atrium. The left atrium dataset comprises of 1096 shapes segmented from cardiac LGE MRI images from unique atrial fibrillation patients. This cohort contains significant morphological variation in overall size, the size of the left atrium appendage, and the number and arrangement of the pulmonary veins. This variation is reflected in the large compactness values in Table <ref type="table" target="#tab_1">1</ref>. Despite this variation, the models achieve reasonable CD and P2F scores due to the large training size. Figure <ref type="figure">4</ref> shows the PDM predicted by SFN <ref type="bibr" target="#b29">[30]</ref>, which performed best. From the prediction examples, we can see the model represents the training data very well, even in the worst case, which has an extremely enlarged left atrium appendage. The size of the appendage is appropriately captured in the modes of variation and the performance on the test examples is reasonable with the exception of those that are not well represented by the training data, such as the test set worst case. This highlights the importance of a large, representative training set. To further illustrate this importance, we perform an ablation experiment evaluating the performance of the PCN <ref type="bibr" target="#b32">[33]</ref> model with respect to the left atrium training test size (Fig. <ref type="figure">4</ref>).</p><p>Pancreas. We utilize the pancreas dataset <ref type="bibr" target="#b22">[23]</ref> to analyze the impact of incomplete input point clouds as the point completion networks were designed to address. Cases of incomplete observations frequently arise in clinical research. For example, in the analysis of bones where some are clipped due to scan size or in cases where 3D shape is interpreted from stacked or orthogonal 2D observations. Traditional methods of SSM generation are unable to handle such cases, but the point cloud learning approach has the potential to. Figure <ref type="figure">5</ref> shows how the test set error increase as the percentage of missing points increases. The SFN <ref type="bibr" target="#b29">[30]</ref> model provides the best results given partial input.</p><p>Spleen. The spleen dataset <ref type="bibr" target="#b22">[23]</ref> is included to provide an example of a small dataset with a large amount of variation to stress test the point completion models. Table <ref type="table" target="#tab_1">1</ref> shows the models perform the worst on this dataset with regards to CD, Fscore, P2F, and Uniformity. This example illustrates the limitations of this approach to SSM generation. Our experiments demonstrate that point cloud networks can learn accurate SSM of anatomy when provided with a sufficiently large and representative training dataset. The transformer-based SFN <ref type="bibr" target="#b29">[30]</ref> architecture provided the best overall results among the models we explored. SFN <ref type="bibr" target="#b29">[30]</ref> utilizes k-Nearest Neighbors (kNN) to capture geometric relations in the point cloud, while PointAttN <ref type="bibr" target="#b27">[28]</ref> does not. PointAttN <ref type="bibr" target="#b27">[28]</ref> has been shown to provide better point completion of complex man-made objects where kNN information could be misleading. However, in the case of anatomical SSM, it is likely that the kNN information assisted SFN <ref type="bibr" target="#b29">[30]</ref> performance by providing accurate spatial information, given the more convex shape of organs and bones. Interestingly, the simplest model, PCN <ref type="bibr" target="#b32">[33]</ref>, achieved similar, and sometimes better, SSM accuracy than more current stateof-the-art methods, despite its inferior performance in point completion benchmarks <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b29">30]</ref>. This may be attributed to point completion benchmarks involving multiple object class point completion, which is a more challenging task. Another significant difference between our experiments and point completion benchmarks is the PCN datasets have tens of thousands of examples <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b31">32,</ref><ref type="bibr" target="#b32">33]</ref>, while we worked with limited training data -the typical scenario in shape analysis. Our experiments demonstrate that PCNs can effectively predict SSM under limited training data when shape variation is minimal, as in the case of proximal femurs. However, they struggle when there is significant shape variation, such as in the spleen cohort. This work indicates promising potential for adapting characteristics of point completion architectures and learning schemes to tailor to the task of predicting SSMs from point clouds. Potential improvements could be made to the training objective, such as penalization for non-uniformity and bottleneck regularization for compact population-statistical learning. Additionally, improvements could be made to address the scarce training data scenario, such as model-based data augmentation and probabilistic transfer learning. Although we evaluated only smooth point cloud inputs, similar architectures have shown success in point cloud denoising tasks, suggesting that our approach may handle noise as well <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b20">21]</ref>. This work establishes the groundwork for future research into the potential of point cloud deep learning for SSM, offering significant benefits over traditional SSM generation, including: (1) reducing the input burden from complete, noisefree shape representations to point clouds, which significantly expands potential use cases, (2) providing fast inference and scalable training given any cohort size, (3) allowing for partial input via simultaneous SSM prediction and completion, (4) enabling sequential or online learning, as well as incremental model updating as clinical studies progress, and (5) eliminating biases introduced by metrics and parametric representations used in classical methods. By enabling SSM from point clouds, we can increase SSM accessibility and potentially accelerate its adoption as a widespread clinical tool.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. General coarse-to-fine architecture of the considered PCNs.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>: Point Completion Network (MLP-based) -ECG [18]: Edge-aware Point Cloud Completion with Graph Convolution (convolution-based) -VRCnet [19]: Variational Relational Point Completion Network (generativemodeling based) -SFN [30]: SnowflakeNet (transformer-based) -PointAttN [28]: Point Attention Network (attention-based)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig.2. Ellipsoid PDM from PCN<ref type="bibr" target="#b32">[33]</ref> Left: Example test predictions on ground truth mesh with color-denoting point correspondence. Points are reasonably uniformly spread with good correspondence, shown via zoomed-in boxes. Right: The primary and secondary modes (training and testing combined) with ±1 standard deviation from the mean shape. Color and vectors denote the difference from the mean. The shape model correctly characterizes the x and y-radius as the only source of variation.</figDesc><graphic coords="6,70,47,339,38,311,68,59,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Femur PDM from PCN [33] Left: Test examples with P2F distance displayed as a heatmap. Right: The expected region of CAM lesion correlates with the difference found from the normal to CAM group means.</figDesc><graphic coords="7,69,81,54,50,283,96,89,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .Fig. 5 .</head><label>45</label><figDesc>Fig. 4. Top: Left Atrium PDM from SFN [30] Left: Train and test examples shown from top view with P2F distance. Right: The first 5 modes of variation from top and anterior view. Bottom: Left Atrium PCN [33] results vs Training Size</figDesc><graphic coords="8,79,71,54,23,290,92,102,76" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Results: Evaluation metrics across all models and datasets. All metrics are quantified on coarse predictions, with the exception of the gray column, which reports the dense prediction CD. The CD values are scaled by 1000 for reporting and Fscore is calculated at 1% threshold. Best test values are shown in bold.</figDesc><table><row><cell>Data</cell><cell>Model</cell><cell>Dense CD ↓</cell><cell cols="8">Point Accuracy Metrics (train/test) CD ↓ Fscore ↑ P2F (mm) ↓ Uniformity ↓ Comp.↓ Gen. ↓ Spec.↓ SSM Evaluation Metrics</cell></row><row><cell>Ellipsoids</cell><cell>PCN[33] ECG[18]</cell><cell>0.908/0.917 0.929/0.923</cell><cell cols="5">1.80/1.80 0.561/0.582 0.0142/0.0168 0.325/0.354 1.80/1.78 0.554/0.579 0.0171/0.0196 0.308/0.335</cell><cell>2 2</cell><cell>0.140 0.136</cell><cell>0.348 0.348</cell></row><row><cell>Train: 50 Test: 30</cell><cell cols="2">VRCnet[19] SFN[30] PointAttN[28] 0.912/0.911 0.923/0.919 0.842/0.838</cell><cell cols="5">1.78/1.77 0.563/0.582 0.0384/0.0367 1.92/1.91 0.559/0.566 0.0960/0.0949 1.78/1.77 0.554/0.571 0.0255/0.0315 0.217/0.243 0.295/0.327 0.237/0.256</cell><cell>2 2 2</cell><cell cols="2">0.143 0.103 0.332 0.348 0.137 0.356</cell></row><row><cell>Femur</cell><cell>PCN[33] ECG[18]</cell><cell>1.27/1.80 1.59/2.29</cell><cell cols="4">2.30/2.91 0.501/0.386 0.235/0.712 2.37/3.02 0.485/0.377 0.297/0.750</cell><cell>1.77/1.63 1.71/1.63</cell><cell>18 15</cell><cell>0.28 0.255</cell><cell>1.30 1.23</cell></row><row><cell>Train: 51 Test: 5</cell><cell>VRCnet[19] SFN[30] PointAttN[28]</cell><cell>1.78/2.33 1.04/1.29 1.27/1.50</cell><cell>2.88/3.27 2.36/3.13 3.25/3.94</cell><cell>0.399/0.362 0.464/0.365 0.352/0.295</cell><cell cols="2">0.676/0.876 0.341/0.774 0.759/1.03</cell><cell>1.62/1.60 1.01/0.967 2.32/2.29</cell><cell>5 17 9</cell><cell>0.259 0.297 0.199</cell><cell>0.786 1.37 0.905</cell></row><row><cell>Left Atrium</cell><cell>PCN[33] ECG[18]</cell><cell>0.405/0.773 0.571/0.868</cell><cell cols="2">0.707/1.09 0.941/0.865 0.814/1.16 0.919/0.848</cell><cell>0.245/1.02 0.440/1.07</cell><cell></cell><cell>1.87/2.01 1.85/2.04</cell><cell>82 57</cell><cell>0.932 0.929</cell><cell>5.85 5.22</cell></row><row><cell>Train: 987 Test: 109</cell><cell cols="6">VRCnet[19] SFN[30] PointAttN[28] 0.332/0.360 0.070/0.085 0.886/1.62 0.904/0.768 0.310/0.311 0.822/0.948 0.927/0.902 0.511/0.831 0.632/1.53 0.875/1.20 0.909/0.840 0.523/1.08</cell><cell>1.87/2.19 1.30/1.46 1.65/1.79</cell><cell>81 49 82</cell><cell>1.04 0.783 0.807</cell><cell>6.09 5.07 5.46</cell></row><row><cell>Spleen</cell><cell>PCN[33] ECG[18]</cell><cell>3.59/7.88 1.84/6.46</cell><cell>4.51/9.77 3.0/9.69</cell><cell>0.326/0.155 0.456/0.174</cell><cell>1.67/3.73 1.07/3.94</cell><cell></cell><cell>15.3/12.0 10.2/7.98</cell><cell>7 14</cell><cell>1 . 4 7 1.62</cell><cell>4 5.57</cell></row><row><cell>Train: 36 Test: 4</cell><cell>VRCnet[19] SFN[30] PointAttN[28]</cell><cell>0.408/0.583 0.986/1.28 1.13/3.70</cell><cell cols="2">5.03/14.3 0.318/0.117 4.57/7.23 0.265/0.189 3.49/11.5 0.380/0.158</cell><cell>1.81/4.59 1.64/3.07 1.33/4.22</cell><cell></cell><cell>16.1/12.5 17.8/14.7 7.67/6.72</cell><cell>6 6 15</cell><cell>1.73 1.08 1.86</cell><cell>4.48 4.18 6.52</cell></row><row><cell>Pancreas</cell><cell>PCN[33] ECG[18]</cell><cell>0.571/1.63 1.11/2.51</cell><cell cols="2">0.869/2.02 0.895/0.710 1.10/2.08 0.843/0.700</cell><cell>0.526/1.92 0.883/1.99</cell><cell></cell><cell>3.44/3.99 3.53/4.02</cell><cell>66 48</cell><cell>1.12 1.01</cell><cell>5.31 4.7</cell></row><row><cell>Train: 245 Test: 28</cell><cell cols="2">VRCnet[19] SFN[30] PointAttN[28] 0.407/0.837 0.100/0.138 0.329/0.557</cell><cell cols="2">2.40/3.79 0.614/0.507 0.95/1.85 0.880/0.736 1.07/2.55 0.849/0.629</cell><cell cols="2">2.13/3.17 0.764/1.83 0.897/2.31</cell><cell>4.75/5.25 3.34/3.61 3.52/3.65</cell><cell>18 55 96</cell><cell>0.904 0.955 1.05</cell><cell>3.49 5.16 5.55</cell></row><row><cell></cell><cell cols="3">Ellipsoid Test Examples</cell><cell>Mode 1</cell><cell cols="3">Modes of Variation</cell><cell></cell><cell></cell></row><row><cell cols="2">Zoomed in:</cell><cell></cell><cell></cell><cell>Mode 2</cell><cell>-1SD</cell><cell cols="2">Mean Shape</cell><cell>+1SD</cell><cell></cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Source code is publicly available: https://github.com/jadie1/PointCompletionSSM.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">National Institutes of Health</rs> under grant numbers <rs type="grantNumber">NIBIB-U24EB029011</rs>, <rs type="grantNumber">NIAMS-R01AR076120</rs>, <rs type="grantNumber">NHLBI-R01HL135568</rs>, and <rs type="grantNumber">NIBIB-R01EB016701</rs>. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health. The authors would like to thank the <rs type="institution">University of Utah Division of Cardiovascular Medicine</rs> for providing left atrium MRI scans and segmentations from the <rs type="institution">Atrial Fibrillation</rs> projects as well as the <rs type="institution">Orthopaedic Research Laboratory</rs> (<rs type="person">Andrew Anderson, PhD</rs>) at the <rs type="institution">University of Utah</rs> for providing femur CT scans and corresponding segmentations.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_j9fxuBM">
+					<idno type="grant-number">NIBIB-U24EB029011</idno>
+				</org>
+				<org type="funding" xml:id="_NaZhjXE">
+					<idno type="grant-number">NIAMS-R01AR076120</idno>
+				</org>
+				<org type="funding" xml:id="_bKUww7Q">
+					<idno type="grant-number">NHLBI-R01HL135568</idno>
+				</org>
+				<org type="funding" xml:id="_E3Qfnxv">
+					<idno type="grant-number">NIBIB-R01EB016701</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_47.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Uncertain-DeepSSM: from images to probabilistic shape models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Shape in Medical Imaging: International Workshop, ShapeMI 2020</title>
+		<meeting><address><addrLine>Lima, Peru</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020-10-04">October 4, 2020, Proceedings 12474. 2020</date>
+			<biblScope unit="page" from="57" to="72" />
+		</imprint>
+	</monogr>
+	<note>Conjunction with MICCAI 2020</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">From images to probabilistic anatomical shapes: a deep variational bottleneck approach</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_46" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="474" to="484" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Computer vision with 3d point cloud data: methods, datasets and challenges</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Akagic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Krivić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Dizdar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Velagić</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 XXVIII International Conference on Information, Communication and Automation Technologies</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Denoise and contrast for category agnostic shape completion</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Alliegro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Valsesia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Fracastoro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Magli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tommasi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4629" to="4638" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Quantitative comparison of cortical bone thickness using correspondence-based shape modeling in patients with cam femoroacetabular impingement</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Atkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Orthop. Res</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1743" to="1753" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Method for registration of 3-D shapes</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Besl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">D</forename><surname>Mckay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Sensor Fusion IV: Control Paradigms and Data Structures</title>
+		<imprint>
+			<publisher>SPIE</publisher>
+			<date type="published" when="1992">1992</date>
+			<biblScope unit="volume">1611</biblScope>
+			<biblScope unit="page" from="586" to="606" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">DeepSSM: a deep learning framework for statistical shape modeling from raw images</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Whitaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-04747-4_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-04747-4_23" />
+	</analytic>
+	<monogr>
+		<title level="m">ShapeMI 2018</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Reuter</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Wachinger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Paniagua</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Lüthi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Egger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11167</biblScope>
+			<biblScope unit="page" from="244" to="257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Incorporating population-level variability in orthopedic biomechanical analysis: a review</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Bischoff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Goodlett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Davis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bandi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomech. Eng</title>
+		<imprint>
+			<biblScope unit="volume">136</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">21004</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A statistical shape modelling framework to extract 3D shape biomarkers from medical imaging data: assessing arch morphology of repaired coarctation of the aorta</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Bruse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Apathy in parkinson&apos;s disease is associated with nucleus accumbens atrophy: a magnetic resonance imaging shape analysis</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carriere</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mov. Disord</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="897" to="903" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">ShapeWorks: particle-based shape correspondence and visualization software</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Statistical Shape and Deformation Analysis</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="257" to="298" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Shape modeling and analysis with entropy-based particle systems</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shenton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-540-73273-0_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-540-73273-0_28" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2007</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Karssemeijer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Lelieveldt</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="volume">4584</biblScope>
+			<biblScope unit="page" from="333" to="345" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A minimum description length approach to statistical shape modeling</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Twining</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">F</forename><surname>Cootes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Waterton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Taylor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imag</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="525" to="537" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Comprehensive review of deep learning-based 3D point cloud completion processing and analysis</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Intell. Transp. Syst</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">PointGrid: a deep network for 3D shape understanding</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Duan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="9204" to="9214" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">High variability of acetabular offset in primary hip osteoarthritis influences acetabular reaming-a computed tomography-based anatomic study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Merle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Arthroplasty</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1808" to="1814" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Functional maps: a flexible representation of maps between shapes</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ovsjanikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ben-Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Solomon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Butscher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Graph. (ToG)</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">ECG: edge-aware point cloud completion with graph convolution</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="4392" to="4398" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Variational relational point completion network</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8524" to="8533" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">PointNet: deep learning on point sets for 3D classification and segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="652" to="660" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">CMD-Net: self-supervised category-level 3D shape denoising through canonicalization</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sahin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">20</biblScope>
+			<biblScope unit="page">10474</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Statistical shape and appearance models of bones</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sarkalkan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Weinans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Zadpoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bone</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="129" to="140" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">A large annotated medical image dataset for the development and evaluation of segmentation algorithms</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Simpson</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.09063</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Framework for the statistical shape analysis of brain structures using SPHARM-PDM</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Insight J</title>
+		<imprint>
+			<biblScope unit="volume">242</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">What do single-view 3D reconstruction networks learn?</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tatarchenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Richter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ranftl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Koltun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="3405" to="3414" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Effect of regional analysis methods on assessing the association between wall shear stress and coronary artery disease progression in the clinical setting</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Timmins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Samady</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Oshinski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Biomechanics of Coronary Atherosclerotic Plaque</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="203" to="223" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">3D body scanning and healthcare applications</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Treleaven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wells</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/MC.2007.225</idno>
+		<ptr target="https://doi.org/10.1109/MC.2007.225" />
+	</analytic>
+	<monogr>
+		<title level="j">Computer</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="28" to="34" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">PointAttN: you only need attention for point cloud completion</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.08485</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Dynamic graph CNN for learning on point clouds</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Sarma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Bronstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Solomon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Graph. (tog)</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">SnowflakeNet: point cloud completion by snowflake point deconvolution with skip-transformer</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="5499" to="5509" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">FoldingNet: point cloud auto-encoder via deep grid deformation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition (CVPR</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">PoinTr: diverse point cloud completion with geometry-aware transformers</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12498" to="12507" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">PCN: point completion network</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Khot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Held</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mertz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2018 International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="728" to="737" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

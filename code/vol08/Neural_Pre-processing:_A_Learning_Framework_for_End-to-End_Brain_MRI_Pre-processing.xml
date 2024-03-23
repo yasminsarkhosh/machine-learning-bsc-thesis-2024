@@ -1,0 +1,813 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Neural Pre-processing: A Learning Framework for End-to-End Brain MRI Pre-processing</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Xinzi</forename><surname>He</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Alan</forename><forename type="middle">Q</forename><surname>Wang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">School of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mert</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">School of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Neural Pre-processing: A Learning Framework for End-to-End Brain MRI Pre-processing</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="258" to="267"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">68F1C8EDFC3EE39EC11D142C57BA4C34</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_25</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:53+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Neural network</term>
+					<term>Pre-processing</term>
+					<term>Brain MRI</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Head MRI pre-processing involves converting raw images to an intensity-normalized, skull-stripped brain in a standard coordinate space. In this paper, we propose an end-to-end weakly supervised learning approach, called Neural Pre-processing (NPP), for solving all three sub-tasks simultaneously via a neural network, trained on a large dataset without individual sub-task supervision. Because the overall objective is highly under-constrained, we explicitly disentangle geometric-preserving intensity mapping (skull-stripping and intensity normalization) and spatial transformation (spatial normalization). Quantitative results show that our model outperforms state-of-the-art methods which tackle only a single sub-task. Our ablation experiments demonstrate the importance of the architecture design we chose for NPP. Furthermore, NPP affords the user the flexibility to control each of these tasks at inference time. The code and model are freely-available at https://github.com/Novestars/ Neural-Pre-processing.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Brain magnetic resonance imaging (MRI) is widely-used in clinical practice and neuroscience. Many popular toolkits for pre-processing brain MRI scans exist, e.g., FreeSurfer <ref type="bibr" target="#b8">[9]</ref>, FSL <ref type="bibr" target="#b25">[26]</ref>, AFNI <ref type="bibr" target="#b4">[5]</ref>, and ANTs <ref type="bibr" target="#b2">[3]</ref>. These toolkits divide up the pre-processing pipeline into sub-tasks, such as skull-stripping, intensity normalization, and spatial normalization/registration, which often rely on computationally-intensive optimization algorithms.</p><p>Recent works have turned to machine learning-based methods to improve preprocessing efficiency. These methods, however, are designed to solve individual sub-tasks, such as SynthStrip <ref type="bibr" target="#b14">[15]</ref> for skull-stripping and Voxelmorph <ref type="bibr" target="#b3">[4]</ref> for registration. Learning-based methods have advantages in terms of inference time and performance. However, solving sub-tasks independently and serially has the drawback that each step's performance depends on the previous step. In this paper, we propose a neural network-based approach, which we term Neural Pre-Processing (NPP), to solve three basic tasks of pre-processing simultaneously.</p><p>NPP first translates a head MRI scan into a skull-stripped and intensitynormalized brain using a translation module, and then spatially transforms to the standard coordinate space with a spatial transform module. As we demonstrate in our experiments, the design of the architecture is critical for solving these tasks together. Furthermore, NPP offers the flexibility to turn on/off different pre-processing steps at inference time. Our experiments demonstrate that NPP achieves state-of-the-art accuracy in all the sub-tasks we consider.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Model</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, our model contains two modules: a geometry-preserving translation module, and a spatial-transform module.</p><p>Geometry-Preserving Translation Module. This module converts a brain MRI scan to a skull-stripped and intensity normalized brain. We implement it using a U-Net style <ref type="bibr" target="#b23">[24]</ref> f θ architecture (see Fig. <ref type="figure" target="#fig_0">1</ref>), where θ denotes the model weights. We operationalize skull stripping and intensity normalization as a pixelwise multiplication of the input image with a scalar multiplier field χ, which is the output of the U-Net f θ :</p><formula xml:id="formula_0">T θ (x) = f θ (x) ⊗ x, (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where ⊗ denotes the element-wise (Hadamard) product. Such a parameterization allows us to impose constraints on χ. In this work, we penalize high-frequencies in χ, via the total variation loss described below. Another advantage of χ is that it can be computed at a lower resolution to boost both training and inference speed, and then up-sampled to the full resolution grid before being multiplied with the input image. This is possible because the multiplier χ is spatially smooth. In contrast, if we have f θ directly compute the output image, doing this at a lower resolution means we will inevitably lose high frequency information. In our experiments, we take advantage of thibass by having the model output the multiplicative field at a grid size that is 1/2 of the original input grid size along each dimension. The scalar field, which solves both skull stripping and intensity normalization, is not range restricted by design. The appropriate values will be learned from the data. In practice, we found that thresholding it at 0.2 yields a good brain mask.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Spatial Transformation</head><p>Module. Spatial normalization is implemented as a variant of the Spatial Transformer Network (STN) <ref type="bibr" target="#b16">[17]</ref>; in our implementation, the STN outputs the 12 parameters of an affine matrix Φ af f . The STN takes  as input the bottleneck features from the image translation network f θ and feeds it through a multi-layer perceptron (MLP) that projects the features to a 12-dimensional vector encoding the affine transformation matrix. This affine transformation is in turn applied to the output of the image translation module T θ (x) via a differentiable resampling layer <ref type="bibr" target="#b16">[17]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Loss Function</head><p>The objective to minimize is composed of two terms. The first term is a reconstruction loss L rec . In this paper, we use SSIM <ref type="bibr" target="#b30">[31]</ref> for L rec . The second term penalizes T θ from making high-frequency intensity changes to the input image, encapsulating our prior knowledge that skull-stripping and MR bias field correction involve a pixel-wise product with a spatially smooth field. In this work, we use a total variation penalty <ref type="bibr" target="#b22">[23]</ref> L T V on the multiplier field χ, which promotes sparsity of spatial gradients in χ. The final objective is:</p><formula xml:id="formula_2">arg min θ L rec (T θ (x) • Φ af f , x gt ) + λL T V (χ),<label>(2)</label></formula><p>where x gt is the pre-processed ground truth images, λ ≥ 0 controls the trade-off between the two loss terms, and • denotes a spatial transformation.</p><p>Conditioning on λ. Classically, hyperparameters like λ are tuned on a held-out validation set -a computationally-intensive task which requires training multiple models corresponding to different values of λ. To avoid this, we condition on λ in f θ by passing in λ as an input to a separate MLP h φ (λ) (see Fig. <ref type="figure" target="#fig_0">1</ref>), which generates a λ-conditional scale and bias for each channel of the decoder layers. h φ can be interpreted as a hypernetwork <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b29">30]</ref> which generates a conditional scale and bias similar to adaptive instance normalization (AdaIN) <ref type="bibr" target="#b15">[16]</ref>. Specifically, for a given decoder layer with C intermediate feature maps {z 1 , ..., z C }, h φ (λ) generates the parameters to scale and bias each channel z c such that the the channel values are computed as:</p><formula xml:id="formula_3">ẑc = α c z c + β c ,<label>(3)</label></formula><p>for c ∈ {1, ..., C}. Here, α c and β c denote the scale and bias of channel c, conditioned on λ. This is repeated for every decoder layer, except the final layer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Training Details. We created a large-scale dataset of 3D T1-weighted (T1w) brain MRI volumes by aggregating 7 datasets: GSP <ref type="bibr" target="#b12">[13]</ref>, ADNI <ref type="bibr" target="#b21">[22]</ref>, OASIS <ref type="bibr" target="#b19">[20]</ref>, ADHD <ref type="bibr" target="#b24">[25]</ref>, ABIDE <ref type="bibr" target="#b31">[32]</ref>, MCIC <ref type="bibr" target="#b10">[11]</ref>, and COBRE <ref type="bibr" target="#b0">[1]</ref>. The whole training set contains 10,083 scans. As ground-truth target images, we used FreeSurfer generated skull-stripped, intensity-normalized and affine-registered (to so-called MNI atlas coordinates) images. We train NPP with ADAM <ref type="bibr" target="#b18">[19]</ref> and a batch size of 2, for a maximum of 60 epochs. The initial learning rate is 1e-4 and then decreases by half after 30 epochs. We use random gamma transformation as a data augmentation technique, with parameter log gamma (-0.3, 0.3). We randomly sampled λ from a log-uniform distribution on (-3, 1) for each mini-batch.</p><p>Architecture Details. f θ is a U-Net-style architecture containing an encoder and decoder with skip connections in between. The encoder and decoder have 5 levels and each level consists of 2 consecutive 3D convolutional layers. Specifically, each 3D convolutional layer is followed by an instance normalization layer and LeakyReLU (negative slope of 0.01). In the bottleneck, we use three transformer blocks to enhance the ability of capturing global information <ref type="bibr" target="#b28">[29]</ref>. Each transformer block contains a self-attention layer and a MLP layer. For the transformer block, we use patch size 1 × 1 × 1, 8 attention heads, and an MLP expansion ratio of 1. We perform tokenization by flattening the 3D CNN feature maps into a 1D sequence. The hypernetwork, h φ , is a 3-layer MLP with hidden layers 512, 2048 and 496. The STN MLP is composed of a global average pooling layer and a 2-layer MLP with hidden layers of size 256 and 12. The 2-layer MLP contains: linear (256 channels); ReLU; linear (12 channels); Tanh. Note an identity matrix is added to the output affine matrix to make sure the initial transformation is close to identity. It's widely used in the affine registration literature to improve convergence and efficiency.</p><p>Baselines. We chose three popular and widely-used tools, SynthStrip <ref type="bibr" target="#b14">[15]</ref>, C2F <ref type="bibr" target="#b20">[21]</ref>, FSL <ref type="bibr" target="#b25">[26]</ref>, and FreeSurfer <ref type="bibr" target="#b8">[9]</ref>, as baselines. SynthStrip (SS) is a learningbased skull-stripping method, while FSL and FreeSurfer (FS) is a cross-platform brain processing package containing multiple tools. FSL's Brain Extraction Tool (BET) and FMRIB's Automated Segmentation Tool are for skull stripping and MR bias field correction, respectively. FS uses a watershed method for skullstripping, a model-based tissue segmentation (N4biasfieldcorrection <ref type="bibr" target="#b27">[28]</ref>) for intensity normalization and bias field correction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Runtime Analyses</head><p>The primary advantage of NPP is runtime. As shown in Table <ref type="table" target="#tab_1">1</ref>, for images with resolution 256 × 256 × 256, NPP requires less than 3 s on a GPU and less than 8 s on a CPU for all three pre-processing tasks. This is in part due to the fact that the multiplier field can be computed at a lower resolution (in our case, on a grid of 128 × 128 × 128). The output field is then up-sampled with trilinear interpolation before being multiplied with the input image. In contrast, SynthStrip needs 16.5 s on a GPU for skull stripping and C2F needs 5.6 on a GPU for spatial normalization. FSL's optimized implementation takes about 271.3 s per image for skull stripping and intensity normalization, whereas FreeSurfer needs more than 10 min.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Pre-processing Performance</head><p>We empirically validate the performance of NPP for the three tasks we consider: skull-stripping, intensity normalization, and spatial transformation.</p><p>Evaluation Datasets. For skull-stripping, we evaluate on the Neuralfeedback skull-stripped repository (NFSR) <ref type="bibr" target="#b6">[7]</ref> dataset. NFSR contains 125 manually skullstripped T1w images from individuals aged 21 to 45, and are diagnosed with a wide range of psychiatric diseases. The definition of the brain mask used in NFSR follows that of FS. For intensity normalization, we evaluate on the test set (N = 856) from the Human Connectome Project (HCP). The HCP dataset includes T1w and T2w brain MRI scans which can be combined to obtain a high quality estimate of the bias field <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">27]</ref>. For spatial normalization, we use T1w MRI scans from the Parkinson's Progression Markers Initiative (PPMI). These images were automatically segmented using Freesurfer into anatomical regions of interest (ROIs)<ref type="foot" target="#foot_0">1</ref>  <ref type="bibr" target="#b5">[6]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Metrics.</head><p>For skull-stripping, we quantify performance using the Dice overlap coefficient (Dice), Sensitivity (Sens), Specificity (Spec), mean surface distance (MSD), residual mean surface distance (RMSD), and Hausdorff distance (HD), as defined elsewhere <ref type="bibr" target="#b17">[18]</ref>. For intensity normalization, we evaluate the intensitynormalized reconstruction (Rec) and estimated bias image (Bias, which is equal to the multiplier field χ) to the ground truth images, using PSNR and SSIM. We quantify registration between ROIs in an individual MRI and the atlas ROI for the assessment of spatial normalization by calculating the Dice score between the spatially transformed segmentations (resampled using the estimated affine transformation) and the probabilistic labels of the target atlas.</p><p>Results. Figure <ref type="figure" target="#fig_1">2</ref> and Fig. <ref type="figure" target="#fig_2">3</ref> shows skull-stripping performance for all models. We observe that the proposed method outperforms all traditional and learningbased baselines on Dice, Spec, and MSD/RMSD. Importantly, NPP achieved 93.8% accuracy and 2.7% improvement on Dice and 2.39mm MSD. Especially for MSD, NPP is 28% better than the second-best method, SynthStrip. We further observe that BET commonly fails, which has also been noted in the literature <ref type="bibr" target="#b7">[8]</ref>.</p><p>Table <ref type="table" target="#tab_2">2</ref> shows the quantitative results of FSL, FS and NPP(see visualization results in Supplementary S1). NPP outperforms the baselines on all metrics. From Table <ref type="table" target="#tab_2">2</ref>, we see that FreeSurfer's reconstruction is better than BET's, but the bias field estimates are relatively worse. We can appreciate this in the figure in Supplementary S1, as we observe that FS's bias field estimate (f) contains too much high-frequency anatomical detail.  on all ROIs measured. Figure <ref type="figure" target="#fig_3">4</ref>(a) shows representative slices for spatial normalization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Ablation</head><p>As ablations, we compare the specialized architecture of NPP against a naive U-Net trained to solve all three tasks at once. Additionally, we implemented a different version of our model where the U-Net directly outputs the skullstripped and intensity-normalized image, which is in turn re-sampled with the STN. In this version, we did not have the scalar multiplication field and thus our loss function did not include the total variation term. We call this version U-Net+STN. As another alternative, we trained the U-Net+STN architecture via UMIRGPIT <ref type="bibr" target="#b1">[2]</ref>, which encourages the translation network (U-Net) to be geometry-preserving by alternating the order of the translation and registration. We note again that for all these baselines, we used the same architecture as f θ , but instead of computing the multiplier field χ, f θ computes the final intensity-normalized and spatially transformed image directly. The objective is the reconstruction loss L rec . All other implementation details were the same as NPP. For evaluation, we use the test images from the HCP dataset.</p><p>Results: Tables <ref type="table" target="#tab_3">3</ref> and<ref type="table" target="#tab_4">4</ref> lists the SSIM values for the estimated reconstruction and bias fields, for different ablations and NPP with a range of λ values. We observe that there is a sweet spot around λ = 0.1, which underscores the importance of considering different hyperparameter settings and affording the user to optimize this at test time. All ablation results are poor, supporting the importance of our architectural design. Figure <ref type="figure" target="#fig_5">5</ref> shows some representative results for a range of λ values.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a novel neural network approach for brain MRI preprocessing. The proposed model, called NPP, disentangles geometry-preserving translation mapping (which includes skull stripping and bias field correction) and spatial transformation. Our experiments demonstrate that NPP can achieve state-of-the-art results for the major tasks of brain MRI pre-processing.</p><p>Funding. Funding for this project was in part provided by the NIH grant R01AG053949, and the NSF CAREER 1748377 grant.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (Top) An overview of Neural Pre-processing. (Bottom) The network architecture of Neural Pre-processing</figDesc><graphic coords="3,59,79,54,56,304,51,213,13" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Representative slices for skull-stripping. From top to bottom: coronal, axial and sagittal views. Green and red contours depict ground truth and estimated brain masks, respectively. (Color figure online)</figDesc><graphic coords="4,87,96,54,17,276,79,113,53" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Skull-stripping performance on various metrics. (Top) Higher is better. (Bottom) Lower is better.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. (a) Representative examples for spatial normalization. Rows depict sagittal, axial and coronal view. For each view, from left to right: input image, atlas, NPP results, and FreeSurfer results. (b) Boxplots illustrating Dice scores of each anatomical structure for NPP and FreeSurfer in the atlas-based registration with the PPMI dataset. We combine left and right hemispheres of the brain into one structure for visualization.</figDesc><graphic coords="7,44,31,53,96,335,59,141,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 4 (</head><label>4</label><figDesc>b) shows boxplots of Dice scores for NPP and FreeSurfer and C2F, for each ROI. Compared to FS and C2F, NPP achieves consistent improvement</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. (Top) From left to right, raw input image, ground truth bias field, estimated multiplier fields from NPP for different values of λ = 10, 1, 0.1, 0.01, 0.001. (Bottom) From left to right, ground truth, outputs from NPP for different values of λ.</figDesc><graphic coords="8,70,47,54,26,311,41,93,46" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Supported sub-tasks and average runtime for each method. Skullstripping (SS), intensity normalization (IN) and spatial normalization (SN). Units are sec, bold is best.</figDesc><table><row><cell>Method</cell><cell>SS</cell><cell>IN</cell><cell>SN</cell><cell>GPU CPU</cell></row><row><cell cols="3">SynthStrip 16.5 -</cell><cell>-</cell><cell></cell></row><row><cell>BET</cell><cell>9.1</cell><cell cols="2">262.2 -</cell><cell></cell></row><row><cell>C2F</cell><cell>-</cell><cell>-</cell><cell>5.6</cell><cell></cell></row><row><cell>Freesurfer</cell><cell cols="3">747.2 481.5 671.6</cell><cell></cell></row><row><cell>NPP (Ours)</cell><cell></cell><cell>2.94</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Performance on intensity normalization. Higher is better, bold is best.</figDesc><table><row><cell cols="2">Method Rec Rec</cell><cell>Bias Bias</cell></row><row><cell></cell><cell cols="2">SSIM PSNR SSIM PSNR</cell></row><row><cell>FSL</cell><cell>98.5 34.2</cell><cell>92.5 39.2</cell></row><row><cell>FS</cell><cell>98.9 35.7</cell><cell>92.1 39.3</cell></row><row><cell>NPP</cell><cell cols="2">99.1 36.2 92.7 39.4</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Ablation study results of different λ. Bold is best.</figDesc><table><row><cell>Method</cell><cell>RecSSIM</cell><cell>Bias SSIM</cell></row><row><cell>NPP, λ = 10</cell><cell cols="2">96.38 ± 1.29 96.02 ± 1.29</cell></row><row><cell>NPP, λ = 1</cell><cell cols="2">99.07 ± 0.61 98.09 ± 0.62</cell></row></table><note><p><p><p>NPP, λ = 0.1 99.</p><ref type="bibr" target="#b24">25</ref> </p>± 0.52 98.40 ± 0.40 NPP, λ = 0.01 99.24 ± 0.51 98.22 ±0.39 NPP, λ = 0.001 99.22 ± 0.52 98.13 ± 0.40</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>Comparison with ablated models. Bold is best.</figDesc><table><row><cell>Method</cell><cell>Rec SSIM</cell></row><row><cell cols="2">Naive U-Net 84.12 ± 3.34</cell></row><row><cell cols="2">U-Net+STN 84.87 ± 3.04</cell></row><row><cell cols="2">UMIRGPIT 84.26 ± 3.02</cell></row></table><note><p>NPP, λ = 0.1 99.25 ± 0.52</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>In this work, the following ROIs were used to evaluate performance: brain stem (Bs), thalamus (Th), cerebellum cortex (Cbmlc), cerebellum white matter (Wm), cerebral white matter (Cblw), putamen (Pu), ventral DC (Vt), pallidum (Pa), caudate (Ca), lateral ventricle (LV), and hippocampus (Hi).</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3 25.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Multimodal neuroimaging in schizophrenia: description and dissemination</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Aine</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="343" to="364" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Unsupervised multi-modal image registration via geometry preserving image-to-image translation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Arar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ginger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Danon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Bermano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Cohen-Or</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="13410" to="13419" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Symmetric diffeomorphic image registration with cross-correlation: evaluating automated labeling of elderly and neurodegenerative brain</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">B</forename><surname>Avants</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Epstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Grossman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="26" to="41" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">VoxelMorph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">AFNI: software for analysis and visualization of functional magnetic resonance neuroimages</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">W</forename><surname>Cox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biomed. Res</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="162" to="173" />
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Anatomical priors in convolutional networks for unsupervised biomedical segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="9290" to="9299" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">BEaST: brain extraction based on nonlocal segmentation technique</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">F</forename><surname>Eskildsen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="2362" to="2373" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Automatic brain extraction from MRI of human head scans using Helmholtz free energy principle and morphological operations. Biomed. Signal Process</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ezhilarasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Control</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="page">102270</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">FreeSurfer</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="774" to="781" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">The minimal preprocessing pipelines for the human connectome project</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">F</forename><surname>Glasser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="105" to="124" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The MCIC collection: a shared repository of multi-modal, multi-site brain image data from a clinical investigation of schizophrenia</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Gollub</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="367" to="388" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<ptr target="http://arxiv.org/abs/1609.09106" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>Hypernetworks</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Brain genomics superstruct project initial data release with structural, functional, and behavioral measures</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Holmes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">HyperMorph: amortized hyperparameter learning for image registration</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hoopes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<ptr target="http://arxiv.org/abs/2101.01035" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">SynthStrip: skullstripping for any brain image</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hoopes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Mora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">260</biblScope>
+			<biblScope unit="page">119474</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Arbitrary style transfer in real-time with adaptive instance normalization</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Belongie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1501" to="1510" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Spatial transformer networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jaderberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">28</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A survey of loss functions for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jadon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 IEEE Conference on Computational Intelligence in Bioinformatics and Computational Biology (CIBCB)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<ptr target="http://arxiv.org/abs/1412.6980" />
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Open access series of imaging studies: longitudinal MRI data in nondemented and demented older adults</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Marcus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Fotenos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Csernansky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Buckner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cogn. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2677" to="2684" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Affine medical image registration with coarse-to-fine vision transformer</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Mok</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20835" to="20844" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">The Alzheimer&apos;s disease neuroimaging initiative</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Mueller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimaging Clin</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="869" to="877" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">An iterative regularization method for total variation-based image restoration</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Osher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Burger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Goldfarb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Multiscale Model. Simul</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="460" to="489" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015, Part III</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The ADHD teen integrative data analysis longitudinal (TIDAL) dataset: background, methodology, and aims</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Sibley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Coxe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Psychiatry</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Smith</surname></persName>
+		</author>
+		<title level="m">Advances in functional and structural MR image analysis and implementation as FSL</title>
+		<imprint>
+			<date type="published" when="2004">2004</date>
+			<biblScope unit="volume">23</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Jointly estimating bias field and reconstructing uniform MRI image by deep learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson</title>
+		<imprint>
+			<biblScope unit="volume">343</biblScope>
+			<biblScope unit="page">107301</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">N4ITK: improved N3 bias correction</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Tustison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1310" to="1320" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Computing multiple image reconstructions with a single hypernetwork</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn. Biomed. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Image quality assessment: from error visibility to structural similarity</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Sheikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simoncelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="600" to="612" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Alzheimer&apos;s biomarkers in daily practice (abide) project: rationale and design</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>De Wilde</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Alzheimer&apos;s &amp; Dementia: Diagnosis, Assessment &amp; Disease Monitoring</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="143" to="151" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

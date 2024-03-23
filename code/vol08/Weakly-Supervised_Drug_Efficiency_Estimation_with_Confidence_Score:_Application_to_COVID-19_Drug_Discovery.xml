@@ -1,0 +1,651 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Weakly-Supervised Drug Efficiency Estimation with Confidence Score: Application to COVID-19 Drug Discovery</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Nahal</forename><surname>Mirzaie</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Sharif University of Technology</orgName>
+								<address>
+									<settlement>Tehran</settlement>
+									<country key="IR">Iran</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="institution">Sharif University of Technology</orgName>
+								<address>
+									<settlement>Tehran</settlement>
+									<country key="IR">Iran</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mohammad</forename><forename type="middle">V</forename><surname>Sanian</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Sharif University of Technology</orgName>
+								<address>
+									<settlement>Tehran</settlement>
+									<country key="IR">Iran</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="institution">Sharif University of Technology</orgName>
+								<address>
+									<settlement>Tehran</settlement>
+									<country key="IR">Iran</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Mohammad</forename><forename type="middle">H</forename><surname>Rohban</surname></persName>
+							<email>rohban@sharif.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Sharif University of Technology</orgName>
+								<address>
+									<settlement>Tehran</settlement>
+									<country key="IR">Iran</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Weakly-Supervised Drug Efficiency Estimation with Confidence Score: Application to COVID-19 Drug Discovery</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="676" to="685"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">2A1227D032AACECC78406295BECBDE30</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_65</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:53+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Drug Discovery</term>
+					<term>COVID-19</term>
+					<term>High Throughput Screening</term>
+					<term>Out-of-Distribution Detection</term>
+					<term>Weakly-supervised</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The COVID-19 pandemic has prompted a surge in drug repurposing studies. However, many promising hits identified by modern neural networks failed in the preclinical research, which has raised concerns about the reliability of current drug discovery methods. Among studies that explore the therapeutic potential of drugs for COVID-19 treatment is RxRx19a. Its dataset was derived from High Throughput Screening (HTS) experiments conducted by the Recursion biotechnology company. Prior research on hit discovery using this dataset involved learning healthy and infected cells' morphological features and utilizing this knowledge to estimate contaminated drugged cells' scores. Nevertheless, models have never seen drugged cells during training, so these cells' phenotypic features are out of their trained distribution. That being said, model estimations for treatment samples are not trusted in these methods and can lead to false positives. This work offers a first-in-field weaklysupervised drug efficiency estimation pipeline that utilizes the mixup methodology with a confidence score for its predictions. We applied our method to the RxRx19a dataset and showed that consensus between top hits predicted on different representation spaces increases using our confidence method. Further, we demonstrate that our pipeline is robust, stable, and sensitive to drug toxicity.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>COVID-19 is an infectious disease caused by Severe Acute Respiratory Syndrome Coronavirus 2 (SARS-CoV-2); that is a novel virus from the genus of Betacoronovirus of coronavirus genera. In extreme cases, host cells activate intensive immune responses for defense, leading to Acute respiratory distress syndrome (ARDS) and multiple organ failure <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b17">18]</ref>. Though modern vaccines against this disease effectively prevent severity, hospitalization, and death, the SARS-CoV-2 virus has continued to mutate, and there is still a chance of showing severe symptoms, especially for those with chronic diseases <ref type="bibr" target="#b1">[2]</ref>. Yet, we have a few medications that affect this tough disease. Hence search for treatment has never stopped.</p><p>Designing a new drug is time-consuming, while drug repurposing can be a real game-changer when it comes to a pandemic. Every newly designed drug candidate should go through a filter of preclinical research, clinical trials, and FDA reviews to gain safety permission to be on the market. Many drugs filter out before reaching the market, while this journey takes about 7-12 years for those few that last <ref type="bibr" target="#b18">[19]</ref>. Drug repurposing accelerates this process by reusing approved chemical compounds for a new target. Because drug safety and efficiency have initially been tested in another clinical study, getting approval for a new purpose is faster for approved medicines <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b22">23]</ref>.</p><p>High Throughput Screening (HTS) has proven its worth in facilitating drug repurposing <ref type="bibr" target="#b7">[8]</ref>. HTS methodology relies on the fact that chemical compounds change the morphology of cells. In particular, chemical compounds with similar molecular structures are expected to induce similar cellular morphological changes <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b14">15]</ref>. These changes can be tracked and analyzed to identify the compound hits capable of reversing the cell morphologies impacted by the disease.</p><p>RxRx19a is an extensive HTS experiment conducted by the Recursion biotechnology company to investigate potential therapeutics of approved drugs for COVID-19 treatment <ref type="bibr" target="#b6">[7]</ref>. To our knowledge, RxRx19a is the biggest public fluorescent microscopy dataset exploring approved drugs' effects on SARS-CoV-2 virus. Based on the substances that are added to the cultured cells, samples in this study can be categorized into negative controls (mock and UV-irradiated SARS-CoV-2), positive controls (active SARS-CoV-2), and treatments (contaminated drugged).</p><p>Previous studies for hit discovery on this dataset used positive and negative control samples to train a model to discriminate healthy from infected cell image representations <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b15">16]</ref>. The trained model was then used to estimate treatment scores. Although adequate evidence ensures that positive and negative controls are separate in embedding space, the top hit-score drugs published by these works are rarely overlapped. Besides, previous algorithms falsely predicted many treatments as effective, including toxic doses. We argue that this phenomenon is due to the fact that although cellular morphological changes caused by drugs are not visible to human eyes, they are so drastic that can confuse the model. In other words, treatment samples that have never been seen in the training of models are out-of-distribution samples to the trained model distribution, and we need a measure of confidence to rely on model judgment on them <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b21">22]</ref>.</p><p>Here, we present a novel weakly supervised confident hit prediction pipeline that estimates disease scores regardless of drug side effects and provides a confi-dence score for its prediction. We applied our model on both CellProfiler features <ref type="bibr" target="#b16">[17]</ref>, and deep neural network embeddings and showed that consensus between discovered hits increases. Our contributions are:</p><p>-We are the first to address the hit-discovery methodology's out-of-distribution problem and solve it with a novel weakly-supervised confident hit prediction pipeline. -We exhaustively evaluate our pipeline and show that our results are robust, stable, and sensitive to the cell death and drug toxicity. -We provide the CellProfiler features, deep learning embeddings, and their related pipelines for nowadays the biggest fluorescent microscopy dataset to explore drug efficiency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Dataset</head><p>Our work uses RxRx19a dataset, which consists of 305, 520 site-level 1024×1024 pixels images captured by fluorescent microscopes in multiple high throughput screening experiments. These experiments were conducted on two tissue types, HRCE and VERO, to explore the efficiency of 1672 FDA or EMA-approved drugs with 6 to 8 different doses against SARS-CoV-2. A drug with a specific dosage was added post-seeding for preparing treatment samples, and then samples were contaminated with the active SARS-CoV-2 virus. Then, samples were fixed and stained with 5 fluorescent colors to indicate DNA, RNA, actin cytoskeleton, Golgi apparatus, and endoplasmic reticulum organelles in cells. RxRx19a is publicly available and licensed under the Creative Commons Attribution 4.0 International License (http://creativecommons.org/licenses/by/4.0/).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methods</head><p>Assume X is a set of all single-cell images in our dataset. We partitioned X based on information of wells into three classes X ctrl+ , X ctrl-, and X t . These are sets of all single-cell images from positive control wells (active SARS-CoV-2), negative control wells (mock and UV-irradiated SARS-CoV-2), and contaminated drugged wells (treatment), respectively. We also define X ctrl = X ctrl+ ∪ X ctrl-as a set of all control samples. The function f (x i ), f : X → H, maps each image x i to its embedding h i . Same as partitions in X space, we consider H ctrl+ , H ctrl-, and H t as:</p><formula xml:id="formula_0">H ctrl+ = {f (x + ) | ∀ x + ∈ X ctrl+ } (<label>1</label></formula><formula xml:id="formula_1">)</formula><formula xml:id="formula_2">H ctrl-= {f (x -) | ∀ x -∈ X ctrl-} (<label>2</label></formula><formula xml:id="formula_3">)</formula><formula xml:id="formula_4">H t = {f (x t ) | ∀ x t ∈ X t }<label>(3)</label></formula><p>A function d : H → [0, 1] returns a disease score for a given embedding, which is a score number indicating adversity of the disease. The lower and closer to 0, the healthier the cell is, and vice versa. For the sake of simplicity, we ignore experimental errors and consider all positive controls cells infected ∀h + ∈ H ctrl+ , d(h + ) = 1, and with the same logic, all negative cells as healthy ∀h -∈ H ctrl-, d(h -) = 0. Yet, the disease score for ∀h t ∈ H t is unknown. If a drug was effective, somehow, it could hinder the virus's activities in the cell after being contaminated. It could be through a direct effect on the virus, entry channels, or cells that make them more resistant to the virus. As a result, with a successful drug, the host cell's morphological features were close to the morphological characteristics of a healthy cell. That is, d(h t ) is close to 0 for a successful drug. In this study, we aim to estimate d (Fig. <ref type="figure" target="#fig_0">1</ref>). In image preprocessing, we correct field-of-view illumination in images, followed by the cell segmentation. The embedding function f (.) calculates features for two random single-cell images from positive and negative control wells. A random convex combination of these two embeddings generates a transformed embedding h. We then calculate a disease score and a confidence score for h, which are evaluated with the weak label l( h) during training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Image Preprocessing and Embedding</head><p>We used a retrospective multi-image method to correct field-of-view illumination and calculate illumination functions for each channel across plates <ref type="bibr" target="#b2">[3]</ref>. For the cell segmentation, we used CellProfiler to calculate cell locations and boxes <ref type="bibr" target="#b16">[17]</ref>. After this process, artifacts and highly saturated pixels were removed. We deployed two methods of rule-based feature extraction and representation learning to extract embeddings for the single-cell images. For the rule-based feature extraction pipeline, we used CellProfiler. Plate-level normalization and Typical Variation Normalization (TVN) were applied to reduce the batch effects <ref type="bibr" target="#b0">[1]</ref>. For the representation learning, we adopted a pre-trained ResNet18 <ref type="bibr" target="#b5">[6]</ref>. The model was pre-trained on the ImageNet dataset. Nevertheless, both methods embed single-cell images into feature vectors; throughout the paper, f (.) could refer to either.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Data Augmentation with Weak Labels</head><p>We propose a novel data augmentation based on <ref type="bibr" target="#b3">[4]</ref> at our embedding level that generates simulated drugged samples with weak labels. Not only is our augmentation method a game-changer in network evaluation, but it also helps the model learn meaningful disease-related characteristics. A transformed sample h is calculated by convex combinations of positive and negative controls and then perturbed by random noise to mimic both a drug's efficiency and side effects.</p><p>Our data transformation can be formulated as follows:</p><p>hi,j,α = αh</p><formula xml:id="formula_5">+ i + (1 -α)h - j + γn ⊥v (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where α ∼ U(0, 1) is a random number between [0, 1], and h + i ∼ H ctrl+ and h - j ∼ H ctrl-are arbitrary samples from positive and negative controls. A normally distributed noise n ∼ N (μ H ctrl , σ H ctrl ) is calculated for each dimension independently based on the mean and standard deviation of control profiles. This noise is orthogonal to v = Hctrl+ -Hctrland is added to the representation to simulate drug-related morphological changes. v is a vector between positive and negative samples' embedding averages, and the final noise n is in a hyperplane perpendicular to v. And γ is a hyperparameter. Random noise n is not expected to affect the transformed data label because it is orthogonal to the positive and negative samples axis. We consider the weak label for hi,j,α only depended on α, l(h + i ) and l(h - j ):</p><formula xml:id="formula_7">l( hi,j,α ) := αl(h + i ) + (1 -α)l(h - j ) = α<label>(5)</label></formula><p>It is remarkable that with this method, we can augment our dataset indefinitely, and overcome the poor generalization issues that are caused by the limited control data. Further, this augmented dataset H which includes control samples H ctrl is used to train and evaluate our confident hit predictor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Confident Hit Predictor</head><p>Machine learning models' predictions about samples from out of their distribution cannot be trusted <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b9">10]</ref>. This issue is crucial when it comes to safetycritical applications like drug discovery. False negatives cause missing effective treatment, while false positives result in wasting money and time in follow-up experiments. That being said, the worst drawback is that we cannot trust our model judgments on unknown perturbations anymore, as they could act as outof-distribution samples. In our study, unfortunately, there are not any ground truth that can help us to quantify treatment efficiency against SARS-CoV-2 invitro. Although the model can learn deep phenotypic characteristics for healthy and infected cells during training, drug-related morphological features of drugged cells are unknown. To lean on model disease score estimation for a treatment, we need to ask about the model's confidence in the prediction.</p><p>We offer a first-in-field confident hit predictor that utilizes the idea of hint and confidence <ref type="bibr" target="#b4">[5]</ref> to calculate a measure of certainty about its hit-score estimations.</p><p>During training, our model receives hints to predict disease scores. Larger hints lead to lower confidence scores. Using this method, we adjust the prediction probabilities using interpolation between the predicted disease score and the weak label probability distribution. The adjusted prediction is then subjected to MSE loss calculation as follows:</p><formula xml:id="formula_8">L = MSE c( h)d( h) + (1 -c( h))l( h), l( h) -λ log(c( h)), (<label>6</label></formula><formula xml:id="formula_9">)</formula><p>where h is an augmented transformed hidden features and l( hi ) is the weak label, and d( hi ) is predicted diseas score. A function c(.) ∈ [0, 1] calculates the confidence score. The adjusted prediction c( h)d( h) + (1c( h))l( h) is closer to the hint score (l( hi )) when the confidence score is low, and vice versa. To prevent the model from always asking for hints and getting stuck in a trivial solution where c always returns 0, a confidence loss,log(c( h)) is added to the loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Experimental Settings</head><p>We developed our CellProfiler pipeline with Luigi workflow manager, which was, in our experience, faster and more maintainable in locally hosted systems. For TVN, we use PCA whitening that embeds our representation into 1024 dimensions. Multilayer perceptrons (MLP) are used to estimate the confidence and disease scores. To train our model, we used the zero-shot learning method to test our model's reliability. For this purpose, we left out inactive UV-irradiated SARS-CoV-2 samples in the training process. The model should estimate inactive virus samples as healthy, while inactive viruses can still slightly change the cellular morphology.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Representation Quality Assurance</head><p>Replicate Reproducibility Test: It is expected to see replicates of the same biological perturbation are significantly similar to each other than a random set of profiles <ref type="bibr" target="#b2">[3]</ref>. We used the Pearson correlation to calculate the similarity of two representations. The distribution of the mean Pearson correlation between all replicates of a biological perturbation is compared against a null distribution. We observed that the replicate correlation of 98.99% of drugs are significant using this criterion (see Fig. <ref type="figure" target="#fig_1">2a,</ref><ref type="figure" target="#fig_0">S1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Disease Scores Quality Assurance</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Stability of Disease Scores:</head><p>To test the model's stability, we randomly omitted a portion of the control samples before creating a new augmented dataset and training a new model. Then, we compared the correlation between prime and new scores and repeated the test five times. Our model showed enhanced stability due to weak label data augmentation, as opposed to the unstable on-disease score algorithm used in RxRx19a (see Fig. <ref type="figure" target="#fig_1">2b</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Robustness of Disease Scores:</head><p>We show the robustness of our method for computing disease scores by accurately predicting scores for new samples in a zero-shot learning setup <ref type="bibr" target="#b19">[20]</ref>. The model was trained on an augmented dataset and tested on unseen ultraviolet-irradiated SARS-CoV-2 samples. The model predicted scores of this group near zero, and these scores' distribution is similar to the other negative controls (see Fig. <ref type="figure" target="#fig_1">2c,</ref><ref type="figure" target="#fig_1">S2</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Confidence Scores Quality Assurance</head><p>Calibration of Confidence Scores: We have noticed that the entropy of disease score predictions rises as the samples are further away from being entirely healthy or diseased. This reveals that the model demonstrates measurable uncertainty on OOD samples (see Fig. <ref type="figure" target="#fig_1">2d</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">Evaluation</head><p>We hypothesize that using confidence will reduce false positives in the hit discovery. Because ground truth labels for drugs in our dataset are not accessible, we cannot directly show false positive rate reduction. Instead, we can show that when we applied the confidence method consensus among top scores, the overlap between discovered hits based on different representations increased. We run our pipeline in both with and without confidence setups for three representations: our CellProfiler features, our single-cell image embedding, and the original proprietary RxRx19a embedding. When we used the confidence score, the mean Jaccard similarity between the top 10 drugs increased from 0.13 to 0.2 (see Table <ref type="table" target="#tab_0">1</ref>). Top score drugs predicted by our pipeline are Remdesivir <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b12">13]</ref> (d = 0.74, c = 0.66), Aloxistatin <ref type="bibr" target="#b22">[23]</ref> (d = 0.72, c = 0.71), GS-441524 <ref type="bibr" target="#b20">[21]</ref> (d = 0.67, c = 0.63), Albendazole (d = 0.61, c = 0.69), and Cinnarizine (d = 0.60, c = 0.66) (see Tables <ref type="table">S2,</ref><ref type="table">S3</ref>). As the disease score drops, the model confidence increases. That model confidence for the known therapeutic, Remdesivir, is 0.66, while the model is pretty sure (c &gt; 0.98) that Fluvoxamine and Hydroxychloroquine are ineffective. We suspect that effective drugs can cause a sequence of cellular morphological changes unknown to the model. However, when we have ineffective drugs, the well characterized morphological changes that are caused by the SARS-CoV-2 infection dominates. That is why the model is more sure about ineffective drugs' disease scores than effective ones.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>To safely conclude about hit discovery scores based on cellular morphological features, we need to be concerned about inevitable out-of-distribution phenotypes.</p><p>We explored one possible solution and proposed a confidence-based weaklysupervised drug efficiency estimation pipeline that was trained to be unsure about out-of-distribution samples. Further, because truth values for drug efficiency scores are unknown, we indirectly defined a metric to calculate false positive rate reduction and showed that this metric improves in the confidence-based setup. We also enhanced our drug efficiency estimation pipeline with a unique weakly-supervised data transformation, simulating contaminated drugged cell phenotypes. Finally, we assessed our pipeline's robustness and stability.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Our weakly supervised confident hit predictor pipeline consists of image preprocessing, feature embedding, data transformation, and confident hit prediction sections.In image preprocessing, we correct field-of-view illumination in images, followed by the cell segmentation. The embedding function f (.) calculates features for two random single-cell images from positive and negative control wells. A random convex combination of these two embeddings generates a transformed embedding h. We then calculate a disease score and a confidence score for h, which are evaluated with the weak label l( h) during training.</figDesc><graphic coords="4,58,98,171,08,334,48,85,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. a) Replicate reproducibility test. The blue distributions are the null distribution. The red vertical line indicates the upper 95% of the null distribution. b) Stability test of disease scores with respect to the percentage of missing data. We can see our proposed method (orange) is more stable against missing data, while the RxRx19a origin algorithm fluctuates adversely after missing more than 15% of data. c) Disease score distributions of our weakly supervised confident hit predictions for negative and positive controls. We observed that the model properly predicts unseen inactive ultraviolet-irradiated SARS-CoV-2 scores in a zero-shot learning process. d) Calibration of Confidence scores. We bucketize disease scores into 10 bins, and calculate median of confidence score in each bin. This plot shows model uncertainty and high entropy for disease score between [0.3, 0.7]. (Color figure online)</figDesc><graphic coords="7,44,79,210,08,334,12,267,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>The Jaccard similarity between the top 10 score drugs increased when we applied the confidence method to our model.</figDesc><table><row><cell></cell><cell cols="2">Without Confidence</cell><cell></cell><cell cols="2">With Confidence</cell><cell></cell></row><row><cell></cell><cell cols="6">Cellprofiler ResNet RxRx19a Cellprofiler ResNet RxRx19a</cell></row><row><cell cols="2">Cellprofiler 1</cell><cell>0.11</cell><cell>0.11</cell><cell>1</cell><cell>0.17</cell><cell>0.11</cell></row><row><cell>ResNet</cell><cell>0.11</cell><cell>1</cell><cell>0.17</cell><cell>0.17</cell><cell>1</cell><cell>0.33</cell></row><row><cell>RxRx19a</cell><cell>0.11</cell><cell>0.17</cell><cell>1</cell><cell>0.11</cell><cell>0.33</cell><cell>1</cell></row><row><cell>Mean</cell><cell></cell><cell>0.13</cell><cell></cell><cell></cell><cell>0.20</cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. We express our gratitude to <rs type="person">Dr. Forbes J. Burkowski</rs>, <rs type="person">Dr. Vahid Salimi</rs>, and <rs type="person">Dr. Ali Sharifi Zarchi</rs> for their priceless guidance and help in validating the output of the models.</p></div>
+			</div>
+			<div type="availability">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Code and Data Availability. The code repository is available at https://github .com/rohban-lab/Drug-Efficiency-Estimation-with-Confidence-Score.</p><p>Raw Cellprofiler features are available at http://hpc.sharif.edu:8080/HRCE/, and normalized well level features at https://doi.org/10.6084/m9.figshare.23723946.v1.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3 65.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Improving phenotypic measurements in high-content imaging screens</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Ando</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>Mclean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Berndl</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/161422</idno>
+		<ptr target="https://www.biorxiv.org/content/early/2017/07/10/161422" />
+	</analytic>
+	<monogr>
+		<title level="j">bioRxiv</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Acute respiratory distress syndrome in COVID-19: possible mechanisms and therapeutic management</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Aslan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Aslan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">M</forename><surname>Zolbanin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jafari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pneumonia</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">14</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Data-analysis strategies for image-based cell profiling</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Caicedo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="849" to="863" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Weakly supervised learning of Single-Cell feature embeddings</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Caicedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mcquin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goodman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Carpenter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. IEEE Comput. Soc. Conf. Comput. Vis. Pattern Recognit</title>
+		<imprint>
+			<biblScope unit="page" from="9309" to="9318" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Learning confidence for out-of-distribution detection in neural networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Devries</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1802.04865</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<idno>CoRR abs/1512.03385</idno>
+		<ptr target="https://arxiv.org/abs/1512.03385" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Identification of potential treatments for COVID-19 through artificial intelligence-enabled phenomic analysis of human cells infected with SARS-CoV-2</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Heiser</surname></persName>
+		</author>
+		<idno type="DOI">10.1101/2020.04.21.054387</idno>
+		<ptr target="https://www.biorxiv.org/content/early/2020/04/23/2020.04.21.054387" />
+	</analytic>
+	<monogr>
+		<title level="j">bioRxiv</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">High-throughput screening and evaluation of repurposed drugs targeting the SARS-CoV-2 main protease</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Signal Transduction Targeted Therapy</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">356</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Remdesivir metabolite GS-441524 effectively inhibits SARS-CoV-2 infection in mouse models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Chem</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="2785" to="2793" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Energy-based out-of-distribution detection</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Owens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Exploiting generative self-supervised learning for the assessment of biological images with lack of annotations</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mascolini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Cardamone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ponzio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Di Cataldo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ficarra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinform</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">295</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Morphological cell profiling of SARS-CoV-2 infection identifies drug repurposing candidates for COVID-19</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mirabelli</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.2105815118</idno>
+		<ptr target="https://www.pnas.org/doi/abs/10.1073/pnas.2105815118" />
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci</title>
+		<imprint>
+			<biblScope unit="volume">118</biblScope>
+			<biblScope unit="issue">36</biblScope>
+			<biblScope unit="page">2105815118</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Remdesivir inhibits SARS-CoV-2 in human lung cells and chimeric SARS-CoV expressing the SARS-CoV-2 RNA polymerase in mice</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Pruijssers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell Rep</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">107940</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Drug repurposing: progress, challenges and recommendations</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pushpakom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Rev. Drug Discov</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="41" to="58" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Virtual screening for small-molecule pathway regulators by image-profile matching</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Rohban</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell Syst</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="724" to="736" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">DEEMD: drug efficacy estimation against SARS-CoV-2 based on cell morphology with deep multiple instance learning</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Saberian</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2022.3178523</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2022.3178523" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3128" to="3145" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Cell Profiler 4: improvements in speed, utility and usability</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Stirling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Swain-Bowden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Lucas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Carpenter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Cimini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Goodman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinform</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">433</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Pathogenesis of COVID-19-induced ARDS: implications for an ageing population</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Torres Acosta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Singer</surname></persName>
+		</author>
+		<idno type="DOI">10.1183/13993003.02049-2020</idno>
+		<ptr target="https://erj.ersjournals.com/content/56/3/2002049" />
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Respir. J</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">2002049</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Van Norman</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jacbts.2016.03.002</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S2452302X1600036" />
+	</analytic>
+	<monogr>
+		<title level="m">Drugs, devices, and the FDA: Part 1: an overview of approval processes for drugs</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="170" to="179" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Zero-shot learning -a comprehensive evaluation of the good, the bad and the ugly</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Lampert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Akata</surname></persName>
+		</author>
+		<idno>CoRR abs/1707.00600</idno>
+		<ptr target="https://arxiv.org/abs/1707.00600" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Advantages of the parent nucleoside GS-441524 over Remdesivir for COVID-19 treatment</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">C</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">L</forename><surname>Muller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACS Med. Chem. Lett</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1361" to="1366" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Generalized out-of-distribution detection: a survey</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<idno>CoRR abs/2110.11334</idno>
+		<ptr target="https://arxiv.org/abs/2110.11334" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Repurposing existing drugs for the treatment of COVID-19/SARS-CoV-2 infection: a review describing drug mechanisms of action</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yousefi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mashouri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Okpechi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Alahari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Alahari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biochem. Pharmacol</title>
+		<imprint>
+			<biblScope unit="volume">183</biblScope>
+			<biblScope unit="page">114296</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

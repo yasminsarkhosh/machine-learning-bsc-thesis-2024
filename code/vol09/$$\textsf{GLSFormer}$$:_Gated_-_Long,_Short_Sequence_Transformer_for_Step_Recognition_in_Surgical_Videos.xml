@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">$$\textsf{GLSFormer}$$: Gated - Long, Short Sequence Transformer for Step Recognition in Surgical Videos</title>
+				<funder ref="#_amC7tGD">
+					<orgName type="full">National Institutes of Health, USA</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Nisarg</forename><forename type="middle">A</forename><surname>Shah</surname></persName>
+							<email>snisarg812@gmail.com</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<postCode>21218</postCode>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shameema</forename><surname>Sikder</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Wilmer Eye Institute</orgName>
+								<orgName type="institution">Johns Hopkins University School of Medicine</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Malone Center for Engineering in Healthcare</orgName>
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">S</forename><forename type="middle">Swaroop</forename><surname>Vedula</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Vishal</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<postCode>21218</postCode>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">$$\textsf{GLSFormer}$$: Gated - Long, Short Sequence Transformer for Step Recognition in Surgical Videos</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="386" to="396"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">C10C434602B4794D0CCFDFAE06D7A08B</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_37</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Surgical Activity Recognition</term>
+					<term>Cataract surgery</term>
+					<term>Phase Recognition</term>
+					<term>Vision Transformer</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Automated surgical step recognition is an important task that can significantly improve patient safety and decision-making during surgeries. Existing state-of-the-art methods for surgical step recognition either rely on separate, multi-stage modeling of spatial and temporal information or operate on short-range temporal resolution when learned jointly. However, the benefits of joint modeling of spatio-temporal features and long-range information are not taken in account. In this paper, we propose a vision transformer-based approach to jointly learn spatio-temporal features directly from sequence of frame-level patches. Our method incorporates a gated-temporal attention mechanism that intelligently combines short-term and long-term spatio-temporal feature representations. We extensively evaluate our approach on two cataract surgery video datasets, namely Cataract-101 and D99, and demonstrate superior performance compared to various state-of-the-art methods. These results validate the suitability of our proposed approach for automated surgical step recognition. Our code is released at: https://github.com/nisargshah1999/GLSFormer.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Surgical step recognition is necessary to enable downstream applications such as surgical workflow analysis <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b26">26]</ref>, context-aware decision support <ref type="bibr" target="#b21">[21]</ref>, anomaly detection <ref type="bibr" target="#b14">[14]</ref>, and record-keeping purposes <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b28">28]</ref>. Some factors that make recognition of steps in surgical videos a challenging problem <ref type="bibr" target="#b20">[20,</ref><ref type="bibr" target="#b21">21]</ref> include variability in patient anatomy and surgeon style <ref type="bibr" target="#b10">[11]</ref>, similarities across steps in a procedure <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b16">16]</ref>, online recognition <ref type="bibr" target="#b25">[25]</ref> and scene blur <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b21">21]</ref>.</p><p>Early statistical methods to recognize surgical workflow, such as Conditional Random Fields <ref type="bibr" target="#b19">[19,</ref><ref type="bibr" target="#b23">23]</ref>, Hidden Markov Models (HMMs) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b24">24]</ref> and Dynamic Time Warping <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b18">18]</ref>, have limited representation capacity due to pre-defined dependencies. Multiple deep learning based methods have been proposed for surgical step recognition. SV-RCNet <ref type="bibr" target="#b15">[15]</ref> jointly trains ResNet <ref type="bibr" target="#b13">[13]</ref> and a long shortterm memory (LSTM) model and uses a prior knowledge scheme during inference. TMRNet <ref type="bibr" target="#b16">[16]</ref> utilizes a memory bank to store long range information on the relationship between the current frame and its previous frames. SV-RCNet and TMR-Net use LSTMs, which are constrained in capturing long-term dependencies in surgical videos due to their limited temporal memory. Furthermore, LSTMs process information in a sequential manner that results in longer inference times. Methods that don't use LSTMs include a 3D-covolutional neural network (3D-CNN) to learn spatio-temporal features <ref type="bibr" target="#b9">[10]</ref> and temporal convolution networks (TCNs) <ref type="bibr" target="#b27">[27]</ref>. In recent work, a two-stage network called TeCNO included a ResNet to learn spatial features, which are then modeled with a multi-scale TCN to capture longterm dependencies <ref type="bibr" target="#b4">[5]</ref>. The previous networks use multi-stage training to exploit spatial and temporal information separately. This approach limits model capacity to learn spatial features using the temporal information. Furthermore, the temporal modeling does not sufficiently benefit from low-dimensional spatial features resulting in low sensitivity to identify transitions between activities <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b15">15]</ref>. <ref type="bibr" target="#b11">[12]</ref> attempts to address this issue by adding one more stage to the network using a feature fusion technique that employs a transformer to refine features extracted from the first and second stages of TeCNO <ref type="bibr" target="#b4">[5]</ref>.</p><p>Transformers improve feature representation by effectively modeling longterm dependencies, which is important for recognizing surgical steps in complex videos. In addition, they offer fast processing due to their parallel computing architecture. To exploit these benefits and address the issue of inductive bias (e.g. local connectivity and translation equivariance) in CNNs, recent methods use only transformers as their building blocks, i.e., Vision Transformer. For example, TimesFormer <ref type="bibr" target="#b1">[2]</ref>, applies self-attention mechanisms to learn spatial and temporal relations in videos, and ViViT <ref type="bibr" target="#b0">[1]</ref> utilizes a vision transformer architecture <ref type="bibr" target="#b7">[8]</ref> for video recognition. However, these models were proposed for temporal clips and do not specifically focus on capturing long-range dependencies, which is important for surgical step recognition in long-duration untrimmed videos.</p><p>In this work, we propose a transformer-based model with the following contributions: (1) Spatio-temporal attention is used as the building blocks to address issues with inductive bias and end-to-end learning of surgical steps; (2) A twostream model, called Gated -Long, Short sequence Transformer GLSFormer , is proposed to capture long-range dependencies and a gating module to leverage cross-stream information in its latent space; and (3) The proposed GLSFormer is extensively evaluated on two cataract surgery video datasets to show that it outperforms all compared methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">The GLSFormer Model</head><p>Given an untrimmed video with X[1 : T ] frames, where T represents the total number of frames in the video, the objective is to predict the step Y [t] of a given frame at time t (Fig. <ref type="figure">1</ref>). Fig. <ref type="figure">1</ref>. Overview of the proposed GLSFormer . Specifically, GLSFormer takes two streams (long-stream and short-stream) image sequences as input, sampled with sampling period of s and 1 respectively. Later, each frame is decomposed into nonoverlapping patches and each of these patches are linearly mapped to an embedding vector. These embedded features are spatio-temporally encoded into a feature representation using a sequential temporal-spatial attention block as shown in (b). Architecture of gated-temporal attention is showed in detail in (c). The final feature representation is then examined by a multilayer perceptron head and a linear layer to produce a step prediction at every time-point. Our method provides a single-stage, end-to-end trainable model for surgical step recognition.</p><p>Long-short Sequence. We propose GLSFormer model that can capture both short-term and long-term dependencies in surgical videos. The input to our GLSFormer are two video sequences, a short-term sequence consisting of the last n st frames from time t, and a long-term sequence composed of n lt frames selected from a sub-sampled set of frames with a sampling period of s. The longterm sequence provides a coarse overview of information distant in time and can aid in accurate predictions of the current frame, overcoming false prediction based on common artifacts in short-term sequences. In addition, the overview of information can address the high variability in surgical scenes <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b16">16]</ref>. By leveraging both short-term and long-term sequences, our model can accurately capture the complex context present in long surgical videos.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Patch Embedding. We decompose each frame of dimension H</head><formula xml:id="formula_0">× W × 3 into N non-overlapping patches of size Q × Q where N = HW Q 2 .</formula><p>Each patch is flattened into a vector x p,t ∈ R 3Q 2 for each frame t and spatial location, p ∈ (1, N). We linearly map the patches of short and long term videos frames into embedding vector of dimension R K using a shared learnable matrix E ∈ R K×3Q 2 . We concatenate the patch embeddings of the short and long-term streams along the frame dimension to form feature representations x st p,t and x lt p,t of size N × n st × K and N×n lt ×K, respectively. along with a learnable positional embedding e st-pos p,t .</p><p>(</p><p>Note that a special learnable vector z st 0,0 ∈ R K representing the step classification token is added in the first position. Our approach is similar to word embeddings in NLP transformer models <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b6">7]</ref>.</p><p>Gated Temporal, Shared Spatial Transformer Encoder. Our Transformer Encoder, consisting of Gated Temporal Attention module and Shared Spatial Attention module takes the sequence of embedding vectors z st p,t and z lt p,t as input. In a self-attention module for spatio-termporal models, computational complexity increases non-linearly O(T 2 S 2 ) with increase in spatial resolution(S) or temporal frames(T). Thus, to reduce the complexity, we sequentially process our gated temporal cross attention module and spatial attention module <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref>. Transformer Encoder consists of L Gated-Temporal, Spatial Attention blocks. At each block l, feature representation is computed for both streams from the representation z lt l-1 and z st l-1 encoded by the preceding block l -1. We explain our Gated Temporal attention and shared spatial attention in more detail in the rest of the section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Gated Temporal Attention. The temporal cross-attention module aligns the long-term(z lt</head><p>l-1 ) and short-term features(z st l-1 ) in the temporal domain, allowing the model to better capture the relationship between the long and short term streams. We concatenate both of these streams to form a strong joint stream that has both fine-grained information from the short-term stream and global context information from the long-term stream. Firstly, a query/key/value vector for each patch in the representations z lt l-1 (p, t), z st l-1 (p, t) and z lt,st l-1 (p, t) using linear transformations with weight matrices U lt qkv , U st qkv and U lt,st qkv respectively and normalization using LayerNorm is computed as follows:</p><formula xml:id="formula_2">(QKV ) a;st = z st U st qkv , U st qkv ∈ R K h ×3K h (QKV ) a;lt = z lt U lt qkv , U lt qkv ∈ R K h ×3K h (QKV ) a;lt,st = [z lt ⊕ z st ]U lt,st qkv , U lt,st qkv ∈ R K h ×3K h (2)</formula><p>where a ranges from 1 to A representing attention heads. The total number of attention heads is denoted by A, and each has a latent dimensionality of K h = K A . The computation of these QKV vectors is essential for multi-head attention in transformer.</p><p>Now for refining the streams, with most relevant cross-stream information, we gate the individual stream's temporal features(I) (QKV ) a;lt/st with the joint stream temporal features(J) (QKV ) a;lt,st . Gating parameters are calculated by concatenating I and J and passing them through linear and softmax layers which predict Gt st and Gt lt for (QKV ) a;st and (QKV ) a;lt , respectively. By gating the individual stream's temporal features with the joint stream temporal features, the model is able to selectively attend to the most relevant features from both streams, resulting in a more informative representation. This helps in capturing complex relationships between the streams and improves the overall performance of the model. This computation can be described as follows</p><formula xml:id="formula_3">[q st gt , k st gt , v st gt ] = (1 -Gt st (0)) * (QKV ) a;st + Gt st (0) * (QKV ) a;lt,st [lt : lt + st] [q lt gt , k lt gt , v lt gt ] = (1 -Gt lt (0)) * (QKV ) a;lt + Gt lt (0) * (QKV ) a;lt,st [: lt].</formula><p>Later, temporal attention is computed by comparing each patch (p, t) with all patches at the same spatial location in other frames of both streams, as follows</p><formula xml:id="formula_4">α (•)-temporal(l,a) gt,(p,t) = softmax q (•),(l,a) gt,(p,t) √ K h k (l,a) gt,(0,0) n lt t =1 k lt,(l,a) gt,(p,t ) n st t =1 k st,(l,a) gt,(p,t )</formula><p>Here, α</p><formula xml:id="formula_5">(•)-temporal(l,a) gt,(p,t)</formula><p>is separately calculated for the long-stream and shortstream, where (•) = lt or st. Similar to the vision transformer, encoding blocks for each layer (z lt and z st ) are computed by taking the weighted sum of value vectors (SA a (z)) using self-attention coefficients from each attention head as follows</p><formula xml:id="formula_6">SA a (z = z lt ⊕ z st ) = (α lt,a gt ⊕ α st,a gt ) • (v lt,a gt ⊕ v st,a gt ).<label>(3)</label></formula><p>Next, the self-attention block (SA a (z)) for each attention head is projected along with a residual connection from the previous layer. This multi-head self-attention (MSA) operation can be described as follows</p><formula xml:id="formula_7">MSA(z) = [SA 1 (z); SA 2 (z); ...; SA A (z)] × U msa, U msa ∈ R k•D h ×D (4) (z ) l = MSA(z l ) + (z) l-1 (5)</formula><p>Here, (z ) l is the concatenation of z lt and z st .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Shared Spatial Attention.</head><p>Next, we apply self-attention to the patches of the same frame to capture spatial relationships and dependencies within the frame.</p><p>To accomplish this, we calculate new key/query/value using Eq. ( <ref type="formula">2</ref>) and use it to perform spatial attention in Eq. <ref type="bibr" target="#b5">(6)</ref>.</p><formula xml:id="formula_8">α (•)-spatial(l,a) gt,(p,t) = softmax q (•),(l,a) gt,(p,t) √ K h k (l,a) gt,(0,0) N p =1 k (•),(l,a) gt,(p ,t)<label>(6)</label></formula><p>The encoding blocks are also calculated using Eq. ( <ref type="formula">4</ref>) and ( <ref type="formula">5</ref>), and the resulting vector is passed through a multilayer perceptron (MLP) of Eq. ( <ref type="formula" target="#formula_9">7</ref>) to obtain the final encoding z (p, t) for the patch at block l as follows</p><formula xml:id="formula_9">(z) l = MLP(LN ((z ) l )) + (z ) l , [z lt , z st ] = z l . (<label>7</label></formula><formula xml:id="formula_10">)</formula><p>The embedding for the entire clip is obtained by taking the output from the final block and passing it through a MLP with one hidden layer. The corresponding computation can be described as y = LN(z L (0,0) ) ∈ R D . The classification token is used as the final input to the MLP for predicting the step class at time t. Our GLSFormer is trained using the cross-entropy loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Datasets. We evaluate our GLS-Former on two video datasets of cataract surgery, namely Cataract-101 <ref type="bibr" target="#b22">[22]</ref> and D99 <ref type="bibr" target="#b26">[26]</ref>. The Cataract-101 dataset comprises of 101 cataract surgery video recordings, each captured at 25 frames per second and annotated into 10 steps by surgeons. The spatial resolution of these videos is 720 × 540, and temporal resolution of 25 fps. In accordance with previous studies <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b24">24]</ref>, we use 50 videos for training, 10 for validation and 40 videos for testing. The D99 dataset, which consists of 99 videos with temporal segment annotations of 12 steps by expert physicians, has a frame resolution of 640 × 480 at 59 fps. We randomly shuffled videos and select 60, 20 and 19 videos for training, validation and testing respectively. All videos are subsampled to 1 frame per second, as done in previous studies <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b24">24]</ref>, and the frames are resized to 250 × 250 resolution.</p><p>Evaluation Metrics. To accurately evaluate the results of surgical step prediction models, we use four different metrics, namely Accuracy, Precision, Recall, and Jaccard index <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b24">24]</ref>. Implementation Details. We utilized an NVIDIA RTX A5000 GPU to train our GLSFormer model on PyTorch. The batch size was set equal to 64. Data augmentations were applied including 224 × 224 cropping, random mirroring, and color jittering. We employed the Adam optimizer with an initial learning rate of 5e-5 for 50 epochs. Additionally, we initialized the shared parameters of the model from a pre-trained model on Kinetics-400 <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b17">17]</ref>. The model's depth and the number of attention heads were set equal to 12 each. We used 8 frames for both short-stream and long-stream, and sampling rate of 8, unless stated otherwise.</p><p>Table <ref type="table">1</ref>. Quantitative results of step recognition from different methods on the Cataract-101 and D99 datasets. The average metrics over five repetitions of the experiment with different data partitions for cross-validation are reported (%) along with their respective standard deviation (±). Comparison with State-of-the-art Methods. Table <ref type="table">1</ref> presents a comparison between our proposed approach, GLSFormer , and current state-of-the-art methods for surgical step prediction. The comparison includes six models (1-6) that utilize ResNet <ref type="bibr" target="#b13">[13]</ref> as a spatial feature extractor and two models (7-8) that use vision transformer backbones specifically designed for surgical step prediction. While SV-RCNet, OHFM, and TMRNet use ResNet-LSTM to capture shortrange dependencies, OHFM uses a multi-step framework and TMRNet uses a multi-stage network to refine predictions using non-trainable long-range memory banks. Our approach achieves a significant improvement of 7%-10% in Jaccard index using a simpler, single-stage training procedure with higher temporal resolution. Although other multi-stage approaches like TeCNO and Trans-SVNet use temporal convolutions to capture long-range dependencies, we achieve a boost of 6%-9% with joint spatiotemporal modeling. In contrast, transformer-based models capture spatial information (ViT) and short-term temporal (TimesFormer) efficiently, but they lack the long-term coarse step information required for complex videos. Our approach combines short-term and long-term spatiotemporal information in a single stage using gated-temporal and shared-spatial attention. This approach outperforms ViT and TimesFormer by a relative improvement of 6% to 11% in Jaccard index across both datasets. ) and noisy patterns (such as at P10) due to their high reliance on extracted spatial features and error propagation across stages in the model. Specifically, errors in the early stages of spatial modeling ResNet can propagate and accumulate across later stages, and lead to incorrect predictions. The ribbon plot of TimesFormer (i) demonstrates significant improvement compared to previous methods due to joint learning of spatio-temporal features. However, due to the lack of pivotal coarse long-term information, misclassifications are observed in local step transition areas, as seen in the incorrect prediction of P2 at locations of P1 and P11. On the other hand, GLSFormer elegantly aggregates spatio-temporal information from both streams, making the features more reliable. Additionally, our approach uses a single stage to limit the amount of error propagated across stages, contributing to improved accuracy in surgical step recognition.</p><p>Ablation Studies. The top part of Table <ref type="table" target="#tab_2">2</ref> shows the effect of different sampling rates in the long-term stream for step prediction in the Cataract-101 dataset.</p><p>The results demonstrate that incorporating a coarse long-term stream is crucial for achieving significant performance gains compared to not using any long-term sequence (as in ViT and TimesFormer). Additionally, we observe that gradually increasing the sampling rate from 2 to 8 improves performance across all metrics, except for a slight decline at a sampling rate of 16. This decline may be due to a loss of information and noisy predictions resulting from the high number of frames skipped between each selected frame. Therefore, we chose a sampling rate of 8, as it provided the optimal balance between capturing valuable information and avoiding noise in our long-stream sequence. To evaluate our gating mechanism's effectiveness, we conducted ablation experiments with three different settings, as summarized in the bottom part of Table <ref type="table" target="#tab_2">2</ref>. Initially, we passed both short-term and long-term stream features directly in the shared multi-head attention layer, but the model's performance was worse compared to the model trained only with short-term information (75.97 vs 74.82 Jaccard). The reason for this could be the lack of filtering to extract coarse temporal information. For instance, the long-term stream may contain noisy spatial information that is irrelevant to the temporal attention mechanism, which can affect the model's ability to attend to relevant information. Additionally, incorporating a learnable gating parameter to regulate the flow of information between the short-term and long-term streams enhanced our model's performance by 4%, enabling individual stream refinement through cross-stream information. However, we observe that this approach has a limitation as the amount of crossstream information sharing remains fixed during inference regardless of the quality of the feature representation in both streams at a particular time-frame. To address this limitation, we propose predicting gating parameters directly based on the spatio-temporal representation in both streams for that time frame. This approach allows for dynamic gating parameters, which means that at a particular time-point, short-term temporal feature representation can variably leverage the long-term coarse information as well can prioritize its own representation if it is more reliable. Improvement of 3% Jaccard score is realized by using featurebased gating parameter estimation in GLSFormer compared to a fixed parameter gating mechanism. Our ablation study clearly highlights the significance of our gated temporal mechanism for feature refinement.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We propose GLSFormer , a vision transformer-based method for recognizing surgical steps in complex videos. Our approach uses a gated temporal attention mechanism to integrate short and long-term cues, resulting in superior performance compared to recent LSTM and vision transformer-based approaches that only use short-term information. Our end-to-end joint learning captures spatial representations and sequential dynamics more effectively than multi-stage networks. We extensively evaluated GLSFormer and found that it consistently outperformed state-of-the-art models for surgical step recognition.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2.Qualitative results of step prediction of models on Cataracts-101 dataset in color-coded ribbon format. Predictions from (a) ResNet<ref type="bibr" target="#b13">[13]</ref>, (b) SV-RCNet<ref type="bibr" target="#b15">[15]</ref>, (c) OHFM<ref type="bibr" target="#b25">[25]</ref>, (d) TeCNO<ref type="bibr" target="#b4">[5]</ref>, (e) TMRNet<ref type="bibr" target="#b16">[16]</ref>, (f) Trans-SVNet<ref type="bibr" target="#b11">[12]</ref>, (g) ViT<ref type="bibr" target="#b7">[8]</ref>, (h) TimesFormer<ref type="bibr" target="#b1">[2]</ref>, (i) GLSFormer , and (j) Ground Truth. P1 to P11 indicates step label.</figDesc><graphic coords="7,64,80,278,33,294,28,120,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Ablation testing results for different temporal gating mechanisms and longterm stream sampling rates on the Cataract-101 dataset.</figDesc><table><row><cell></cell><cell></cell><cell>Accuracy</cell><cell>Precision</cell><cell>Recall</cell><cell>Jaccard</cell></row><row><cell>Sampling Rate</cell><cell>2</cell><cell cols="3">91.16 ± 0.81 86.47 ± 0.85 87.25 ± 1.00 76.85 ± 1.33</cell></row><row><cell></cell><cell>4</cell><cell cols="3">91.43 ± 0.72 87.46 ± 0.91 87.20 ± 0.90 77.48 ± 1.26</cell></row><row><cell></cell><cell>8</cell><cell>92.91 ± 0</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>.67 90.04 ± 0.71 89.45 ± 0.79 81.89 ± 0.92</head><label></label><figDesc></figDesc><table><row><cell>16</cell><cell>91.35 ± 0.86 88.91 ± 0.92 88.27 ± 0.98 79.24 ± 1.10</cell></row><row><cell>Temporal Gating Stream Only short-term</cell><cell>90.76 ± 1.05 85.38 ± 0.93 84.47 ± 0.95 75.97 ± 1.26</cell></row><row><cell>No Gating</cell><cell>90.24 ± 0.75 86.84 ± 0.88 84.39 ± 0.90 74.82 ± 1.13</cell></row><row><cell cols="2">Fix Param. Gating 91.52 ± 0.83 87.13 ± 0.81 88.41 ± 0.94 78.03 ± 1.04</cell></row><row><cell>Feature Gating</cell><cell>92.91 ± 0.67 90.04 ± 0.71 89.45 ± 0.79 81.89 ± 0.92</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by a grant from the <rs type="funder">National Institutes of Health, USA</rs>; <rs type="grantNumber">R01EY033065</rs>. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_amC7tGD">
+					<idno type="grant-number">R01EY033065</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Vivit: a video vision transformer</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arnab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dehghani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Heigold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lučić</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Schmid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6836" to="6846" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Is space-time attention all you need for video understanding?</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bertasius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Torresani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Modeling and segmentation of surgical workflow from laparoscopic video</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Blum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Feußner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-15711-0_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-15711-050" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2010</title>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Jiang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">P W</forename><surname>Pluim</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Viergever</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2010">2010</date>
+			<biblScope unit="volume">6363</biblScope>
+			<biblScope unit="page" from="400" to="407" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Context awareness in health care: a review</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bricon-Souf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Med. Inform</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="2" to="12" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">TeCNO: surgical phase recognition with multi-stage temporal convolutional networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page">33</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Automatic data-driven real-time segmentation and recognition of surgical workflow</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Dergachyova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bouget</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Huaulmé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Morandi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11548-016-1371-x</idno>
+		<ptr target="https://doi.org/10.1007/s11548-016-1371-x" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1081" to="1089" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Bert: Pre-training of deep bidirectional transformers for language understanding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Devlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Toutanova</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.04805</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">An image is worth 16 × 16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Slowfast networks for video recognition</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Feichtenhofer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6202" to="6211" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Using 3D convolutional neural networks to learn spatiotemporal features for automatic surgical gesture recognition in video</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Funke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bodenstedt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Oehme</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Von Bechtolsheim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Weitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32254-0_52</idno>
+		<idno>978-3-030-32254-0 52</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11768</biblScope>
+			<biblScope unit="page" from="467" to="475" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Video-based surgical skill assessment using 3D convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Funke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">T</forename><surname>Mees</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Weitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="1217" to="1225" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Trans-SVNet: accurate phase recognition from surgical videos via hybrid embedding aggregation transformer</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="593" to="603" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-157" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Offline identification of surgical deviations in laparoscopic rectopexy</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Huaulmé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Reche</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Faucheron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moreau-Gaudry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Voros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Med</title>
+		<imprint>
+			<biblScope unit="volume">104</biblScope>
+			<biblScope unit="page">101837</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">SV-RCNet: workflow recognition from surgical videos using recurrent convolutional network</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1114" to="1126" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Temporal memory relation network for workflow recognition from surgical video</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1911" to="1923" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kay</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1705.06950</idno>
+		<title level="m">The kinetics human action video dataset</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Automatic knowledge-based recognition of low-level tasks in ophthalmological procedures</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lalys</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bouget</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Riffaud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="39" to="49" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">An improved model for segmentation and recognition of fine-grained activities with application to surgical training tasks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vidal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2015 IEEE Winter Conference on Applications of Computer Vision</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1123" to="1129" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Assisted phase and step annotation for surgical videos</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lecuyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ragot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Launay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11548-019-02108-8</idno>
+		<ptr target="https://doi.org/10.1007/s11548-019-02108-8" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="673" to="680" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Machine and deep learning for workflow recognition during surgery</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Minim. Invasive Therapy Allied Technol</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="82" to="90" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Cataract-101: video dataset of 101 cataract surgeries</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schoeffmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Taschwer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sarny</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Münzer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Primus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Putzgruber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th ACM Multimedia Systems Conference</title>
+		<meeting>the 9th ACM Multimedia Systems Conference</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="421" to="425" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Surgical gesture segmentation and recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zappella</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vidal</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-40760-4_43</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-40760-443" />
+	</analytic>
+	<monogr>
+		<title level="m">MIC-CAI 2013</title>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Mori</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Sakuma</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Sato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Barillot</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">8151</biblScope>
+			<biblScope unit="page" from="339" to="346" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">EndoNet: a deep architecture for recognition tasks on laparoscopic videos</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shehata</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Mathelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="86" to="97" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Hard frame detection and online mapping for surgical phase recognition</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jiang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32254-0_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32254-050" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11768</biblScope>
+			<biblScope unit="page" from="449" to="457" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Assessment of automated identification of phases in videos of cataract surgery using machine learning and deep learning techniques</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JAMA Netw. Open</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<date type="published" when="2019">191860-e191860 (2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Symmetric dilated convolution for surgical gesture recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_39</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-039" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="409" to="418" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">DeepPhase: surgical phase recognition in CATARACTS videos</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Zisimopoulos</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00937-3_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00937-331" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11073</biblScope>
+			<biblScope unit="page" from="265" to="272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

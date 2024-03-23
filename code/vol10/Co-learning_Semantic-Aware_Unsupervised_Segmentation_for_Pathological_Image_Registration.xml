@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Co-learning Semantic-Aware Unsupervised Segmentation for Pathological Image Registration</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yang</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Electronic Science and Technology of China</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shi</forename><surname>Gu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Electronic Science and Technology of China</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Co-learning Semantic-Aware Unsupervised Segmentation for Pathological Image Registration</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="537" to="547"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">ADB889CD48C105E75BD9606AAA74658D</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_51</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Unsupervised</term>
+					<term>Collaborative Learning</term>
+					<term>Registration</term>
+					<term>Segmentation</term>
+					<term>Pathological Image</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The registration of pathological images plays an important role in medical applications. Despite its significance, most researchers in this field primarily focus on the registration of normal tissue into normal tissue. The negative impact of focal tissue, such as the loss of spatial correspondence information and the abnormal distortion of tissue, are rarely considered. In this paper, we propose a novel unsupervised approach for pathological image registration by incorporating segmentation and inpainting. The registration, segmentation, and inpainting modules are trained simultaneously in a co-learning manner so that the segmentation of the focal area and the registration of inpainted pairs can improve collaboratively. Overall, the registration of pathological images is achieved in a completely unsupervised learning framework. Experimental results on multiple datasets, including Magnetic Resonance Imaging (MRI) of T1 sequences, demonstrate the efficacy of our proposed method. Our results show that our method can accurately achieve the registration of pathological images and identify lesions even in challenging imaging modalities. Our unsupervised approach offers a promising solution for the efficient and cost-effective registration of pathological images. Our code is available at https://github.com/brain-intelligence-lab/GIRNet.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Image registration has been widely studied in both academia and industry over the past two decades. In general, the goal of deformable image registration is to estimate a suitable nonlinear transformation that overlaps the pair of images with corresponding spatial relationships <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b23">22]</ref>. This goal is usually achieved by minimizing a well-defined similarity score. However, these methods often assume that there is no spatial non-correspondence between the two images. In the field of medical image analysis, this assumption is often not valid, particularly in cases such as pathology image to atlas registration or pre-operative and post-operative longitudinal registration. Direct registration of pathology images without taking into account the impact of focal tissue can result in missed pixel-level correspondence and large registration errors.</p><p>A variety of approaches have been proposed to handle the noncorrespondence problem in medical image registration. These methods can be roughly divided into three main categories: 1) Cost function masking. The authors of <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b18">17]</ref> used the segmentation of the non-corresponding regions to mask the image similarity measure in optimization. 2) Converting pathological image to normal appearance. This class of approaches aims to replace or reconstruct the focal area as normal tissue to guide the registration either through low-rank and sparse image decomposition <ref type="bibr" target="#b11">[10,</ref><ref type="bibr" target="#b12">11]</ref> or generative models <ref type="bibr" target="#b24">[23]</ref>. 3) Non-correspondence detection via intensity criteria. This category of methods can be formulated as joint segmentation and registration to detect non-corresponding regions during the registration process <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">7]</ref>. Although these approaches partially handle the issue of non-correspondence in the registration, they still have some serious shortcomings. The cost function masking and image conversion approaches require ground truth or accurate labels during registration and may decrease the alignment accuracy when the focal area is large. The non-correspondence detection approach, which typically relies on a sophisticated designed loss function, is very sensitive to the dataset <ref type="bibr" target="#b0">[1]</ref> and difficult to find a set of unified parameters.</p><p>Therefore, to effectively address the non-correspondence problem in registering pathology images, it is necessary to incorporate both a data-independent segmentation module and a modality-adaptive inpainting module into the registration pipeline. To bridge this gap, we introduce the semantic information of the category based on <ref type="bibr" target="#b22">[21,</ref><ref type="bibr" target="#b25">24]</ref>. It employs the non-correspondence in registration to achieve accurate segmentation of the lesion region and uses the segmented mask to reconstruct the lesion area and guide the registration. In this paper, we address the challenge of large alignment errors due to the loss of spatial correspondence in processing pathological images. To overcome this challenge, we propose GIRNet, a tri-net collaborative learning framework that simultaneously updates the segmentation, inpainting, and registration networks. The segmentation network minimizes the mutual information between the lesion and normal tissue based on the semantic information introduced by the registration network, allowing for accurate segmentation of regions with missing spatial correspondence. The registration network, in turn, weakens the adverse effects of the lesions based on the mask generated by the segmentation network. To the best of our knowledge, this is the first work to apply an unsupervised segmentation method based on minimal mutual information (MMI) to pathological image registration, with simultaneous training of segmentation and registration. Our work makes the following key contributions.</p><p>-We propose a collaborative learning method for the simultaneous optimization of registration, segmentation, and inpainting networks.</p><p>-We show the effectiveness of using mutual information minimization in an unsupervised manner for pathological image segmentation and registration by incorporating semantic information through the registration process. -We perform a series of experiments to validate our method's superiority in accurately finding lesions and effectively registering pathological images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Our proposed framework (Fig. <ref type="figure" target="#fig_0">1</ref>) involves three modules: a register denoted by ψ, a segmenter denoted by θ, and an inpainter denoted by φ. The three modules are trained in a co-learning manner to enable the registration aware of semantic information. Importantly, our proposed training procedure is fully unsupervised which does not require any labeled data for training the network. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Collaborative Optimization</head><p>The most critical problem in pathological image registration is identifying and dealing with the lesion area. If we naively register a source pathological image S to a template T without caring about the lesion boundary, the deformation field near the boundary would be uncontrollable because a healthy template does not have a lesion. A possible approach here is to initialize an inflating boundary containing the lesion area, followed by calculating the registration loss either outside of the boundary only or based on a modified S that is inpainted within the given boundary. However, the registration error has no sensitivity to the location of the inflated boundary as long as it is larger than the real one. On the other hand, if we compared the inpainted image and the pathological image S within the boundary only, we can notice that their dissimilarity increases when the boundary shrinks as the inpainting algorithm only generates healthy parts. This mechanism can then induce a segmentation module that segments the lesion as the foreground and the remaining as the background, which iteratively serves as the input mask for the inpainting module. Further, as the registration loss is calculated based on the registered inpainted image and the target image, the registration provides a regularization for the inpainting module such that the inpainting is specialized to facilitate the registration. Specially for the input and output of the three modules, RegNet takes images S and T as input and generates the deformation field from S to T and T to S as ϕ ST and ϕ T S respectively. InpNet takes the background (foreground) cropped by SegNet and image T •ϕ T S warped by RegNet as input and outputs foreground (background) with a normal appearance. SegNet takes the pathology image S as input and employs the normal foreground and background inpainted by InpNet to segment the lesion region based on MMI. SegNet and InpNet are actually in an adversarial relationship. Through this joint optimization approach, the three networks collectively work to achieve registration and segmentation of pathological images under entirely unsupervised conditions, without being limited by the specific network structure. For the sake of simplicity, we employ a Unet-like <ref type="bibr" target="#b21">[20]</ref> basic structure without any normalization layer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Network Modules</head><p>RegNet. The primary objective of registration is to generate a deformation field that minimizes the dissimilarity between the source image (S) and the template image (T). The deformation is usually required to satisfy constraints like smoothness and even diffeomorphism. In terms of pathological image registration, the deformation field is only valid off the lesion area. Thus the registration loss should be calculated on the normal area only. Suppose that the lesion area is already obtained as θ(S) and inpainted with normal tissue, the registration loss can then be formulated as</p><formula xml:id="formula_0">L reg = min ψ {L sym (φ(S • θ(S)|T • ϕ T S ) • ϕ ST , T ) + L sym (T • ϕ T S , φ(S • θ(S)|T • ϕ T S ))} (1)</formula><p>where ϕ ST = ψ(S, T ), ϕ T S = ψ(T, S) are the deformation fields that warp S → T and T → S respectively. The symbol • denotes element-wise multiplication. Furthermore, L sym denotes the registration loss of SymNet <ref type="bibr" target="#b15">[14]</ref>, which aims to balance the losses of orientation consistency, regularization and magnitude.</p><p>SegNet. Minimal Mutual Information (MMI) is a typically used unsupervised segmentation method that distinguishes foreground from background. However, for a pathological image, the lesion regions often have a similar intensity to normal tissues near the boundary, which prevents the MMI from accurate segmentation without the semantic information. To address this limitation, we warp a healthy image T onto a pathology image S using a deformation field ϕ T S = ψ(T, S). This process maximizes the mutual information between corresponding regions of the two images and minimizes that of non-corresponding regions, thereby facilitating accessible lesion segmentation with MMI. Let Ω ∈ R denote the image domain, M denote the mask, F θ = Ω•M and B θ = Ω•M denote the foreground and background, where M = 1 -M, M ∈ {0, 1}. Regarding a pathological image S, when the background (normal) is given, the inpainted foreground (normal) will be different from the true foreground (lesion). When the foreground (lesion) is given, the inpainted background will remain the same as the background (normal). Thus we can formulate the adversarial loss of unsupervised segmentation as</p><formula xml:id="formula_1">L seg = max θ min φ E{θ(S) • D[S, φ(S • θ(S)|T • ϕ T S )]} E θ(S) - E{θ(S) • D[S, φ(S • θ(S)|T • ϕ T S )]} E θ(S) ⎫ ⎬ ⎭ , (<label>2</label></formula><formula xml:id="formula_2">)</formula><p>where D is the distance function given by localized normalized cross-correlation (LNCC) <ref type="bibr" target="#b2">[3]</ref>. Appendix A provides a detailed derivation.</p><p>InpNet. Let M denote the mask and ϕ T S denote the deformation field from T to S. To handle the potential domain differences between the masked image S •M and the aligned image T •ϕ T S , InpNet employs two encoders. The adversarial loss function of InpNet is represented as L MI . To incorporate semantic information, we include an additional similarity term L sim that prevents InpNet from focusing too heavily on the foreground (lesion) and encourages it to produce healthy tissue. The proposed loss function L inp is then formulated as the combination of mutual information loss defined through the normalized correlation coefficient (NCC) and similarity loss through the mean squared error (MSE):</p><formula xml:id="formula_3">L inp = L MI + λL sim ,<label>(3)</label></formula><p>with</p><formula xml:id="formula_4">L MI = L NCC (S, φ(S • θ(S)|T • ϕ T S )) + L NCC (S, φ(S • θ(S)|T • ϕ T S )), L sim = L MSE (T M , φ(S • θ(S)|T • ϕ T S )) + L MSE (T M , φ(S • θ(S)|T • ϕ T S )),<label>(4)</label></formula><p>where λ represents the weight that balances the contributions of mutual information loss and similarity loss, and T M denotes image T after histogram matching. We modify the histogram of T •ϕ T S to be similar to that of S in order to mitigate the effects of domain differences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Our experimental design focuses on two common clinical tasks: atlas-based registration, which involves warping pathology images to a standard atlas template, and longitudinal registration, which involves registering pre-operative images to post-operative images for the purpose of tracking changes over time.</p><p>Dataset and Pre-processing. For our study, we selected the ICBM 152 Nonlinear Symmetric template as our atlas <ref type="bibr" target="#b10">[9]</ref>. We reoriented all MRI scans of the T1 sequence to the RAS orientation with a resolution of 1 mm × 1 mm × 1 mm and align the images to atlas using the mri robust register tool in FreeSurfer <ref type="bibr" target="#b20">[19]</ref>. We then cropped the resulting MRI scans to a size of 160 × 192 × 144, without any image augmentation. To evaluate our approach, we employed a 5-fold cross-validation method and divided our data into training and test sets in an 8:2 ratio. 3D Brain MRI. OASIS-1 <ref type="bibr" target="#b13">[12]</ref> includes 416 cross-sectional MRI scans from individuals aged 18 to 96, with 100 of them diagnosed with mild to moderate Alzheimer's disease. BraTS2020 <ref type="bibr" target="#b14">[13]</ref> provides 369 expert-labeled pre-operative MRI scans of glioblastomas and low-grade gliomas, acquired from multiple institutions for routine clinical use.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3D Pseudo Brain MRI.</head><p>To evaluate the performance of atlas-based registration, it is essential to have the correct mapping of pathological regions to healthy brain regions. To create such a mapping, we created a pseudo dataset by utilizing images from the OASIS-1 and BraTS2020. From the resulting t1 sequences, a pseudo dataset of 300 images was randomly selected for further analysis. Appendix B provides a detailed process for creating the pseudo dataset.</p><p>Real Data with Landmarks. BraTS-Reg 2022 <ref type="bibr" target="#b1">[2]</ref> provides extensive annotations of landmarks points within both the pre-operative and the follow-up scans that have been generated by clinical experts. A total of 140 images are provided, of which 112 are for training, and 28 for testing. Comparison to Pathology Registration. We compared our method (GIR-Net) with competitive algorithms: 1) three cutting-edge deep learning-based unsupervised deformable registration approaches: VoxelMorph <ref type="bibr" target="#b2">[3]</ref>, VoxelMorph-DF <ref type="bibr" target="#b9">[8]</ref> and SymNet <ref type="bibr" target="#b15">[14]</ref>. 2) two unsupervised deformable registration methods for pathological images: DRAMMS <ref type="bibr" target="#b19">[18]</ref> and DIRAC <ref type="bibr" target="#b17">[16]</ref>. DRAMMS is an optimization-based method that reduces the impact of non-corresponding regions. DIRAC jointly estimates regions with absent correspondence and bidirectional deformation fields and ranked first in the BraTSReg2022 challenge.</p><p>Atlas-Based Registration. After creating the pseudo dataset, we warped brain MR images without tumors to the atlas and used the resulting deformation field as the gold standard for evaluation. We then evaluated the mean deformation error (MDE) <ref type="bibr" target="#b11">[10]</ref>, which is calculated as the average Euclidean distance between the coordinates of the deformation field and the gold standard within specific regions of interest. These regions include: 1) the tumor region. 2) the normal region near the tumor (within 30 voxels). 3) the normal region far from the tumor (over 30 voxels but within brain tissue). Our results, presented in Fig. <ref type="figure" target="#fig_1">2</ref>, show that our method with histogram matching (HM) outperforms other methods in all three regions, particularly in the normal regions (near and far). By utilizing HM, our network achieves an MDE of less than 1 mm compared to the gold standard deformations. These results demonstrate the effectiveness of our method in differentiating the impact of pathology in atlas-based registration tasks. Specifically, DIRAC is unable to eliminate the influence of domain differences and resulting in the largest registration error among the evaluated methods.</p><p>Longitudinal Registration. To perform the longitudinal registration task, we registered each pre-operative scan to the corresponding follow-up scan of the same patient and measured the mean target registration error (TRE) of the paired landmarks using the resulting deformation field. For this purpose, we leveraged SegNet, trained on BraTS2020, to segment the tumor of BraT-SReg2022 and separated the landmarks into two regions: near tumor and far from tumor. Figure <ref type="figure" target="#fig_2">3</ref> shows the mean TRE for the various registration approaches. In our proposed framework, we replaced RegNet with CIR-DM <ref type="bibr" target="#b16">[15]</ref> (denoted as GIR(CIRDM)) without the need for supervised training or pretraining, and achieved comparable performance with the state-of-the-art method DIRAC. Moreover, our GIR approach outperforms other deep learning-based methods and achieved accurate segmentation of pathological images.</p><p>To quantitatively evaluate the segmentation capability of our proposed framework, we compared its performance with other unsupervised segmentation techniques methods, including unsupervised clustering toolbox AUCseg <ref type="bibr" target="#b26">[25]</ref>, joint non-correspondence segmentation and registration method NCRNet <ref type="bibr" target="#b0">[1]</ref>, and DIRAC. We used the mean Dice similarity coefficient (DSC) to evaluate the similarity between predicted masks and the ground truth. As shown in Table <ref type="table">1</ref>, AUCseg fails to detect the lesion in T1 scans. Our proposed framework achieved the highest DSC result of 0.83, following post-processing.</p><p>Ablation Study. We compared the performance of the InpNet trained with histogram matching (HM) and the SegNet trained with ground truth masks (Supervised). The results, shown in Table <ref type="table">1</ref> and Fig. <ref type="figure" target="#fig_1">2</ref>, demonstrate that domain differences between S and T have a significant effect on segmentation accuracy (without HM), leading to lower registration quality overall. Additionally, Fig. <ref type="figure">4</ref> shows an example of a pseudo image. We reconstructed the spatial correspondence by first using SegNet to localize the lesion and then using InpNet to inpaint it with the normal appearance. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we proposed a novel tri-net framework for joint image registration and unsupervised segmentation in medical imaging based on mutual information minimization in collaborative learning. Our experiments demonstrate that the proposed framework is effective for both atlas-based and longitudinal pathology image registration. We also observed that the accuracy of the segmentation network is significantly influenced by the quality of the inpainting, which, in turn, affects the registration outcome. In the future, our research will focus on enhancing the performance of InpNet to address domain differences better to improve the registration results.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The proposed tri-modules collaborative learning framework for medical image analysis includes RegNet, SegNet, and InpNet to achieve accurate image registration and segmentation through the optimization of semantic-informed mutual information.</figDesc><graphic coords="3,71,37,242,66,314,32,163,30" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Boxplots of mean deformation errors with respect to the gold standard deformations in three different regions on the pseudo dataset. Left to right: in tumor, near tumor and far from tumor.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Boxplots of the average target registration error (TRE) in two different regions: near tumor (left) and far from tumor (right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Table 1 .Fig. 4 .</head><label>14</label><figDesc>Fig. 4. Registration and segmentation results for Pseudo dataset. The 7 columns show: 1) the moving image; 2) the atlas; 3) the inpainted image; 4) the warped inpainted image; 5) the warped atlas image; 6) the ground truth mask 7) the predicted mask.</figDesc><graphic coords="8,41,79,453,92,340,33,89,95" type="bitmap" /></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 51.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deep learning-based simultaneous registration and unsupervised non-correspondence segmentation of medical images with pathologies</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Andresen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kepp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ehrhardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Burchard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Roider</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Handels</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11548-022-02577-4</idno>
+		<ptr target="https://doi.org/10.1007/s11548-022-02577-4" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="699" to="710" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">The brain tumor sequence registration challenge: establishing correspondence between pre-operative and follow-up MRI scans of diffuse glioma patients</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Baheti</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.06979</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Voxelmorph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Computing large deformation metric mappings via geodesic flows of diffeomorphisms</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">F</forename><surname>Beg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Trouvé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Younes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Vision</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="page" from="139" to="157" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Spatial normalization of brain images with focal lesions using cost function masking</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Leff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rorden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ashburner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="486" to="500" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Deformable image registration with automatic non-correspondence detection</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Derksen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Heldmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hallmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Berkels</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SSVM 2015</title>
+		<editor>
+			<persName><forename type="first">J.-F</forename><surname>Aujol</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Nikolova</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Papadakis</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">9087</biblScope>
+			<biblScope unit="page" from="360" to="371" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<idno type="DOI">10.1007/978-3-319-18461-6_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-18461-629" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Non-rigid registration with missing correspondences in preoperative and postresection brain images</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chitphakdithai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Duncan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2010</title>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Jiang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">P W</forename><surname>Pluim</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Viergever</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">6361</biblScope>
+			<biblScope unit="page" from="367" to="374" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-15705-9_45</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-15705-945" />
+		<imprint>
+			<date type="published" when="2010">2010</date>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning for fast probabilistic diffeomorphic registration</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00928-1_82</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00928-182" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11070</biblScope>
+			<biblScope unit="page" from="729" to="738" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Unbiased nonlinear average age-appropriate brain templates from birth to adulthood</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">S</forename><surname>Fonov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Evans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Mckinstry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Almli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Collins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neu-roImage</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page">102</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Efficient registration of pathological images: a joint PCA/image-reconstruction approach</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Aylward</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kwitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 14th International Symposium on Biomedical Imaging</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017. 2017. 2017</date>
+			<biblScope unit="page" from="10" to="14" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Lowrank atlas image analyses in the presence of pathologies</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kwitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mccormick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Aylward</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2583" to="2591" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Open access series of imaging studies (OASIS): cross-sectional MRI data in young, middle aged, nondemented, and demented older adults</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Marcus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Parker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Csernansky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Buckner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cogn. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1498" to="1507" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The multimodal brain tumor image segmentation benchmark (BRATS)</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Menze</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1993" to="2024" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Fast symmetric diffeomorphic image registration with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Mok</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4644" to="4653" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Conditional deformable image registration with convolutional neural network</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C W</forename><surname>Mok</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C S</forename><surname>Chung</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-14" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="35" to="45" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Unsupervised deformable image registration with absent correspondences in pre-operative and post-recurrence brain tumor MRI scans</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C</forename><surname>Mok</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Chung</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_3</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16446-03" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="25" to="35" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Enantiomorphic normalization of focally lesioned brains</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Nachev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Coulthard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Jäger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kennard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Husain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1215" to="1226" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Dramms: deformable registration via attribute matching and mutual-saliency weighting</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sotiras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Paragios</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="622" to="639" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Highly accurate inverse consistent registration: a robust approach</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reuter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">D</forename><surname>Rosas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1181" to="1196" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Informationtheoretic segmentation by inpainting error maximization</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Savarese</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shakhnarovich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mcallester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4029" to="4039" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Nodeo: a neural ordinary differential equation based optimization framework for deformable image registration</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Z</forename><surname>Jiahao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Yushkevich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20804" to="20813" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Registration of pathological images</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Aylward</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kwitt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46630-9_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46630-910" />
+	</analytic>
+	<monogr>
+		<title level="m">SASHIMI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Tsaftaris</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Gooya</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Prince</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9968</biblScope>
+			<biblScope unit="page" from="97" to="107" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Unsupervised moving object detection via contextual information separation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Loquercio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Scaramuzza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Soatto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="879" to="888" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Aucseg: an automatically unsupervised clustering toolbox for 3D-segmentation of high-grade gliomas in multi-parametric MR images</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">679952</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

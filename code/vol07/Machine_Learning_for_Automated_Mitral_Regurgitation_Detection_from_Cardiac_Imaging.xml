@@ -1,0 +1,791 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Machine Learning for Automated Mitral Regurgitation Detection from Cardiac Imaging</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ke</forename><surname>Xiao</surname></persName>
+							<email>kexiao@cs.umass.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Massachusetts Amherst</orgName>
+								<address>
+									<postCode>01003</postCode>
+									<settlement>Amherst</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Erik</forename><surname>Learned-Miller</surname></persName>
+							<idno type="ORCID">0000-0002-3778-9135</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Massachusetts Amherst</orgName>
+								<address>
+									<postCode>01003</postCode>
+									<settlement>Amherst</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Evangelos</forename><surname>Kalogerakis</surname></persName>
+							<idno type="ORCID">0000-0002-5867-5735</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Massachusetts Amherst</orgName>
+								<address>
+									<postCode>01003</postCode>
+									<settlement>Amherst</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">James</forename><surname>Priest</surname></persName>
+							<email>jpriest@stanford.edu</email>
+							<idno type="ORCID">0000-0002-8349-4784</idno>
+							<affiliation key="aff1">
+								<orgName type="institution">Stanford University</orgName>
+								<address>
+									<postCode>94305</postCode>
+									<settlement>Stanford</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Madalina</forename><surname>Fiterau</surname></persName>
+							<email>mfiterau@cs.umass.edu</email>
+							<idno type="ORCID">0000-0003-4179-7274</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Massachusetts Amherst</orgName>
+								<address>
+									<postCode>01003</postCode>
+									<settlement>Amherst</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Machine Learning for Automated Mitral Regurgitation Detection from Cardiac Imaging</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">DF3FF64355AA37B86DE15ABCC1746A2F</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-223.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:56+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Mitral regurgitation (MR) is a heart valve disease with potentially fatal consequences that can only be forestalled through timely diagnosis and treatment. Traditional diagnosis methods are expensive, labor-intensive and require clinical expertise, posing a barrier to screening for MR. To overcome this impediment, we propose a new semisupervised model for MR classification called CUSSP. CUSSP operates on cardiac magnetic resonance (CMR) imaging slices of the 4-chamber view of the heart. It uses standard computer vision techniques and contrastive models to learn from large amounts of unlabeled data, in conjunction with specialized classifiers to establish the first ever automated MR classification system using CMR imaging sequences. Evaluated on a test set of 179 labeled -154 non-MR and 25 MR -sequences, CUSSP attains an F1 score of 0.69 and a ROC-AUC score of 0.88, setting the first benchmark result for detecting MR from CMR imaging sequences.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Mitral Regurgitation. Mitral regurgitation (MR) <ref type="bibr" target="#b6">[7]</ref> is a valvular heart disease in which the mitral valve does not close completely during systole when the left ventricle contracts, causing regurgitation -leaking of blood backwards -from the left ventricle (LV), through the mitral valve, into the left atrium (LA) -Fig. <ref type="figure" target="#fig_0">1</ref>. MR can be caused by either organic or functional mechanisms <ref type="bibr" target="#b5">[6]</ref>, with organic MR leading to atrial and annular enlargement and functional MR increasing atrial pressure. As MR progresses, it may cause arrhythmia, shortness of breath, heart palpitations and pulmonary hypertension <ref type="bibr" target="#b13">[14]</ref>. Left undiagnosed and untreated, MR may cause significant hemodynamic instability and congestive heart failure which can lead to death <ref type="bibr" target="#b16">[17]</ref>, while acute MR usually necessitates immediate medical intervention <ref type="bibr" target="#b21">[22]</ref>. Thus, early detection and assessment of MR are crucial for optimal treatment outcomes, with the best short-term and long-term results obtained in asymptomatic patients operated on in advanced repair centers with low operative mortality (&lt;1%) and high repair rates (≥80-90%) <ref type="bibr" target="#b6">[7]</ref>. MR Diagnosis. MR is often only detected following symptom onset. Among patients with asymptomatic MR, quantitative grading of mitral regurgitation is a powerful indicator for clinical treatment such as immediate cardiac surgery <ref type="bibr" target="#b7">[8]</ref>. Clinically, MR is usually diagnosed with doppler echocardiography, with cardiovascular magnetic resonance (CMR) subsequently used to assess the MR severity and to accurately quantify the regurgitant volume, one of the indicators of severity <ref type="bibr" target="#b19">[20]</ref>. Most studies that have evaluated CMR for assessing the mitral regurgitant volume use the difference between left ventricular stroke volume (LVSV) and forward stroke volume (FSV). LVSV is usually estimated with the short-axis (SA) view CMR -a 4-D tensor -while FSV is most commonly determined by aortic phase-contrast velocity-encoding images <ref type="bibr" target="#b19">[20]</ref>. This diagnosis and assessment process requires continuous involvement from expert clinicians along with specific order and post-processing for the phase-contrast images of the proximal aorta or main pulmonary artery during the acquisition of the CMR data. The associated expense with this standard diagnostic procedure thus poses an obstacle to the large-scale screening for MR in the general population.</p><p>Towards Machine Learning for MR Diagnosis. Although quantitatively assessing mitral regurgitant volume requires specific CMR imaging sequences and expert analysis, four-chamber (4CH) CMR images provide a comprehensive view of all four heart chambers, including the mitral valve as it opens and closes, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. Thus, we propose to train a model that uses 4CH CMR to automatically diagnose MR, making wide screening possible. As training data, we use the long axis 4CH CMR imaging data from the UK Biobank <ref type="bibr" target="#b0">[1]</ref>, from over 30,000 subjects, out of which N = 704 were labeled by an expert cardiologist. While the 4CH view has the potential to identify MR when the regurgitant jet is visible, the imaging is not accompanied by comprehensive annotations or diagnoses of diseases/conditions for individual patients. This is in contrast to Zhang et al. <ref type="bibr" target="#b26">[27]</ref>, where tens of thousands of annotated color doppler echocardiography images are available for MR assessments. To overcome this difficulty, we rely on weakly supervised and unsupervised methods. Weakly supervised deep learning has proved successful in detecting other heart pathologies. Specifically, Fries et al. <ref type="bibr" target="#b8">[9]</ref> proposed a weakly supervised deep learning method (CNN-LSTM) to classify aortic valve malformation from the aortic valve cross section CMR present in the UK Biobank, wherein the critical feature of the aortic valve opening shape was easily extracted from the aortic valve cross section CMR imaging data. Meanwhile, Vimalesvaran et al. <ref type="bibr" target="#b20">[21]</ref> proposed a deep learning based pipeline for detecting aortic valve pathology using 3CH CMR imaging from three hospitals. The data set was fully annotated with landmarks, stenotic jets and regurgitant jets. Unlike these prior two studies, we faced the challenge of extracting complex mitral valve regurgitant features from 4CH CMR images with no annotations for landmarks, regurgitant jets or easily extractable features, and only a small amount of binary MR labels. To the best of our knowledge, this is the first study on identifying MR using the 4CH CMR imaging data in an automated pipeline.</p><p>Our Approach. We propose an automated five stage pipeline named Cardio-vascular magnetic resonance U-Net localized Self-Supervised Predictor (CUSSP). Our approach incorporates several different preexisting neural network architectures in the pipeline, discussed in Sect. 2.3, to address the challenges inherent to the MR classification task. Specifically, we use a U-Net <ref type="bibr" target="#b17">[18]</ref> to perform segmentation of the heart chambers, which we then use to localize the area around the mitral valve. We apply histogram equalization to enhance the appearance of the valve. We then use a Barlow Twins <ref type="bibr" target="#b25">[26]</ref> network to learn, without supervision, representations of the blood flow around the valve, and a Siamese network <ref type="bibr" target="#b24">[25]</ref> to learn differences between instances of MR and non-MR.</p><p>During training, CUSSP leverages a large amount of unlabeled CMR images, and minimal supervision, in the form of a comparatively small set of MR labels manually annotated by cardiologist. However, at test time CUSSP is fully automated.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Segmentation of the Cardiac Magnetic Resonance Images</head><p>The CMR imaging data from the UK Biobank that is relevant to MR detection includes long-axis 2-chamber (2CH) view and long-axis 4-chamber (4CH) view, which are all shown in Fig. <ref type="figure" target="#fig_1">2</ref>. In addition, the short-axis view CMR provides accurate description of the left ventricle. Both long-axis views and short-axis view are used to estimate heart measurements relevant to the MR detection task, while only the long-axis 4CH view is used for the deep learning models.</p><p>As a pre-processing step, we performed semantic segmentation on the CMR imaging data, using masks (Fig. <ref type="figure" target="#fig_1">2</ref>) generated by a U-Net <ref type="bibr" target="#b17">[18]</ref> segmentation model to highlight regions of interest to MR classification. U-Net is currently the leading model architecture for medical imaging segmentation, with various U-Net variants developed for different applications. TernausNet <ref type="bibr" target="#b11">[12]</ref> is a U-Net variant that reshapes the U-Net encoder to match the VGG11 architecture, allowing it to use pre-trained VGG11 <ref type="bibr" target="#b18">[19]</ref> model weights for faster convergence and improved segmentation results. While most medical imaging segmentation models are trained using supervised learning, weakly supervised segmentation methods such as VoxelMorph augmented segmentation <ref type="bibr" target="#b27">[28]</ref>, ACNN <ref type="bibr" target="#b15">[16]</ref>, CCNN <ref type="bibr" target="#b12">[13]</ref>, graph-based unsupervised segmentation <ref type="bibr" target="#b14">[15]</ref>, and GAN-based unsupervised segmentation <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b23">24]</ref> also produce comparable segmentation results. For the segmentation of the 4CH, 2CH, SA, and aorta view CMR imaging dataset from the UK Biobank, Bai et al. <ref type="bibr" target="#b1">[2]</ref> offer a supervised segmentation model.</p><p>We manually labeled 100 CMR images for each view and trained a supervised segmentation model with the TernausNet <ref type="bibr" target="#b11">[12]</ref> architecture. Then, segmentation outputs, shown in Fig. <ref type="figure" target="#fig_1">2</ref>, are used to compute measurements of cardiac structure and function for the four chambers of the heart, as summarized in Table <ref type="table" target="#tab_0">1</ref>. The short-axis view CMR segmentation output is used to estimate the left ventricle and right ventricle measurements, while the long-axis 4CH view and 2CH view outputs are used to estimate the left atrium and right atrium measurements. Specifically, the left atrial volume is estimated using the biplane method with segmentation of both the 2CH and 4CH view, while the right atrial volume is estimated using single plane method with segmentation of the 4CH view.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Baseline Models</head><p>We first considered a random forest (RF) classifier <ref type="bibr" target="#b2">[3]</ref> trained for MR classification on the tabular heart measurements in Table <ref type="table" target="#tab_0">1</ref>. We divided the 18 features by body surface area (BSA) prior to training the RF.</p><p>Next, we developed a deep learning baseline model for MR classification, a weakly supervised CNN-LSTM, following the principles in Fries et al. <ref type="bibr" target="#b8">[9]</ref> and operating on the 4CH CMR imaging data. Fries et al. <ref type="bibr" target="#b8">[9]</ref> used CMR imaging sequences from the UK Biobank, however, the objective of their work was the identification of aortic valve malformations. Their proposed deep learning architecture -CNN-LSTM -used DenseNet <ref type="bibr" target="#b10">[11]</ref> as the CNN of choice to encode CMR imaging frames and the LSTM to encode embeddings of all frames within each sequence for a final classification of aortic valves into tricuspid (normal) and bicuspid (pathological). We point out that our MR classification problem is considerably more challenging due to the lack of direct view of the mitral valve in the CMR imaging data. Moreover, the flow information provided from the 4CH view CMR imaging data is difficult to learn and encode in the model, an issue which we alleviated in the CUSSP framework.</p><p>The CNN-LSTM pipeline, shown in Fig. <ref type="figure" target="#fig_2">3</ref>, includes an image segmentation model, and an image classification model. It uses the 4CH CMR from the UK Biobank. The CMR data is center-cropped using the center of mass of the CMR imaging frames. The resulting sequence provided to the CNN-LSTM, which generates probabilistic labels of MR for the sample.</p><p>In the CNN-LSTM model architecture, the CNN serves as the frame encoder, which encodes each frame of each sequence into a representation vector. The model uses DenseNet-121 pre-trained on ImageNet as the CNN. To better learn  the attention span of the frame encoder, we added an attention layer to the DenseNet-121 after the first convolutional layer. After the bi-directional LSTM, a multi-layer perceptron (MLP) performs the final classification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">The CUSSP Framework</head><p>Conceptualization. To better encode the blood flow information relevant to MR classification from the 4CH CMR view, we investigated self-supervised representation learning methods which can leverage all the unlabeled CMR sequences present in the UK Biobank. Typically, self-supervised representation learning for visual data involves maximizing the similarity between representations of various distorted versions of a sample. Among the many self-supervised architectures, SimCLR <ref type="bibr" target="#b4">[5]</ref>, SwAV <ref type="bibr" target="#b3">[4]</ref>, and BYOL <ref type="bibr" target="#b9">[10]</ref>, we chose Barlow Twins <ref type="bibr" target="#b25">[26]</ref>, since it does not require large batches. With the labeled data, our siamese network compares the representation differences between classes by sampling two inputs from different classes as performed in <ref type="bibr" target="#b24">[25]</ref>. Thus, our CUSSP MR classification pipeline takes advantage of both self-supervised and supervised representation learning.</p><p>Test-Time Pipeline. Our CUSSP method consists of five main steps, shown in Fig. <ref type="figure" target="#fig_3">4</ref>, the first four for pre-processing, and the last one for prediction, with three stages using network components trained for MR classification. The preprocessing of the CMR imaging sequence is shown in Fig. <ref type="figure">8</ref> in the Appendix. We used the segmentation model in Sect. 2.1 to locate the mitral valve and determine the orientation of the left ventricle using the contours and centers of the heart chambers derived from the segmentation output. We then cropped a square patch with the mitral valve at its center positioned horizontally. After cropping, we applied histogram equalization to the patch with the pixel intensity range of the left atrium. The resulting patches are used by the downstream networks.</p><p>Training Process. The first step involves training a representation encoder in a Barlow Twins network using over 30,000 unlabeled pre-processed sequences. We chose Barlow Twins for its versatility and robustness to distortions such as blurring, different sizes of the relevant areas and intensity variations, which are common in CMR images. We used a ResNet-18 model pretrained on ImageNet as an encoder. Its output vector is 512-dimensional. We selected ResNet-18 because we found that more complex encoders would easily memorize the limited labeled dataset, reducing the effectiveness of the embeddings. The projector network has three fully connected layers, all with 2048 output units. After training the encoder with the unlabeled dataset, it is fine-tuned in a siamese network using a comparatively smaller labeled set, as indicated in Sect. 3. During training, two sequences are sampled from the labeled dataset, with the first being non-MR and the second being either MR or non-MR. The two sequences are passed through the representation encoder to obtain embeddings, which are then used to calculate the contrastive loss. The model is trained to maximize contrastive loss when the two samples are non-MR and MR and to minimize it when both are non-MR.</p><p>Contrastive learning helps because it uses the very limited labels in our possession to obtain representations focused on encoding differences between classes.</p><p>Once the representation encoder is fine-tuned in the siamese network, it is combined with a 3-layer multi-layer perceptron (MLP) network to form a classifier, which is trained on the same labeled dataset. To improve computation efficiency and training accuracy, we also tested the framework using a smaller window of 25 frames, since MR occurs between diastole and systole. The code is available at https://github.com/Information-Fusion-Lab-Umass/CUSSP UKB MR.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Discussion</head><p>Experimental Setup. 4CH CMR images were used to conduct experiments with both the CNN-LSTM method and the CUSSP method. We used a total of 704 labeled sequences, with 525 sequences selected for the training set, including 452 labeled as non-MR and 73 labeled as MR. The remaining 179 sequences were used for testing, with 154 labeled as non-MR and 25 labeled as MR. Considering the substantial class imbalance, we opted to use F1 score as our primary evaluation metric, along with precision and recall.</p><p>Random Forest Classification Results. The random forest model is trained with 10-fold cross validation, with a random search over a parameter grid of 10-100 estimators, 2-16 depth, 2-8 min samples. The optimal hyper-parameter setting found is: 20 estimators, log2 max features, max depth of 9 and a minimum of 2 samples per leaf node. The best results obtained are presented in Table <ref type="table" target="#tab_1">2</ref>. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>CUSSP Classification Results</head><p>Fig. <ref type="figure">5</ref>. The ROC AUC curve and the precisionrecall curve of CUSSP-SIAM-25 from Table <ref type="table" target="#tab_1">2</ref>. The annotated coordinates on the precision-recall curve plot are (recall, precision, F1-score, threshold).</p><p>We evaluated various configurations of the CUSSP model, to determine the relative benefits of different components. In the first configuration, the ResNet18 model was combined with a 3-layer MLP to train a classifier using the labeled training set after being trained in the Barlow-Twins network with the unlabeled dataset. During the classifier training, the cross-correlation loss from the Barlow-Twins network and the cross-entropy loss from the binary classification were weighted using three different configurations. For CUSSP-1 the crosscorrelation loss has a weight of 0.9, while the cross-entropy loss has a weight of 0.1. For CUSSP-2, the weights are 0.5 and 0.5, while for CUSSP-3 they are 0.1 and 0.9, respectively. Both CUSSP-1 and CUSSP-3 outperform CUSSP-2, though the performance is low, indicating the importance of fine-tuning, described below.</p><p>In the second scenario, we fine-tuned the encoder with a siamese network to enhance the quality of the encoded representations after training the Barlow Twins network. To prevent overfitting of the model and to limit its capacity, we froze the parameters of all layers except the last block of the ResNet18 encoder when training the siamese network and the classifier. The resulting model, CUSSP-SIAM, showed a significant improvement in performance. In the final configuration CUSSP-SIAM-25, the number of frames in the training sequences was truncated from 50 frames to the 25 frames that correspond to the interval when mitral regurgitation occurs. The results are summarized in Table <ref type="table" target="#tab_1">2</ref>, while the ROC-AUC curve for CUSSP-SIAM-25 are shown in Fig. <ref type="figure">5</ref>.</p><p>CUSSP attains an F1 score of 0.69, and an ROC AUC of 0.88, outperforming the CNN-LSTM approach. This is dues to CUSSP's focus on the area around the valve to capture the blood flow through the valve, combining the advantages of Barlow Twins and contrastive learning. Meanwhile, the CNN-LSTM relies on attention, which does not seem to work as well. Additionally, using only the frames relevant to the task reduces the number of parameters and makes the model sample-efficient. This is essential for attaining high performance in the low label setting. In the future, we aim to use the pipeline on the large unlabeled dataset to scan for and adjudicate more MR cases.</p><p>In conclusion, we present the first automated mitral regurgitation classification system using CMR imaging sequences. The CUSSP model we developed, trained with limited supervision, operates on 4CH CMR imaging sequences and attains an F1 score of 0.69 and an ROC AUC of 0.88, opening up the opportunity for large-scale screening for MR.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Three cardiovascular magnetic resonance (CMR) images showing the long-axis four-chamber view of the heart. Left: a heart with normal mitral valve. Middle: a heart with normal mitral valve when the valve leaflets are open. Right: a heart with mitral regurgitation. The (red) dotted line denotes the mitral valve. (Color figure online)</figDesc><graphic coords="2,57,48,107,54,337,54,92,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Example of the segmentation outputs of the long axis 4CH (left), 2CH (middle) CMR view imaging data and the short axis (right) CMR imaging data.</figDesc><graphic coords="3,43,29,456,92,337,48,78,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Overview of the CNN-LSTM method pipeline for MR classification.</figDesc><graphic coords="4,103,08,53,84,238,30,118,78" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Overview of the CUSSP pipeline for MR classification, with its 5 steps: (1) segmentation, (2) localization, (3) cropping, (4) equalization, and (5) prediction. In particular, the prediction stage of the CUSSP method contains three stages: (i) the feature encoder is trained in the Barlow-Twins network with unlabeled imaging data set, (ii) the feature encoder is fine-tuned in a siamese network with labeled imaging data set, and (iii) the feature encoder is assembled with a MLP, then trained with labeled imaging data set for the classification task of MR.</figDesc><graphic coords="6,60,57,56,21,314,08,202,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Cardiac measurements derived from the semantic segmentation of the CMR.</figDesc><table><row><cell>Left Atrium</cell><cell>Right Atrium</cell><cell>Left Ventricle</cell><cell>Right Ventricle</cell></row><row><cell>Vol Max (mL)</cell><cell>Vol Max (mL)</cell><cell cols="2">End Systolic Vol (mL) End Systolic Vol (mL)</cell></row><row><cell>Vol Min (mL)</cell><cell>Vol Min (mL)</cell><cell cols="2">End Diastolic Vol (mL) End Diastolic Vol (mL)</cell></row><row><cell>Stroke Vol (mL)</cell><cell>Stroke Vol (mL)</cell><cell>Stroke Vol (mL)</cell><cell>Stroke Vol (mL)</cell></row><row><cell cols="3">Eject. fraction (%) Eject. fraction (%) Eject. fraction (%)</cell><cell>Eject. fraction (%)</cell></row><row><cell></cell><cell></cell><cell>Cardiac Output (L/min)</cell><cell></cell></row><row><cell></cell><cell></cell><cell>Mass (g)</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Experimental results for Random Forest (RF) baseline, CNN-LSTM and CUSSP. CUSSP-1, CUSSP-2 and CUSSP-3 are trained with the BarlowTwins-MLP model without fine-tuning with the Siamese network. CUSSP-SIAM and CUSSP-SIAM-25 are trained with the BarlowTwins-Siamese-MLP model.</figDesc><table><row><cell>Model</cell><cell cols="5">Pos. Acc Neg. Acc Precision Recall F1</cell><cell>AUC</cell></row><row><cell>RF</cell><cell>0.09</cell><cell>0.99</cell><cell>0.43</cell><cell>0.09</cell><cell cols="2">0.14 0.58</cell></row><row><cell>CNN-LSTM</cell><cell>0.53</cell><cell>0.86</cell><cell>0.45</cell><cell>0.53</cell><cell cols="2">0.44 0.72</cell></row><row><cell>CUSSP-1</cell><cell>0.38</cell><cell>0.87</cell><cell>0.29</cell><cell>0.38</cell><cell cols="2">0.32 0.65</cell></row><row><cell>CUSSP-2</cell><cell>0.29</cell><cell>0.87</cell><cell>0.25</cell><cell>0.29</cell><cell cols="2">0.27 0.63</cell></row><row><cell>CUSSP-3</cell><cell>0.38</cell><cell>0.90</cell><cell>0.35</cell><cell>0.38</cell><cell cols="2">0.36 0.66</cell></row><row><cell>CUSSP-SIAM</cell><cell>0.55</cell><cell>0.96</cell><cell>0.66</cell><cell>0.55</cell><cell cols="2">0.60 0.80</cell></row><row><cell cols="2">CUSSP-SIAM-25 0.62</cell><cell>0.96</cell><cell>0.8</cell><cell cols="3">0.62 0.69 0.88</cell></row></table><note><p><p><p><p>CNN-LSTM Classification Results.</p>We conducted experiments on the DenseNet-LSTM classification model using various input image sizes, attention layer configurations, and masks. The best CNN-LSTM model attains a F1-score of 0.44, shown in Table</p>2</p>, with further information on the performance under other settings summarized in the Appendix.</p></note></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">UK Biobank: UK Biobank data: come and get it</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>Allen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sudlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Peakman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Collins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Transl. Med</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">224</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Automated cardiovascular magnetic resonance image analysis with fully convolutional networks</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cardiovasc. Magn. Reson</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Random forests</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Breiman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of visual features by contrasting cluster assignments</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Caron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mairal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bojanowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Joulin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 33: Annual Conference on Neural Information Processing Systems</title>
+		<meeting><address><addrLine>NeurIPS</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020">2020. 2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 37th International Conference on Machine Learning, ICML 2020</title>
+		<title level="s">Virtual Event. Proceedings of Machine Learning Research</title>
+		<meeting>the 37th International Conference on Machine Learning, ICML 2020</meeting>
+		<imprint>
+			<date type="published" when="2020-07-18">13-18 July 2020. 2020</date>
+			<biblScope unit="volume">119</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Causes and mechanisms of isolated mitral regurgitation in the community: clinical context and outcome</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Dziadzko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Heart J</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">27</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<author>
+			<persName><forename type="first">M</forename><surname>Enriquez-Sarano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Akins</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vahanian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Mitral regurgitation</title>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="volume">373</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Quantitative determinants of the outcome of asymptomatic mitral regurgitation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Enriquez-Sarano</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">N. Engl. J. Med</title>
+		<imprint>
+			<biblScope unit="volume">352</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Weakly supervised classification of aortic valve malformations using unlabeled cardiac MRI sequences</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Fries</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Bootstrap your own latent -a new approach to self-supervised learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Grill</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 33: Annual Conference on Neural Information Processing Systems</title>
+		<meeting><address><addrLine>NeurIPS</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020">2020. 2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Densely connected convolutional networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">2017</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">TernausNet: U-Net with VGG11 encoder pre-trained on ImageNet for image segmentation</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Iglovikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shvets</surname></persName>
+		</author>
+		<idno>CoRR abs/1801.05746</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Constrained-CNN losses for weakly supervised segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Granger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Boykov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="page">54</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">What are the characteristics of patients with severe, symptomatic, mitral regurgitation who are denied surgery?</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mirabel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Heart J</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Graph-based unsupervised segmentation for lung tumor CT images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Nian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 3rd IEEE International Conference on Computer and Communications (ICCC)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Anatomically constrained neural networks (ACNNs): application to cardiac image enhancement and segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Oktay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Mortality due to mitral regurgitation among adults in the United States: 1999-2018</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Parcha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kalra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Suri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mayo Clinic Proceedings</title>
+		<imprint>
+			<biblScope unit="volume">95</biblScope>
+			<date type="published" when="2020">2020</date>
+			<publisher>Elsevier</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Very deep convolutional networks for large-scale image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">3rd International Conference on Learning Representations</title>
+		<imprint>
+			<publisher>Conference Track Proceedings</publisher>
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Use of cardiac magnetic resonance imaging in assessing mitral regurgitation: current evidence</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Uretsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Argulian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Narula</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Wolff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Coll. Cardiol</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Detecting aortic valve pathology from the 3-chamber cine cardiac MRI view</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Vimalesvaran</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16431-6_54</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16431-654" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13431</biblScope>
+			<biblScope unit="page" from="571" to="580" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Acute mitral regurgitation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Watanabe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Heart</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Unsupervised brain tumor segmentation using a symmetric-driven adversarial network</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Fulham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">D</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">455</biblScope>
+			<biblScope unit="page" from="242" to="254" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Unsupervised positron emission tomography tumor segmentation via GAN based adversarial auto-encoder</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Fulham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">16th International Conference on Control, Automation, Robotics and Vision</title>
+		<meeting><address><addrLine>Shenzhen, China</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020-12">December 2020. 2020</date>
+			<biblScope unit="volume">2020</biblScope>
+			<biblScope unit="page" from="13" to="15" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Offline signature verification using convolution siamese network</title>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">J</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">C</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Ninth International Conference on Graphic and Image Processing</title>
+		<imprint>
+			<publisher>SPIE</publisher>
+			<date type="published" when="2017">2017. 2018</date>
+			<biblScope unit="volume">10615</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Barlow twins: self-supervised learning via redundancy reduction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zbontar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Deny</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 38th International Conference on Machine Learning, ICML 2021</title>
+		<meeting>the 38th International Conference on Machine Learning, ICML 2021</meeting>
+		<imprint>
+			<date type="published" when="2021-07-24">18-24 July 2021. 2021</date>
+			<biblScope unit="volume">139</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Automatic assessment of mitral regurgitation severity using the mask R-CNN algorithm with color Doppler echocardiography images</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Math. Methods Med</title>
+		<imprint>
+			<biblScope unit="page">2021</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Data augmentation using learned transformations for one-shot medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Durand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<publisher>Clinical Applications -Dermatology</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">2019</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">ConTrack: Contextual Transformer for Device Tracking in X-Ray</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Marc</forename><surname>Demoustier</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><roleName>Venkatesh</roleName><forename type="first">Yue</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Venkatesh</forename><surname>Narasimha Murthy</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Florin</forename><forename type="middle">C</forename><surname>Ghesu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dorin</forename><surname>Comaniciu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">ConTrack: Contextual Transformer for Device Tracking in X-Ray</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="679" to="688"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">2C494F9088914F90087058D6C36B2E92</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_65</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Device tracking</term>
+					<term>Transformer network</term>
+					<term>X-Ray navigation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Device tracking is an important prerequisite for guidance during endovascular procedures. Especially during cardiac interventions, detection and tracking of guiding the catheter tip in 2D fluoroscopic images is important for applications such as mapping vessels from angiography (high dose with contrast) to fluoroscopy (low dose without contrast). Tracking the catheter tip poses different challenges: the tip can be occluded by contrast during angiography or interventional devices; and it is always in continuous movement due to the cardiac and respiratory motions. To overcome these challenges, we propose ConTrack, a transformer-based network that uses both spatial and temporal contextual information for accurate device detection and tracking in both X-ray fluoroscopy and angiography. The spatial information comes from the template frames and the segmentation module: the template frames define the surroundings of the device, whereas the segmentation module detects the entire device to bring more context for the tip prediction. Using multiple templates makes the model more robust to the change in appearance of the device when it is occluded by the contrast agent. The flow information computed on the segmented catheter mask between the current and the previous frame helps in further refining the prediction by compensating for the respiratory and cardiac motions. The experiments show that our method achieves 45% or higher accuracy in detection and tracking when compared to state-of-the-art tracking models.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Tracking of interventional devices plays an important role in aiding surgeons during catheterized interventions such as percutaneous coronary interventions (PCI), cardiac electrophysiology (EP), or trans arterial chemoembolization (TACE). In cardiac image-guided interventions, surgeons can benefit from visual guidance provided by mapping vessel information from angiography (Fig. <ref type="figure" target="#fig_0">1b</ref>) to fluoroscopy (Fig. <ref type="figure" target="#fig_0">1a</ref>) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10]</ref> for which the catheter tip is used as an anchor point representing the root of the vessel tree structure. This visual feedback helps in reducing the contrast usage <ref type="bibr" target="#b6">[7]</ref> for visualizing the vascular structures and it can also aid in effective placements of stents or balloons. Recently, deep learning-based siamese networks have been proposed for medical device tracking <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b4">5]</ref>. These networks achieve high frame rate tracking, but are limited by their online adaptability to changes in target's appearance as they only use spatial information. Cycle Ynet <ref type="bibr" target="#b4">[5]</ref> uses the cycle consistency of a sequence and relies on a semi-supervised learning approach by doing a forward and a backward tracking. In practice, this method suffers from drifting for long sequences and cannot recover from misdetections because of the single template usage. The closest work related ours is <ref type="bibr" target="#b5">[6]</ref>, they use a convolutional neural network (CNN) followed by particle filtering as a post processing step. The drawback of this method is that, it does not compensate for the cardiac and respiratory motions as there is no explicit motion model for capturing temporal information. A similar method adds a graph convolutional neural network for aggregating both spatial information and appearance features <ref type="bibr" target="#b2">[3]</ref> to provide a more accurate tracking but its effectiveness is limited by its vulnerability to appearance changes and occlusion resulting from detection techniques. Optical flow based network architectures <ref type="bibr" target="#b7">[8]</ref> utilize keypoint tracking throughout the entire sequence to estimate the motion of the whole image. However, such approaches are not adapted for tracking a single point, such as a catheter tip.</p><p>For general computer vision applications, transformer <ref type="bibr" target="#b8">[9]</ref> based-trackers have achieved state-of-the-art performance <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b11">12]</ref>. Initially proposed for natural language processing (NLP), Transformers learn the dependencies between elements in a sequence, making it intrinsically well suited at capturing global information. Thus, our proposed model consists of a transformer encoder that helps in capturing the underlying relationship between template and search image using self and cross attentions, followed by multiple transformer decoders to accurately track the catheter tip.</p><p>To overcome the limitations of existing works, we propose a generic, end-toend model for target object tracking with both spatial and temporal context. Multiple template images (containing the target) and a search image (where we would identify the target location, usually the current frame) are input to the system. The system first passes them through a feature encoding network to encode them into the same feature space. Next, the features of template and search are fused together by a fusion network, i.e., a vision transformer. The fusion model builds complete associations between the template feature and search feature and identifies the features of the highest association. The fused features are then used for target (catheter tip) and context prediction (catheter body). While this module learns to perform these two tasks together, spatial context information is offered implicitly to provide guidance to the target detection. In addition to the spatial context, the proposed framework also leverages the temporal context information which is generated using a motion flow network. This temporal information helps in further refining the target location.</p><p>Our main contributions are as follows: 1) Proposed network consists of segmentation branch that provides spatial context for accurate tip prediction; 2) Temporal information is provided by computing the optical flow between adjacent frames that helps in refining the prediction; 3) We incorporate dynamic templates to make the model robust to appearance changes along with the initial template frame that helps in recovery in case of any misdetection; 4) To the best of our knowledge, this is the first transformer-based tracker for real-time  device tracking in medical applications; 5) We conduct numerical experiments and demonstrate the effectiveness of the proposed model in comparison to other state-of-the-art tracking models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Given a sequence of consecutive X-ray images {I t } n t=0 and an initial location of the target catheter tip x 0 = (u 0 , v 0 ), our goal is to track the location of the target x t = (u t , v t ) at any time t, t &gt; 0. The proposed model framework is summarized in Fig. <ref type="figure" target="#fig_2">2</ref>. It consists of two stages, target localization stage and motion refinement stage. First, given a selective set of template image patches and the search image, we leverage the CNN-transformer architecture to jointly localize the target and segment the neighboring context, i.e., body of the catheter. Next, we estimate the context motion via optical flow on the catheter body segmentation between neighboring frames and use this to refine the detected target location. We detail these two stages in the following subsections.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Target Localization with Multi-template Feature Fusion</head><p>To identify the target in the search frame, existing approaches build a correlation map between the template and search features. Limited by definition, the template is a single image, either static or from the last frame tracked result. A transformer naturally extends the bipartite relation between template and search images to complete feature associations which allow us to use multiple templates. This improves model robustness against suboptimal template selection which can be caused by target appearance changes or occlusion.</p><p>Feature Fusion with Multi-head Attention. In the encoding stage, given a set of template image patches centered around the target {T ti } ti∈H and current frame I s as the search image, we aim to determine the target location by fusing information from multiple templates. H is the set containing historically selected frames for templates. This can be naturally accomplished by multi-head attention (MHA). Specifically, let us denote the ResNet encoder by θ, given the feature map of the search image θ(I s ) ∈ R C×Hs×Ws , and the feature maps of the templates {θ(T ti )}}, we use 1 × 1 convolutions to project and flatten them into d-dimensional vector query, key and value embedding, q s , k s , v s for the search image features and {q ti }, {k ti }, {v ti } for templates features respectively. The attention is based on the concatenated vectors,</p><formula xml:id="formula_0">Attention(Q, K, V) := softmax( QK T √ d )V,<label>(1)</label></formula><p>where Q = Concat(q s , q t1 , q t2 , ..., q tn ),</p><formula xml:id="formula_1">K = Concat(k s , k t1 , k t2 , ..., k tn ), V = Concat(v s , v t1 , v t2 , ..., v tn ).</formula><p>The definition of MHA then follows <ref type="bibr" target="#b8">[9]</ref>.</p><p>Joint Target Localization and Context Segmentation. In the decoding stage, we follow <ref type="bibr" target="#b11">[12]</ref> and adjust the transformer decoder to a multi-task setting.</p><p>As the catheter tip represents a sparse object in the image, solely detecting it suffers from class imbalance issue. To guide the catheter tip tracking with spatial information, we incorporate additional contextual information by simultaneously segmenting the catheter body in the same frame. Specifically, two object queries (e 1 , e 2 ) are employed in the decoder, where e 1 defines the position of the catheter tip, and e 2 defines the mask of the catheter body. As is illustrated in Fig. <ref type="figure" target="#fig_2">2</ref> (b), we first calculate similarity scores between decoder and the encoder output via dot product. We then use element-wise product between the similarity scores and the encoder features to promote regions with high similarity. After reshaping the processed features to d × H s × W s , an encoder-decoder structured 6-layer FCN is attached to process the features to probability maps with the same size as the search image. A combination of the binary cross-entropy and the dice loss is then used,</p><formula xml:id="formula_2">L = λ x bce L bce (G(x i ; μ, σ), xs i ) + λ x dice L dice (G(x i ; μ, σ), xs i )+ λ m bce L bce (m i , mi ) + λ m dice L dice (m i , mi ),<label>(2)</label></formula><p>where x i , m i represent the ground truth annotation of the catheter tip and mask, xs i , ms i are predictions respectively. Here we use sup-script "s" to denote the predictions from this spatial stage. G(x i ; μ, σ) := exp(-x iμ 2 /σ 2 ) is the smoothing function that transfers dot location of x i to probability map. λ * bce , λ * dice ∈ R are hyperparameters that are empirically optimized.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Localization Refinement with Context Flow</head><p>In interventional procedures, one common challenge for visual tracking comes from occlusion. This can be caused by injected contrast medium (in the angiographic image) or interferring devices such as sternal wires, stent and additional guiding catheters. If the target is occluded in the search image, using only spatial information for localization is inadequate. To address this challenge, we impose a motion prior of the target to further refine the tracked location. As the target is a sparse object, this is done via optical flow estimation of the context.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Context Flow Estimation.</head><p>Obtaining ground truth optical flow in real world data is a challenging task and may require additional hardware such as motion sensors. As such, training a model for optical flow estimation directly in the image space is difficult. Instead, we propose to estimate the flow in the segmentation space, i.e., on the predicted heatmaps of the catheter body between neighboring frames. We use the RAFT <ref type="bibr" target="#b7">[8]</ref> model for this task. Specifically, given the predicted segmentation maps m t-1 and m t , we first use a 6-block ResNet encoder g θ to extract the features g θ (m t-1 ), g θ (m t ) ∈ R H f ×W f ×D f . Then we construct the correlation volume pyramid {C i } 3 i=0 , where</p><formula xml:id="formula_3">C i = AvgPool(corr(g θ (m t-1 ), g θ (m t )), stride = 2 i ).<label>(3)</label></formula><p>Here corr(g θ (m t-1 ), g θ (m t )) ∈ R H f ×W f ×H f ×W f stands for correlation evaluation:</p><formula xml:id="formula_4">corr(g θ (m t-1 ), g θ (m t )) ijkl = D f h=1 g θ (m t-1 ) ijh • g θ (m t ) klh ,<label>(4)</label></formula><p>which can be computed via matrix multiplication. Starting with an initial flow f 0 = 0, we follow the same model setup as <ref type="bibr" target="#b7">[8]</ref> to recurrently refine the flow estimates to f k = f k-1 + f with a gated recurrent unit (GRU) and a delta flow prediction head of 2 convolutional layers. Given the tracked tip result from the previous frame xt-1 , we can then predict the new tip location at time t by warpping with the context flow xf t = f k (x t-1 ). Here we use sup-script "f " to denote the prediction by flow warpping.</p><p>We note here that since the segmentations of the catheter body are sparse objects compared to the entire image, computation of the correlation volume and subsequent updates can be restricted to a cropped sub-image which reduces computation cost and flow inference time. As the flow estimation is performed on the segmentation map, one can simply generate synthetic flows and warp them with the existing catheter body annotation to generate data for model training.</p><p>Refinement with Combined Spatial-temporal Prediction. Finally, we generate a score map with combined information from the spatial localization stage and the temporal prediction by context flow,</p><formula xml:id="formula_5">S t (u, v) = (α + ms t (u, v))(x s t (u, v) + xf t (u, v)) ms t (u, v) &gt; 0, xs t (u, v) + xf t (u, v) otherwise. (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>Here α is a positive scalar. It helps the score map to promote coordinates that are activated jointly on both the spatial prediction xs t and the temporal prediction xf t . Finally, we forward the score map through a refinement module to finalize the prediction. The refinement module consists of a stack of 3 convolutional layers. Similar to the spatial localization stage, a combination of the binary cross-entropy and the dice loss is used as the final loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Dataset. Our study uses an internal dataset of X-ray sequences captured during percutaneous coronary intervention procedures, featuring a field of view displaying the catheter within the patient's heart. The test dataset is divided into two primary categories: fluoroscopic and angiographic sequences. Fluoroscopic sequences are real-time videos of internal movements captured by low-dose Xrays without radiopaque substances, while angiographic sequences display blood vessels in real-time after the introduction of radiopaque substances.</p><p>We further separate the test dataset into a third category, "devices", presenting a unique challenge for both fluoroscopic and angiographic sequences. In these cases, devices such as wires can obscure the catheter tip and have a similar appearance to the catheter, making tracking more challenging.</p><p>The dataset includes frames annotated with the coordinates of the catheter tip and, in some cases, a catheter body mask annotation. For training and validation, we use 2,314 sequences consisting of 198,993 frames, of which 44,957 are annotated. As the model training only requires image pairs, i.e.templates and search images, in order to reduce annotation effort, a nonadjacent subset of frames in each sequence is annotated. Their neighboring unannotated frames are also used to provide flow estimation, as is shown in Fig. <ref type="figure" target="#fig_2">2(c</ref>). For testing, we use 219 sequences consisting of 17,988 frames, all annotated. The test dataset split is as follows: Fluoro (i.e., fluoroscopy), consisting of 94 sequences, 8,494 frames, from 82 patients; Angio (i.e., angiography), consisting of 101 sequences, 6,904 frames, from 81 patients; and devices, consisting of 24 sequences, 2,593 frames, from 10 patients. All frames undergo a preprocessing pipeline with resampling and padding to size of 512 × 512 with 0.308 mm isotropic pixel spacing.</p><p>Training. The template frame is of size 64 × 64. The search frame is of size 160 × 160. With this, the inference speed reaches 12 fps. We train our model for 300 epochs using a learning rate of 0.0001.</p><p>Comparison Study. We compare the proposed approach with existing arts and summarize the results in Table <ref type="table" target="#tab_0">1</ref>. The proposed approach achieves best performance in all testing dataset. In contrast to our method, SiameseRPN <ref type="bibr" target="#b3">[4]</ref>, STARK <ref type="bibr" target="#b11">[12]</ref> and MixFormer <ref type="bibr" target="#b1">[2]</ref> focus on spatial localization of the target. Temporal information is being incorporated only with the setting of multi-templates thus target motion modeling is limited. While such approaches can achieve good performance with low median errors (∼2 mm), the high 5-7 mm standard deviations indicate the stability issues, especially in data with devices where occlusions are present. Cycle Ynet <ref type="bibr" target="#b4">[5]</ref> uses cycle-consistency loss for motion learning directly on the target. As catheter tip is a sparse object, our approach leverages the motion information of the neighboring context which provide more robust guidance for target location refinement.</p><p>Overall, ConTrack outperforms all other methods, with a median tracking error of less than 1.08 mm. Our model is particularly effective at tracking the catheter tip when other devices are in the field of view, where all other methods tend to underperform. Compared to Cycle Ynet on all test datasets, our model is 45% more accurate, with an average distance of less than 1mm between the prediction and ground truth. Further, we show the accuracy distributions in Fig. <ref type="figure" target="#fig_3">3</ref>. It can be seen that the proposed approach shows superior performance to all other approaches in various percentiles.</p><p>Ablation Study. We conduct an ablation study to investigate the effectiveness of different model components. Results are summarized in Table <ref type="table" target="#tab_1">2</ref>. Our ablation study revealed three key findings: 1) The addition of the mask segmentation branch improved tracking performance on Fluoro, where the device appearance remains consistent and there is no occlusion. However, when there are distractors, the results are less accurate; 2) The inclusion of a mask segmentation enabled the estimation of motion. The resulting flow helped to stabilize tracking in the presence of distractors; and 3) Multiple templates were employed to better handle changes in appearance. The combined model showed the best performance in dataset of angiography and data with devices, while yielding similar results in dataset of fluoroscopy. Despite our framework's incorporation of various temporal and spatial contexts, catheter tracking remains a challenging task, particularly in cases where other devices or contrast agents obscure the catheter tip and create visual similarities with the catheter itself. Nonetheless, our results demonstrate the promise of ConTrack as a valuable tool for enhancing catheter tracking accuracy.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>Device tracking is an important task in interventional procedures. In this paper, we propose a generic model framework, ConTrack, that leverages both spatial and temporal information of the surrounding context for accurate target localization and tracking in X-ray. Through extensive experimentation on large datasets, our approach demonstrated superior tracking performance, outperforming other state-of-the-art tracking models, especially in challenging scenarios where occlusions and distractors are present. Current approach has its limitations. Motion estimation is learned from neighboring two frames and thus target historical trajectory information is missing. Further, transformer-based model training require large amount of annotated data, which is challenging to collect in interventional applications. Finally, throughout the paper we follow established setups and focus on the development on the tracking model with manual initialization. In general, long-term visual tracking with automatic (re-)initialization is a challenging problem and require a system of approaches. A safe and automatic system of device and anatomy tracking is of great clinical relevance and will be an important future work for us.</p><p>Disclaimer. The concepts and information presented in this paper/presentation are based on research results that are not commercially available. Future commercial availability cannot be guaranteed.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Example frames from X-ray sequences showing the catheter tip: (a) Fluoroscopy image; (b) Angiographic image with injected contrast medium; (c) Angiographic image with sternum wires. Tracking the tip in angiography is challenging due to occlusion from surrounding vessels and interferring devices.</figDesc><graphic coords="2,44,31,135,11,335,44,115,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Proposed ConTrack architecture: (a) Transformer feature fusion backbone: ResNet-50 for feature extraction followed by a transformer encoder/decoder; (b) Prediction head for catheter tip (heatmap) and catheter body segmentation (mask segmentation); (c) Flow refinement: use prediction on previous frame to refine the tip detection.</figDesc><graphic coords="3,57,48,378,35,335,35,137,14" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Benchmark study on average distance distribution over all test datasets.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison study on different testing set. The results are the average distance in mm. Best numbers are marked in bold. Accuracy improvement is statistically significant (p-value &lt; 0.005) over the second best in the table.</figDesc><table><row><cell>Models</cell><cell cols="2">Fluoroscopy</cell><cell cols="2">Angiography Devices</cell><cell>All</cell></row><row><cell></cell><cell cols="6">median mean median mean median mean median mean std</cell></row><row><cell>SiameseRPN [4]</cell><cell>6.93</cell><cell cols="2">8.19 7.74</cell><cell>9.42 7.89</cell><cell>10.51 7.13</cell><cell>9.01 6.81</cell></row><row><cell>STARK [12]</cell><cell>2.38</cell><cell cols="2">3.02 2.82</cell><cell>4.49 4.35</cell><cell>7.01 2.65</cell><cell>4.14 4.93</cell></row><row><cell>MixFormer [2]</cell><cell>2.02</cell><cell cols="2">4.42 2.76</cell><cell>4.86 5.00</cell><cell>9.20 2.68</cell><cell>5.15 7.10</cell></row><row><cell>Cycle Ynet [5]</cell><cell>2.05</cell><cell cols="2">2.92 1.69</cell><cell>2.09 4.39</cell><cell>4.23 1.96</cell><cell>2.68 2.40</cell></row><row><cell cols="2">ConTrack (Ours) 0.73</cell><cell cols="2">1.04 1.27</cell><cell>1.91 1.61</cell><cell>2.73 1.08</cell><cell>1.63 1.70</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation study on model components. ✗ denotes the component is removed, while ✓ represents the component is used. Performance is evaluated on the same test cases as before and the results are the average distance in mm.</figDesc><table><row><cell cols="4">Multitask Flow Multi-templates Fluoro</cell><cell>Angio</cell><cell>Devices</cell><cell>All</cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="5">median mean median mean median mean median mean std</cell></row><row><cell>✗</cell><cell>✗</cell><cell>✗</cell><cell>0.81</cell><cell>1.40 1.29</cell><cell>1.94 2.99</cell><cell>6.20 1.13</cell><cell>2.17 3.75</cell></row><row><cell>✓</cell><cell>✗</cell><cell>✗</cell><cell>0.67</cell><cell>1.03 1.53</cell><cell>2.15 3.97</cell><cell>10.49 1.11</cell><cell>2.58 6.10</cell></row><row><cell>✓</cell><cell>✓</cell><cell>✗</cell><cell>0.65</cell><cell>0.96 1.49</cell><cell>1.95 1.93</cell><cell>4.52 0.99</cell><cell>1.81 2.30</cell></row><row><cell>✓</cell><cell>✓</cell><cell>✓</cell><cell>0.73</cell><cell>1.05 1.27</cell><cell>1.91 1.61</cell><cell>2.73 1.08</cell><cell>1.63 1.70</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4 65.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Signature verification using a Siamese time delay neural network</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bromley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Säckinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Cowan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Tesauro</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Alspector</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Morgan-Kaufmann</publisher>
+			<date type="published" when="1993">1993</date>
+			<biblScope unit="volume">6</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Mixformer: mixing features across windows and dimensions</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="5249" to="5259" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Robust landmarkbased stent tracking in X-ray fluoroscopy</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sun</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20047-2_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20047-212" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13682</biblScope>
+			<biblScope unit="page" from="201" to="216" />
+		</imprint>
+	</monogr>
+	<note>ECCV 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">High performance visual tracking with Siamese region proposal network</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="8971" to="8980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Cycle ynet: semisupervised tracking of 3D anatomical landmarks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amadou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Voigt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mansi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Liao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59861-7_60</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59861-760" />
+	</analytic>
+	<monogr>
+		<title level="m">MLMI 2020</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Liu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Yan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Lian</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Cao</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12436</biblScope>
+			<biblScope unit="page" from="593" to="602" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Dynamic coronary roadmapping via catheter tip tracking in x-ray fluoroscopy with deep learning based Bayesian filtering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Smal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Daemen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Van Walsum</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="page">101634</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Dynamic coronary roadmapping during percutaneous coronary intervention: a feasibility study</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Piayda</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page">36</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">RAFT: recurrent all-pairs field transforms for optical flow</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Teed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58536-5_24</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58536-524" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12347</biblScope>
+			<biblScope unit="page" from="402" to="419" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Image-based device tracking for the co-registration of angiography and intravascular ultrasound images</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ecabert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Prummer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ostermeier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Comaniciu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-23623-5_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-23623-521" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2011</title>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Martel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Peters</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="volume">6891</biblScope>
+			<biblScope unit="page" from="161" to="168" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Towards grand unification of object tracking</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19803-8_43</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19803-843" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13681</biblScope>
+			<biblScope unit="page" from="733" to="751" />
+		</imprint>
+	</monogr>
+	<note>ECCV 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Learning spatio-temporal transformer for visual tracking</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10428" to="10437" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

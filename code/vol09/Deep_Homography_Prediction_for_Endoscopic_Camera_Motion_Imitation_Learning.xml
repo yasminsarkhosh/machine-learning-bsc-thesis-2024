@@ -1,0 +1,925 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Deep Homography Prediction for Endoscopic Camera Motion Imitation Learning</title>
+				<funder ref="#_cVhm6qA #_EjBGsSq">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_J2kBZb5">
+					<orgName type="full">Wellcome/EPSRC</orgName>
+				</funder>
+				<funder ref="#_ZPeaGkQ">
+					<orgName type="full">Mauna Kea Technologies</orgName>
+				</funder>
+				<funder ref="#_J8e7PGg">
+					<orgName type="full">European Union</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Martin</forename><surname>Huber</surname></persName>
+							<email>martin.huber@kcl.ac.uk</email>
+							<idno type="ORCID">0000-0003-4603-6773</idno>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering &amp; Image Sciences</orgName>
+								<orgName type="institution">King&apos;s College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Sébastien</forename><surname>Ourselin</surname></persName>
+							<idno type="ORCID">0000-0002-5694-5340</idno>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering &amp; Image Sciences</orgName>
+								<orgName type="institution">King&apos;s College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Christos</forename><surname>Bergeles</surname></persName>
+							<idno type="ORCID">0000-0002-9152-3194</idno>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering &amp; Image Sciences</orgName>
+								<orgName type="institution">King&apos;s College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tom</forename><surname>Vercauteren</surname></persName>
+							<idno type="ORCID">0000-0003-1794-0456</idno>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering &amp; Image Sciences</orgName>
+								<orgName type="institution">King&apos;s College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Deep Homography Prediction for Endoscopic Camera Motion Imitation Learning</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="217" to="226"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8AC4F01959DB95959C51E58C1E007729</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_21</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Computer vision</term>
+					<term>Robotic surgery</term>
+					<term>Imitation learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In this work, we investigate laparoscopic camera motion automation through imitation learning from retrospective videos of laparoscopic interventions. A novel method is introduced that learns to augment a surgeon's behavior in image space through object motion invariant image registration via homographies. Contrary to existing approaches, no geometric assumptions are made and no depth information is necessary, enabling immediate translation to a robotic setup. Deviating from the dominant approach in the literature which consist of following a surgical tool, we do not handcraft the objective and no priors are imposed on the surgical scene, allowing the method to discover unbiased policies. In this new research field, significant improvements are demonstrated over two baselines on the Cholec80 and HeiChole datasets, showcasing an improvement of 47% over camera motion continuation. The method is further shown to indeed predict camera motion correctly on the public motion classification labels of the AutoLaparo dataset. All code is made accessible on GitHub (https://github.com/RViMLab/homography_imitation_learning).</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Automation in robot-assisted minimally invasive surgery (RMIS) may reduce human error that is linked to fatigue, lack of attention and cognitive overload <ref type="bibr" target="#b7">[8]</ref>. It could help surgeons operate such systems by reducing the learning curve <ref type="bibr" target="#b28">[29]</ref>. And in an ageing society with shrinking workforce, it could help to retain accessibility to healthcare. It is therefore expected that parts of RMIS will be ultimately automated <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b29">30]</ref>. On the continuous transition towards different levels of autonomy, camera motion automation is likely to happen first <ref type="bibr" target="#b13">[14]</ref>. Initial attempts to automate camera motion in RMIS include rule-based approaches that keep surgical tools in the center of the field of view <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b20">21]</ref>.</p><p>The assumption that surgical tools remain centrally is, however, simplistic, as in many cases the surgeon may want to observe the surrounding anatomy to decide their next course of action.</p><p>Contrary to rule-based approaches, data-driven methods are capable to capture more complex control policies. Example data-driven methods suitable for camera motion automation include reinforcement learning (RL) and imitation learning <ref type="bibr">(IL)</ref>. The sample inefficiency and potential harm to the patient currently restrict RL approaches to simulation <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b22">23]</ref>, where a domain gap remains. Work to bridge the domain gap and make RL algorithms deployable in real setups have been proposed <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b19">20]</ref>, but clinical translation has not yet been achieved. For IL, on the other hand, camera motion automation could be learned from real data, thereby implicitly tackling the domain-gap challenge. The downside is that sufficient data may be difficult to collect. Many works highlight that lack of expert annotated data hinders progress towards camera motion automation in RMIS <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b18">19]</ref>. It is thus not surprising that existing literature on IL for camera motion automation utilizes data from mock setups <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b25">26]</ref>.</p><p>Recent efforts to make vast amounts of laparoscopic intervention videos publicly available <ref type="bibr" target="#b18">[19]</ref> drastically change how IL for camera motion automation can be approached. So far, this data is leveraged mainly to solve auxiliary tasks that could contribute to camera motion automation. As reviewed in <ref type="bibr" target="#b17">[18]</ref>, these tasks include tool and organ segmentation, as well as surgical phase recognition. For camera motion automation specifically, however, there exist no publicly available image-action pairs. Some work, therefore, continues to focus on the tools to infer camera motion <ref type="bibr" target="#b14">[15]</ref>, or learns on a robotic setup altogether <ref type="bibr" target="#b16">[17]</ref> where camera motion is accessible. The realization, however, that camera motion is intrinsic to the videos of laparoscopic interventions and that camera motion could be learned on harvested actions was first realized in <ref type="bibr" target="#b10">[11]</ref>, and later in <ref type="bibr" target="#b15">[16]</ref>. This comes with the additional advantage that no robot is necessary to learn behaviors and that one can directly learn from human demonstrations.</p><p>In this work, we build on <ref type="bibr" target="#b10">[11]</ref> for computationally efficient image-action pair extraction from publicly available datasets of laparoscopic interventions, which yields more than 20× the amount of data that was used in the closed source data of <ref type="bibr" target="#b15">[16]</ref>. Contrary to <ref type="bibr" target="#b15">[16]</ref>, our camera motion extraction does not rely on image features, which are sparse in surgical videos, and is intrinsically capable to differentiate between camera and object motion. We further propose a novel importance sampling and data augmentation step for achieving camera motion automation IL.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Materials and Methods</head><p>The proposed approach to learning camera motion prediction is summarized in Fig. <ref type="figure" target="#fig_0">1</ref>. The following sections will describe its key components in more detail. Training pipeline, refer to Sect. 2.3. From left to right: Image sequences are importance sampled from the video database and random augmentations are applied per sequence online. The lower branch estimates camera motion between subsequent frames, which is taken as pseudo-ground-truth for the upper branch, which learns to predict camera motion on a preview horizon.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Theoretical Background</head><p>Points on a plane, as observed from a moving camera, transform by means of the 3 × 3 projective homography matrix G in image space. Thus, predicting future camera motion (up to scale) may be equivalently treated as predicting future projective homographies.</p><p>It has been shown in <ref type="bibr" target="#b5">[6]</ref> that the four point representation of the projective homography, i.e., taking the difference between four points in homogeneous coordinates</p><formula xml:id="formula_0">Δuv = {p i -p i | i ∈ [0, 4)} ∈ R 4×2 that are related by Gp i ∼ p i ∀i,</formula><p>is better behaved for deep learning applications than the 3 × 3 matrix representation of a homography. Therefore, in this work, we treat camera motion C as a sequence of four point homographies on a time horizon [T 0 , T N +M ), N being the recall horizon's length, M being the preview horizon's length. Time points lie Δt apart, that is T i+1 = T i + Δt. For image sequences of length N+M, we work with four point homography sequences</p><formula xml:id="formula_1">C = {Δuv t | t ∈ [T 0 , T N +M )}.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Data and Data Preparation</head><p>Three datasets are curated to train and evaluate the proposed method: two cholecystectomy datasets (laparoscopic gallbladder removal), namely Cholec80 <ref type="bibr" target="#b24">[25]</ref> and HeiChole <ref type="bibr" target="#b26">[27]</ref>, and one hysterectomy dataset (laparoscopic uterus removal), namely AutoLaparo <ref type="bibr" target="#b27">[28]</ref>.</p><p>To remove status indicator overlays from the laparoscopic videos, which may hinder the camera motion estimator, we identify the bounding circle of the circular field of view using <ref type="bibr" target="#b1">[2]</ref>. We crop the view about the center point of the bounding circle to a shape of 240 × 320, so that no black regions are prominent in the images.</p><p>All three datasets are split into training, validation, and testing datasets. We split the videos by frame count into 80 ± 1% training and 20 ± 1% testing. Training and testing videos never intersect. We repeat this step to further split the training dataset into (pure) training and validation datasets.</p><p>Due to errors during processing the raw data, we exclude videos 19, 21, and 23 from HeiChole, as well as videos 22, 40, 65, and 80 from Cholec80. This results in dataset sizes of: Cholec80 -4.4e6 frames at 25 fps, HeiChole -9.5e5 frames at 25 fps, and AutoLaparo -7.1e4 frames at 25 fps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Proposed Pipeline</head><p>Video Database and Importance Sampling. The curated data from Sect. 2.2 is accumulated into a video database. Image sequences of length N + M are sampled at a frame increment of Δn between subsequent frames and with Δc frames between the sequence's initial frames. Prior to adding the videos to the database, an initial offline run is performed to estimate camera motion Δuv between the frames. This creates image-motion correspondences of the form (I n , I n+Δn , Δuv n ). Image-motion correspondences where E(||Δuv n || 2 ) &gt; σ, with sigma being the standard deviation over all motions in the respective dataset, define anchor indices n. Image sequences are sampled such that the last image in the recall horizon lies at index n = N -1, marking the start of a motion. The importance sampling samples indices from the intersection of all anchor indices, shifted by -N , with all possible starting indices for image sequences.</p><p>Geometric and Photometric Transforms. The importance sampled image sequences are fed to a data augmentation stage. This stage entails geometric and photometric transforms. The distinction is made because downstream, the pipeline is split into two branches. The upper branch serves as camera motion prediction whereas the lower branch serves as camera motion estimation, also refer to the next section. As it acts as the source of pseudo-ground-truth, it is crucial that the camera motion estimator performs under optimal conditions, hence no photometric transforms, i.e. transforms that change brightness/contrast/fog etc., are applied. Photometrically transformed images shall further be denoted as Ĩ. To encourage same behavior under different perspectives, geometric transforms are applied, i.e. transforms that change orientation/up to down/left to right etc. Transforms are always sampled randomly, and applied consistently to the entire image sequence. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Camera Motion</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Evaluation Methodology</head><p>The following two sections elaborate the experiments we conduct to investigate the proposed pipeline from Fig. <ref type="figure" target="#fig_0">1</ref> in Sect. 2.3. First the camera motion estimator is investigated, followed by the camera motion predictor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Camera Motion Estimator</head><p>Camera Motion Distribution. To extract the camera motion distribution, we run the camera motion estimator from <ref type="bibr" target="#b10">[11]</ref> with a ResNet-34 backbone over all datasets from Sect. 2.2. We map the estimated four point homographies to up/down/left/right/zoom-in/zoom-out for interpretability. Left/right/up/down corresponds to all four point displacements Δuv consistently pointing left/right/ up/down respectively. Zoom-in/out corresponds to all four point displacements Δuv consistently pointing inwards/outwards. Rotation left corresponds to all four point displacements pointing up right, bottom right, and so on. Same for rotation right. Camera motion is defined static if it lies below the standard deviation in the dataset. The frame increment is set to 0.25 s, corresponding to Δn = 5 for the 25 fps videos.</p><p>Online Camera Motion Estimation. Since the camera motion estimator is executed online, memory footprint and computational efficiency are of importance. Therefore, we evaluate the estimator from <ref type="bibr" target="#b10">[11]</ref> with a ResNet-34 backbone, SURF &amp; RANSAC, and LoFTR <ref type="bibr" target="#b23">[24]</ref> &amp; RANSAC. Each estimator is run 1000 times on a single image sequence of length N +M = 15 with an NVIDIA GeForce RTX 2070 GPU and an Intel(R) Core(TM) i7-9750H CPU @ 2.60 GHz.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Camera Motion Predictor</head><p>Model Architecture. For all experiments, the camera motion predictor is a ResNet-18/34/50, with the number of input features equal to the recall horizon N × 3 (RGB), where N = 14. We set the preview horizon M = 1. The frame increment is set to 0.25 s, or Δn = 5 for the 25 fps videos. The number of frames between clips is also set to 0.25 s, or Δc = 5.</p><p>Training Details. The camera motion predictor is trained on each dataset from Sect. 2.2 individually. For training on Cholec80/HeiChole/AutoLaparo, we run 80/50/50 epochs on a batch size of 64 with a learning rate of 2.5e -5/1.e -4/1.e -4. The learning rates for Cholec80 and HeiChole relate approximately to the dataset's training sizes, see Table <ref type="table" target="#tab_1">2</ref>. For Cholec80, we reduce the learning rate by a factor 0.5 at epochs 50, 75. For Heichole/AutoLaparo we drop the learning rate by a factor 0.5 at epoch 35. The loss in Fig. <ref type="figure" target="#fig_0">1</ref> is set to the mean pairwise distance between estimation and prediction E(||Δ ũv t -Δuv t || 2 )+λE(||Δ ũv t || 2 ) with a regularizer that discourages the identity Δ ũv t = 0 (i.e. no motion). We set λ = 0.1.</p><p>Evaluation Metrics. For evaluation we compute the mean pairwise distance between estimated and predicted motion E(||Δ ũv t -Δuv t || 2 ). All camera motion predictors are benchmarked against a baseline, that is a O(1)/O(2)-Taylor expansion of the estimated camera motion Δuv t . Furthermore, the model that is found to perform best is evaluated on the multi-class labels (left, right, up, down) that are provided in AutoLaparo.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Camera Motion Estimator</head><p>Camera Motion Distribution. The camera motion distributions for all datasets are shown in Fig. <ref type="figure">2</ref>. It is observed that for a large fraction of the sequences there is no significant camera motion (Cholec80 76.21%, HeiChole 76.2%, AutoLaparo 71.29%). This finding supports the importance sampling that was introduced in Sect. 2.3. It can further be seen that e.g. left/right and up/down motions are equally distributed. Fig. <ref type="figure">2</ref>. Camera motion distribution, refer to Sect. 3.1. AutoLaparo: 2.81% -up, 1.88%down, 4.48% -left, 3.38% -right, 0.45% -zoom_in, 0.2% -zoom_out, 0.3% -rotate_left 0.3%, -rotate_right 14.9% -mixed, 71.29% -static.</p><p>Online Camera Motion Estimation. The results of the online camera motion estimation are summarized in Table <ref type="table" target="#tab_0">1</ref>. The deep homography estimation with a Resnet34 backbone executes 11× quicker and has the lowest GPU memory footprint of the GPU accelerated methods. This allows for efficient implementation of the proposed online camera motion estimation in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Camera Motion Prediction</head><p>The camera motion prediction results for all datasets are highlighted in Table <ref type="table" target="#tab_1">2</ref>. It can be seen that significant improvements over the baseline are achieved on the Cholec80 and HeiChole datasets. Whilst the learned prediction performs better on average than the baseline, no significant improvement is found for the AutoLaparo dataset. The displacement of the image center point under the predicted camera motion for AutoLaparo is plotted against the provided multi-class motion annotations and shown in Fig. <ref type="figure">3</ref>. It can be seen that the camera motion predictions align well with the ground truth labels.     </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion and Outlook</head><p>To the best of our knowledge, this work is the first to demonstrate that camera motion can indeed be learned from retrospective videos of laparoscopic interventions, with no manual annotation. Self-supervision is achieved by harvesting image-motion correspondences using a camera motion estimator, see Fig. <ref type="figure" target="#fig_0">1</ref>. The camera motion predictor is shown to generate statistically significant better predictions over a baseline in Table <ref type="table" target="#tab_1">2</ref> as measured using pseudo-ground-truth and on multi-class manually annotated motion labels from AutoLaparo in Fig. <ref type="figure">3</ref>. An exemplary image sequence in Fig. <ref type="figure" target="#fig_5">4</ref> demonstrates successful camera motion prediction on HeiChole. These results were achieved through the key finding from Fig. <ref type="figure">2</ref>, which states that most image sequences, i.e. static ones, are irrelevant to learning camera motion. Consequentially, we contribute a novel importance sampling method, as described in Sect. 2.3. Finally, we hope that our open-source commitment will help the community explore this area of research further.</p><p>A current limitations of this work is the preview horizon M of length 1. One might want to extend it for model predictive control. Furthermore, to improve explainability to the surgeon, but also to improve the prediction in general, it would be beneficial to include auxiliary tasks, e.g. tool and organ segmentation, surgical phase recognition, and audio. There also exist limitations for the camera motion estimator. The utilized camera motion estimator is efficient and isolates object motion well from camera motion, but is limited to relatively small camera motions. Improving the camera motion estimator to large camera motions would help increase the preview horizon M .</p><p>In future work, we will execute this model in a real setup for investigating transferability. This endeavor is backed by <ref type="bibr" target="#b9">[10]</ref>, which demonstrates how the learned homography could immediately be deployed on a robotic laparoscope holder. It might proof necessary to fine-tune the presented policy through reinforcement learning with human feedback.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Training pipeline, refer to Sect. 2.3. From left to right: Image sequences are importance sampled from the video database and random augmentations are applied per sequence online. The lower branch estimates camera motion between subsequent frames, which is taken as pseudo-ground-truth for the upper branch, which learns to predict camera motion on a preview horizon.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Estimator and Predictor. The goal of this work is to have a predictor learn camera motion computed by an estimator. The predictor takes as input a photometrically and geometrically transformed recall horizon { Ĩt | t ∈ [T 0 , T N )} of length N , and predicts camera motion C = {Δ ũv t | t ∈ [T N , T N +M )} on the preview horizon of length M . The estimator takes as input the geometrically transformed preview horizon {I t | t ∈ [T M , T N +M )} and estimates camera motion C, which serves as a target to the predictor. The estimator is part of the pipeline to facilitate on-the-fly perspective augmentation via the geometric transforms.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>( a )</head><label>a</label><figDesc>Predicted camera motion along x-axis, scaled by image size to [-1, 1]. (b) Predicted camera motion along y-axis, scaled by image size to [-1, 1].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig.</head><label></label><figDesc>Fig. 3. Predicted camera motion on AutoLaparo, refer to Sect. 3.2. Camera motion predictor trained on Cholec80 with ResNet-50 backbone, see Table2. Shown is the motion of the image center under the predicted homography. Clearly, for videos labeled left/right, the center point is predicted to move left/right and for up/down labels, the predicted left/right motion is centered around zero (a). Same is observed for up/down motion in (b), where left/right motion is zero-centered.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Exemplary camera motion prediction, refer to Sect. 3.2. In the image sequence, the attention changes from the right to the left tool. We warp the past view (yellow) by the predicted homography and overlay the current view (blue). Good alignment corresponds to good camera motion prediction. Contrary to the baseline, the proposed method predicts the motion well. Data taken from HeiChole test set, ResNet-50 backbone trained on Cholec80, refer Table 2. (Color figure online)</figDesc><graphic coords="8,46,29,54,29,331,24,98,98" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Memory footprint and execution time of different camera motion estimators, refer to Sect. 3.1.</figDesc><table><row><cell>Method</cell><cell cols="3">Execution time [s] Speed-up [a.u.] Model/Batch [Mb]</cell></row><row><cell>Resnet34</cell><cell>0.016 ± 0.048</cell><cell>11.1</cell><cell>664/457</cell></row><row><cell cols="2">LoFTR &amp; RANSAC 0.178 ± 0.06</cell><cell>1.0</cell><cell>669/2412</cell></row><row><cell cols="2">SURF &amp; RANSAC 0.131 ± 0.024</cell><cell>1.4</cell><cell>NA</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Camera motion predictor performance, refer to Sect. 3.2. Taylor baselines predict based on previous estimated motion, ResNets based on images.</figDesc><table><row><cell>Dataset</cell><cell cols="4">Train Size [Frames] Mean Pairwise Distance [Pixels]</cell></row><row><cell></cell><cell></cell><cell>Taylor</cell><cell></cell><cell cols="2">ResNet (proposed)</cell></row><row><cell></cell><cell></cell><cell>O(1)</cell><cell>O(2)</cell><cell>18</cell><cell>34</cell><cell>50</cell></row><row><cell>Cholec80</cell><cell>3.5e6</cell><cell cols="4">27.2 ± 23.1 36.4 ± 31.2 14.8 ± 11.7 14.4 ± 11.4 14.4 ± 11.4</cell></row><row><cell>HeiChole</cell><cell>7.6e5</cell><cell cols="4">29.7 ± 26.4 39.8 ± 35.9 15.8 ± 12.5 15.8 ± 12.5 15.8 ± 12.5</cell></row><row><cell cols="2">AutoLaparo 5.9e4</cell><cell cols="4">19.4 ± 18.4 25.8 ± 24.7 11.2 ± 11.0 11.3 ± 11.0 11.3 ± 11.0</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>3. Predicted camera motion on AutoLaparo, refer to Sect. 3.2. Camera motion predictor trained on Cholec80 with ResNet-50 backbone, see Table 2. Shown is the motion of the image center under the predicted homography. Clearly, for videos labeled</figDesc><table /><note><p>left/right, the center point is predicted to move left/right and for up/down labels, the predicted left/right motion is centered around zero (a). Same is observed for up/down motion in (b), where left/right motion is zero-centered.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by core and project funding from the <rs type="funder">Wellcome/EPSRC</rs> [<rs type="grantNumber">WT203148/Z/16/Z</rs>; <rs type="grantNumber">NS/A000049/1</rs>; <rs type="grantNumber">WT101957</rs>; <rs type="grantNumber">NS/A000027/1</rs>]. This project has received funding from the <rs type="funder">European Union</rs>'s <rs type="programName">Horizon 2020 research and innovation programme</rs> under grant agreement No <rs type="grantNumber">101016985</rs> (<rs type="projectName">FAROS</rs> project). TV is supported by a Medtronic/RAEng Research Chair [RCSRF1819\7\34]. SO and TV are co-founders and shareholders of Hypervision Surgical. TV is co-founder and shareholder of Hypervision Surgical. TV holds shares from <rs type="funder">Mauna Kea Technologies</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_J2kBZb5">
+					<idno type="grant-number">WT203148/Z/16/Z</idno>
+				</org>
+				<org type="funding" xml:id="_cVhm6qA">
+					<idno type="grant-number">NS/A000049/1</idno>
+				</org>
+				<org type="funding" xml:id="_EjBGsSq">
+					<idno type="grant-number">WT101957</idno>
+				</org>
+				<org type="funding" xml:id="_J8e7PGg">
+					<idno type="grant-number">NS/A000027/1</idno>
+					<orgName type="program" subtype="full">Horizon 2020 research and innovation programme</orgName>
+				</org>
+				<org type="funded-project" xml:id="_ZPeaGkQ">
+					<idno type="grant-number">101016985</idno>
+					<orgName type="project" subtype="full">FAROS</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Automating endoscopic camera motion for teleoperated minimally invasive surgery using inverse reinforcement learning</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Agrawal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>Worcester Polytechnic Institute</publisher>
+		</imprint>
+	</monogr>
+	<note type="report_type">Ph.D. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Rapid and robust endoscopic content area estimation: a lean GPU-based pipeline and curated benchmark dataset</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Budd</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Garcia-Peraza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Herrera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Huber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/21681163.2022.2156393</idno>
+		<ptr target="https://doi.org/10.1080/21681163.2022.2156393" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Biomech. Biomed. Eng. Imaging Vis</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1215" to="1224" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">VisionBlender: a tool to efficiently generate computer vision datasets for robotic surgery</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cartucho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tukra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">S</forename><surname>Elson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Giannarou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Biomech. Biomed. Eng. Imaging Vis</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="331" to="338" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">SCAN: system for camera autonomous navigation in robotic-assisted surgery</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Da Col</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mariani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Deguet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Menciassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kazanzides</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>De Momi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2996" to="3002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The potential for artificial intelligence in healthcare</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Davenport</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kalakota</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Future Healthc. J</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">94</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Detone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Malisiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rabinovich</surname></persName>
+		</author>
+		<ptr target="http://arxiv.org/abs/1606.03798" />
+		<title level="m">Deep image homography estimation</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A guide to deep learning in healthcare</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Esteva</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Med</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="24" to="29" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Concepts and trends in autonomy for robot-assisted surgery</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fiorini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Y</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Taylor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. IEEE</title>
+		<imprint>
+			<biblScope unit="volume">110</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="993" to="1011" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Robotic endoscope control via autonomous instrument tracking</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Garcia-Peraza-Herrera</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Robot. AI</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">832208</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Homography-based visual servoing with remote center of motion for semiautonomous robotic endoscope manipulation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Huber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Mitchell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Henry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bergeles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 International Symposium on Medical Robotics (ISMR)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Deep homography estimation in dynamic surgical scenes for laparoscopic camera motion extraction</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Huber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bergeles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Biomech. Biomed. Eng. Imaging Visu</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="321" to="329" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Learning 2D surgical camera motion from demonstrations</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Krishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Goldberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 14th International Conference on Automation Science and Engineering (CASE)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="35" to="42" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Surgical robotics beyond enhanced dexterity instrumentation: a survey of machine learning techniques and their role in intelligent and autonomous surgical actions</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kassahun</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11548-015-1305-z</idno>
+		<ptr target="https://doi.org/10.1007/s11548-015-1305-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="553" to="568" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Artificial intelligence-based computer vision in surgery: recent advances and future perspectives</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kitaguchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Takeshita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hasegawa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ito</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Gastroenterological Surg</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="29" to="36" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Data-driven holistic framework for automated laparoscope optimal view control with learning-based depth perception</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12366" to="12372" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Learning laparoscope actions via video features for proactive robotic field-of-view control</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="6653" to="6660" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">3D perception based imitation learning under limited demonstration for laparoscope control in robotic surgery</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="7664" to="7670" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Video content analysis of surgical procedures</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Loukas</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00464-017-5878-1</idno>
+		<ptr target="https://doi.org/10.1007/s00464-017-5878-1" />
+	</analytic>
+	<monogr>
+		<title level="j">Surg. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="553" to="568" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Surgical data science-from concepts toward clinical translation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">102306</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Towards realistic laparoscopic image generation using image-domain translation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Marzullo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Moccia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Catellani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Calimeri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>De Momi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Programs Biomed</title>
+		<imprint>
+			<biblScope unit="volume">200</biblScope>
+			<biblScope unit="page">105834</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Towards an autonomous robot-assistant for laparoscopy using exteroceptive sensors: feasibility study and implementation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sandoval</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Laribi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Faure</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Breque</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Richer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zeghloul</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="6473" to="6480" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">LapGym-an open source framework for reinforcement learning in robot-assisted laparoscopic surgery</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Scheikl</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.09606</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Multicamera 3D viewpoint adjustment for robotic surgery via deep reinforcement learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hannaford</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Robot. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">2140003</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">LoFTR: detector-free local feature matching with transformers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8922" to="8931" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">EndoNet: a deep architecture for recognition tasks on laparoscopic videos</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shehata</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Mathelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="86" to="97" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">A learning robot for cognitive camera control in minimally invasive surgery</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wagner</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00464-021-08509-8</idno>
+		<idno>1007/ s00464-021-08509-8</idno>
+		<ptr target="https://doi.org/10" />
+	</analytic>
+	<monogr>
+		<title level="j">Surg. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="5365" to="5374" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Comparative validation of machine learning algorithms for surgical workflow and skill analysis with the heichole benchmark</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wagner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page">102770</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">AutoLaparo: a new dataset of integrated multi-tasks for imageguided surgical automation in laparoscopic hysterectomy</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1_46" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022, Part VII</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="486" to="496" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Learning curves in minimally invasive esophagectomy</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Van Workum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fransen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Luyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">World J. Gastroenterol</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">44</biblScope>
+			<biblScope unit="page">4974</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Robotics in laparoscopic surgery-a review</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">F</forename><surname>Zidane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Khattab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rezeka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>El-Habrouk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Robotica</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="126" to="173" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

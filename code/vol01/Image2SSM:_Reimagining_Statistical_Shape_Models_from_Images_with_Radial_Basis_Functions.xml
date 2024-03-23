@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Image2SSM: Reimagining Statistical Shape Models from Images with Radial Basis Functions</title>
+				<funder ref="#_QJEbtV7">
+					<orgName type="full">National Institutes of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Hong</forename><surname>Xu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="department" key="dep2">School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<settlement>Kahlert</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Shireen</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+							<email>shireen@sci.utah.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="department" key="dep2">School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<addrLine>Salt Lake</addrLine>
+									<settlement>Kahlert</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Image2SSM: Reimagining Statistical Shape Models from Images with Radial Basis Functions</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="508" to="517"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">2909A47B13613E07EF266829B7640F7E</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_49</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:30+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Statistical Shape Modeling</term>
+					<term>Deep Learning</term>
+					<term>Radial Basis Function Interpolation</term>
+					<term>Polyharmonic Splines</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Statistical shape modeling (SSM) is an essential tool for analyzing variations in anatomical morphology. In a typical SSM pipeline, 3D anatomical images, gone through segmentation and rigid registration, are represented using lower-dimensional shape features, on which statistical analysis can be performed. Various methods for constructing compact shape representations have been proposed, but they involve laborious and costly steps. We propose Image2SSM, a novel deep-learning-based approach for SSM that leverages image-segmentation pairs to learn a radial-basis-function (RBF)-based representation of shapes directly from images. This RBF-based shape representation offers a rich self-supervised signal for the network to estimate a continuous, yet compact representation of the underlying surface that can adapt to complex geometries in a data-driven manner. Image2SSM can characterize populations of biological structures of interest by constructing statistical landmark-based shape models of ensembles of anatomical shapes while requiring minimal parameter tuning and no user assistance. Once trained, Image2SSM can be used to infer low-dimensional shape representations from new unsegmented images, paving the way toward scalable approaches for SSM, especially when dealing with large cohorts. Experiments on synthetic and real datasets show the efficacy of the proposed method compared to the state-of-art correspondence-based method for SSM.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Statistical Shape Modeling (SSM) or morphological analysis, is a widespread tool used to quantify anatomical shape variation given a population of segmented 3D anatomies. Quantifying such subtle shape differences has been crucial in providing individualized treatments in medical procedures, detecting morphological pathologies, and advancing the understanding of different diseases <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b20">[21]</ref><ref type="bibr">[27]</ref><ref type="bibr" target="#b28">[28]</ref><ref type="bibr" target="#b29">[29]</ref>.</p><p>The two principal shape representations for building SSMs and performing subsequent statistical analyses are deformation fields and landmarks. Deformation fields encode implicit transformations between cohort samples and a predefined (or learned) atlas. In contrast, landmarks are explicit points spread on shape surfaces that correspond across the population <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b22">23]</ref>. Landmark-based representations have been used extensively due to their simplicity, computational efficiency, and interpretability for statistical analyses <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b28">28]</ref>. Some applications use manually defined landmarks, however, this is labor-intensive, not reproducible, and requires domain expertise (e.g., radiologists). Computational methods (e.g., minimum description length -MDL <ref type="bibr" target="#b13">[14]</ref>, particle-based shape modeling -PSM <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>, and frameworks based on Large Deformation Diffeomorphic Metric Mapping <ref type="bibr" target="#b14">[15]</ref>) for automatically placing dense correspondence points, aka point distribution models (PDMs), have shifted the SSM field to data-driven characterization of population-level variabilities that is objective, reproducible, and scalable. However, this efficiency suffers when intricate shape surfaces require thousands of points representing localized, convoluted shape features that may live between landmarks. Furthermore, existing methods for landmark-based SSM must go through laborious and computationally expensive steps that require anatomical and technical expertise, starting from anatomy segmentation, shape data preprocessing, and correspondence optimization, to generate PDMs from 3D images. Existing methods (e.g., <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b25">25]</ref>) have been able to use deep learning to assuage the arduous process of building a PDM but still require the construction of PDMs (e.g., using a computational method such as PSM <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>) to supervise its learning task, making these deep learning based methods restricted and biased towards the shape statistics captured by the SSM method that is used to construct their training data.</p><p>To address the shortcomings of existing models, we propose Image2SSM, a novel deep-learning-based approach for SSM directly from images that, given pairs of images and segmentations, can produce a statistical shape model using an implicit, continuous surface representation. Once trained, Image2SSM can produce PDMs of new images without the need for anatomy segmentations. Unlike existing deep learning-based methods for SSM from images, Image2SSM only requires image-segmentation pairs and alleviates the need for constructing PDM to supervise learning shape statistics from images. Image2SSM leverages an implicit, radial basis function (RBF)-based, representation of shapes to construct a self-supervised training signal by tasking the network to estimate a sparse set of control points and their respective suface normals that best approximate the underlying surface in the RBF sense. This novel application of RBFs to build SSMs allows statistical analyses on representative points/landmarks, their surface normals, and the shape surfaces themselves due to its compact, informative, yet comprehensive nature. Combined with deep networks to directly learn such a representation from images, this method ushers a next step towards fully end-to-end SSM frameworks that can build better and less restrictive low-dimensional shape representations more conducive to SSM analysis. In summary, the proposed method for SSM has the following strengths.</p><p>-Using a continuous, but compact surface representation instead of only landmarks that allows performing analyses on points, normals, and surfaces alike. -The RBF shape representation can adapt to the underlying surface geometry, spreading more landmarks over the more complex surface regions. -A deep learning approach that bypasses any conventional correspondence optimization to construct training data for supervision, requiring virtually no hyperparameter tuning or preprocessing steps. -This method uses accelerated computational resources to perform training and outperforms existing deep learning based methods that constructs PDMs from unsegmented images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>Image2SSM is a deep learning method that learns to build an SSM for an anatomical structure of interest directly from unsegmented images. It is trained on a population of I-3D images I = {I i } I i=1 as input and is supervised by their respective segmentations S = {S i } I i=1 . Image2SSM learns an RBF-based shape representation, consisting of a set of J control points P = {P i } I i=1 , and their surface normals N = {N i } I i=1 for each input shape, where the i-th shape point distribution model (PDM) is denoted by</p><formula xml:id="formula_0">P i = [p i,1 , p i,2 , • • • , p i,J ], the respec- tive surface normals are N i = [n i,1 , n i,2 , • • • , n i,J ],</formula><p>and p i,j , n i,j ∈ R 3 . The network is trained end-to-end to minimize a loss that (1) makes the learned control points and their surface normals adhere to the underlying surface, (2) approximates surface normals at each control point to encode a signed distance field to the surface, (3) promotes correspondence of these control points across shapes in the population, and (4) encourages a spread of control points on each surface that adapts to the underlying geometrical complexity. The learned control points define an anatomical mapping, or a metric, among the given shapes that enables quantifying subtle shape differences and performing shape statistics, for example, using principal component analysis (PCA) or other non-linear methods (e.g., <ref type="bibr" target="#b16">[17]</ref>). More importantly, once trained, Image2SSM can generate PDMs for new unsegmented images, bypassing the conventional SSM workflow of the manual (or semi-automated) segmentation, data preprocessing, and correspondence optimization. Furthermore, the continuous, implicit nature of the RBF representation enables extracting a proxy geometry (e.g., surface mesh or signed distance transforms -SDFs) at an arbitrary resolution that can be rasterized trivially on graphics hardware <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b26">26]</ref>.</p><p>In this section, we briefly elaborate on the RBF-shape representation, outline the network architecture, motivate the choices and design of the proposed losses, and detail the training protocol of Image2SSM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Representing Shapes Using RBFs</head><p>Implicit surface representation based on radial basis functions, RBF-shape for short, has been proven effective at representing intricate shapes by leveraging both surface control points and normals to inform shape reconstructions <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b26">26]</ref>. It defines a set of control points at the zero-level set and a pair of off-surface points (aka dipoles) with a signed distance s and -s along the surface normal of each control point. This is illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. We refer to the set of control points and their dipoles as P i for shape i, where P i = [P i , P + i , P - i ] with p ± i,j = p i,j ± sn i,j . Using P i , we define the shape's implicit function, a function that can query a distance to the surface given a point x ∈ R 3 , as follows:  </p><formula xml:id="formula_1">w i,j φ(x, p i,j ) + c T i x + c 0 i (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>where φ is the chosen RBF basis function (e.g., the thin plate spline φ(x, y) = (|x -y| 2 ) 2 log(|x -y| 2 ), the biharmonic φ(x, y) = |x -y| 2 or the triharmonic φ(x, y) = (|x -y| 2 ) 3 ) and c i ∈ R 3 and c 0 i ∈ R encodes the linear trend of the surface. We obtain</p><formula xml:id="formula_3">w i = [w i,1 , w i,2 , ..., w i,3J , c 0 i , c 1 i , c 2 i , c 3 i ] ∈ R 3J+4</formula><p>by solving a system of equations formed by Eq. 1 over x ∈ P i , along with constraints to keep the linear part separate from the nonlinear deformations captured by the RBF term (first term in Eq. 1) to form a fully determined system. See <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b26">26]</ref> for more details. Ultimately, we can use this function f to query approximate distances to the surface to build a mesh or a signed distance transform for visualization and analysis.</p><p>This representation can better represent shapes with far fewer control points due to its built-in interpolation capabilities, even further enhanced by informing the system with the point normals. Furthermore, this continuous representation allows Image2SSM to adapt to the underlying surface geometry and correct for control point placement mistakes while training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Loss Functions</head><p>Image2SSM uses four complementary loss functions to be trained on concurrently, illustrated in Fig. <ref type="figure" target="#fig_2">2</ref>. These are (i) surface loss, which aims to promote control point and normal adherence to the shape surface, (ii) normal loss, which attempts to learn the correct normals at each control point, (iii) correspondence loss, which aims to enforce positional correspondence across shapes, and (iv) sampling loss, which promotes a spread of the control points that best describes the underlying surface. Surface Loss: This loss guides control points to lie on the surface. We use l 1norm to force control points to lie on the zero-level set of the distance transform D i by minimizing the absolute distance-to-the-surface evaluated at it. For the i-th shape, this loss is defined as,</p><formula xml:id="formula_4">L surf Di (P i ) = J j=1 |D i (p i,j )|,<label>(2)</label></formula><p>where D i (p i,j ) is the distance transform value at point p i,j .</p><p>Normal Loss: This loss aims to estimate the surface normal of each control point. This loss is supervised by the gradient of signed distance transforms (SDF) D = {D i } I i=1 , computed from the binary segmentations S, with respect to x, ∂D = {∂D i } I i=1 , which captures unnormalized surface normals. We use the cosine distance (in degrees) to penalize the deviation of the estimated normals from the normals computed from the distance transforms.</p><formula xml:id="formula_5">L norm ∂Di (P i , N i ) = 180 π J j=1 cos -1 1 - n T i,j ∂D i (p i,j ) n i,j ∂D i (p i,j ) . (<label>3</label></formula><formula xml:id="formula_6">)</formula><p>Correspondence Loss: The notion of control points correspondence across the shape population can be quantified by the information content of the probability distribution induced by these control points in the shape space, the vector space defined by the shapes' PDMs <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>. The correspondence loss is triggered starting from the second epoch, where the mean shape µ = I i=1 P i is allowed to lag behind the update of the control points. Given a minibatch of size K, the correspondence loss is formulated using the differential entropy H of the samples in the minibatch, assuming a Gaussian distribution.</p><formula xml:id="formula_7">L corres µ (P 1 , ..., P K ) = H(P) = 1 2 log 1 3JK K k=1 (P k -µ) (P k -µ) T , (<label>4</label></formula><formula xml:id="formula_8">)</formula><p>where P here indicates the random variable of the shape space.</p><p>Sampling Loss: This loss makes f encode the signed distance to the surface while encouraging the control points to be adapted to the underlying geometry.</p><p>Here, we randomly sample Rpoints</p><formula xml:id="formula_9">B i = [b i,1 , ..., b i,R</formula><p>] that lie within a narrow band of thickness 2s around the surface (i.e., ±s from the zero-level set along the surface normal). The sampling loss minimizes distances between these narrow band points and the closest control point to each, scaled by the severity of the distance-to-surface approximation error. This objective guides control points to areas poorly described by f to progressively improve the signed distance-tosurface approximation and represent the shape more accurately. Let K i ∈ R R×M define the pairwise distances between each narrow band point b i,r and each control point p i,j for the i-th shape, where its r, j-th element k i r,j = b i,r -p i,j 2 . Let softmin(K i ) encode the normalized (over P i ) spatial proximity of each narrow band point to each control point, where r, the jth element of softmin(K i ) is computed as exp (-k i r,j )/</p><formula xml:id="formula_10">J j =1 exp(k i r,j ). Let e i ∈ R R</formula><p>+ captures the RBF approximation squared error at the narrow band points, where</p><formula xml:id="formula_11">e i,r = [f Pi,wi (b i,r ) -D i (b i,r )] 2 . Let E i = e i 1 T M</formula><p>, where 1 M is a ones-vector of size M . The samples loss can then be written as,</p><formula xml:id="formula_12">L sampl Bi,Di,wi (P i , N i ) = mean (softmin(K i ) ⊗ K i ⊗ E i ) ,<label>(5)</label></formula><p>where ⊗ indicates the Hadamard (elementwise) multiplication of matrices and mean computes the average over the matrix elements.</p><p>Image2SSM Loss: Given a minibatch of size K, the total loss of Image2SSM can be written as follows:</p><formula xml:id="formula_13">L I,D,∂D (P K , N K ) = K i=1 αL surf Di (P i ) + βL norm ∂Di (P i , N i ) + γL sampl Bi,Di,wi (P i , N i ) + ζL corres µ (P 1 , ..., P K )<label>(6)</label></formula><p>where α, β, γ, and ζ ∈ R + are weighting hyperparameters of the losses and P K , N K are the control points and normals of the samples in the minibatch. Figure <ref type="figure" target="#fig_2">2</ref> gives a full overview of the network and its interaction with the loses. Image2SSM's network is trained end-to-end with w i s detached from the training so that the loss does not back-propagate through the volatile linear solver.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Results</head><p>We demonstrate Image2SSM's performance against the state-of-the-art correspondence optimization algorithm, namely the particle-based shape modeling (PSM), using its open-source implementation, ShapeWorks <ref type="bibr" target="#b10">[11]</ref>, and DeepSSM <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6]</ref>, a deep learning method that trains on an existing correspondence model (provided by the PSM in this case) to infer PDMs on new unsegmented images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We run tests on a dataset consisting of 50 proximal femur CT scans devoid of pathologies in the form of image-segmentation pairs. The femurs are reflected when appropriate and rigidly aligned to a common frame of reference. Due to space limitations, we also show similar results for a large-scale left atrium MRI dataset in the supplementary materials. For ease of comparison, we build SSMs with 128 particles for all algorithms as is sufficient to cover important femur shape features (femoral head with its fovea and the lesser and greater trochanter). Statistical Shape Model: We showcase Image2SSM in creating a statistical shape model on its training data and compare such a model with one optimized by PSM <ref type="bibr" target="#b10">[11]</ref>. Figure <ref type="figure" target="#fig_3">3</ref> showcases the modes of variation, the surface-to-surface distances of Image2SSM against PSM, some representative reconstructions, and graphs for compactness (percentage of variance captured), specificity (ability to generate realistic shapes), and generalization (ability to represent unseen shape instance) <ref type="bibr" target="#b12">[13]</ref>. We observe that the modes of variation and metrics match expectations in both approaches. We show the effectiveness of Image2SSM in adapting to surface details to achieve lower maximum surface-to-surface distance, and that, unlike PSM, we can achieve reasonable reconstructions using RBF-shape. More on adaptation to detail in Fig. <ref type="figure" target="#fig_4">4</ref>.</p><p>We implement Image2SSM in PyTorch and leverage the Autograd functionality to perform gradient descent using the Adam optimizer <ref type="bibr" target="#b17">[18]</ref>. We randomly sample 10,000 3D points within the narrow band of each surface at each iteration. We use the biharmonic kernel for the basis function. However, the performance of Image2SSM is not significantly influenced by the kernel choice. The hyperparameters we use for Image2SSM are α = 1e 2 , β = 1e 2 , γ = 1e 4 , and ζ = 1e 3 for femurs and ζ = 1e 6 for left atria, which were determined based on the validation set. In practice, the runtime of Image2SSM is comparable to PSM for the femurs and roughly 2X faster for the left atria.  Inference Results: We compare the inference capabilities of Image2SSM against DeepSSM on unseen test data. We train DeepSSM with a PDM generated by PSM as supervision. For a fair comparison, we use DeepSSM without its augmented data, since Image2SSM does not require augmentation to learn shape models. Nevertheless, it is possible to generate and train Image2SSM on augmented data with even more facility than with DeepSSM. Figure <ref type="figure" target="#fig_4">4</ref> shows that Image2SSM compares very favorably to DeepSSM qualitatively and in terms of surface-to-surface distance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>Image2SSM is a novel deep-learning framework that both builds PDMs from image-segmentation pairs and predicts PDMs from unseen images. It uses an RBF-shape able to capture detail by leveraging surface normals at control points, and allows the SSM to adaptively permeate surfaces with high-level detail. Image2SSM represents another step forward in fully end-to-end PDMs and steers the field to utilizing more compact but comprehensive representations to achieve new analytical paradigms. Future directions include removing the requirement that the image-segmentation pairs must be rougly aligned across the cohort and relaxing the Gaussian assumption from correspondence enforcement.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) Concept of populating a surface using control points and the iso-surfaces using positive and negative pole points. (b) Same concept applied to an output threedimensional reconstructed femur. (c) Normals can be used to describe very distinct features of the greater trochanter.</figDesc><graphic coords="4,58,47,207,14,335,98,88,90" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>f</head><label></label><figDesc>Pi,wi (x) =j∈ Pi</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig.2. The Image2SSM architecture. A 3D image is fed to the convolutional backbone, which produces a flattened output for the feature extractor to produce control points and their respective normals. These are then used to compute the losses of the network.</figDesc><graphic coords="7,48,81,54,14,326,56,170,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. (a) First and second modes of variation obtained from Image2SSM training data and PSM. (b) Surface-to-surface distance on a best, median, and worst training femur mesh. (c) The left image shows the surface-to-surface distance comparison on all the data used to train Image2SSM; the right shows it without outliers.</figDesc><graphic coords="8,59,46,274,31,333,76,75,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. (a) Surface-to-surface distance on a reconstructed femur mesh from particles of a few test samples. (b) Surface-to-surface distance plot between DeepSSM and Image2SSM, and the same plot without the outlier femur. (c) Illustrates Image2SSM's capacity to capture detail on an unseen test image. (d) Shows the compactness (higher is better), specificity (lower is better) and generalization (lower is better) graphs against the number of modes of variation.</figDesc></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgment. The <rs type="funder">National Institutes of Health</rs> supported this work under grant numbers <rs type="grantNumber">NIBIB-U24EB029011</rs>. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_QJEbtV7">
+					<idno type="grant-number">NIBIB-U24EB029011</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_49.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Uncertain-DeepSSM: from images to probabilistic shape models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Shape in Medical Imaging: International Workshop, ShapeMI 2020</title>
+		<meeting><address><addrLine>Lima, Peru</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2020-10-04">October 4, 2020, Proceedings 12474. 2020</date>
+			<biblScope unit="page" from="57" to="72" />
+		</imprint>
+	</monogr>
+	<note>Conjunction with MICCAI 2020</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">From images to probabilistic anatomical shapes: a deep variational bottleneck approach</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_46" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="474" to="484" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Quantitative comparison of cortical bone thickness using correspondence-based shape modeling in patients with cam femoroacetabular impingement</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">R</forename><surname>Atkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Orthop. Res</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1743" to="1753" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Quantifying the severity of metopic craniosynostosis: a pilot study application of machine learning in craniofacial surgery</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Dvoracek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Ayyash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Goldstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Craniofacial Surg</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">DeepSSM: a blueprint for image-to-shape deep learning models</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">DeepSSM: a deep learning framework for statistical shape modeling from raw images</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Whitaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-04747-4_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-04747-4_23" />
+	</analytic>
+	<monogr>
+		<title level="m">ShapeMI 2018</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Reuter</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Wachinger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Paniagua</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Lüthi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Egger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11167</biblScope>
+			<biblScope unit="page" from="244" to="257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A statistical shape modelling framework to extract 3D shape biomarkers from medical imaging data: assessing arch morphology of repaired coarctation of the aorta</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Bruse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Reconstruction and representation of 3D objects with radial basis functions</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Carr</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/383259.383266</idno>
+		<ptr target="https://doi.org/10.1145/383259.383266" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 28th Annual Conference on Computer Graphics and Interactive Techniques</title>
+		<meeting>the 28th Annual Conference on Computer Graphics and Interactive Techniques<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2001">2001</date>
+			<biblScope unit="page" from="67" to="76" />
+		</imprint>
+	</monogr>
+	<note>SIGGRAPH &apos;01</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Apathy in Parkinson&apos;s disease is associated with nucleus accumbens atrophy: a magnetic resonance imaging shape analysis</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carriere</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mov. Disord</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="897" to="903" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Computational shape models characterize shape change of the left atrium in atrial fibrillation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<idno>CMC-S15710</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Med. Insights: Cardiol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">ShapeWorks: particle-based shape correspondence and visualization software</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Statistical Shape and Deformation Analysis</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="257" to="298" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Shape modeling and analysis with entropy-based particle systems</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shenton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-540-73273-0_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-540-73273-0_28" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2007</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Karssemeijer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Lelieveldt</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="volume">4584</biblScope>
+			<biblScope unit="page" from="333" to="345" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Davies</surname></persName>
+		</author>
+		<title level="m">Learning shape: optimal models for analysing natural variability</title>
+		<imprint>
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A minimum description length approach to statistical shape modeling</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Twining</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">F</forename><surname>Cootes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Waterton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Taylor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="525" to="537" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Morphometry of anatomical shape complexes with dense deformations and sparse parameters</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Durrleman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Prastawa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Charon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Korenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Joshi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gerig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Trouvé</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="35" to="49" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Statistical shape modeling of cam femoroacetabular impingement</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Harris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Datar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Whitaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">R</forename><surname>Jurrus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Peters</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Anderson</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/jor.22389</idno>
+		<ptr target="https://doi.org/10.1002/jor.22389" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Orthop. Res</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1620" to="1626" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A comparison study on nonlinear dimension reduction methods with kernel variations: visualization, optimization and classification</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Kempfert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Wong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Intell. Data Anal</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="267" to="290" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Statistical shape modeling of the talocrural joint using a hybrid multi-articulation joint approach</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lenz</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-021-86567-7</idno>
+		<ptr target="https://doi.org/10.1038/s41598-021-86567-7" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page">7314</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">How many different types of femora are there in primary hip osteoarthritis? an active shape modeling study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Merle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Orthop. Res</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="413" to="422" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">High variability of acetabular offset in primary hip osteoarthritis influences acetabular reaming-a computed tomography-based anatomic study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Merle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Arthroplasty</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1808" to="1814" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Statistical shape and appearance models of bones</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sarkalkan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Weinans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Zadpoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bone</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="129" to="140" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Thompson</surname></persName>
+		</author>
+		<title level="m">On growth and form</title>
+		<imprint>
+			<date type="published" when="1942">1942</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Probabilistic 3D surface reconstruction from sparse MRI information</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tóthová</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="813" to="823" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_79</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8_79" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Uncertainty quantification in CNN-based surface prediction using shape priors</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tóthová</surname></persName>
+		</author>
+		<idno>CoRR abs/1807.11272</idno>
+		<ptr target="http://arxiv.org/abs/1807.11272" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><surname>Turk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>O'brien</surname></persName>
+		</author>
+		<title level="m">Variational implicit surfaces</title>
+		<imprint>
+			<date type="published" when="1999">1999</date>
+			<biblScope unit="page">27</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Statistical shape modeling of the hip and the association with hip osteoarthritis: a systematic review</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Buuren</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.joca.2020.12.003</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S106345842031219X" />
+	</analytic>
+	<monogr>
+		<title level="j">Osteoarthritis Cartilage</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="607" to="618" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Computational planning in facial surgery</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zachow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Facial Plast. Surg</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">05</biblScope>
+			<biblScope unit="page" from="446" to="462" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Patient-specific bone modeling and analysis: the role of integration and automation in clinical adoption</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Zadpoor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Weinans</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomech</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="750" to="760" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

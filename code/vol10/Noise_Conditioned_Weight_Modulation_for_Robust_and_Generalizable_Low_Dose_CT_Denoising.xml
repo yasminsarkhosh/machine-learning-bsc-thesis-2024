@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Noise Conditioned Weight Modulation for Robust and Generalizable Low Dose CT Denoising</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Sutanu</forename><surname>Bera</surname></persName>
+							<email>sutanu.bera@iitkgp.ac.in</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronics and Electrical Communication Engineering</orgName>
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Prabir</forename><forename type="middle">Kumar</forename><surname>Biswas</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronics and Electrical Communication Engineering</orgName>
+								<orgName type="institution">Indian Institute of Technology Kharagpur</orgName>
+								<address>
+									<settlement>Kharagpur</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Noise Conditioned Weight Modulation for Robust and Generalizable Low Dose CT Denoising</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="88" to="97"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">73F90FEA08B83C3CB012A9B91085F140</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_9</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>LDCT denoising</term>
+					<term>Dynamic Convolution</term>
+					<term>CT noise variance</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deep neural networks have been extensively studied for denoising low-dose computed tomography (LDCT) images, but some challenges related to robustness and generalization still need to be addressed. It is known that CNN-based denoising methods perform optimally when all the training and testing images have the same noise variance, but this assumption does not hold in the case of LDCT denoising. As the variance of the CT noise varies depending on the tissue density of the scanned organ, CNNs fails to perform at their full capacity. To overcome this limitation, we propose a novel noise-conditioned feature modulation layer that scales the weight matrix values of a particular convolutional layer based on the noise level present in the input signal. This technique creates a neural network that is conditioned on the input image and can adapt to varying noise levels. Our experiments on two public benchmark datasets show that the proposed dynamic convolutional layer significantly improves the denoising performance of the baseline network, as well as its robustness and generalization to previously unseen noise levels.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Convolutional neural networks (CNN) have emerged as one of the most popular methods for noise removal and restoration of LDCT images <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b13">14]</ref>. While CNNs can produce better image quality than manually designed functions, there are still some challenges that hinder their widespread adoption in clinical settings. Convolutional denoisers are known to perform best when the training and testing images have similar or identical noise variance <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b15">16]</ref>. On the other hand, different anatomical sites of the human body have different tissue densities and compositions, which affects the amount of radiation that is absorbed and scattered during CT scanning; as a result, noise variance in LDCT images also varies significantly among different sites of the human body <ref type="bibr" target="#b12">[13]</ref>.</p><p>Furthermore, the noise variance is also influenced by the differences in patient size and shape, imaging protocol, etc. <ref type="bibr" target="#b10">[11]</ref>. Because of this, CNN-based denoising networks fail to perform optimally in LDCT denoising. In this study, we have introduced a novel dynamic convolution layer to combat the issue of noise level variability in LDCT images. Dynamic convolution layer is a type of convolutional layer in which the convolutional kernel is generated dynamically at each layer based on the input data <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b7">8]</ref>. Unlike the conventional dynamic convolution layer, here we have proposed to use a modulating signal to scale the value of the weight vector(learned via conventional backpropagation) of a convolutional layer. The modulating signal is generated dynamically from the input image using an encoder network. The proposed method is very simple, and learning the network weight is a straightforward one-step process, making it manageable to deploy and train. We evaluated the proposed method on the recently released largescale LDCT database of TCIA Low Dose CT Image and Projection Data <ref type="bibr" target="#b9">[10]</ref> and the 2016 NIH-AAPM-Mayo Clinic low dose CT grand challenge database <ref type="bibr" target="#b8">[9]</ref>. These databases contain low-dose CT data from three anatomical sites, i.e., head, chest, and abdomen. Extensive experiments on these databases validate the proposed method improves the baseline network's performance significantly. Furthermore, we have shown the generalization ability to the out-of-distribution data, and the robustness of the baseline network is also increased significantly via using the proposed weight-modulated dynamic convolutional layer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Motivation: Each convolutional layer in a neural network performs the sum of the product operation between the weight vector and input features. However, as tissue density changes in LDCT images, the noise intensity also changes, leading to a difference in the magnitude of intermediate feature values. If the variation in input noise intensity is significant, the magnitude of the output feature of the convolutional layer can also change substantially. This large variation in input feature values can make the CNN layer's response unstable, negatively impacting the denoising performance. To address this issue, we propose to modulate the weight vector values of the CNN layer based on the noise level of the input image. This approach ensures that the CNN layer's response remains consistent, even when the input noise variance changes drastically.</p><p>Weight Modulation: Figure <ref type="figure" target="#fig_0">1</ref> depicts our weight modulation technique, which involves the use of an additional anatomy encoder network, E a , along with the backbone denoising network, CNN D . The output of the anatomy encoder, denoted as e x , is a D-dimensional embedding, i.e., e x = E a (∇ 2 (x)). Here, x is the input noisy image, and ∇ 2 (.) is a second-order Laplacian filter. This embedding e x serves as a modulating signal for weight modulation in the main denoising network (CNN D ). Specifically, the lth weight-modulated convolutional layer, F l , of the backbone network, CNN D , takes the embedding e x as input. Then the embedding e x is passed to a 2 Layer MLP, denoted as φ l , which learns a nonlinear mapping between the layer-specific code, denoted as s l ∈ R N l , and the embedding e x , i.e., s l = φ l (e x ). Here, N l represents the number of feature maps in the layer F l . The embedding e x can be considered as the high dimensional code containing the semantics information and noise characteristic of the input image. The non-linear mapping φ l maps the embedding e x to a layer-specific code s l , so that different layers can be modulated differently depending on the depth and characteristic of the features. Let w l ∈ R N l ×N l-1 ×k×k be the weight vector of F l learned via standard back-propagation learning. Here (k × k) is the size of the kernel, N l-1 is the number of feature map in the previous layer. Then the w l is modulated using s l as following,</p><formula xml:id="formula_0">ŵl = w l s l (1)</formula><p>Here, ŵl is the modulated weight value, and represents component wise multiplication. Next, the scaled weight vector is normalized by its L2 norm across channels as follows:</p><formula xml:id="formula_1">wl = ŵl N l-1 ,k,k ŵ2 l +<label>(2)</label></formula><p>Normalizing the modulated weights takes care of any possible instability arise due to high or too low weight value and also ensures that the modulated weight has consistent scaling across channels, which is important for preserving the spatial coherence of the denoised image <ref type="bibr" target="#b6">[7]</ref>. The normalized weight vectors, wl are then used for convolution, i.e., f l = F l wl * f l-1 . Here, f l , and f l-1 are the output feature map of lth, l -1th layer, and * is the convolution operation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Relationship with Recent Methods:</head><p>The proposed weight modulation technique leveraged the recent concept of style-based image synthesis proposed in StyleGAN2 <ref type="bibr" target="#b6">[7]</ref>. However, StyleGAN2 controlled the structure and style of the generated image by modulating weight vectors using random noise and latent code. Whereas, we have used weight modulation for dynamic filter generation conditioned on input noisy image to generate a consistent output image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Implementation Details:</head><p>The proposed dynamic convolutional layer is very generic and can be integrated into various backbone networks. For our denoising task, we opted for the encoder-decoder-based UNet <ref type="bibr" target="#b11">[12]</ref> architecture and replaced some of its generic convolutional layers with our weight-modulated dynamic convolution layer. To construct the anatomy encoder network, we employed ten convolutional blocks and downscaled the input feature map's spatial resolution by a factor of nine through two max-pooling operations inside the network. We fed the output of the last convolutional layer into a global average pooling layer to generate a 512-dimensional feature vector. This vector was then passed through a 2-layer MLP to produce the final embedding, e x ∈ R 512 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Setting</head><p>We used two publicly available data sets, namely, 1. TCIA Low Dose CT Image and Projection Data, 2. 2016 NIH-AAPM-Mayo Clinic low dose CT grand challenge database to validate the proposed method. The first dataset contains LDCT data of different patients of three anatomical sites, i.e., head, chest, and abdomen, and the second dataset contains LDCT images of the abdomen with two different slice thicknesses (3 mm, 1 mm). We choose 80% data from each anatomical site for training and the remaining 20% for testing. We used the Adam optimizer with a batch size of 16. The learning rate was initially set to 1e -4 and was assigned to decrease by a factor of 2 after every 6000 iterations. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Result and Discussion</head><p>Comparison with Baseline: This section discusses the efficacy of the proposed weight modulation technique, comparing it with a baseline UNet network (M1) and the proposed weight-modulated convolutional network (M2). The networks were trained using LDCT images from a single anatomical region and tested on images from the same region. Table <ref type="table" target="#tab_0">1</ref> provides an objective comparison between the two methods in terms of PSNR, SSIM, and RMSE for different anatomical regions. The results show that the proposed dynamic weight modulation technique significantly improved the denoising performance of the baseline UNet for all settings. For example, the PSNR for head images was improved by 0.59 dB, and similar improvements were observed for other anatomical regions. Additionally, Table <ref type="table" target="#tab_0">1</ref> shows the floating point computational requirements of the different methods. It can be seen that the number of FLOPs of the dynamic weight modulation technique is not considerably higher than the baseline network M1, yet the improvement in performance is much appreciable. In Fig. <ref type="figure" target="#fig_1">2</ref>, we provide a visual comparison of the denoised output produced by different networks. Two sample images from datasets D1 and D2, corresponding to the abdomen and chest regions, respectively, are shown. The comparison shows that the proposed network M2 outperforms the baseline model M1 in terms of noise reduction and details preservation. For instance, in the denoised image of the abdomen region, the surface of the liver in M1 appears rough and splotchy due to noise, while in M2, the image is crisp, and noise suppression is adequate. Similarly, in the chest LDCT images, noticeable streaking artifacts near the breast region are present in the M1 output, and the boundaries of different organs like the heart and shoulder blade are not well-defined. In contrast, M2 produces crisp and definite boundaries, and streaking artifacts are significantly reduced. Moreover, M1 erases finer details like tiny blood vessels in the lung region, leading to compromised visibility, while M2 preserves small details much better than M1, resulting in output that is comparable with the original NDCT image. Robustness Analysis: In this section, we evaluate the performance of existing denoising networks in a challenging scenario where the networks are trained to remove noise from a mixture of LDCT images taken from different anatomical regions with varying noise variances and patterns. We compared two networks in this analysis: M3, which is a baseline UNet model trained using a mixture of LDCT images, and M4, which is the proposed weight-modulated network, trained using same training data. Table <ref type="table" target="#tab_1">2</ref> provides an objective comparison between these two methods. We found that joint training has a negative impact on the performance of the baseline network, M3, by a significant margin. Specifically, M3 yielded 0.88 dB lower PSNR than model M1 for head images, which  were trained using only head images. Similar observations were also noted for other anatomical regions like the abdomen and chest. The differences in noise characteristics among the different LDCT images make it difficult for a single model to denoise images efficiently from a mixture of anatomical regions. Furthermore, the class imbalance between small anatomical sites (e.g., head, knee, and prostate) and large anatomical locations (e.g., lung, abdomen) in a training set introduces a bias towards large anatomical sites, resulting in unacceptably lower performance for small anatomical sites. On the other hand, M4 showed robustness to these issues. Its performance was similar to M2 for all settings, and it achieved 0.69 dB higher PSNR than M3. Noise-conditioned weight modulation enables the network to adjust its weight based on the input images, allowing it to denoise every image with the same efficiency.</p><p>Figure <ref type="figure" target="#fig_2">3</ref> provides a visual comparison of the denoising performance of two methods on LDCT images from three anatomical regions. The adverse effects of joint training on images from different regions are apparent. Head LDCT images, which had the lowest noise, experienced a loss of structural and textural information in the denoising process by baseline M3. For example, the head lobes appeared distorted in the reconstructed image. Conversely, chest LDCT images, which were the noisiest, produced artefacts in the denoised image by M3, significantly altering the image's visual appearance. In contrast, M4 preserved all structural information and provided comparable noise reduction across all anatomical structures. CNN-based denoising networks act like a subtractive method, where the network learns to subtract the noise from the input signal by using a series of convolutional layers. A fixed set of subtracters is inefficient for removing noise from images with various noise levels. As a result, images with low noise are over smoothed and structural information is lost, whereas images with high noise generate residual noise and artefacts. In case of images containing a narrow range of noise levels, such as images from a single anatomical region, the above-mentioned limitation of naive CNN-based denoisers remains acceptable, but when a mixture of images with diverge noise levels is used in training and testing, it becomes problematic. The proposed noise conditioned weight modulation addresses this major limitation of CNN based denoising network, by designing an adjustable subtractor which is adjusted based on the input signal.</p><p>Figure <ref type="figure" target="#fig_3">4</ref> presents a two-dimensional projection of the learned embedding for all the test images using the TSNE transformation. The embedding has created three distinct clusters in the 2D feature space, each corresponding to images from one of three different anatomical regions. This observation validates our claim that the embedding learned by the anatomy encoder represents a meaningful representation of the input image. Notably, the noise level of low dose chest CT images differs significantly from those of the other two regions, resulting in a   Generalization Analysis: In this section, we evaluate the generalization ability of different networks on out-of-distribution test data using LDCT abdomen images taken with a 1mm slice thickness from dataset D1. We consider four networks for this analysis: 1) M5, the baseline UNet trained on LDCT abdomen images with a 3mm slice thickness from dataset D1, 2) M6, the baseline UNet trained on a mixture of LDCT images from all anatomical regions except the abdomen with a 1mm slice thickness, 3) M7, the proposed weight-modulated network trained on the same training set as M6, and 4) M8, the baseline UNet trained on LDCT abdomen images with a 1mm slice thickness. Objective comparisons among these networks are presented in Table <ref type="table" target="#tab_2">3</ref>. The results show that the performance of M5 and M6 is poor on this dataset, indicating their poor ability to generalize to unseen data. In contrast, M7 performs similarly to the supervised model M8. Next, we compared the denoising performance of different methods visually in Fig. <ref type="figure" target="#fig_4">5</ref>. It can be seen that M5 completely failed to remove noise from these images despite the fact the M5 was trained using the abdominal image. Now the output of M6 is better than the M5 in terms of noise removal, but a lot of over-smoothness and loss of structural information can be seen, for example, the over-smooth texture of the liver and removal of blood vessels. M6 benefits from being trained on diverse LDCT images, which allows it to learn robust features applicable to a range of inputs and generalize well to new images. However, the CNN networks' limited ability to handle diverse noise levels results in M6 failing to preserve all the structural information in some cases. In contrast, M7 uses a large training set and dynamic convolution to preserve all structural information and remove noise effectively, comparable to the baseline model M8.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>This study proposes a novel noise-conditioned feature modulation layer to address the limitations of convolutional denoising networks in handling variability in noise levels in low-dose computed tomography (LDCT) images. The</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed noise conditioned weight modulation framework.</figDesc><graphic coords="3,41,79,54,35,340,24,139,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Result of Denoising for comparison. The display window for the abdomen image (top row) is set to [-140, 260], and [-1200, 600] for the chest image.</figDesc><graphic coords="5,69,30,54,44,286,00,139,48" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Result of Denoising for comparison. The display window for the abdomen image is set to [-140, 260], [-175, 240] for the chest image, and [-80, 100] for the head.</figDesc><graphic coords="6,89,97,137,03,272,20,199,24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. 2 dimensional projection of learned embedding. The projection are learned using TSNE transformation.</figDesc><graphic coords="7,141,81,351,35,140,44,97,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Result of Denoising for comparison. The display window for the abdomen image is set to [-140, 260]</figDesc><graphic coords="8,62,97,98,51,326,68,52,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Objective and computational cost comparison between different methods. Objective metrics are reported by averaging the values for all the images present in the test set.</figDesc><table><row><cell cols="2">Model Abdomen</cell><cell>Head</cell><cell>Chest</cell><cell>FLOPs</cell></row><row><cell></cell><cell cols="3">PSNR SSIM RMSE PSNR SSIM RMSE PSNR SSIM RMSE</cell></row><row><cell>M1</cell><cell>33.84 0.912 8.46</cell><cell>39.45 0.957 2.42</cell><cell cols="2">29.39 0.622 103.27 75.53G</cell></row><row><cell>M2</cell><cell>34.15 0.921 7.41</cell><cell>40.04 0.968 2.02</cell><cell cols="2">29.66 .689 89.23 98.47G</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Objective comparison among different methods. Objective metrics are reported by averaging the values for all the images present in the test set.</figDesc><table><row><cell cols="2">Model Abdomen</cell><cell>Head</cell><cell>Chest</cell></row><row><cell>M3</cell><cell cols="3">33.64 0.895 8.54 38.67 0.937 3.45 29.28 0.612 105.2</cell></row><row><cell>M4</cell><cell cols="3">34.17 0.921 7.45 39.70 0.964 2.12 29.69 0.689 89.21</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Objective comparison among different networks. Objective metrics are reported by averaging the values for all the images present in the test set of abdominal images taken with 1mm slice thickness.</figDesc><table><row><cell cols="2">Model M5</cell><cell>M6</cell><cell>M7</cell><cell>M8</cell></row><row><cell cols="5">PSNR 22.23 22.55 22.80 22.96</cell></row><row><cell>SSIM</cell><cell cols="4">0.759 0.762 0.777 0.788</cell></row><row><cell cols="5">RMSE 32.13 30.13 29.37 29.14</cell></row></table><note><p>separate cluster that is located at a slightly greater distance from the other two clusters.</p></note></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>proposed technique modulates the weight matrix of a convolutional layer according to the noise present in the input signal, creating a slightly modified neural network. Experimental results on two public benchmark datasets demonstrate that this dynamic convolutional layer significantly improves denoising performance, as well as robustness and generalization to unseen noise levels. The proposed method has the potential to enhance the accuracy and reliability of LDCT image analysis in various clinical applications.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Noise conscious training of non local neural network powered by self attentive spectral normalized Markovian patch GAN for low dose CT denoising</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Biswas</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2021.3094525</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2021.3094525" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="3663" to="3673" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Low-dose CT with a residual encoder-decoder convolutional neural network</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2524" to="2535" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">DyCo3D: robust instance segmentation of 3D point clouds through dynamic convolution</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Van Den</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hengel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="354" to="363" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Dynamic filter networks</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>De Brabandere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">V</forename><surname>Gool</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Deep convolutional framelet denosing for low-dose CT via wavelet residual network</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1358" to="1369" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A deep convolutional neural network using directional wavelets for low-dose X-ray CT reconstruction</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Min</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="360" to="e375" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Analyzing and improving the image quality of StyleGAN</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Karras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aittala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hellsten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lehtinen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="8110" to="8119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A dynamic convolutional layer for short range weather prediction</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Klein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wolf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Afek</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="4840" to="4848" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Low-dose CT for the detection and classification of metastatic liver lesions: results of the 2016 low dose CT grand challenge</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Mccollough</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="339" to="e352" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Low-dose CT image and projection dataset</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Moen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="902" to="911" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Reference article, Radiopaedia.org</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rock</surname></persName>
+		</author>
+		<idno type="DOI">10.53347/rID-51832</idno>
+		<ptr target="https://doi.org/10.53347/rID-51832" />
+		<imprint>
+			<date type="published" when="2023-03">2023. 08 Mar 2023</date>
+		</imprint>
+	</monogr>
+	<note>Noise (CT)</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015, Part III</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">AAPM tutorial. CT image detail and noise</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sprawls</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiographics</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1041" to="1046" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Domain progressive 3D residual convolution network to improve low-dose CT imaging</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2903" to="2913" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Beyond a Gaussian denoiser: residual learning of deep CNN for image denoising</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="3142" to="3155" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">FFDNet: toward a fast and flexible solution for CNN-based image denoising</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="4608" to="4622" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,887 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Revolutionizing Space Health (Swin-FSR): Advancing Super-Resolution of Fundus Images for SANS Visual Assessment Technology</title>
+				<funder ref="#_MHrScWF">
+					<orgName type="full">NASA</orgName>
+				</funder>
+				<funder ref="#_MfvaCpe">
+					<orgName type="full">National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Khondker</forename><surname>Fariha Hossain</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Dept. of Computer Science &amp; Engineering</orgName>
+								<orgName type="institution">University of Nevada</orgName>
+								<address>
+									<settlement>Reno</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><roleName>Sharif</roleName><forename type="first">Amit</forename><surname>Kamran</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Dept. of Computer Science &amp; Engineering</orgName>
+								<orgName type="institution">University of Nevada</orgName>
+								<address>
+									<settlement>Reno</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Joshua</forename><surname>Ong</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Michigan Medicine</orgName>
+								<orgName type="institution">University of Michigan</orgName>
+								<address>
+									<settlement>Ann Arbor</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Andrew</forename><forename type="middle">G</forename><surname>Lee</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Blanton Eye Institute</orgName>
+								<orgName type="institution">Houston Methodist Hospital</orgName>
+								<address>
+									<settlement>Houston</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Alireza</forename><surname>Tavakkoli</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Dept. of Computer Science &amp; Engineering</orgName>
+								<orgName type="institution">University of Nevada</orgName>
+								<address>
+									<settlement>Reno</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Revolutionizing Space Health (Swin-FSR): Advancing Super-Resolution of Fundus Images for SANS Visual Assessment Technology</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">7BA415A9089C9315AC82C3D908A69D96</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-265.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:56+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The rapid accessibility of portable and affordable retinal imaging devices has made early differential diagnosis easier. For example, color funduscopy imaging is readily available in remote villages, which can help to identify diseases like age-related macular degeneration (AMD), glaucoma, or pathological myopia (PM). On the other hand, astronauts at the International Space Station utilize this camera for identifying spaceflight-associated neuro-ocular syndrome (SANS). However, due to the unavailability of experts in these locations, the data has to be transferred to an urban healthcare facility (AMD and glaucoma) or a terrestrial station (e.g., SANS) for more precise disease identification. Moreover, due to low bandwidth limits, the imaging data has to be compressed for transfer between these two places. Different super-resolution algorithms have been proposed throughout the years to address this. Furthermore, with the advent of deep learning, the field has advanced so much that ×2 and ×4 compressed images can be decompressed to their original form without losing spatial information. In this paper, we introduce a novel model called Swin-FSR that utilizes Swin Transformer with spatial and depth-wise attention for fundus image super-resolution. Our architecture achieves Peak signalto-noise-ratio (PSNR) of 47.89, 49.00 and 45.32 on three public datasets, namely iChallenge-AMD, iChallenge-PM, and G1020. Additionally, we tested the model's effectiveness on a privately held dataset for SANS and achieved comparable results against previous architectures.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Color fundus imaging can detect and monitor various ocular diseases, including agerelated macular degeneration (AMD), glaucoma, and pathological myopia (PM) <ref type="bibr" target="#b29">[29]</ref>. In remote and under-developed areas, color funduscopy imaging has become increasingly accessible, allowing healthcare professionals to identify and manage these ocular diseases before they progress to irreversible stages. However, interpreting these images can be challenging for inexperienced or untrained personnel, necessitating the transfer of data to urban healthcare facilities where specialists can make more accurate diagnoses <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b21">21]</ref>. Compressing and decompressing the data without losing spatial information can be utilized in this scenario by the super-resolution algorithm.</p><p>In a similar manner, color funduscopy imaging has found applications beyond the confines of the planet. For example, astronauts onboard the International Space Station (ISS) utilize this imaging to identify spaceflight-associated neuro-ocular syndrome (SANS) <ref type="bibr" target="#b9">[10]</ref>. This condition can occur due to prolonged exposure to microgravity. It affects astronauts during long-duration spaceflight missions and can present with asymmetric/unilateral/bilateral optic disc edema and choroidal folds, which are easily identifiable by Color fundus images <ref type="bibr" target="#b10">[11]</ref>. With the low bandwidth communication between ISS and terrestrial station <ref type="bibr" target="#b19">[19]</ref>, it becomes harder for experts to conduct early diagnosis and take preventive measures. So, super-resolution techniques can be vital in this adverse scenario. Medical experts can visualize and analyze these changes and act accordingly <ref type="bibr" target="#b18">[18]</ref>.</p><p>Image super-resolution and compression using different upsampling filters <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b20">20,</ref><ref type="bibr" target="#b23">23]</ref>, has been a staple in image processing for a long time. Yet, those conventional approaches required manually designing convolving filters, which couldn't adapt to learning spatial and depth features and had less artifact removal ability. With the advent of deep learning, convolutional neural network-based super-resolution has paved the way for fast and low-computation image reconstructions with less error <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b25">25,</ref><ref type="bibr" target="#b26">26]</ref>. A few years back, attention-based architectures <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b27">27,</ref><ref type="bibr" target="#b28">28]</ref> were the state-of-the-art for any image super-resolution tasks. However, with the introduction of shifted window-based transformer models <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b12">13]</ref>, the accuracy of these models superseded attention-based ones with regard to different reconstruction metrics. Although swin-transformer-based models are good at extracting features of local patches, they lose the overall global spatial and depth context while upsampling with window-based patch merging operations.</p><p>Our Contributions: Considering all the relevant factors, we introduce the novel Swin-FSR architecture. It incorporates low-frequency feature extraction, deep feature extraction, and high-quality image reconstruction modules. The low-frequency feature extraction module employs a convolution layer to extract low-level features and is then directly passed to the reconstruction module to preserve low-frequency information. Our novelty is introduced in the deep feature extraction where we incorporated Depthwise Channel Attention block (DCA), improved Residual Swin-transformer Block -(iRSTB), and Spatial and Channel Attention block (SCA). To validate our work, we compare three different SR architectures for four Fundus datasets: iChallenge-AMD <ref type="bibr" target="#b4">[5]</ref>, iChallenge-PALM <ref type="bibr" target="#b6">[7]</ref>, G1020 <ref type="bibr" target="#b0">[1]</ref> and SANS. From Fig. <ref type="figure" target="#fig_1">2</ref> and Fig. <ref type="figure" target="#fig_2">3</ref> , it is apparent that our architecture reconstructs images with high PSNR and SSIM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Overall Architecture</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, SwinFSR consists of four modules: low-frequency feature extraction, deep patch-level feature extraction, deep depth-wise channel attention, and highquality (HQ) image reconstruction modules. Given a low-resolution (LR) image I LR R H×W ×C . Here, H = height, W = width, c = channel of the image. For lowfrequency feature extraction, we utilize a 3×3 convolution with stride= 1 and is denoted as H LF , and it extracts a feature F LF R H×W ×Cout with which illustrated in Eq. 1.</p><formula xml:id="formula_0">F LF = H LF (I LR )<label>(1)</label></formula><p>It has been reported that the convolution layer helps with better spatial feature extraction and early visual processing, guiding to more steady optimization in transformers <ref type="bibr" target="#b24">[24]</ref>. Next, we have two parallel branches of outputs as denoted in Eq. 2. Here, H DCA and H iRST B are two new blocks that we propose in this study, and they both take the low-feature vector as F LF input and generate two new features namely, F SF and F P LF . We elaborate this two blocks in Subsect. 2.2 and 2.3</p><formula xml:id="formula_1">F SF = H DCA (F LF ) F P LF = H iRST B (F LF )<label>(2)</label></formula><p>Finally, we combine all three features from our previous modules, namely, F LF , F SF , and F P LF and apply a final high-quality (HQ) image reconstruction module to generate a high-quality image I HQ as given in Eq. 3.</p><formula xml:id="formula_2">I HQ = H REC (F LF + F SF + F P LF )<label>(3)</label></formula><p>where H REC is the function of the reconstruction block. Our low-frequency block extracts shallow features, whereas the two parallel depth-wise channel-attention and improved residual swin-transformer blocks extract spatially and channel-wise dense features extracting lost high-frequencies. With these three parallel residual connections, SwinFSR can propagate and combine the high and low-frequency information to the reconstruction module for better super-resolution results. It should be noted that the reconstruction module consists of a 1 × 1 convolution followed by a Pixel-shuffle layer to upsample the features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Depth-Wise Channel Attention Block</head><p>For super-resolution architectures, channel-attention <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b28">28]</ref> is an essential robust feature extraction module that helps these architectures achieve high accuracy and more visually realistic results. In contrast, recent shifted-window-based transformers architecture <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref> for super-resolution do not incorporate this module. However, a recent work <ref type="bibr" target="#b7">[8]</ref> utilized a cross-attention module after the repetitive swin-transformer layers.</p><p>One of the most significant drawbacks of the transformer layer is it works on patch-level tokens where the spatial dimensions are transformed into a linear feature. To retain the spatial information intact and learning dense features effectively, we propose depthwise channel attention given in Eq. 4.</p><formula xml:id="formula_3">x = AdaptiveAvgP ool(x in ) x = δ(Depthwise Conv(x)) x out = φ(Conv(x))<label>(4)</label></formula><p>Here, δ is ReLU activation, and φ is Sigmoid activation functions. The regular channelattention utilizes a 2D Conv with 1 × 1 × C weight vector C times to create output features 1×1×C. Given that adaptive average pooling already transforms the dimension to 1 × 1, utilizing a spatial convolution is redundant and shoots up computation time. To make it more efficient, we utilize depth-wise attention, with 1 × 1 weight vector applied on each of the C features separately, and then the output is concatenated to get our final output 1 × 1 × C. We use four DCA blocks in our architecture as given in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Improved Residual Swin-Transformer Block</head><p>Swin Transformer <ref type="bibr" target="#b15">[16]</ref> incorporates shifted windows self-attention (SW-MSA), which builds hierarchical regional feature maps and has linear computation complexity compared to vision transformers with quadratic computation complexity. Recently, Swin-IR <ref type="bibr" target="#b12">[13]</ref> adopted a modified swin-transformer block for different image enhancement tasks such as super-resolution, JPEG compression, and denoising while achieving high PSNR and SSIM scores. The most significant disadvantage of this block is the Multi-layer perceptron module (MLP) after the post-normalization layer, which has two linear (dense) layers. As a result, it becomes computationally more expensive than a traditional 1D convolution layer. For example, a linear feature output from a swin-transformer layer having depth D, and input channel, X in and output channel, X out will have a total number of parameters, D × X in × X out . Contrastly, a 1D convolution with kernel size, K = 1, with the same input and output will have less number of parameters, 1 × X in × X out . Here, we assign bias, b = 0. So, the proposed swin-transformer block can be defined as Eq. 5 and is illustrated in Fig. <ref type="figure" target="#fig_0">1</ref> as STLc block.</p><formula xml:id="formula_4">x 1 = SW -MSA(σ(d l )) + x x 2 = ConvM LP (σ(x 1 )) + x 1<label>(5)</label></formula><p>Here, σ is Layer-normalization and ConvMLP has two 1D convolution followed by GELU activation. To capture spatial local contexts for patch-level features we utilize a patch-unmerging layer in parallel path and incorporate SCA (spatial and channel attention) block. The block consists of a convolution (k = 1, s = 1), a dilated convolution (k = 3, d = 2, s = 1) and a depth-wise convolution (k = 1, s = 1) layer. Here, k= kernel, d =dilation and s =stride. Moreover all these features are combined to get the final ouptut. By combining repetitive SCA, ST Lc blocks and a identity mapping we create our improved reisdual swin-transformer block (iRSTB) illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. In Swin-FSR, we incorporate four iRSTB blocks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Loss Function</head><p>For image super resolution task, we utilize the L1 loss function given in Eq. 6. Here, I RHQ is the reconstructed output of SwinFSR and I HQ is the original high-quality image.</p><formula xml:id="formula_5">L = I RHQ -I HQ (6)</formula><p>3 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data use Declaration and Acknowledgment:</head><p>The AMD and PALM dataset were released as part of REFUGE Challenge, PALM Challenge. The G1020 was published as technical report and benchmark <ref type="bibr" target="#b0">[1]</ref>. The authors instructed to cite their work <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b13">14]</ref> for usage. The SANS data is privately held and is provided by the National Aeronautics and Space Administration(NASA) with Data use agreement 80NSSC20K1831.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Hyper-parameter</head><p>We utilized L1 loss for training our models for the super-resolution task. For optimizer, we used Adam <ref type="bibr" target="#b8">[9]</ref>, with learning rate α = 0.0002, β 1 = 0.9 and β 2 = 0.999. The batch size was b = 2, and we trained for 200 epochs for 8 h with NVIDIA A30 GPU. We utilize PyTorch and MONAI library monai.io for data transformation, training and testing our model. The code repository is provided in this link. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Qualitative Evaluation</head><p>We compared our architecture with some best-performing CNN and Transformer based SR models, including RCAN <ref type="bibr" target="#b28">[28]</ref>, ELAN <ref type="bibr" target="#b27">[27]</ref>, and SwinIR <ref type="bibr" target="#b12">[13]</ref> as illustrated in Fig. <ref type="figure" target="#fig_1">2</ref> and Fig. <ref type="figure" target="#fig_2">3</ref>. We trained and evaluated all four architectures using their publicly available source code on the four datasets. SwinIR utilizes residual swin-transformer blocks with identity mapping for dense feature extractions. In contrast, the RCAN utilizes repetitive channel-attention blocks for depth-wise dense feature retrieval. Similarly, ELAN combines multi-scale and long-range attention with convolution filters to extract spatial and depth features. In Fig. <ref type="figure" target="#fig_1">2</ref>, we illustrate ×2 reconstruction results for all four architectures. By observing, we can see that our model's vessel reconstruction is more realistic for ×2 factor samples than other methods. Specifically for AMD and SANS, the degeneration is noticeable. In contrast, ELAN and RCAN fail to accurately reconstruct thinner and smaller vessels.</p><p>In the second experiment, we show results for ×4 reconstruction for all SR models in Fig. <ref type="figure" target="#fig_2">3</ref>. It is apparent from the figure that our model's reconstruction is more realist than other transformer and CNN-based architectures, and the vessel boundary is sharp, containing more degeneration than SwinIR, ELAN and RCAN.. Especially for AMD , G1020 and PALM, the vessel edges are finer and sharper making it easily differentiable. In contrast, ELAN and RCAN generate pseudo vessels whereas SwinIR fails to generate some smaller ones. For SANS images, the reconstruction is much noticable for the ×4 than ×2. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Quantitative Bench-Marking</head><p>For quantitative evaluation, we utilize Peak Signal-to-Noise-Ratio (PSNR) and Structural Similarity Index Metric (SSIM), which has been previously employed for measuring similarity between original and reconstructed images in super-resolution tasks <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b27">27,</ref><ref type="bibr" target="#b28">28]</ref>. We illustrate quantitative performance in Table . 1 between SwinFSR and other state-of-the-art methods: SwinIR <ref type="bibr" target="#b12">[13]</ref>, RCAN <ref type="bibr" target="#b28">[28]</ref>, and ELAN <ref type="bibr" target="#b27">[27]</ref>. Table . 1 shows that SwinFSR's overall SSIM and PSNR are superior to other transformer and CNN-based approaches. For ×2 scale reconstruction, SwinIR achieves the secondbest performance. Contrastly, for ×4 scale reconstruction, RCAN outperforms SwinIR while scoring lower than our SwinFSR model for PSNR and SSIM.</p><p>Table <ref type="table">1</ref>. Quantitative comparison on AMD <ref type="bibr" target="#b4">[5]</ref>, PALM <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b13">14]</ref>, G1020 <ref type="bibr" target="#b0">[1]</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Clinical Assessment</head><p>We carried out a diagnostic assessment with two expert ophthalmologists and test samples of 80 fundus images (20 fundus images per disease classes: AMD, Glaucoma, Pathological Myopia and SANS for both original x2 and x4 images, and superresolution enhanced images). Half of the 20 fundus images were control patients without disease pathologies; the other half contained disease pathologies. The clinical experts were not provided any prior pathology information regarding the images. And each of the experts was given 10 images with equally distributed control and diseased images for each disease category. The accuracy and F1-score for original x4 images are as follows, 70.0% and 82.3% (AMD), 75% and 85.7% (Glaucoma), 60.0% and 74.9% (Palm), and 55% and 70.9% (SANS). The accuracy and F1-score for original x2 are as follows, 80.0% and 88.8% (AMD), 80% and 88.8% (Glaucoma), 70.0% and 82.1% (Palm), and 65% and 77.4% (SANS). The accuracy and F1-score for our model Swin-FSR's output from ×4 images are as follows, 90.0% and 93.3% (AMD), 90.0% and 93.7% (Glaucoma), 75.0% and 82.7% (Palm), and 75% and 81.4% (SANS). The accuracy and F1-score for Swin-FSR's output from ×2 images are as follows, 90.0% and 93.3% (AMD), 90.0% and 93.7% (Glaucoma), 80.0% and 85.7% (Palm), and 80% and 85.7% (SANS).</p><p>We also tested SWIN-IR, ELAN, and RCAN models for diagnostic assessment, out of which SWIN-IR upsampled images got the best results. For x4 images, the model's accuracy and F-1 score are 80% and 87.5% (AMD), 85.0% and 90.3% (Glaucoma), 70.0% and 80.0% (Palm), and 70% and 76.9% (SANS). For x2 images, the model's accuracy and F-1 score are 80% and 87.5% (AMD), 80% and 88.8% (Glaucoma), 70.0% and 80.0% (Palm), and 75% and 81.4% (SANS). Based on the above observations, our model-generated images achieves the best result.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.6">Ablation Study</head><p>Effects of iRSTB, DCA, and SCA Number: We illustrate the impacts of iRSTB, DCA, and SCA numbers on the model's performance in Supplementary Fig. <ref type="figure" target="#fig_0">1 (a),</ref><ref type="figure">(b)</ref>, and (C). We can see that the PSNR and SSIM become saturated with an increase in any of these three hyperparameters. One drawback is that the total number of parameters grows linearly with each additional block. Therefore, we choose four blocks for iRSTB, DCA, and SCA to achieve the optimum performance with low computation cost.</p><p>Presence and Absence of iRSTB, DCA, and SCA Blocks: Additionally, we provide a comprehensive benchmark of our model's performance with and without the novel blocks incorporated in Supplementary Table <ref type="table">1</ref>. Specifically, we show the performance gains with the usage of an improved residual swin-transformer block (iRSTB) and depth-wise channel attention (DCA). As the results illustrate, by comprising these blocks, the PSNR and SSIM reach higher scores.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we proposed Swin-FSR by combining novel DCA, iRSTB, and SCA blocks which extract depth and low features, spatial information, and aggregate in image reconstruction. The architecture reconstructs the precise venular structure of the fundus image with high confidence scores for two relevant metrics. As a result, we can efficiently employ this architecture in various ophthalmology applications emphasizing the Space station. This model is well-suited for the analysis of retinal degenerative diseases and for monitoring future prognosis. Our goal is to expand the scope of this work to include other data modalities.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. An overview of the proposed Swin-FSR consisting of a low-frequency feature extraction module, improved Residual Swin-transformer BLock (iRSTB), Depth-wise Channel Attention (DCA) Block, and High-resolution image reconstruction block. Furthermore, iRSTB block consists of three parallel branches, i) Swin-Transformer with ConvMLP block (STLc), ii) Spatial and Channel Attention (SCA) Block, and iii) an identity mapping of the input, which is added together.</figDesc><graphic coords="2,57,81,54,32,308,86,164,38" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative comparison of (×2) image reconstruction using different SR methods on AMD, PALM, G1020 and SANS dataset. The green rectangle is the zoomed-in region. The rows are for the AMD, PALM and SANS datasets. Whereas, the column is for each different models: SwinFSR, SwinIR, RCAN and ELAN. (Color figure online)</figDesc><graphic coords="6,73,80,156,74,276,31,224,50" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative comparison of (×4) image reconstruction using different SR methods on AMD, PALM, G1020 and SANS dataset. The green rectangle is the zoomed-in region. The rows are for the AMD, PALM and SANS datasets. Whereas, the column is for each different models: SwinFSR, SwinIR, RCAN and ELAN. (Color figure online)</figDesc><graphic coords="7,87,96,194,90,276,79,223,87" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>, &amp; SANS.</figDesc><table><row><cell>Dataset</cell><cell>AMD</cell><cell>PALM</cell><cell>G1020</cell><cell>SANS</cell></row><row><cell>2X</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Model</cell><cell cols="4">Year SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR</cell></row><row><cell cols="5">SwinFSR 2023 98.70 47.89 99.11 49.00 98.65 49.11 97.93 45.32</cell></row><row><cell cols="5">SwinIR 2022 98.68 47.78 99.03 48.73 98.59 48.94 97.92 45.17</cell></row><row><cell>ELAN</cell><cell cols="4">2022 98.18 44.21 98.80 46.49 98.37 47.48 96.89 36.84</cell></row><row><cell>RCAN</cell><cell cols="4">2018 98.62 47.76 99.04 48.83 98.53 48.29 97.91 45.29</cell></row><row><cell>4X</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>Model</cell><cell cols="4">Year SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR</cell></row><row><cell cols="5">SwinFSR 2023 96.51 43.28 97.34 43.27 97.13 44.67 95.82 39.14</cell></row><row><cell cols="5">SwinIR 2022 96.40 42.98 97.27 43.07 97.06 44.44 95.80 39.02</cell></row><row><cell>ELAN</cell><cell cols="4">2022 94.76 39.12 97.03 42.47 97.11 44.39 95.16 35.84</cell></row><row><cell>RCAN</cell><cell cols="4">2018 96.20 42.62 97.38 43.18 97.05 44.37 95.73 38.92</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. Research reported in this publication was supported in part by the <rs type="funder">National Science Foundation</rs> by grant numbers [<rs type="grantNumber">OAC-2201599</rs>],[OIA-2148788] and by <rs type="funder">NASA</rs> grant no <rs type="grantNumber">80NSSC20K1831</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_MfvaCpe">
+					<idno type="grant-number">OAC-2201599</idno>
+				</org>
+				<org type="funding" xml:id="_MHrScWF">
+					<idno type="grant-number">80NSSC20K1831</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">G1020: a benchmark retinal fundus image dataset for computer-aided glaucoma detection</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Bajwa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A P</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Neumeier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Malik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dengel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ahmed</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 International Joint Conference on Neural Networks (IJCNN)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Second-order attention network for single image super-resolution</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">T</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="11065" to="11074" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A novel diagnostic information based framework for superresolution of retinal fundus images</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dandapat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Bora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Med. Imaging Graph</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page" from="22" to="33" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Image super-resolution using deep convolutional networks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Loy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="295" to="307" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Adam: automatic detection challenge on age-related macular degeneration</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>IEEE Dataport</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A fast image super-resolution algorithm using an adaptive wiener filter</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2953" to="2964" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">PALM: pathologic myopia challenge</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Huazhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>José</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Vis. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">SwiniPASSR: Swin transformer based parallax attention network for stereo image super-resolution</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="920" to="929" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Space flight-associated neuro-ocular syndrome (SANS)</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Mader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Gibson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Brunstetter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">J</forename><surname>Tarver</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eye</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1164" to="1167" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Spaceflight associated neuro-ocular syndrome (SANS) and the neuroophthalmologic effects of microgravity: a review and an update</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NPJ Microgravity</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">7</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">HST: hierarchical swin transformer for compressed image super-resolution</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25063-7_41</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25063-7" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Karlinsky</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Michaeli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Nishino</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">13802</biblScope>
+			<biblScope unit="page">41</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">SwinIR: image restoration using swin transformer</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Timofte</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1833" to="1844" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Longitudinal changes in macular optical coherence tomography angiography metrics in primary open-angle glaucoma with high myopia: a prospective study</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Invest. Ophthalmol. Vis. Sci</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="30" to="30" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2201.11279</idno>
+		<title level="m">Revisiting RCAN: improved training for image super-resolution</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Single Image Super-Resolution via a Holistic Attention Network</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Niu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12357</biblScope>
+			<biblScope unit="page" from="191" to="207" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58610-2_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58610-212" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Neuro-ophthalmic imaging and visual assessment technology for spaceflight associated neuro-ocular syndrome (SANS)</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Survey Ophthalmol</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="page" from="1443" to="1466" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Optical communications systems for NASA&apos;s human space flight missions</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Seas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Robinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shih</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Khatri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brumfield</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Space Optics-ICSO 2018</title>
+		<imprint>
+			<publisher>SPIE</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11180</biblScope>
+			<biblScope unit="page" from="182" to="191" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Compressive image super-resolution</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Darabi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2009 Conference Record of the Forty-Third Asilomar Conference on Signals, Systems and Computers</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="1235" to="1242" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">DeSupGAN: multiscale feature averaging generative adversarial network for simultaneous de-blurring and super-resolution of retinal fundus images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sengupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zelek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lakshminarayanan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-63419-3_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-63419-34" />
+	</analytic>
+	<monogr>
+		<title level="m">OMIA 2020</title>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Garvin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Macgillivray</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12069</biblScope>
+			<biblScope unit="page" from="32" to="41" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Channel attention based iterative residual learning for depth map superresolution</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="5631" to="5640" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Image super-resolution survey</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van Ouwerkerk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Image Vis. Comput</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1039" to="1052" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Early convolutions help transformers see better</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mintun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="30392" to="30400" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Beyond a gaussian denoiser: residual learning of deep CNN for image denoising</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="3142" to="3155" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Learning a single convolutional super-resolution network for multiple degradations</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="3262" to="3271" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Efficient long-range attention network for image super-resolution</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13677</biblScope>
+			<biblScope unit="page" from="649" to="667" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Image super-resolution using very deep residual channel attention networks</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the European Conference on Computer Vision (ECCV)</title>
+		<meeting>the European Conference on Computer Vision (ECCV)</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="286" to="301" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">A survey on computer aided diagnosis for ocular diseases</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Med. Inform. Decis. Mak</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="29" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

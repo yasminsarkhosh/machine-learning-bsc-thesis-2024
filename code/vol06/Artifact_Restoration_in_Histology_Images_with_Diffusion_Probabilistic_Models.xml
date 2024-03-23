@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Artifact Restoration in Histology Images with Diffusion Probabilistic Models</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhenqi</forename><surname>He</surname></persName>
+							<idno type="ORCID">0009-0000-2265-7159</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Junjun</forename><surname>He</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Hong Kong</orgName>
+								<address>
+									<settlement>Pokfulam, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jin</forename><surname>Ye</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Shanghai AI Laboratory</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yiqing</forename><surname>Shen</surname></persName>
+							<idno type="ORCID">0000-0001-7866-3339</idno>
+							<affiliation key="aff1">
+								<orgName type="institution">Shanghai AI Laboratory</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Artifact Restoration in Histology Images with Diffusion Probabilistic Models</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="518" to="527"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">755518161CC871672419850236E8A2C9</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_50</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:51+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Histological Artifact Restoration</term>
+					<term>Diffusion Probabilistic Model</term>
+					<term>Swin-Transformer Denoising Network</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Histological whole slide images (WSIs) can be usually compromised by artifacts, such as tissue folding and bubbles, which will increase the examination difficulty for both pathologists and Computer-Aided Diagnosis (CAD) systems. Existing approaches to restoring artifact images are confined to Generative Adversarial Networks (GANs), where the restoration process is formulated as an image-to-image transfer. Those methods are prone to suffer from mode collapse and unexpected mistransfer in the stain style, leading to unsatisfied and unrealistic restored images. Innovatively, we make the first attempt at a denoising diffusion probabilistic model for histological artifact restoration, namely ArtiFusion. Specifically, ArtiFusion formulates the artifact region restoration as a gradual denoising process, and its training relies solely on artifact-free images to simplify the training complexity. Furthermore, to capture local-global correlations in the regional artifact restoration, a novel Swin-Transformer denoising architecture is designed, along with a time token scheme. Our extensive evaluations demonstrate the effectiveness of ArtiFusion as a pre-processing method for histology analysis, which can successfully preserve the tissue structures and stain style in artifact-free regions during the restoration. Code is available at https://github.com/zhenqi-he/ArtiFusion.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Histology is critical for accurately diagnosing all cancers in modern medical imaging analysis. However, the complex scanning procedure for histological wholeslide images (WSIs) digitization may result in the alteration of tissue structures, due to improper removal, fixation, tissue processing, embedding, and storage <ref type="bibr" target="#b10">[11]</ref>. Typically, these changes in tissue details can be caused by various extraneous factors such as bubbles, tissue folds, uneven illumination, pen marks, altered staining, and etc <ref type="bibr" target="#b12">[13]</ref>. Formally, the changes in tissue structures are known as artifacts. The presence of artifacts not only makes the analysis more challenging for pathologists but also increases the risk of misdiagnosis for Computer-Aided Diagnosis (CAD) systems <ref type="bibr" target="#b13">[14]</ref>. Particularly, deep learning models, which have become increasingly prevalent in histology analysis, have shown vulnerability to the artifact, resulting in a two-times increase in diagnosis errors <ref type="bibr" target="#b17">[18]</ref>.  <ref type="bibr" target="#b18">[19]</ref> formulates the artifact restoration as an image-to-image transfer problem. It leverages two pairs of the generator and discriminator to learn the transfer between the artifact and artifactfree image domains. (b) Diffusion probabilistic model <ref type="bibr" target="#b4">[5]</ref> (ours) formulates artifact restoration as a regional denoising process.</p><p>In real clinical practice, rescanning the WSIs that contain artifacts can partially address this issue. However, it may require multiple attempts before obtaining a satisfactory WSI, which can lead to a waste of time, medical resources, and deplete tissue samples. Discarding the local region with artifacts for deep learning models is another solution, but it may result in the loss of critical contextual information. Therefore, learning-based artifact restoration approaches have gained increasing attention. For example, CycleGAN <ref type="bibr" target="#b18">[19]</ref> formulates the artifact restoration as an image-to-image transfer problem by learning the transfer between the artifact and artifact-free image domains from unpaired images, as depicted in Fig. <ref type="figure" target="#fig_0">1(a)</ref>. However, existing artifact restoration solutions are confined to Generative Adversarial Networks (GANs) <ref type="bibr" target="#b1">[2]</ref>, which are difficult to train due to the mode collapse and are prone to suffer from unexpected stain style mistransfer. To address these issues, we make the first attempt at a diffusion probabilistic model for artifact restoration approach <ref type="bibr" target="#b4">[5]</ref>, as shown in Fig. <ref type="figure" target="#fig_0">1(b)</ref>. Innovatively, our framework formulates the artifact restoration as a regional denoising process, which thus can to the most extent preserve the stain style and avoid the loss of contextual information in the non-artifact region. Furthermore, our approach is trained solely with artifact-free images, which reduces the difficulty in data collection.</p><p>The major contributions are two-fold. <ref type="bibr" target="#b0">(1)</ref> We make the first attempt at a denoising diffusion probabilistic model for artifact removal, called ArtiFusion. This approach differs from GAN-based methods that require either paired or unpaired artifacts and artifact-free images, as our ArtiFusion relies solely on artifact-free images, resulting in a simplified training process. (2) To capture the local-global correlations in the gradual regional artifact restoration process, we innovatively propose a Swin-Transformer denoising architecture to replace the commonly-used U-Net and a time token scheme for optimal Swin-Transformer denoising. Extensive evaluations on real-world histology datasets and downstream tasks demonstrate the superiority of our framework in artifact removal performance, which can generate reliable restored images while preserving the stain style. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Overall Pipeline. The proposed histology artifact restoration diffusion model ArtiFusion, comprises two stages, namely the training, and inference. During the training stage, ArtiFusion learns to generate regional histology tissue structures based on the contextual information from artifact-free images. In the inference stage, ArtiFusion formulates the artifact restoration as a gradual denoising process. Specifically, it first replaces the artifact regions with Gaussian noise, and then gradually restores them to artifact-free images using the contextual information from nearby regions.</p><p>Diffusion Training Stage. The proposed ArtiFusion learns the capability of generating local tissue representation from contextual information during the training stage. To achieve this, we follow the formulations of DDPM <ref type="bibr" target="#b4">[5]</ref>, which involve a forward process that gradually injects Gaussian noise into an artifact-free image and a reverse process that aims to reconstruct images from noise. During the forward process, we can obtain a noisy version of x t for arbitrary timestep t ∈ N[0, T ] using a Gaussian transition kernel q</p><formula xml:id="formula_0">(xt|xt -1) = N (x t ; √ 1 -β t xt -1, β t I)</formula><p>, where β t ∈ (0, 1) are predefined hyper-parameters <ref type="bibr" target="#b4">[5]</ref>. Simultaneously, the reverse process trains a denoising network p θ (x t-1 |x in t ), which is parameterized by θ, to reverse the forward process q(x t |x t-1 ). The overall training objective L is defined as the variational lower bound of the negative log-likelihood, given by:</p><formula xml:id="formula_1">E[-log p θ (x 0 )] ≤ E q [-log p(x T ) - 1≤t≤T log p θ (x t-1 |x t ) q(x t |x t-1 ) ] = L. (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>This formulation is extended in DDPM <ref type="bibr" target="#b4">[5]</ref> to be further written as:</p><formula xml:id="formula_3">L = Eq[DKL(q(xT |x0))||p(xT ) L T + t&gt;1 DKL(q(xt-1|xt, x0))||p θ (xt-1|xt) L t-1 -log p θ (x0|x1) L 0 ],</formula><p>where Artifact Restoration in Inference Stage. During the inference stage, we first use a threshold method to detect the artifact region in the input image x 0 . Then, unlike the conventional diffusion models <ref type="bibr" target="#b4">[5]</ref> that aim to generate the entire image, ArtiFusion selectively performs denoising resampling only in the artifact region to maximally preserve the original morphology and stain style in the artifact-free region, as shown in Fig. <ref type="figure" target="#fig_1">2</ref>. Specifically, we represent the artifactfree region and the artifact region in the input image as x 0 (1-m) and x 0 m, respectively <ref type="bibr" target="#b9">[10]</ref>, where m is a Boolean mask indicating the artifact region and is the pixel-wise multiplication operator. To perform the denoising resampling, we write the input image x in t at each reverse step from t to t -1 as the sum of the diffused artifact-free region and the denoised artifact region, i.e.,</p><formula xml:id="formula_4">D KL (•||•) is the KL divergence.</formula><formula xml:id="formula_5">x in t = x sample t (1 -m) + x out t+1 m,<label>(2)</label></formula><p>where ). Consequently, the final restored image is obtained as</p><formula xml:id="formula_6">x</formula><formula xml:id="formula_7">x 0 (1 -m) + x out 0 m.</formula><p>Swin-Transformer Denoising Network. To capture the local-global correlation and enable the denoising network to effectively restore the artifact regions, we propose a novel Swin-Transformer-basedr <ref type="bibr" target="#b8">[9]</ref> denoising network for ArtiFusion. As shown in Fig. <ref type="figure" target="#fig_2">3</ref>, our network follows a U-shape architecture, where the encoder, bottleneck, and decoder modules all employ Swin-Transformer as the basic building block. Additionally, we introduce an innovative auxiliary time token to inject the time information. In an arbitrary time step t during the training process, to obtain a time token, we first embed the scalar t by learnable linear layers, with weights that are specific to each Swin-Transformer block. In contrast to existing U-Net based denoising networks <ref type="bibr" target="#b4">[5]</ref>, we propose a better interaction between hidden features and time information by concatenating the time token to feature tokens before passing them to the attention layers. The resulting tokens are then processed by the attention layers, and the auxiliary time token is discarded to retain the original feature dimension to fit the Swin-Transformer block design after the attention layers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset. To evaluate the performance of artifact restoration, a training set is curated from a subset of Camelyon17 <ref type="bibr" target="#b7">[8]</ref> <ref type="foot" target="#foot_0">1</ref> . It comprises a total number of 2445 artifact-free images and another 2547 images with artifacts, where all histological images are scaled to the resolution of 256 × 256 pixels at the magnitude of 20×. The test set uses another public histology image dataset <ref type="bibr" target="#b5">[6]</ref> with 462 artifact-free images <ref type="foot" target="#foot_1">2</ref> , where we obtain the paired artifact images by the manually-synthesized artifacts <ref type="bibr" target="#b17">[18]</ref>. Fig. <ref type="figure">4</ref>. Artifact restoration on five real-world artifact images. We observe that ArtiFusion can successfully overcome the drawback of stain style mistransfer in CycleGAN. We also illustrate the gradual denoising process in the artifact region by ArtiFusion, at time step t = 0, 50, 100, 150. It highlights the ability of ArtiFusion to progressively remove artifacts from the histology image, resulting in a final restored image that is both visually pleasing and scientifically accurate.</p><p>Implementations. We implement the proposed ArtiFusion and its counterpart in Python 3.8.10 and PyTorch 1.10.0. All experiments are carried out in parallel on two NVIDIA RTX A4000 GPU cards with 16 GiB memory. Hyperparameters are as follows: a learning rate of 10 -4 with Adam optimizer, the total timesteps is set to 250.</p><p>Compared Methods and Evaluation Metrics. As a proof-of-concept attempt at a generative-models-based artifact restoration framework in the histology domain, currently, there are limited available literature works and opensourced codes for comparison. Consequently, we leverage the prevalent Cycle-GAN <ref type="bibr" target="#b18">[19]</ref> as the baseline for comparison, because of its excellent performance in the image transfer, and also its nature that requires no paired data can fit our circumstance. Unlike CycleGAN which requires both artifact-free images and artifact images, ArtiFusion only relies on artifact-free images, leading to a size of the training set that is half that of CycleGAN. For a fair compaison, we train the CycleGAN with two configurations, namely (#1) using the entire dataset, and (#2) using only half the dataset, where the latter uses the same number of the training samples as ArtiFusion. Regarding the ablation, we compare the proposed Swin-Transformer denoising network with the conventional U-Net <ref type="bibr" target="#b4">[5]</ref> (denoted as 'U-Net'), and the time token scheme with the direct summation scheme (denoted as 'Add'). We use the following metrics: L 2 distance (L2) with respect to the artifact region, the mean-squared error (MSE) over the whole image, structural similarity index (SSIM) <ref type="bibr" target="#b14">[15]</ref>, Peak signal-tonoise ratio (PSNR) <ref type="bibr" target="#b0">[1]</ref>, Feature-based similarity index (FSIM) <ref type="bibr" target="#b16">[17]</ref> and Signal to reconstruction error ratio (SRE) <ref type="bibr" target="#b6">[7]</ref>.</p><p>Table <ref type="table">1</ref>. Quantitative comparison of ArtiFusion with CycleGAN on artifact restoration performance. The ↓ indicates the smaller value, the better performance; and vice versa.  <ref type="table">1</ref>, where some exemplary images are illustrated in Fig. <ref type="figure">4</ref>. Our results demonstrate the superiority of ArtiFusion over GAN in the context of artifact restoration, with a large margin observed in all evaluation metrics. For instance, ArtiFusion can reduce the L2 and MSE by more than 50%, namely from 1 × 10 4 to 0.5 × 10 4 and from 0.55 to 0.25 respectively. It implying that our method can to the large extent restore the artifact regions using the global information. In addition, ArtiFusion can improve other metrics, including SSIM, PSNR, FSIM and SRE by 0.0204, 5.72, 0.1028 and 4.02 respectively, indicating that it can preserve the stain style during the restoration process. Moreover, our ablation study shows that the Swin-Transformer denoising network can outperform the conventional U-Net, highlighting the significance of capturing global correlation for local artifact restoration. Finally, the concatenating time token with feature tokens can bring an improvement in terms of all evaluation matrices, making it a better fit for the transformer architecture than the direct summation scheme in U-Net <ref type="bibr" target="#b4">[5]</ref>. In summary, our ablations confirm the effectiveness of all the components in our method. Evaluations by Downstream Classification Task. We further evaluate the proposed artifact restoration framework on a downstream tissue classification task. To this end, we use the public dataset NCT-CRC-HE-100K for training and CRC-VAL-HE-7K for testing, which together contains 100, 000 training samples and 7, 180 test samples. We consider the performance on the original unprocessed data, denoted as 'Clean', as the upper bound. Then, we manually synthesize the artifact (denoted as 'Artifact') and evaluate the classification performance with restoration approaches CycleGAN and ArtiFusion. In Table <ref type="table" target="#tab_2">3</ref>, comparisons show that the presence of artifacts can result in a significant performance decline of over 5% across all five network architectures. Importantly, the classification accuracy on images restored with ArtiFusion is consistently higher than those restored with CycleGAN, demonstrating the superiority of our model. These results highlight the effectiveness of ArtiFusion as a practical pre-processing method for histology analysis.</p><formula xml:id="formula_8">Methods L2 (×10 4 ) ↓ MSE ↓ SSIM ↑ PSNR ↑ FSIM ↑ SRE ↑ CycleGAN (#1) [</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose ArtiFusion, the first attempt at a diffusion-based artifact restoration framework for histology images. With a novel Swin-Transformer denoising backbone, ArtiFusion is able to restore regional artifacts using the context information, while preserving the tissue structures in artifact-free regions as well as the stain style. Experimental results on a public histological dataset demonstrate the superiority of our proposed method over the state-of-the-art GAN counterpart. Consequently, we believe that our proposed method has the potential to benefit the medical community by enabling more accurate diagnosis or treatment planning as a pre-processing method for histology analysis. Future work includes investigating the extension of ArtiFusion to more advanced diffusion models such as score-based or score-SDE models <ref type="bibr" target="#b15">[16]</ref>.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Learning-based artifact restoration approaches. (a) CycleGAN [19] formulates the artifact restoration as an image-to-image transfer problem. It leverages two pairs of the generator and discriminator to learn the transfer between the artifact and artifactfree image domains. (b) Diffusion probabilistic model<ref type="bibr" target="#b4">[5]</ref> (ours) formulates artifact restoration as a regional denoising process.</figDesc><graphic coords="2,84,96,120,56,282,76,170,77" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The semantic illustration of inference stage in ArtiFusion for local regional artifact restoration.</figDesc><graphic coords="3,77,79,219,62,268,87,127,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The proposed Swin-Transformer denoising network.</figDesc><graphic coords="4,76,98,292,37,298,90,250,21" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="6,59,46,95,78,333,16,247,51" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>out t+1 is the output from the denoising network in the previous reverse step i.e., p θ (x out t+1 |x in t+1</figDesc><table /><note><p>sample t o (1-m) is artifact-free region diffused for t times using the Gaussian transition kernel i.e. x sample t ∼ N ( √ ᾱt x 0 , (1-ᾱt I)) with ᾱt = t i=1 (1-β i ); and x</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison of the model complexity and efficiency in terms of the number of parameters, FLOPs, and averaged inference time. Evaluations on Artifact Restoration. The quantitative comparison with CycleGAN and ArtiFusion are shown in Table</figDesc><table><row><cell>19]</cell><cell>1.119</cell><cell>0.5583 0.9656 42.37</cell><cell>0.7188</cell><cell>51.42</cell></row><row><cell>CycleGAN (#2) [19]</cell><cell>1.893</cell><cell>0.5936 0.9622 42.12</cell><cell>0.7162</cell><cell>50.21</cell></row><row><cell>ArtiFusion (U-Net)</cell><cell>0.5027</cell><cell>0.2508 0.9850 47.61</cell><cell>0.8173</cell><cell>54.59</cell></row><row><cell>ArtiFusion (Add)</cell><cell>0.5007</cell><cell>0.2499 0.9850 47.79</cell><cell>0.8184</cell><cell>54.76</cell></row><row><cell cols="2">ArtiFusion (Full Settings) 0.4940</cell><cell>0.2465 0.9860 48.08</cell><cell cols="2">0.8216 55.43</cell></row><row><cell>Methods</cell><cell cols="4">#Params (×10 6 ) FLOPs (×10 9 ) Inference(s)</cell></row><row><cell>CycleGAN [19]</cell><cell>28.28</cell><cell>60.04</cell><cell>1.065</cell><cell></cell></row><row><cell>ArtiFusion (UNet)</cell><cell>108.41</cell><cell>247.01</cell><cell cols="2">112.37</cell></row><row><cell>ArtiFusion (Add)</cell><cell>27.74</cell><cell>7.69</cell><cell>30.14</cell><cell></cell></row><row><cell cols="2">ArtiFusion (Full Settings) 29.67</cell><cell>7.73</cell><cell>30.71</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>The effectiveness of the proposed artifact restoration framework in the downstream task-tissue classification task. We report the classification accuracy on the test set (%) with different network architectures including ResNet<ref type="bibr" target="#b3">[4]</ref>, RexNet<ref type="bibr" target="#b2">[3]</ref> and EfficientNet<ref type="bibr" target="#b11">[12]</ref>.Comparisons of Model Complexity. In Table2, we compare the model complexity in terms of the number of parameters, Floating Point Operations Per second (FLOPs), and averaged inference time on one image. Our proposed model achieves a significant reduction in the number of parameters by 72.6%, namely from 108.41 × 10 6 to 29.67 × 10 6 , compared with CycleGAN. This reduction in model size comes at the cost of longer inference time. However, a smaller model size can facilitate easier deployment in real clinical practice.</figDesc><table><row><cell>Settings</cell><cell cols="5">ResNet18 ResNet34 ResNet50 RexNet100 EfficientNetB0</cell></row><row><cell>Clean</cell><cell>95.529</cell><cell>93.538</cell><cell>94.833</cell><cell>95.487</cell><cell>95.808</cell></row><row><cell>Artifacts</cell><cell>80.302</cell><cell>86.031</cell><cell>85.012</cell><cell>90.446</cell><cell>90.626</cell></row><row><cell cols="2">Restored w CycleGAN 86.326</cell><cell>88.273</cell><cell>87.994</cell><cell>90.776</cell><cell>91.811</cell></row><row><cell cols="2">Restored w ArtiFusion 92.376</cell><cell>91.252</cell><cell>90.408</cell><cell>92.310</cell><cell>94.232</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Available at https://camelyon17.grand-challenge.org.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>Available at https://github.com/lu-yizhou/ClusterSeg.</p></note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A comprehensive survey analysis for present solutions of medical image fusion and future directions</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Osama</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="11358" to="11371" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ian</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<publisher>Generative adversarial networks</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Rexnet: Diminishing representational bottleneck on convolutional neural network</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Heo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yoo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<idno>CoRR, abs/1512.03385</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+		<idno>CoRR, abs/2006.11239</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">ClusterSeg: a crowd cluster pinpointed nucleus segmentation framework with cross-modality datasets</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">85</biblScope>
+			<biblScope unit="page">102758</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Superresolution of sentinel-2 images: Learning a globally applicable deep neural network</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lanaras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bioucas-Dias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Galliani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Baltsavias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schindler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ISPRS J. Photogrammetry Remote Sens</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<biblScope unit="page" from="305" to="319" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">1399 H&amp;E-stained sentinel lymph node sections of breast cancer patients: the CAMELYON dataset</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Litjens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">GigaScience</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">65</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<idno>CoRR, abs/2103.14030</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Repaint: inpainting using denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lugmayr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Danelljan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Timofte</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Artefacts in oral incisional biopsies in general dental practice: a pathology audit</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Seoane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">I</forename><surname>Varela-Centelles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Ramírez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cameselle-Teijeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Romero</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oral Dis</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="113" to="117" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">EfficientNet: Rethinking model scaling for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A review of artifacts in histopathology</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Taqi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Sami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">B</forename><surname>Sami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Oral Maxillofacial Pathol</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">279</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note>JOMFP</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Stress testing pathology models with generated artifacts</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kaplan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hodgin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Udager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Pathol. Inf</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Image quality assessment: from error visibility to structural similarity</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Sheikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simoncelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="600" to="612" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.00796</idno>
+		<title level="m">Diffusion models: A comprehensive survey of methods and applications</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">FSIM: a feature similarity index for image quality assessment</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Mou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="2378" to="2386" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Benchmarking the robustness of deep neural networks to common corruptions in digital pathology</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_24</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_24" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13432</biblScope>
+			<biblScope unit="page" from="242" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Unpaired image-to-image translation using cycle-consistent adversarial networks</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE International Conference on Computer Vision (ICCV</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

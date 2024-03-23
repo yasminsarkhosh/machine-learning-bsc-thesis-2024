@@ -77,3 +77,36 @@
   - Do they identify weaknesses within their model?
   - Do they contemplate the potential social impacts of their models?
 
+## Meeting recommendations and ideas
+* Compare results from 2023 to another year (within the past 5 years)
+* Look into what differs papers with demographic info with papers that has no mentions 
+  * maybe by category?
+* Look into datasets:
+  * Info about dataset(s): possible to distinguish data by demographics/evaluate biases by what the dataset is missing/not missing 
+  * Dataset and groups: selective choice by papers?
+### Extracted sentences:
+  * Awareness about biases and data collection (quality) 
+  * Addressing biases and ensuring fairness by methods/strategies or just "talking about it"
+  * Actively preventing biases vs passively mentioning biases
+    * Aggrated counts show the list of keywords occuring in each paper, however there is a difference between mentioning something about fairness and biases and another to actively prevent/address/reduce bias and ensure/provide fairness 
+  * Examples: 
+    * miccai23vol1/paper_25.pdf "the inferior performance of the global clustering is due to the visual bias underlying the whole dataset." 
+      * visual bias? what is underlying the whole dataset?
+    * miccai23vol1/paper_59.pdf "mesh2ssm also includes an analysis network that operates on the learned correspondences to obtain a data-driven
+    template point cloud (i.e., tem-plate point cloud), which can replace the initial template, and hence reducing the bias that could arise from template selection. [13,21] analysis module helps in mitigating bias and capturing non-linear characteristics of the data."
+      * what bias?
+      * mitigating bias, but how?
+  * Annotation guide for determing which papers are actively preventing biases and ensuring fairness vs papers that do not
+  * Software: PDF annotator - Théo can help if this is something I wish to approach further
+### Ideas for Discussion section
+* Extracted sentences:
+  * If no time, mention the difference by examples
+  * AI field vs Medical field: 
+    * is the the lack of awareness of data collection quality and thus prioritizing examining potential biases and how these affect real-world provlems an issue in general with regards to medical research or related to the field of AI or Medical? 
+### Recommendations for analysis and splitting PDFs
+  * GROBID
+  * Label studio
+
+
+
+

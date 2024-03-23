@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Performance Metrics for Probabilistic Ordinal Classifiers</title>
+				<funder ref="#_UCWpBj6">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Adrian</forename><surname>Galdran</surname></persName>
+							<email>adrian.galdran@upf.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">BCN Medtech</orgName>
+								<orgName type="institution" key="instit2">Universitat Pompeu Fabra</orgName>
+								<address>
+									<settlement>Barcelona</settlement>
+									<country key="ES">Spain</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Adelaide</orgName>
+								<address>
+									<settlement>Adelaide</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Performance Metrics for Probabilistic Ordinal Classifiers</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="357" to="366"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EB75978800248692F5C88E0A819300E1</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_35</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:46+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Ordinal Classification</term>
+					<term>Proper Scoring Rules</term>
+					<term>Model Calibration</term>
+					<term>Uncertainty Quantification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Ordinal classification models assign higher penalties to predictions further away from the true class. As a result, they are appropriate for relevant diagnostic tasks like disease progression prediction or medical image grading. The consensus for assessing their categorical predictions dictates the use of distance-sensitive metrics like the Quadratic-Weighted Kappa score or the Expected Cost. However, there has been little discussion regarding how to measure performance of probabilistic predictions for ordinal classifiers. In conventional classification, common measures for probabilistic predictions are Proper Scoring Rules (PSR) like the Brier score, or Calibration Errors like the ECE, yet these are not optimal choices for ordinal classification. A PSR named Ranked Probability Score (RPS), widely popular in the forecasting field, is more suitable for this task, but it has received no attention in the image analysis community. This paper advocates the use of the RPS for image grading tasks. In addition, we demonstrate a counter-intuitive and questionable behavior of this score, and propose a simple fix for it. Comprehensive experiments on four large-scale biomedical image grading problems over three different datasets show that the RPS is a more suitable performance metric for probabilistic ordinal predictions. Code to reproduce our experiments can be found at https://github.com/agaldran/prob_ord_metrics.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction and Related Work</head><p>The output of predictive machine learning models is often presented as categorical values, i.e. "hard" class membership decisions. Nonetheless, understanding the faithfulness of the underlying probabilistic predictions giving rise to such hard class decisions can be essential in some critical applications. Meaningful probabilities enable not only high model accuracy, but also more reliable decisions: a doctor may choose to order further diagnostic tests if a binary classifier gives a p = 45% probability of disease, even if the hard prediction is "healthy" <ref type="bibr" target="#b1">[2]</ref>. This is particularly true for ordinal classification problems, e.g. disease severity staging <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7]</ref> or medical image grading <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b20">21]</ref>. In these problems, predictions should be as close as possible to the actual category; further away predictions must incur in heavier penalties, as they have increasingly worse consequences.</p><p>There is a large body of research around performance metrics for medical image analysis <ref type="bibr" target="#b19">[20]</ref>. Most existing measures, like accuracy or the F1-score, focus on assessing hard predictions in specific ways that capture different aspects of a problem. In ordinal classification, the recommended metrics are Quadratic-Weighted Kappa and the Expected Cost <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b15">16]</ref>. In recent years, measuring the performance of "soft" probabilistic predictions has attracted an increasing research interest <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b18">19]</ref>. For this purpose, the current consensus is to employ Calibration Errors like the ECE and Proper Scoring Rules like the Brier score <ref type="bibr" target="#b15">[16]</ref>. We will show that other metrics can instead be a better choice for assessing probabilistic predictions in the particular case of ordinal classification problems.</p><p>How to measure the correctness of probabilistic predictions is a decades-old question, naturally connected to forecasting, i.e. predicting the future state of a complex system <ref type="bibr" target="#b8">[9]</ref>. A key aspect of forecasting is that, contrary to classifiers, forecasters do not output hard decisions, but probability distributions over possible outcomes. Weather forecasts do not tell us whether it will rain tomorrow or not, they give us a probability estimate about the likelihood of raining, leaving to us the decision of taking or not an umbrella, considering the personal cost of making such decision. The same applies for financial investments or sports betting, where it is also the final user who judges risks and makes decisions based on probabilistic forecasts. In this context, Proper Scoring Rules (PSRs) have been long used by the forecasting community to measure predictive performance <ref type="bibr" target="#b9">[10]</ref>. PSRs are the focus of this paper, and will be formally defined in Sect. 2.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Relation to Calibration:</head><p>A popular approach to assess the quality of probabilistic predictions is measuring calibration. A model is well calibrated if its probabilistic predictions are aligned with its accuracy on average. PSRs and calibration are intertwined concepts: PSRs can be decomposed into a calibration and a resolution component <ref type="bibr" target="#b7">[8]</ref>. Therefore, a model needs to be both calibrated and resolved (i.e. having sharp, or concentrated probabilities) in order to have a good PSR value. For example, if a disease appears in 60% of the population, and our model is just "return p=0.6", in the long run the model is correct 60% of the time, and it is perfectly calibrated, as its confidence is fully aligned with its accuracy, despite having zero predictive ability. If the model predicted in a "resolved" manner with p = 0.99 the presence of the disease, but being correct only 70% of the time, then it would be overconfident, which is a form of miscalibration. Only when the model is simultaneously confident and correct can it attain a good PSR value.</p><p>The two most widely adopted PSRs are the Brier and the Logarithmic Score <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b10">11]</ref>. Unfortunately, none of these is appropriate for the assessment of ordinal classification probabilities <ref type="bibr" target="#b2">[3]</ref>. A third PSR, long used by forecasting researchers in this scenario, the Ranked Probability Score (RPS, <ref type="bibr" target="#b3">[4]</ref>), appears to have been neglected so far in biomedical image grading applications. This paper first covers the definition and basic properties of PSRs, and then motivates the use the RPS for ordinal classifiers. We also illustrate a counter-intuitive behavior of the RPS, and propose a simple modification to solve it. Our experiments cover two relevant biomedical image grading problems and illustrate how the RPS can better assess probabilistic predictions of ordinal classification models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Scoring Rules -Notation, Properties, Examples</head><p>We consider a K-class classification problem, and a classifier that takes an image x and maps it into a vector of probabilities p ∈ [0, 1] K . Typically, p is the result of applying a softmax operation on the output of a neural network. Suppose x belongs to class y ∈ {1, ..., K}, and denote by y its one-hot representation. A Scoring Rule (SR) S is any function taking the probabilistic prediction p and the label y and producing a number S(p, y) ∈ R (a score). Here we consider negatively oriented SRs, which assign lower values to better predictions.</p><p>Of course, the above is an extremely generic definition, to which we must now attach additional properties in order to encode our understanding of what better predictions means for a particular problem.</p><p>Property 1: A Scoring Rule (SR) is proper if its value is minimal when the probabilistic prediction coincides with the ground-truth in expectation.</p><p>Example: The Brier Score <ref type="bibr" target="#b0">[1]</ref> is defined as the sum of the squared differences between probabilities and labels:</p><formula xml:id="formula_0">Brier(p, y) = p -y 2 2 = K i=1 (p i -y i ) 2 . (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>Since its value is always non-negative, and it decreases to 0 when p = y, we conclude that the Brier Score is indeed proper.</p><p>Property 2: A Proper Scoring Rule (PSR) is local if its value only depends on the probability assigned to the correct category.</p><p>Example: The Brier Score is non-local, as its value depends on the probability placed by the model on all classes. The Logarithmic Score <ref type="bibr" target="#b10">[11]</ref>, given by:</p><formula xml:id="formula_2">L(p, y) = -log(p c ) (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where c is the correct category of x, rewards the model by placing as much probability mass as possible in c, regardless of how the remaining probability is distributed. It is, therefore, a local PSR. The Logarithmic Score is also known, when taken on average over a dataset, as the Negative Log-Likelihood.</p><p>Property 3: A PSR is sensitive to distance if its value takes into account the order of the categories, in such a way that probability placed in categories further away from the correct class is more heavily penalized. Example: Both the Brier and the Logarithmic scores are insensitive to distance (shuffling p and y won't affect the score). Sensitivity to distance is essential for assessing ordinal classifiers. Below we define the Ranked Probability Score (RPS) <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b17">18]</ref>, which has this property, and is therefore more suitable for our purposes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">The Ranked Probability Score for Ordinal Classification</head><p>Consider a test sample (x, y) in a 3-class classification problem, with label y and two probabilistic predictions p 1 , p 2 :</p><formula xml:id="formula_4">y = [ 1, 0, 0 ], p 1 = [ 1 4 , 3 4 , 0 ], p 2 = [ 1 4 , 0, 3 4 ]<label>(3)</label></formula><p>In this scenario, both the Brier and the Logarithmic scores produce the same penalty for each prediction, whereas a user might prefer p 1 over p 2 due to the latter assigning more probability to the second category. Indeed, if we use the arg-max operator to generate a hard-decision for this sample, we will obtain a prediction of class 2 and class 3 respectively, which could result in the second model declaring a patient as severely unhealthy with serious consequences. In this context, we would like to have a PSR that takes into account distance to the true category, such as the Ranked Probability Score (RPS, <ref type="bibr" target="#b3">[4]</ref>), given by:</p><formula xml:id="formula_5">RPS(p, y) = 1 K -1 K-1 i=1 ⎡ ⎣ i j=1 (p j -y j ) ⎤ ⎦ 2 = 1 K -1 P -Y 2 2 . (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>The RPS is the squared 2 distance between the cumulative distributions Y of the target label y and P of the probabilistic prediction p, discounting their last component (as they are both always one) and normalizing so that it varies in the unit interval. In the above example, the RPS would give for each prediction a penalty of RPS(p 1 , y) = 1 /8, RPS(p 2 , y) = 1 /4, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. Among many interesting properties, one can show that the RPS is proper <ref type="bibr" target="#b16">[17]</ref>, and reduces to the Brier score for K = 2. Despite the RPS dating back more than 50 years <ref type="bibr" target="#b3">[4]</ref>, and enjoying great popularity in the weather forecasting community, it appears to be much less known in the image analysis and computer vision areas, where we could not find any trace of it. The first goal of this paper is to bring to the attention of computer vision researchers this tool for measuring the performance of probabilistic predictions in ordinal classification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">The Squared Absolute RPS</head><p>Our second goal in this paper is to identify and then fix certain failure modes of the RPS that might lead to counter-intuitive behaviors. First, in disease grading and other ordinal classification problems it is customary to assign penalties to mistakes that grow quadratically with the distance to the correct category. This is the reason why most works utilize the Quadratic-Weighted Kappa Score (QWK) instead of the linearly weighted version of this metric. However, the RPS increases the penalty linearly, as can be quickly seen with a simple 3-class problem and an example (x 1 , y 1 ) of class 1 (y 1 = [ 1, 0, 0 ]):</p><formula xml:id="formula_7">RPS([ 1, 0, 0 ], y 1 ) = 0, RPS([ 0, 1, 0 ], y 1 ) = 1/2. RPS([ 0, 0, 1 ], y 1 ) = 1. (5)</formula><p>Also, the RPS has a hidden preference for symmetric predictions. To see this, consider a second example (x 2 , y 2 ) in which the correct category is now the middle one (y 2 = [ 0, 1, 0 ]), and two probabilistic predictions: p sym = [ 3/10, 4/10, 3/10 ], p asym = [ 1/10, 5/10, 9/10 ]. In principle, there is no reason to prefer p sym over p asym , unless certain prior/domain knowledge tells us that symmetry is a desirable property. In this particular case, p asym is actually more confident on the correct class than p sym , which is however the preferred prediction for the RPS: RPS([ 0.30, 0.40, 0.30 ], y 2 ) = 0.09 &lt; 0.1025 = RPS([ 0.45, 0.50, 0.05 ], y 2 ). (6) Fig. <ref type="figure">2</ref>. The Ranked Probability Score displays some counter-intuitive behavior that the proposed sa-RPS can fix. Here, p2 places more probability on the correct class but p1 is preferred due to its symmetry.</p><p>In order to address these aspects of the conventional RPS, we propose to implement instead the Squared Absolute RPS (sa-RPS), given by:</p><formula xml:id="formula_8">sa-RPS(p, y) = 1 K -1 ⎡ ⎣ K i=1 i j=1 (p j -y j ) ⎤ ⎦ 2 (7)</formula><p>Replacing the inner square in Eq. ( <ref type="formula" target="#formula_5">4</ref>) by an absolute value, we manage to break the preference for symmetry of the RPS, and squaring the overall result we build a metric that still varies in [0,1] but gives a quadratic penalty to further away predictions. This is illustrated in Fig. <ref type="figure">2</ref> above.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Evaluating Evaluation Metrics</head><p>Our third goal is to demonstrate how the (sa-)RPS is useful for evaluating probabilistic ordinal predictions. In the next section we will show some illustrative examples that qualitatively demonstrate its superiority over the Brier and logarithmic score. However, it is hard to quantitatively make the case for one performance metric over another, since metrics themselves are what quantify modeling success. We proceed as follows: we first train a neural network to solve a biomedical image grading problem. We generate probabilistic predictions on the test set and apply distance sensitive metrics to (arg-maxed) hard predictions (QWK and EC, as recommended in <ref type="bibr" target="#b15">[16]</ref>), verifying model convergence.</p><p>Here it is important to stress that, contrary to conventional metrics (like accuracy, QWK, or ECE) PSRs can act on an individual datum, without averaging over sets of samples. We exploit this property to design the following experiment: we sort the probabilistic predictions of the test set according to a score S, and then progressively remove samples that are of worst quality according to S. We take the arg-max on the remaining probabilistic predictions and compute QWK and EC. If S prefers better ordinal predictions, we must see a performance increase on that subset. We repeat this process, each time removing more of the worse samples, and graph the evolution of QWK and EC for different scores S: a better score should result in a faster QWK/EC-improving trend.</p><p>Lastly, in order to derive a single number to measure performance, we compute the area under the remaining samples vs QWK/EC curve, which we call Area under the Retained Samples Curve (AURSC). In summary:</p><p>What we expect to see: As we remove test set samples considered as worse classified by RPS, we expect to more quickly improve QWK/EC on the resulting subsets. We measure this with the Area under the Retained Samples Curve (AURSC)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head><p>We now give a description of the data we used for experimentation, analyze performance for each considered problem, and close with a discussion of results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and Architecture</head><p>Our experiments are on two different medical image grading tasks: 1) the TMED-v2 dataset ( <ref type="bibr" target="#b12">[13]</ref>, link) contains 17,270 images from 577 patients, with an aortic stenosis (AS) diagnostic label from three categories (none, early AS, or significant AS). The authors provide an official train/test distribution of the data that we use here. 2) Eyepacs (link) contains retinal images and labels for grading Diabetic Retinopathy (DR) stage into five categories, ranging from healthy to proliferative DR. Ithas 35,126 images for training and 53,576 in the test set.</p><p>We train a ConvNeXt <ref type="bibr" target="#b14">[15]</ref>, minimizing the CE loss with the adam algorithm for 10 epochs starting with a learning rate of l = 1e-4, decaying to zero over the training. We report average Area under the Retained Samples Curve (AURSC) for 50 bootstrap iterations in each dataset below, and also plot the evolution of performance as we remove more samples considered to be worse by four PSRs: the Brier score, the Logarithmic score (Neg-Log), RPS and sa-RPS.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">How is RPS Useful? Qualitative Error Analysis</head><p>The obvious application of RPS would be to train better ordinal classification models. But beyond this, RPS also enables improved, fine-grained error analysis. Let us see this through a simple experiment. Since PSRs assess samples individually, we can sort our test set using RPS, NLL, and Brier score. The worst-scored items are what the model considers the wrongest probabilistic predictions. The result of sorting predictions on the Eyepacs test set with the Brier, Neg-Log and RPS rules is show on Fig. <ref type="figure" target="#fig_1">3</ref>. We can see that the prediction identified as worst by  For a visual analysis, Fig. <ref type="figure">4</ref> shows the full Sample Retention Curves from which AURSC-QWK values in Table <ref type="table" target="#tab_0">1</ref> were computed. These curves show how PSRs can indeed take a single probabilistic prediction and return a score that is correlated to QWK, which is computed over sets of samples. This is because as we remove samples according to any PSR, performance in the remaining test set improves in all cases. The curves in Fig. <ref type="figure">4</ref> also tell a more complete story of how the two distance-sensitive scores outperform the Brier and Neg-Log scores, particularly for TMED and Eyepacs. Just by removing a 5%-6% of samples with worse (higher) RPS, we manage to improve QWL and EC to a greater extent. Fig. <ref type="figure">4</ref>. We sort probabilistic predictions in each test set using several PSRs: Brier, Neg-Log, RPS, sa-RPS. We progressively discard worse-scored samples, improving the metric of interest (only QWK shown). Removing worse samples according to RPS and sa-RPS leads to better QWK, implying that they both capture better ordinal classification performance at the probabilistic level.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion and Future Work</head><p>We have shown that Proper Scoring Rules are useful tools for diagnosing probabilistic predictions, but the standard Brier and Logarithmic scores should not be preferred in ordinal classification problems like medical image grading. Instead, the Ranked Probability Score, popular in the forecasting community, should be favoured. We have also proposed sa-RPS, an extension of the RPS that can better handle some pathological cases. Future work will involve using the RPS to learn ordinal classifiers, and investigating its impact in calibration problems.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. The RPS is sensitive to distance, suitable for assessing probabilistic predictions on biomedical image grading problems. It is the difference between the cumulative probability distributions of the label and a probabilistic prediction.</figDesc><graphic coords="4,60,30,53,72,303,61,95,98" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. For the same test set and predictions, the RPS finds wrong samples that are more incorrect from the point of view of ordinal classification.</figDesc><graphic coords="7,55,98,385,91,340,18,62,26" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Areas under the Retained Samples Curve for TMED and Eyepacs, with a ConvNeXt, for each PSR; best and second best values are marked. RPS does indeed violate more heavily the order of categories, placing more probability on class 5 for a sample of class 1. On the other hand, for the same test set and predictions, the Brier score finds worst a prediction with 99% of the probability on class 3 and a label of class 5, and the Neg-Log score identifies a sample of class 1 for which the model wrongly predicts class 2.Quantitative results of the experiment described in Sect. 2.4, computing AURSC values for all PSRs, are shown in Table1, with dispersion measures obtained from 50 bootstraped performance measurements. We see that for the considered ordinal classification problems, distance-sensitive scores consistently outperform the Brier and Neg-Log scores. Also, the Square-Absolute Ranked Probability Score always outperforms the conventional Ranked Probability Score. It is worth stressing that when observing bootstrapped performance intervals, neither the Brier nor the Logarithmic scores manage to overlap the SA-RPS interval in any of the two datasets, and in the Eyepacs dataset not even the best RPS result reaches the performance of worst SA-RPS result.</figDesc><table><row><cell></cell><cell>TMED</cell><cell></cell><cell>Eyepacs</cell></row><row><cell></cell><cell cols="4">AURSC-QWK↑ AURSC-EC↓ AURSC-QWK↑ AURSC-EC↓</cell></row><row><cell>Brier</cell><cell>13.46 ± 0.35</cell><cell cols="2">3.76 ± 0.21 17.36 ± 0.04</cell><cell>2.84 ± 0.07</cell></row><row><cell cols="2">Neg-Log 13.56 ± 0.35</cell><cell>3.62 ± 0.2</cell><cell>17.44 ± 0.04</cell><cell>2.67 ± 0.07</cell></row></table><note><p>RPS 14.76 ± 0.28 2.68 ± 0.14 17.81 ± 0.03 1.99 ± 0.04 sa-RPS 14.95 ± 0.25 2.53 ± 0.12 17.86 ± 0.03 1.88± 0.04 the</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This work was supported by a <rs type="grantName">Marie Skłodowska-Curie Fellowship (No 892297</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_UCWpBj6">
+					<orgName type="grant-name">Marie Skłodowska-Curie Fellowship (No 892297</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Verification of forecasts expressed in terms of probability</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Brier</surname></persName>
+		</author>
+		<idno type="DOI">10.1175/1520-0493(1950)078&lt;0001:VOFEIT&gt;2.0.CO;2</idno>
+		<idno>&lt;0001:VOFEIT&gt;2.0</idno>
+		<ptr target="https://doi.org/10.1175/1520-0493" />
+	</analytic>
+	<monogr>
+		<title level="j">Monthly Weather Review</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">78</biblScope>
+			<date type="published" when="1950">1950. 1950</date>
+			<publisher>American Meteorological Society Section</publisher>
+		</imprint>
+	</monogr>
+	<note>Mon. Weather Rev.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Probabilistic reasoning and clinical decision-making: do doctors overestimate diagnostic probabilities? QJM: An International</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cahan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gilon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Manor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Paltiel</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/qjmed/hcg122</idno>
+		<ptr target="https://doi.org/10.1093/qjmed/hcg122" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Medicine</title>
+		<imprint>
+			<biblScope unit="volume">96</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="763" to="769" />
+			<date type="published" when="2003-10">Oct 2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Solving the problem of inadequate scoring rules for assessing probabilistic football forecast models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Constantinou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>Fenton</surname></persName>
+		</author>
+		<idno type="DOI">10.1515/1559-0410.1418</idno>
+		<ptr target="https://doi.org/10.1515/1559-0410.1418.DeGruyter" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Quant. Anal. Sports</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A scoring system for probability forecasts of ranked categories</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Epstein</surname></persName>
+		</author>
+		<idno type="DOI">10.1175/1520-0450(1969)008&lt;0985:ASSFPF&gt;2.0.CO;2</idno>
+		<idno>&lt;0985:ASSFPF&gt;2.0.CO;2</idno>
+		<ptr target="https://doi.org/10.1175/1520-0450" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Meteorol. Climatol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">8</biblScope>
+			<date type="published" when="1969">1969. 1969</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Analysis and comparison of classification metrics</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ferrer</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.05355</idno>
+		<ptr target="http://arxiv.org/abs/2209.05355" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Non-uniform label smoothing for diabetic retinopathy grading from retinal fundus images with deep neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Galdran</surname></persName>
+		</author>
+		<idno type="DOI">10.1167/tvst.9.2.34</idno>
+		<ptr target="https://doi.org/10.1167/tvst.9.2.34" />
+	</analytic>
+	<monogr>
+		<title level="j">Transl. Vis. Sci. Technol</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">34</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Cost-sensitive regularization for diabetic retinopathy grading from eye fundus images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Galdran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chakor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59722-1_64</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59722-1_64" />
+	</analytic>
+	<monogr>
+		<title level="j">Medical Image Computing and Computer Assisted Intervention -MICCAI</title>
+		<imprint>
+			<biblScope unit="page" from="665" to="674" />
+			<date type="published" when="2020">2020. 2020</date>
+			<publisher>Springer International Publishing</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Probabilistic forecasts, calibration and sharpness</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gneiting</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Balabdaoui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.1467-9868.2007.00587.x</idno>
+		<ptr target="https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-9868.2007.00587.x" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Stat. Soc. B (Stat. Methodol.)</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="243" to="268" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Probabilistic forecasting</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gneiting</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Katzfuss</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-statistics-062713-085831</idno>
+		<ptr target="https://doi.org/10.1146/annurev-statistics-062713-085831" />
+	</analytic>
+	<monogr>
+		<title level="j">Annu. Rev. Stat. Appl</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="125" to="151" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Strictly proper scoring rules, prediction, and estimation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gneiting</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<idno type="DOI">10.1198/016214506000001437</idno>
+		<ptr target="https://doi.org/10.1198/016214506000001437" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Stat. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">102</biblScope>
+			<biblScope unit="issue">477</biblScope>
+			<biblScope unit="page" from="359" to="378" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Rational decisions</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">J</forename><surname>Good</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/j.2517-6161.1952.tb00104.x</idno>
+		<ptr target="https://doi.org/10.1111/j.2517-6161.1952.tb00104.x" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Roy. Stat. Soc.: Ser. B (Methodol.)</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="107" to="114" />
+			<date type="published" when="1952">1952</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Better uncertainty calibration via proper scores for classification and beyond</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Gruber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Buettner</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=PikKk2lF6P" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">TMED 2: a dataset for semisupervised classification of echocardiograms</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wessler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Hughes</surname></persName>
+		</author>
+		<ptr target="https://tmed.cs.tufts.edu/papers/HuangEtAl_TMED2_DataPerf_2022.pdf" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep learning models for histologic grading of breast cancer and association with disease prognosis</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jaroensri</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41523-022-00478-y</idno>
+		<ptr target="https://doi.org/10.1038/s41523-022-00478-y" />
+	</analytic>
+	<monogr>
+		<title level="j">NPJ Breast Cancer</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Feichtenhofer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<title level="m">A ConvNet for the 2020s</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11976" to="11986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Metrics reloaded: pitfalls and recommendations for image analysis validation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.01653</idno>
+		<ptr target="http://arxiv.org/abs/2206.01653" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">On the &quot;Ranked Probability Score</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Murphy</surname></persName>
+		</author>
+		<idno type="DOI">10.1175/1520-0450(1969)008&lt;0988:OTPS&gt;2.0.CO;2</idno>
+		<idno>&lt;0988: OTPS&gt;2.0.CO;2</idno>
+		<ptr target="https://doi.org/10.1175/1520-0450(1969)008" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Meteorol. Climatol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="988" to="989" />
+			<date type="published" when="1969">1969</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A note on the ranked probability score</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Murphy</surname></persName>
+		</author>
+		<idno type="DOI">10.1175/1520-0450(1971)010&lt;0155:ANOTRP&gt;2.0.CO;2</idno>
+		<idno>&lt;0155: ANOTRP&gt;2.0.CO;2</idno>
+		<ptr target="https://doi.org/10.1175/1520-0450(1971)010" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Meteorol. Climatol</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="155" to="156" />
+			<date type="published" when="1971">1971</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Beyond calibration: estimating the grouping loss of modern neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Perez-Lebel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Morvan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Varoquaux</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2210.16315</idno>
+		<ptr target="http://arxiv.org/abs/2210.16315" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Understanding metric-related pitfalls in image analysis validation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Reinke</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.2302.01790</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.2302.01790" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Going deeper through the Gleason scoring scale: an automatic end-to-end system for histology prostate grading and cribriform pattern detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Silva-Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Colomer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Sales</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Molina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Naranjo</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cmpb.2020.105637</idno>
+		<ptr target="https://doi.org/10.1016/j.cmpb.2020.105637" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Programs Biomed</title>
+		<imprint>
+			<biblScope unit="volume">195</biblScope>
+			<biblScope unit="page">105637</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

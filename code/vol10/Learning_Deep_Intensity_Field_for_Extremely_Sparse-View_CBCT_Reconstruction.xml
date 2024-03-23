@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learning Deep Intensity Field for Extremely Sparse-View CBCT Reconstruction</title>
+				<funder ref="#_brK2akT #_DQq7U9b">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_Kqq7Ezs">
+					<orgName type="full">Foshan HKUST</orgName>
+				</funder>
+				<funder ref="#_6BRG76M">
+					<orgName type="full">Hong Kong Innovation and Technology Fund</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yiqun</forename><surname>Lin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Zhongjin</forename><surname>Luo</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Wei</forename><surname>Zhao</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Beihang University</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country>People&apos;s Republic of China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaomeng</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learning Deep Intensity Field for Extremely Sparse-View CBCT Reconstruction</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="13" to="23"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">02C0A25B9AE21A2ADAE5058BB70144FF</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_2</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-23T22:54+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>CBCT Reconstruction</term>
+					<term>Implicit Neural Representation</term>
+					<term>Sparse View</term>
+					<term>Low Dose</term>
+					<term>Efficient Reconstruction</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Sparse-view cone-beam CT (CBCT) reconstruction is an important direction to reduce radiation dose and benefit clinical applications. Previous voxel-based generation methods represent the CT as discrete voxels, resulting in high memory requirements and limited spatial resolution due to the use of 3D decoders. In this paper, we formulate the CT volume as a continuous intensity field and develop a novel DIF-Net to perform high-quality CBCT reconstruction from extremely sparse (≤10) projection views at an ultrafast speed. The intensity field of a CT can be regarded as a continuous function of 3D spatial points. Therefore, the reconstruction can be reformulated as regressing the intensity value of an arbitrary 3D point from given sparse projections. Specifically, for a point, DIF-Net extracts its view-specific features from different 2D projection views. These features are subsequently aggregated by a fusion module for intensity estimation. Notably, thousands of points can be processed in parallel to improve efficiency during training and testing. In practice, we collect a knee CBCT dataset to train and evaluate DIF-Net. Extensive experiments show that our approach can reconstruct CBCT with high image quality and high spatial resolution from extremely sparse views within 1.6 s, significantly outperforming state-of-the-art methods. Our code will be available at https://github.com/xmed-lab/DIF-Net.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Cone-beam computed tomography (CBCT) is a common 3D imaging technique used to examine the internal structure of an object with high spatial resolution and fast scanning speed <ref type="bibr" target="#b19">[20]</ref>. During CBCT scanning, the scanner rotates around the object and emits cone-shaped beams, obtaining 2D projections in the detection panel to reconstruct 3D volume. In recent years, beyond dentistry, CBCT has been widely used to acquire images of the human knee joint for applications such as total knee arthroplasty and postoperative pain management <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b14">15]</ref>.</p><p>To maintain image quality, CBCT typically requires hundreds of projections involving high radiation doses from X-rays, which could be a concern in clinical practice. Sparse-view reconstruction is one of the ways to reduce radiation dose by reducing the number of scanning views (10× fewer). In this paper, we study a more challenging problem, extremely sparse-view CBCT reconstruction, aiming to reconstruct a high-quality CT volume from fewer than 10 projection views.</p><p>Compared to conventional CT (e.g., parallel beam, fan beam), CBCT reconstructs a 3D volume from 2D projections instead of a 2D slice from 1D projections, as comparison shown in Fig. <ref type="figure" target="#fig_0">1</ref>, resulting in a significant increase in spatial dimensionality and computational complexity. Therefore, although sparse-view conventional CT reconstruction <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26]</ref> has been developed for many years, these methods cannot be trivially extended to CBCT. CBCT reconstruction can be divided into dense-view (≥100), sparse-view (20∼50), extremely sparseview (≤10), and single/orthogonal-view reconstructions depending on the number of projection views required. A typical example of dense-view reconstruction is FDK <ref type="bibr" target="#b5">[6]</ref>, which is a filtered-backprojection (FBP) algorithm that accumulates intensities by backprojecting from 2D views, but requires hundreds of views to avoid streaking artifacts. To reduce required projection views, ART <ref type="bibr" target="#b6">[7]</ref> and its extensions (e.g., SART <ref type="bibr" target="#b0">[1]</ref>, VW-ART <ref type="bibr" target="#b15">[16]</ref>) formulate reconstruction as an iterative minimization process, which is useful when projections are limited. Nevertheless, such methods often take a long computational time to converge and cope poorly with extremely sparse projections; see results of SART in Table <ref type="table" target="#tab_0">1</ref>. With the development of deep learning techniques and computing devices, learning-based approaches are proposed for CBCT sparse-view reconstruction. Lahiri et al. <ref type="bibr" target="#b11">[12]</ref> propose to reconstruct a coarse CT with FDK and use 2D CNNs to denoise each slice. However, the algorithm has not been validated on medical datasets, and the performance is still limited as FDK introduces extensive streaking artifacts with sparse views. Recently, neural rendering techniques <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b28">29]</ref> have been introduced to reconstruct CBCT volume by parameterizing the attenuation coefficient field as an implicit neural representation field (NeRF), but they require a long time for per-patient optimization and do not perform well with extremely sparse views due to lack of prior knowledge; see results of NAF in Table <ref type="table" target="#tab_2">2</ref>. For single/orthogonal-view reconstruction, voxel-based approaches <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b26">27]</ref> are proposed to build 2D-to-3D generation networks that consist of 2D encoders and 3D decoders with large training parameters, leading to high memory requirements and limited spatial resolution. These methods are special designs with the networks <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">27]</ref> or patient-specific training data <ref type="bibr" target="#b21">[22]</ref>, which are difficult to extend to general sparse-view reconstruction.</p><p>In this work, our goal is to reconstruct a CBCT of high image quality and high spatial resolution from extremely sparse (≤10) 2D projections, which is an important yet challenging and unstudied problem in sparse-view CBCT reconstruction. Unlike previous voxel-based methods that represent the CT as discrete voxels, we formulate the CT volume as a continuous intensity field, which can be regarded as a continuous function g(•) of 3D spatial points. The property of a point p in this field represents its intensity value v, i.e., v = g(p). Therefore, the reconstruction problem can be reformulated as regressing the intensity value of an arbitrary 3D point from a stack of 2D projections I, i.e., v = g(I, p). Based on the above formulation, we develop a novel reconstruction framework, namely DIF-Net (Deep Intensity Field Network). Specifically, DIF-Net first extracts feature maps from K given 2D projections. Given a 3D point, we project the point onto the 2D imaging panel of each view i by corresponding imaging parameters (distance, angle, etc.) and query its view-specific features from the feature map of view i . Then, K view-specific features from different views are aggregated by a cross-view fusion module for intensity regression. By introducing the continuous intensity field, it becomes possible to train DIF-Net with a set of sparsely sampled points to reduce memory requirement, and reconstruct the CT volume with any desired resolution during testing. Compared with NeRF-based methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b28">29]</ref>, the design of DIF-Net shares the similar data representation (i.e., implicit neural representation) but additional training data can be introduced to help DIF-Net learn prior knowledge. Benefiting from this, DIF-Net can not only reconstruct high-resolution CT in a very short time since only inference is required for a new test sample (no retraining), but also performs much better than NeRF-based methods with extremely limited views.</p><p>To summarize, the main contributions of this work include 1.) we are the first to introduce the continuous intensity field for supervised CBCT reconstruction; 2.) we propose a novel reconstruction framework DIF-Net that reconstructs CBCT with high image quality (PSNR: 29.3 dB, SSIM: 0.92) and high spatial resolution (≥256 3 ) from extremely sparse (≤10) views within 1.6 s; 3.) we conduct extensive experiments to validate the effectiveness of the proposed sparse-view CBCT reconstruction method on a clinical knee CBCT dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Intensity Field</head><p>We formulate the CT volume as a continuous intensity field, where the property of a 3D point p ∈ R 3 in this field represents its intensity value v ∈ R. The intensity field can be defined as a continuous function g : R 3 → R, such that v = g(p). Hence, the reconstruction problem can be reformulated as regressing the intensity value of an arbitrary point p in the 3D space from K projections I = {I 1 , I 2 , . . . , I K }, i.e., v = g(I, p). Based on the above formulation, we propose a novel reconstruction framework, namely DIF-Net, to perform efficient sparseview CBCT reconstruction, as the overview shown in Fig. <ref type="figure" target="#fig_1">2</ref>. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">DIF-Net: Deep Intensity Field Network</head><p>DIF-Net first extracts feature maps {F 1 , F 2 , . . . , F K } ⊂ R C×H×W from projections I using a shared 2D encoder, where C is the number of feature channels and H/W are height/width. In practice, we choose U-Net <ref type="bibr" target="#b17">[18]</ref> as the 2D encoder because of its good feature extraction ability and popular applications in medical image analysis <ref type="bibr" target="#b16">[17]</ref>. Then, given a 3D point, DIF-Net gathers its view-specific features queried from feature maps of different views for intensity regression.</p><p>View-Specific Feature Querying. Considering a point p ∈ R 3 in the 3D space, for a projection view i with scanning angle α i and other imaging parameters β (distance, spacing, etc.), we project p to the 2D imaging panel of view i and obtain its 2D projection coordinates p i = ϕ(p, α i , β) ∈ R 2 , where ϕ(•) is the projection function. Projection coordinates p i are used for querying view-specific features f i ∈ R C from the 2D feature map F i of view i :</p><formula xml:id="formula_0">f i = π(F i , p i ) = π F i , ϕ(p, α i , β) , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where π(•) is bilinar interpolation. Similar to perspective projection, the CBCT projection function ϕ(•) can be formulated as</p><formula xml:id="formula_2">ϕ(p, α i , β) = H A(β)R(α i ) p 1 , (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where R(α i ) ∈ R 4×4 is a rotation matrix that transforms point p from the world coordinate system to the scanner coordinate system of view i , A(β) ∈ R 3×4 is a projection matrix that projects the point onto the 2D imaging panel of view i , and H : R 3 → R 2 is the homogeneous division that maps the homogeneous coordinates of p i to its Cartesian coordinates. Due to page limitations, the detailed formulation of ϕ(•) is given in the supplementary material.</p><p>Cross-View Feature Fusion and Intensity Regression. Given K projection views, K view-specific features of the point p are queried from different views to form a feature list</p><formula xml:id="formula_4">F (p) = {f 1 , f 2 , . . . , f K } ⊂ R C .</formula><p>Then, the cross-view feature fusion δ(•) is introduced to gather features from F (p) and generate a 1D vector f = δ(F (p)) ∈ R C to represent the semantic features of p. In general, F (p) is an unordered feature set, which means that δ(•) should be a set function and can be implemented with a pooling layer (e.g., max/avg pooling). In our experiments, the projection angles of the training and test samples are the same, uniformly sampled from 0 • to 180 • (half rotation). Therefore, F (p) can be regarded as an ordered list (K ×C tensor), and δ(•) can be implemented by a 2-layer MLP (K → K 2 → 1) for feature aggregation. We will compare different implementations of δ(•) in the ablation study. Finally, a 4-layer MLP (C → 2C → C 2 → C 8 → 1) is applied to f for the regression of intensity value v ∈ R.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Network Training</head><p>Assume that the shape and spacing of the original CT volume are H × W × D and (s h , s w , s d ) mm, respectively. During training, different from previous voxelbased methods that regard the entire 3D CT image as the supervision target, we randomly sample a set of N points {p 1 , p 2 , . . . , p N } with coordinates ranging from (0, 0, 0) to (s h H, s w W, s d D) in the world coordinate system (unit: mm) as the input. Then DIF-Net will estimate their intensity values V = {v 1 , v 2 , . . . , v N } from given projections I. For supervision, ground-truth intensity values V = {v 1 , v2 , . . . , vN } can be obtained from the ground-truth CT image based on the coordinates of points by trilinear interpolation. We choose mean-square-error (MSE) as the objective function, and the training loss can be formulated as</p><formula xml:id="formula_5">L(V, V) = 1 N N i=1 (v i -vi ) 2 . (<label>3</label></formula><formula xml:id="formula_6">)</formula><p>Because background points (62%, e.g., air) occupy more space than foreground points (38%, e.g., bones, organs), uniform sampling will bring imbalanced prediction of intensities. We set an intensity threshold 10 -5 to identify foreground and background areas by binary classification and sample N 2 points from each area for training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Volume Reconstruction</head><p>During inference, a regular and dense point set to cover all CT voxels is sampled, i.e., to uniformly sample H × W × D points from (0, 0, 0) to (s h H, s w W, s d D). Then the network will take 2D projections and points as the input and generate intensity values of sampled points to form the target CT volume. Unlike previous voxel-based methods that are limited to generating fixed-resolution CT volumes, our method enables scalable output resolutions by introducing the representation of continuous intensity field. For example, we can uniformly sample H s × W s × D s points to generate a coarse CT image but with a faster reconstruction speed, or sample sH × sW × sD points to generate a CT image with higher resolution, where s &gt; 1 is the scaling ratio.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>We conduct extensive experiments on a collected knee CBCT dataset to show the effectiveness of our proposed method on sparse-view CBCT reconstruction. Compared to previous works, our DIF-Net can reconstruct a CT volume with high image quality and high spatial resolution from extremely sparse (≤ 10) projections at an ultrafast speed.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Settings</head><p>Dataset and Preprocessing. We collect a knee CBCT dataset consisting of 614 CT scans. Of these, 464 are used for training, 50 for validation, and 100 for testing. We resample, interpolate, and crop (or pad) CT scans to have isotropic voxel spacing of (0.8, 0.8, 0.8) mm and shape of 256 × 256 × 256. 2D projections are generated by digitally reconstructed radiographs (DRRs) at a resolution of 256 × 256. Projection angles are uniformly selected in the range of 180 • .</p><p>Implementation. We implement DIF-Net using PyTorch with a single NVIDIA RTX 3090 GPU. The network parameters are optimized using stochastic gradient descent (SGD) with a momentum of 0.98 and an initial learning rate of 0.01. The learning rate is decreased by a factor of 0.001 1/400 ≈ 0.9829 per epoch, and we train the model for 400 epochs with a batch size of 4. For each CT scan, N = 10, 000 points are sampled as the input during one training iteration. For the full model, we employ U-Net <ref type="bibr" target="#b17">[18]</ref> with C = 128 output feature channels as the 2D encoder, and cross-view feature fusion is implemented with MLP.</p><p>Baseline Methods. We compare four publicly available methods as our baselines, including traditional methods FDK <ref type="bibr" target="#b5">[6]</ref> and SART <ref type="bibr" target="#b0">[1]</ref>, NeRF-based method NAF <ref type="bibr" target="#b28">[29]</ref>, and data-driven denoising method FBPConvNet <ref type="bibr" target="#b10">[11]</ref>. Due to the increase in dimensionality (2D to 3D), denoising methods should be equipped with 3D conv/deconvs for a dense prediction when extended to CBCT reconstruction, which leads to extremely high computational costs and low resolution (≤ 64 3 ). For a fair comparison, we use FDK to obtain an initial result and apply the 2D network for slice-wise denoising.</p><p>Evaluation Metrics. We follow previous works <ref type="bibr" target="#b26">[27]</ref><ref type="bibr" target="#b27">[28]</ref><ref type="bibr" target="#b28">[29]</ref> to evaluate the reconstructed CT volumes with two quantitative metrics, namely peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) <ref type="bibr" target="#b23">[24]</ref>. Higher PSNR/SSIM values represent superior reconstruction quality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>Performance. As shown in Table <ref type="table" target="#tab_0">1</ref>, we compare DIF-Net with four previous methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b28">29]</ref> under the setting of reconstruction with different output  resolutions (i.e., 128 3 , 256 3 ) and from different numbers of projection views (i.e., 6, 8, and 10). Experiments show that our proposed DIF-Net can reconstruct CBCT with high image quality even using only 6 projection views, which significantly outperforms previous works in terms of PSNR and SSIM values. More importantly, DIF-Net can be directly applied to reconstruct CT images with different output resolutions without the need for model retraining or modification. As visual results are shown in Fig. <ref type="figure" target="#fig_2">3</ref>, FDK <ref type="bibr" target="#b5">[6]</ref> produces results with many streaking artifacts due to lack of sufficient projection views; SART <ref type="bibr" target="#b0">[1]</ref> and NAF <ref type="bibr" target="#b28">[29]</ref> produce results with good shape contours but lack detailed internal information; FBPConvNet <ref type="bibr" target="#b10">[11]</ref> reconstructs good shapes and moderate details, but there are still some streaking artifacts remaining; our proposed DIF-Net can reconstruct high-quality CT with better shape contour, clearer internal information, and fewer artifacts. More visual comparisons of the number of input views are given in the supplementary material.  Reconstruction Efficiency. As shown in Table <ref type="table" target="#tab_2">2</ref>, FDK <ref type="bibr" target="#b5">[6]</ref> requires the least time for reconstruction, but has the worst image quality; SART <ref type="bibr" target="#b0">[1]</ref> and NAF <ref type="bibr" target="#b28">[29]</ref> require a lot of time for optimization or training; FBPConvNet <ref type="bibr" target="#b10">[11]</ref> can reconstruct 3D volumes faster, but the quality is still limited. Our DIF-Net can reconstruct high-quality CT within 1.6 s, much faster than most compared methods.</p><p>In addition, DIF-Net, which benefits from the intensity field representation, has fewer training parameters and requires less computational memory, enabling high-resolution reconstruction.</p><p>Ablation Study. Tables <ref type="table" target="#tab_3">3</ref> and<ref type="table" target="#tab_4">4</ref> show the ablative analysis of cross-view fusion strategy and the number of training points N . Experiments demonstrate that 1.) MLP performs best, but max pooling is also effective and would be a general solution when the view angles are not consistent across training/test data, as discussed in Sect. 2.2; 2.) fewer points (e.g., 5,000) may destabilize the loss and gradient during training, leading to performance degradation; 10,000 points are enough to achieve the best performance, and training with 10,000 points is much sparser than voxel-based methods that train with the entire CT volume (i.e., 256 3 or 128 3 ). We have tried to use a different encoder like pre-trained ResNet18 <ref type="bibr" target="#b7">[8]</ref> with more model parameters than U-Net <ref type="bibr" target="#b17">[18]</ref>. However, ResNet18 does not bring any improvement (PSNR/SSIM: 29.2/0.92), which means that U-Net is powerful enough for feature extraction in this task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work, we formulate the CT volume as a continuous intensity field and present a novel DIF-Net for ultrafast CBCT reconstruction from extremely sparse (≤10) projection views. DIF-Net aims to estimate the intensity value of an arbitrary point in 3D space from input projections, which means 3D CNNs are not required for feature decoding, thereby reducing memory requirement and computational cost. Experiments show that DIF-Net can perform efficient and high-quality CT reconstruction, significantly outperforming previous stateof-the-art methods. More importantly, DIF-Net is a general sparse-view reconstruction framework, which can be trained on a large-scale dataset containing various body parts with different projection views and imaging parameters to achieve better generalization ability. This will be left as our future work.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a-b): Comparison of conventional CT and cone-beam CT scanning. (c-d): CBCT reconstruction from a stack of sparse 2D projections.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of DIF-Net. (a) Given K projections, a shared 2D encoder is used for feature extraction. (b) For a point p in the 3D space, its view-specific features are queried from feature maps of different views by projection and interpolation. (c) Queried features are aggregated to estimate the intensity value of p. (d) During testing, given input projections, DIF-Net predicts intensity values for points uniformly sampled in 3D space to reconstruct the target CT image.</figDesc><graphic coords="4,42,30,53,75,340,00,130,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative comparison of 10-view reconstruction.</figDesc><graphic coords="7,58,47,207,83,335,08,164,80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison of DIF-Net with previous methods under measurements of PSNR (dB) and SSIM. We evaluate reconstructions with different output resolutions (Res.) and from different numbers of projection views (K).</figDesc><table><row><cell>Method</cell><cell cols="2">Res. = 128 3</cell><cell></cell><cell cols="2">Res. = 256 3</cell></row><row><cell></cell><cell>K = 6</cell><cell>K = 8</cell><cell>K = 10</cell><cell>K = 6</cell><cell>K = 8</cell><cell>K = 10</cell></row><row><cell>FDK [6]</cell><cell cols="6">14.1/.18 15.7/.22 17.0/.25 14.1/.16 15.7/.20 16.9/.23</cell></row><row><cell>SART [1]</cell><cell cols="6">25.4/.81 26.6/.85 27.6/.88 24.7/.81 25.8/.84 26.7/.86</cell></row><row><cell>NAF [29]</cell><cell cols="6">20.8/.54 23.0/.64 25.0/.73 20.1/.58 22.4/.67 24.3/.75</cell></row><row><cell cols="7">FBPConvNet [11] 26.4/.84 27.0/.87 27.8/.88 25.1/.83 25.9/.83 26.7/.84</cell></row><row><cell>DIF-Net (Ours)</cell><cell>28.3/</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>.91 29.6/.92 30.7/.94 27.1/.89 28.3/.90 29.3/.92</head><label></label><figDesc></figDesc><table><row><cell>FDK</cell><cell>SART</cell><cell>NAF</cell><cell>FBPConvNet</cell><cell>DIF-Net</cell><cell>Ground-Truth</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Comparison of different methods in terms of reconstruction quality (PSNR/S-SIM), reconstruction time, parameters, and training memory cost. Default setting: 10view reconstruction with the output resolution of 2563 ; training with a batch size of 1. †: evaluated with the output resolution of 128 3 due to the memory limitation.</figDesc><table><row><cell>Method</cell><cell cols="4">PSNR/SSIM Time (s) Parameters (M) Memory Cost (MB)</cell></row><row><cell>FDK [6]</cell><cell>16.9/.23</cell><cell>0.3</cell><cell>-</cell><cell>-</cell></row><row><cell>SART [1]</cell><cell>26.7/.86</cell><cell>106</cell><cell>-</cell><cell>339</cell></row><row><cell>NAF [29]</cell><cell>24.3/.75</cell><cell>738</cell><cell>14.3</cell><cell>3,273</cell></row><row><cell cols="2">FBPConvNet [11] 26.7/.84</cell><cell>1.7</cell><cell>34.6</cell><cell>3,095</cell></row><row><cell>DIF-Net (Ours)</cell><cell>29.3/.92</cell><cell>1.6</cell><cell>31.1</cell><cell>7,617</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Ablation study (10-view) on different cross-view fusion strategies.</figDesc><table><row><cell cols="3">Cross-View Fusion PSNR SSIM</cell></row><row><cell>Avg pooling</cell><cell>27.6</cell><cell>0.88</cell></row><row><cell>Max pooling</cell><cell>28.9</cell><cell>0.92</cell></row><row><cell>MLP</cell><cell cols="2">29.3 0.92</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 4 .</head><label>4</label><figDesc>Ablation study (10-view) on different numbers of training points N .</figDesc><table><row><cell cols="3"># Points PSNR SSIM</cell></row><row><cell>5,000</cell><cell>28.8</cell><cell>0.91</cell></row><row><cell>10,000</cell><cell cols="2">29.3 0.92</cell></row><row><cell>20,000</cell><cell>29.3</cell><cell>0.92</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">Hong Kong Innovation and Technology Fund</rs> under Projects <rs type="grantNumber">PRP/041/22FX</rs> and <rs type="grantNumber">ITS/030/21</rs>, as well as by grants from <rs type="funder">Foshan HKUST</rs> Projects under Grants <rs type="grantNumber">FSUST21-HKUST10E</rs> and <rs type="grantNumber">FSUST21-HKUST11E</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_6BRG76M">
+					<idno type="grant-number">PRP/041/22FX</idno>
+				</org>
+				<org type="funding" xml:id="_Kqq7Ezs">
+					<idno type="grant-number">ITS/030/21</idno>
+				</org>
+				<org type="funding" xml:id="_brK2akT">
+					<idno type="grant-number">FSUST21-HKUST10E</idno>
+				</org>
+				<org type="funding" xml:id="_DQq7U9b">
+					<idno type="grant-number">FSUST21-HKUST11E</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 2.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Simultaneous algebraic reconstruction technique (SART): a superior implementation of the art algorithm</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Andersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Kak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ultrason. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="81" to="94" />
+			<date type="published" when="1984">1984</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Lose the views: limited angle CT reconstruction via implicit sinogram completion</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Anirudh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Thiagarajan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Mohan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Champley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bremer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="6343" to="6352" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Range imaging for motion compensation in C-arm cone-beam CT of knees under weight-bearing conditions</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">13</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The advantages of cone-beam computerised tomography (CT) in pain management following total knee arthroplasty, in comparison with conventional multi-detector ct</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dartus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Orthop. Traumatol. Surg. Res</title>
+		<imprint>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">102874</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">SNAF: sparse-view CBCT reconstruction with neural attenuation fields</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.17048</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Practical cone-beam algorithm</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Feldkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Davis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Kress</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Josa a</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="612" to="619" />
+			<date type="published" when="1984">1984</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Algebraic reconstruction techniques (art) for three-dimensional electron microscopy and x-ray photography</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gordon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bender</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">T</forename><surname>Herman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Theor. Biol</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="471" to="481" />
+			<date type="published" when="1970">1970</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Imaging of symptomatic total knee arthroplasty with cone beam computed tomography</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jaroma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Suomalainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Niemitukia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Soininvaara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Salo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kröger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acta Radiol</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1500" to="1507" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">MFCT-GAN: multi-information network to reconstruct CT volumes for security screening</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Intell. Manuf. Spec. Equipment</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="17" to="30" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Deep convolutional neural network for inverse problems in imaging</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">T</forename><surname>Mccann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Froustey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Unser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="4509" to="4522" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Sparse-view cone beam CT reconstruction using data-consistent supervised and adversarial learning from scarce training data</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lahiri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Klasky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Fessler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ravishankar</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2201.09318</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Cone beam CT vs. fan beam CT: a comparison of image quality and dose delivered between two differing CT imaging modalities</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lechuga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Weidlich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cureus</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Nerf: representing scenes as neural radiance fields for view synthesis</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mildenhall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">P</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tancik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Barron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ramamoorthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Commun. ACM</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="99" to="106" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The role of cone beam CT in the study of symptomatic total knee arthroplasty (TKA): a 20 cases report</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nardi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Br. J. Radiol</title>
+		<imprint>
+			<biblScope unit="volume">90</biblScope>
+			<biblScope unit="page">20160925</biblScope>
+			<date type="published" when="1074">1074. 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Variable weighted ordered subset image reconstruction algorithm</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Biomed. Imaging</title>
+		<imprint>
+			<date type="published" when="2006">2006. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Modality specific u-net variants for biomedical image segmentation: a survey</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">S</forename><surname>Punn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Agarwal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Rev</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="5845" to="5889" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Neat: neural adaptive tomography</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rückert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Idoughi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Heidrich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Graph. (TOG)</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Clinical applications of cone-beam computed tomography in dental practice</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">C</forename><surname>Scarfe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Farman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sukovic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Can. Dent. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">75</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">NeRP: implicit neural representation learning with prior embedding for sparsely sampled image reconstruction</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pauly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Patient-specific reconstruction of volumetric computed tomography images from a single projection view via deep learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="880" to="888" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Projection super-resolution based on convolutional neural network for computed tomography</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">15th International Meeting on Fully Three-Dimensional Image Reconstruction in Radiology and Nuclear Medicine</title>
+		<imprint>
+			<publisher>SPIE</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11072</biblScope>
+			<biblScope unit="page" from="537" to="541" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Image quality assessment: from error visibility to structural similarity</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Sheikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simoncelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="600" to="612" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Deep embedding-attentionrefinement for sparse-view CT reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Instrum. Meas</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Drone: dualdomain residual-based optimization network for sparse-view CT reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vardhanabhuti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3002" to="3014" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">X2CT-GAN: reconstructing CT from biplanar x-rays with generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Weng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="10619" to="10628" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Intratomo: self-supervised learning-based tomography via sinogram synthesis and prediction</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Idoughi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wonka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Heidrich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1960" to="1970" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">NAF: neural attenuation fields for sparse-view CBCT reconstruction</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16446-042" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="442" to="452" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
