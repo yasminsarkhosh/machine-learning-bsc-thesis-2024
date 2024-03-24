@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Additional Positive Enables Better Representation Learning for Medical Images</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Dewen</forename><surname>Zeng</surname></persName>
+							<email>dzeng2@nd.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yawen</forename><surname>Wu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Pittsburgh</orgName>
+								<address>
+									<settlement>Pittsburgh</settlement>
+									<region>PA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xinrong</forename><surname>Hu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaowei</forename><surname>Xu</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Guangdong Provincial People&apos;s Hospital</orgName>
+								<address>
+									<settlement>Guangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jingtong</forename><surname>Hu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Pittsburgh</orgName>
+								<address>
+									<settlement>Pittsburgh</settlement>
+									<region>PA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yiyu</forename><surname>Shi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Additional Positive Enables Better Representation Learning for Medical Images</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="119" to="129"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">6C4ACCB9451BF820769C87766C0737D5</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_12</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T12:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>self-supervised learning</term>
+					<term>representation learning</term>
+					<term>medical image classification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper presents a new way to identify additional positive pairs for BYOL, a state-of-the-art (SOTA) self-supervised learning framework, to improve its representation learning ability. Unlike conventional BYOL which relies on only one positive pair generated by two augmented views of the same image, we argue that information from different images with the same label can bring more diversity and variations to the target features, thus benefiting representation learning. To identify such pairs without any label, we investigate TracIn, an instance-based and computationally efficient influence function, for BYOL training. Specifically, TracIn is a gradient-based method that reveals the impact of a training sample on a test sample in supervised learning. We extend it to the self-supervised learning setting and propose an efficient batchwise per-sample gradient computation method to estimate the pairwise TracIn for representing the similarity of samples in the mini-batch during training. For each image, we select the most similar sample from other images as the additional positive and pull their features together with BYOL loss. Experimental results on two public medical datasets (i.e., ISIC 2019 and ChestX-ray) demonstrate that the proposed method can improve the classification performance compared to other competitive baselines in both semi-supervised and transfer learning settings.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Self-supervised learning (SSL) has been extremely successful in learning good image representations without human annotations for medical image applications like classification <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b29">29]</ref> and segmentation <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b15">16]</ref>. Usually, an encoder is pre-trained on a large-scale unlabeled dataset. Then, the pre-trained encoder is used for efficient training on downstream tasks with limited annotation <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b23">24]</ref>. Recently, contrastive learning has become the state-of-the-art (SOTA) SSL method due to its powerful learning ability. A recent contrastive learning method learns by pulling the representations of different augmented views of the same image (a.k.a positive pair) together and pushing the representation of different images (a.k.a negative pair) apart <ref type="bibr" target="#b5">[6]</ref>. The main disadvantage of this method is its heavy reliance on negative pairs, making it necessary to use a large batch size <ref type="bibr" target="#b5">[6]</ref> or memory banks <ref type="bibr" target="#b14">[15]</ref> to ensure effective training. To overcome this challenge, BYOL <ref type="bibr" target="#b11">[12]</ref> proposes two siamese neural networks -the online and target networks. The online network is trained to predict the target network representation of the same image under a different augmented view, requiring only one positive pair per sample. This approach makes BYOL more resilient to batch size and the choice of data augmentations.</p><p>As the positive pair in BYOL is generated from the same image, the diversity of features within the positive pair could be quite limited. For example, one skin disease may manifest differently in different patients or locations, but such information is often overlooked in the current BYOL framework. In this paper, we argue that such feature diversity can be increased by adding additional positive pairs from other samples with the same label (a.k.a. True Positives). Identifying such pairs without human annotation is challenging because of the unrelated information in medical images, such as the background normal skin areas in dermoscopic images. One straightforward way to detect positive pairs is using feature similarity: two images are considered positive if their representations are close to each other in the feature space. However, samples with different labels might also be close in the feature space because the learned encoder is not perfect. Considering them as positive might further pull them together after learning, leading to degraded performance.</p><p>To solve this problem, we propose BYOL-TracIn, which improves vanilla BYOL using the TracIn influence function. Instead of quantifying the similarity of two samples based on feature similarity, we propose using TracIn to estimate their similarity by calculating the impact of training one sample on the other. TracIn <ref type="bibr" target="#b21">[22]</ref> is a gradient-based influence function that measures the loss reduction of one sample by the training process of another sample. Directly applying TracIn in BYOL is non-trivial as it requires the gradient of each sample and careful selection of model checkpoints and data augmentations to accurately estimate sample impacts without labels. To avoid per-sample gradient computation, we introduce an efficient method that computes the pairwise TracIn in a mini-batch with only one forward pass. For each image in the mini-batch, the sample from other images with the highest TracIn values is selected as the additional positive pair. Their representation distance is then minimized using BYOL loss. To enhance positive selection accuracy, we propose to use a pre-trained model for pairwise TracIn computation as it focuses more on task-related features compared to an on-the-fly model. Light augmentations are used on the samples for TracIn computation to ensure stable positive identification. To the best of our knowledge, we are the first to incorporate additional positive pairs from different images in BYOL. Our extensive empirical results show that our proposed method outperforms other competing approaches in both semi-supervised and transfer learning settings for medical image classification tasks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Self-supervised Learning. Most SSL methods can be categorized as either generative <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b27">28]</ref> or discriminative <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b20">21]</ref>, in which pseudo labels are automatically generated from the inputs. Recently, contrastive learning <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b26">27]</ref> as a new discriminative SSL method has dominated this field because of its excellent performance. SimCLR <ref type="bibr" target="#b5">[6]</ref> and MoCo <ref type="bibr" target="#b14">[15]</ref> are two typical contrastive learning methods that try to attract positive pairs and repulse negative pairs. However, these methods rely on a large number of negative samples to work well. BYOL <ref type="bibr" target="#b11">[12]</ref> improves contrastive learning by directly predicting the representation output from another view and achieves SOTA performance. As such, only positive pairs are needed for training. SimSiam <ref type="bibr" target="#b6">[7]</ref> further proves that stop-gradient plays an essential role in the learning stability of siamese neural networks. Since the positive pairs in BYOL come from the same image, the feature diversity from different images of the same label is ignored. Our method introduces a novel way to accurately identify such positive pairs and attract them in the feature space.</p><p>Influence Function. The influence function (IF) was first introduced to machine learning models in <ref type="bibr" target="#b19">[20]</ref> to study the following question: which training points are most responsible for a given prediction? Intuitively, if we remove an important sample from the training set, we will get a large increase in the test loss. IF can be considered as an interpretability score that measures the importance of all training samples on the test sample. Aside from IF, other types of scores and variants have also been proposed in this field <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b13">14]</ref>. Since IF is extremely computationally expensive, TracIn <ref type="bibr" target="#b21">[22]</ref> was proposed as an efficient alternative to estimate training sample influence using first-order approximation. Our method extends the normal TracIn to the SSL setting (i.e., BYOL) with a sophisticated positive pair selection schema and an efficient batch-wise per-sample gradient computation method, demonstrating that aside from model interpretation, TracIn can also be used to guide SSL pre-training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Framework Overview</head><p>Our BYOL-TracIn framework is built upon classical BYOL method <ref type="bibr" target="#b11">[12]</ref>. Figure <ref type="figure" target="#fig_0">1</ref> shows the overview of our framework. Here, we use x 1 as the anchor sample for an explanation, and the same logic can be applied to all samples in the mini-batch. Unlike classical BYOL where only one positive pair (x 1 and x 1 ) generated from the same image is utilized, we use the influence function, TracIn, to find another sample (x 3 ) from the batch that has the largest impact on the anchor sample.</p><p>During training, the representations distance of x 1 and x 3 will also be minimized. We think this additional positive pair can increase the variance and diversity of the features of the same label, leading to better clustering in the feature space and improved learning performance. The pairwise TracIn matrix is computed using first-order gradient approximation which will be discussed in the next section. For simplicity, this paper only selects the top-1 additional sample, but our method can be easily extended to include top-k (k &gt; 1) additional samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Additional Positive Selection Using TracIn</head><p>Idealized TracIn and Its First-order Approximation. Suppose we have a training dataset D = {x 1 , x 2 , ..., x n } with n samples. f w (•) is a model with parameter w ∈ R, and (w, x i ) is the loss function when model parameter is w and training example is x i . The training process in iteration t can be viewed as minimizing the training loss (w t , x t ) and updating parameter w t to w t+1 using gradient descent (suppose only x t ∈ D is used for training in each iteration). Then the idealized TracIn of one sample x i on another sample x k can be defined as the total loss reduction by training x i in the whole training process.</p><formula xml:id="formula_0">TracInIdeal(x i , x k ) = T t:xt=xi ( (w t , x k ) -(w t+1 , x k )). (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where T is the total number of iterations. If stochastic gradient descent is utilized as the optimization method, we can approximately express the loss reduction after iteration t as</p><formula xml:id="formula_2">(w t+1 , x k )-(w t , x k ) = (w t , x k )•(w t+1 -w t )+O(||Δw t || 2 ).</formula><p>The parameter change in iteration t is Δw t = w t+1w t = -η t (w t , x t ), in which η t is the learning rate in iteration t, and x t is the training example. Since η t is usually small during training, we can ignore the high order term O(||Δw t || 2 ), and the first-order TracIn can be formulated as:</p><formula xml:id="formula_3">TracIn(x i , x k ) = T t:xt=xi η t (w t , x k ) • (w t , x i ).<label>(2)</label></formula><p>The above equation reveals that we can estimate the influence of x i on x k by summing up their gradient dot products across all training iterations. In practical BYOL training, the optimization is usually done on mini-batches, and it is impossible to save the gradients of a sample for all iterations. However, we can use the TracIn of the current iteration to represent the similarity of two samples in the mini-batch because we care about the pairwise relative influences instead of the exact total values across training. Intuitively, if the TracIn of two samples is large in the current iteration, this means that the training of one sample can benefit the other sample a lot because they share some common features. Therefore, they are similar to each other.</p><p>Efficient Batch-wise TracIn Computation. Equation 2 requires the gradient of each sample in the mini-batch for pairwise TracIn computation. However, it is prohibitively expensive to compute the gradient of samples one by one. Moreover, calculating the dot product of gradients on the entire model is computationally and memory-intensive, especially for large deep-learning models where there could be millions or trillions of parameters. Therefore, we work with the gradients of the last linear layer in the online predictor.</p><p>As current deep learning frameworks (e.g., Pytorch and TensorFlow) do not support per-sample gradient when the batch size is larger than 1, we use the following method to efficiently compute the per-sample gradient of the last layer. Suppose the weight matrix of the last linear layer is W ∈ R m×n , where m and n are the numbers of input and output units. f (q) = 2 -2 • q, z /( q 2 • z 2 ) is the standard BYOL loss function, where q is the online predictor output (a.k.a., logits) and z is the target encoder output that can be viewed as a constant during training. We have q = W a, where a is the input to the last linear layer. According to the chain rule, the gradient of the last linear layer can be computed as W f (q) = q f (q)a T , in which the gradient of the logits can be computed by:</p><formula xml:id="formula_4">q f (q) = 2 • ( q, z • q q 3 2 • z 2 - z q 2 • z 2 ).<label>(3)</label></formula><p>Therefore, the TracIn of sample x i and x k at iteration t can be computed as:</p><formula xml:id="formula_5">TracIn(x i , x k ) ≈ η t W f (q i ) • W f (q k ) = η t ( q f (q i ) • q f (q k ))(a i • a k ).<label>(4)</label></formula><p>Equation 3 and 4 tell us that the per-sample gradient of the last linear layer can be computed by using the inputs of this layer and the gradient of the output logits for each sample, which can be achieved with only one forward pass on the mini-batch. This technique greatly speeds up the TracIn computation and makes it possible to be used in BYOL.</p><p>Using Pre-trained Model to Increase True Positives. During the pretraining stage of BYOL, especially in the early stages, the model can be unstable and may focus on unrelated features in the background instead of the target features. This can result in the selection of wrong positive pairs while using TracIn. For example, the model may identify all images with skin diseases on the face as positive pairs, even if they are from different diagnostics, as it focuses on the face feature instead of the diseases. To address this issue, we suggest using a pre-trained model to select additional positives with TracIn to guide BYOL training. This is because a pre-trained model is more stable and well-trained to focus on the target features, thus increasing the selected true positive ratio.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Experimental Setups</head><p>Datasets. We evaluate the performance of the proposed BYOL-TracIn on four publicly available medical image datasets. (1) ISIC 2019 dataset is a dermatology dataset that contains 25,331 dermoscopic images among nine different diagnostic categories <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b24">25]</ref>. (2) ISIC 2016 dataset was hosted in ISBI 2016 <ref type="bibr" target="#b12">[13]</ref>. It contains 900 dermoscopic lesion images with two classes benign and malignant. (3) ChestX-ray dataset is a chest X-ray database that comprises 108,948 frontal view X-ray images of 32,717 unique patients with 14 disease labels <ref type="bibr" target="#b25">[26]</ref>. Each image may have multiple labels. (4) Shenzhen dataset is a small chest X-ray dataset with 662 frontal chest X-rays, of which 326 are normal cases and 336 are cases with manifestations of Tuberculosis <ref type="bibr" target="#b17">[18]</ref>.</p><p>Training Details. We use Resnet18 as the backbone. The online projector and predictor follow the classical BYOL <ref type="bibr" target="#b11">[12]</ref>, and the embedding dimension is set to 256. On both ISIC 2019 and ChestX-ray datasets, we resize all the images to 140×140 and then crop them to 128×128. Data augmentation used in pretraining includes horizontal flipping, vertical flipping, rotation, color jitter, and cropping. For TracIn computation, we use one view with no augmentation and the other view with horizontal flipping and center cropping because this setting has the best empirical results in our experiments. We pre-train the model for 300 epochs using SGD optimizer with momentum 0.9 and weight decay 1 × e -5 . The learning rate is set to 0.1 for the first 10 epochs and then decays following a concise learning rate schedule. The batch size is set to 256. The moving average decay of the momentum encoder is set to 0.99 at the beginning and then gradually updates to 1 following a concise schedule. All experiments are performed on one NVIDIA GeForce GTX 1080 GPU.</p><p>Baselines. We compare the performance of our method with a random initialization approach without pre-training and the following SOTA baselines that involve pre-training. (1) BYOL <ref type="bibr" target="#b11">[12]</ref>: the vanilla BYOL with one positive pair from the same image. (2) FNC <ref type="bibr" target="#b16">[17]</ref>: a false negative identification method designed to improve contrastive-based SSL framework. We adapt it to BYOL to select additional positives because false negatives are also equal to true positives for a particular anchor sample. (3) FT <ref type="bibr" target="#b30">[30]</ref>: a feature transformation method used in contrastive learning that creates harder positives and negatives to improve the learning ability. We apply it in BYOL to create harder virtual positives. (4) FS: using feature similarity from the current mini-batch to select the top-1 additional positive. ( <ref type="formula">5</ref>) FS-pretrained: different from the FS that uses the current Table <ref type="table">1</ref>. Comparison of all methods on ISIC 2019 and ChestX-ray datasets in the semisupervised setting. We also report the fine-tuning results on 100% datasets. BYOL-Sup is the upper bound of our method. BMA represents the balanced multiclass accuracy. model to compute the feature similarity on the fly, we use a pre-trained model to test whether a well-trained encoder is more helpful in identifying the additional positives. ( <ref type="formula">6</ref>) BYOL-Sup: the supervised BYOL in which we randomly select one additional positive from the mini-batch using the label information. This baseline is induced as the upper bound of our method because the additional positive is already correct. We evaluate two variants of our method, BYOL-TracIn and BYOL-TracIn-pretrained. The former uses the current training model to compute the TracIn for each iteration while the latter uses a pre-trained model. For a fair comparison, all methods use the same pre-training and finetuning setting unless otherwise specified. For FS-pretrained and BYOL-TracIn-pretrained, the pre-trained model uses the same setting as BYOL. Note that this pre-trained model is only used for positive selection and not involves in training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Semi-supervised Learning</head><p>In this section, we evaluate the performance of our method by finetuning with the pre-trained encoder on the same dataset as pre-training with limited annotations. We sample 10% or 50% of the labeled data from ISIC 2019 and ChestXray training sets and finetune the model for 100 epochs on the sampled datasets. Data augmentation is the same as pre-training. Table <ref type="table">1</ref> shows the comparisons of all methods. For ISIC 2019, we report the balanced multiclass accuracy (BMA, suggested by the ISIC challenge). For ChestX-ray, we report the average AUC across all diagnoses. We conduct each finetuning experiment 5 times with different random seeds and report the mean and std.</p><p>From Table <ref type="table">1</ref>, we have the following observations: (1) Compared to Random, all the other methods have better accuracy, which means that pre-training can indeed help downstream tasks.   pervised baselines. Although BYOL-TracIn can improve BYOL, it could be worse than other baselines like FT and FS-pretrained (e.g., 10% on ISIC 2019). This is because some additional positives identified by the on-the-fly model may be false positives, and attracting representations of such samples will degrade the learned features. However, with a pre-trained model in BYOL-TracIn-pretrained, the identification accuracy can be increased, leading to more true positives and better representations. (4) TracIn-pretrained performs better than FS-pretrained in all settings, and the improvement in BMA could be up to 0.006. This suggests that TracIn can be a more reliable metric for assessing the similarity between images when there is no human label information available. (5) Supervised BYOL can greatly increase the BYOL performance on both datasets. Yet our BYOL-TracIn-pretrained only has a marginal accuracy drop from supervised BYOL with a sufficient number of training samples (e.g., 100% on ISIC 2019).</p><p>To further demonstrate the superiority of TracIn over Feature Similarity (FS) in selecting additional positive pairs for BYOL, we use an image from ISIC 2019 as an example and visualize the top-3 most similar images selected by both metrics using a BYOL pre-trained model in Fig. <ref type="figure" target="#fig_1">2</ref>. We can observe that TracIn accurately identifies the most similar images with the same label as the anchor image, whereas two of the images selected by FS have different labels. This discrepancy may be attributed to the fact that the FS of these two images is dominated by unrelated features (e.g., background tissue), which makes it unreliable. More visualization examples can be found in the supplementary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Transfer Learning</head><p>To evaluate the transfer learning performance of the learned features, we use the encoder learned from the pre-training to initialize the model on the downstream datasets (ISIC 2019 transfers to ISIC 2016, and ChestX-ray transfers to Shenzhen). We finetune the model for 50 epochs and report the precision and AUC on ISIC 2016 and Shenzhen datasets, respectively. Table <ref type="table" target="#tab_1">2</ref> shows the comparison results of all methods. We can see that BYOL-TracIn-pretrained always outperforms other unsupervised pre-training baselines, indicating that the additional positives can help BYOL learn better transferrable features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>In this paper, we propose a simple yet effective method, named BYOL-TracIn, to boost the representation learning performance of the vanilla BYOL framework. BYOL-TracIn can effectively identify additional positives from different samples in the mini-batch without using label information, thus introducing more variances to learned features. Experimental results on multiple public medical image datasets show that our method can significantly improve classification performance in both semi-supervised and transfer learning settings. Although this paper only discusses the situation of one additional pair for each image, our method can be easily extended to multiple additional pairs. However, more pairs will introduce more computation costs and increase the false positive rate which may degrade the performance. Another limitation of this paper is that BYOL-TracIn requires a pre-trained model to start with, which means more computation resources are needed to demonstrate its effectiveness.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed BYOL-TracIn framework. X and X represent two augmentations of the mini-batch inputs. BYOL-TracIn minimizes the similarity loss of two views of the same image (e.g., q1 and z 1 ) as well as the similarity loss of the additional positive (e.g., z 3 ) identified by our TracIn algorithm. sg means stop-gradient.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>( 2 )</head><label>2</label><figDesc>Compared to vanilla BYOL, other pretraining methods show performance improvement on both datasets. This shows that additional positives can increase feature diversity and benefit BYOL learning. (3) Our BYOL-TracIn-pretrained consistently outperforms all other unsu-</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Comparison of TracIn and Feature Similarity (FS) in selecting the additional positive during training on ISIC 2019.</figDesc><graphic coords="8,39,93,72,77,161,23,97,33" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Transfer learning comparison of the proposed method with the baselines on ISIC 2016 and Shenzhen datasets.</figDesc><table><row><cell>Method</cell><cell>ISIC 2016</cell><cell>Shenzhen</cell></row><row><cell></cell><cell cols="2">Precision ↑ AUC ↑</cell></row><row><cell>Random</cell><cell cols="2">0.400(.005) 0.835(.010)</cell></row><row><cell>BYOL [12]</cell><cell cols="2">0.541(.008) 0.858(.003)</cell></row><row><cell>FNC [17]</cell><cell cols="2">0.542(.007) 0.862(.006)</cell></row><row><cell>FT [30]</cell><cell cols="2">0.559(.011) 0.876(.005)</cell></row><row><cell>FS</cell><cell cols="2">0.551(.003) 0.877(.004)</cell></row><row><cell>FS-pretrained</cell><cell cols="2">0.556(.004) 0.877(.006)</cell></row><row><cell>BYOL-TracIn</cell><cell cols="2">0.555(.012) 0.880(.007)</cell></row><row><cell>BYOL-TracIn-</cell><cell cols="2">0.565(.010) 0.883(.001)</cell></row><row><cell>pretrained</cell><cell></cell><cell></cell></row><row><cell>BYOL-Sup</cell><cell cols="2">0.592(.008) 0.893(.006)</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_12. </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Big self-supervised models advance medical image classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Azizi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3478" to="3488" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning for cardiac MR image segmentation by anatomical position prediction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_60</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_60" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Khan</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="541" to="549" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Relatif: identifying explanatory training samples via relative influence</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Barshan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Brunet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">K</forename><surname>Dziugaite</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Artificial Intelligence and Statistics</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1899" to="1909" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Contrastive learning of global and local features for medical image segmentation with limited annotations</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chaitanya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Erdil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Karani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="12546" to="12558" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multi-stage influence function</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="12732" to="12742" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Exploring simple siamese representation learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="15750" to="15758" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Skin lesion analysis toward melanoma detection 2018: A challenge hosted by the international skin imaging collaboration (isic)</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Codella</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.03368</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Combalia</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.02288</idno>
+		<title level="m">Bcn20000: Dermoscopic lesions in the wild</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unsupervised visual representation learning by context prediction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Doersch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1422" to="1430" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Unsupervised representation learning by predicting image rotations</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gidaris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Komodakis</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1803.07728</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Bootstrap your own latent-a new approach to self-supervised learning</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Grill</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="21271" to="21284" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gutman</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1605.01397</idno>
+		<title level="m">Skin lesion analysis toward melanoma detection: a challenge at the international symposium on biomedical imaging (isbi) 2016, hosted by the international skin imaging collaboration (isic)</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Data cleansing for models trained with sgd</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nitanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Maehara</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Momentum contrast for unsupervised visual representation learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9729" to="9738" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Semi-supervised contrastive learning for labelefficient medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_45</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_45" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Cotin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Essert</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="481" to="490" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Boosting contrastive self-supervised learning with false negative cancellation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Huynh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Walter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Khademi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2785" to="2795" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Two public chest x-ray datasets for computer-aided screening of pulmonary diseases</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Candemir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Antani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">X J</forename><surname>Wáng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">X</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Thoma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quant. Imaging Med. Surg</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">475</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A survey on contrastive self-supervised learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jaiswal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Babu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Z</forename><surname>Zadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Makedon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Technologies</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Understanding black-box predictions via influence functions</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">W</forename><surname>Koh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Liang</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1885" to="1894" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of visual representations by solving jigsaw puzzles</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Noroozi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Favaro</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46466-4_5</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46466-4_5" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9910</biblScope>
+			<biblScope unit="page" from="69" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Estimating training data influence by tracing gradient descent</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pruthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sundararajan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<date type="published" when="2020">19920-19930 (2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Moco pretraining improves representation and transferability of chest x-ray models</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sowrirajan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rajpurkar</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="728" to="744" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Embracing imperfect datasets: a review of deep learning solutions for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jeyaseelan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Chiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page">101693</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The ham10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tschandl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosendahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kittler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Chestx-ray8: hospital-scale chest x-ray database and benchmarks on weakly-supervised classification and localization of common thorax diseases</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bagheri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2097" to="2106" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Barlow twins: self-supervised learning via redundancy reduction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zbontar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Deny</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12310" to="12320" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Colorful image colorization</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">9907</biblScope>
+			<biblScope unit="page" from="649" to="666" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46487-9_40</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46487-9_40" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Contrastive learning of medical visual representations from paired images and text</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Miura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">P</forename><surname>Langlotz</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning for Healthcare Conference</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Improving contrastive learning by visualizing feature transformation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10306" to="10315" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

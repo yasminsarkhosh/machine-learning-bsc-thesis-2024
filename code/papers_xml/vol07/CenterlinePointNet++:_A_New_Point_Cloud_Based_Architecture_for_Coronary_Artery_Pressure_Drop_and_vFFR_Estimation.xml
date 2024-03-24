@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">CenterlinePointNet++: A New Point Cloud Based Architecture for Coronary Artery Pressure Drop and vFFR Estimation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Patryk</forename><surname>Rygiel</surname></persName>
+							<email>patryk.rygiel@hemolens.eu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Hemolens Diagnostics Sp</orgName>
+								<address>
+									<settlement>Wroc law</settlement>
+									<country key="PL">Poland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Paweł</forename><surname>Płuszka</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Maciej</forename><surname>Ziȩba</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Wroclaw University of Science and Technology</orgName>
+								<address>
+									<addrLine>Wroc law</addrLine>
+									<country key="PL">Poland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tomasz</forename><surname>Konopczyński</surname></persName>
+							<email>tomasz.konopczynski@hemolens.eu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Hemolens Diagnostics Sp</orgName>
+								<address>
+									<settlement>Wroc law</settlement>
+									<country key="PL">Poland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">CenterlinePointNet++: A New Point Cloud Based Architecture for Coronary Artery Pressure Drop and vFFR Estimation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="781" to="790"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D6787B17C7F19F4478FC321D759F582D</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_73</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:40+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>deep learning</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Estimation of patient-specific hemodynamic features, and in particular fractional flow reserve (FFR) in coronary arteries is an essential step in providing personalized and accurate diagnosis of coronary artery disease (CAD). In recent years, in the domain of computed tomography angiography (CTA), a virtual FFR (vFFR) derived from coronary CTA using computational fluid dynamics (CFD), has been used as a compelling, non-invasive, in-silico replacement for invasive diagnostic techniques. Unfortunately, the time and computational demands of CFD are major obstacles to introducing vFFR from CT as a commonly used prophylactic tool. In this work, we propose a novel geometric-based artificial deep learning (DL) architecture, CenterlinePointNet++, which acts as a surrogate for CFD engines for the task of hemodynamic features estimation of the coronary arteries. Our architecture works directly on the vessel geometry represented as a surface point cloud and a centerline graph. As a result of that, it utilizes implicit geometry embedding without the need for hand-crafted features to estimate directly hemodynamic features. We evaluate our approach on the task of pressure drops and vFFR estimation for a synthetically generated dataset of coronary arteries and showcase significant improvement over commonly used geometry-based approaches.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Estimation of patient-specific hemodynamic features in coronary arteries is an essential step in providing personalized and accurate diagnosis and treatment of CAD which is one of the main causes of death in the world <ref type="bibr" target="#b14">[15]</ref>. In the assessment of CAD, one of the most important biomarkers is a Fractional Flow Reserve (FFR <ref type="bibr" target="#b2">[3]</ref>), measured during an invasive coronary angiography procedure. With developments in CT and CFD, non-invasive approaches for accurate hemodynamic features estimation such as vFFR in patients with suspected ischemic heart disease became possible <ref type="bibr" target="#b8">[9]</ref>. Unfortunately, although CFD offers a compelling in-silico replacement for invasive coronagraphy procedures, prolonged vFFR computation times, over many hours, have been a major concern <ref type="bibr" target="#b13">[14]</ref>.</p><p>To solve the computation time drawback, AI-based solutions have been proposed to lower the estimation time of vFFR down to minutes, or even seconds at the cost of accuracy <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b21">22]</ref>. Itu et al. <ref type="bibr" target="#b7">[8]</ref> propose to compute a set of local and global hand-crafted features from the coronary anatomy to create a representation of a local stenotic segment. Based on this representation, a multilayer perceptron (MLP) model is trained to perform an FFR regression in the stenotic areas. They experiment on a dataset of 12, 000 synthetically generated coronary geometries and evaluated the model on 125 patient-specific anatomical models extracted from CTA, reporting a correlation of 0.729 with invasive FFR on real anatomical models. Wang et al. <ref type="bibr" target="#b23">[24]</ref> propose a similar method that utilizes hand-crafted features to feed a recurrent neural network (RNN) to estimate the FFR along the coronary artery. Authors experiment with training on 71 patient-specific anatomies extracted from CTA and report a correlation of 0.686 with invasive FFR measurement. Both approaches report compiling results of the vFFR estimation and showcase a drastic improvement in time consumption: 2.4 s for Itu et al. <ref type="bibr" target="#b7">[8]</ref> and 120 s for Wang et al. <ref type="bibr" target="#b23">[24]</ref>. The main drawback in both cases is the utilization of hand-crafted features. Additionally, authors do not share details of their features making their work impossible to reproduce <ref type="bibr" target="#b19">[20]</ref>. A natural improvement over these methods would be an implicit feature learning method that could be performed on a vessel surface modelled as a mesh or a point cloud. However, there is no such method known to the authors that would tackle the problem of vFFR estimation for coronary arteries from CTA. For a similar task, Li et al. <ref type="bibr" target="#b10">[11]</ref> propose a PointNet-like <ref type="bibr" target="#b16">[17]</ref> architecture to predict velocity and pressure fields on point cloud geometries containing aorta, coronary arteries and bypass graft. Similarly, Suk et al. <ref type="bibr" target="#b20">[21]</ref> utilizes mesh-based neural networks <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b22">23]</ref> to estimate wall shear stress along the vessels. Both approaches would be unsuitable for the vFFR estimation from CTA, as it would require the processing of more complex, elongated geometries.</p><p>In this work, we tackle the problem of estimating hemodynamic features such as pressure drops and vFFR along the coronary arteries extracted from CTA. We propose a novel CenterlinePointNet++ architecture that is tailored towards the processing of complex, elongated structures such as coronary arteries, that can be represented as a surface point cloud and a centerline graph along branches. In our approach, implicit feature extraction is guided by the proposed centerline grouping aggregation. It is a replacement for the commonly used topology-agnostic <ref type="bibr" target="#b17">[18]</ref>, centerline-agnostic <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b18">19]</ref> or connectivity-based <ref type="bibr" target="#b24">[25]</ref> aggregation strategies. To our best knowledge, this is the first method that is tackling the problem of pressure drops and vFFR estimation utilizing a point cloud neural network. We train and evaluate our approach on different scenarios on the dataset of 1, 700 synthetically generated coronary arteries. We test the model capability for two tasks: estimation of pressure drop and vFFR under different GT CFD settings. For each setting, we report an improvement over Euclidean distance based grouping in terms of Mean Absolute Error (MAE) and Normalized Absolute Error (NMAE). We further test the approach performance of vFFR estimation and report a correlation with CFD vFFR of 0.93.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>In this section, we provide a detailed description of the proposed CenterlinePoint-Net++ architecture (see Fig. <ref type="figure" target="#fig_0">1</ref>) for the problem of estimating hemodynamic features. We improve upon the well-known PointNet++ architecture <ref type="bibr" target="#b17">[18]</ref> by taking into account a priori knowledge of coronary arteries geometries. We extend its input to accept an additional channel with a centerline graph and change its encoder blocks to the proposed Centerline-Set-Abstraction (CSA) blocks that utilize the centerline graph and the centerline grouping method which facilitates geodesic metric. We refer to the input vessel mesh as M and the point cloud representing its surface that is sampled by extracting all its vertices is denoted as P. The centerline graph, which can be extracted from the mesh with an algorithm of choice is denoted as C = (V C , E C ), where V C is the set of nodes and E C a set of undirected edges. Since the centerline graph is a 3D structure in Euclidean space, we can represent each v ∈ V C as a point with 3D coordinates. The architecture takes as an input a point cloud P and centerline graph C and returns per-point hemodynamic features of choice. The details of the method are described in the following sections.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Encoder</head><p>The encoder is built out of the proposed CSA blocks in a hierarchical manner as it is shown in Fig. <ref type="figure" target="#fig_0">1</ref>. It consists of n number of CSA blocks down to the bottleneck. Each CSA i+1 takes as an input a point cloud</p><formula xml:id="formula_0">P (e) i of dimensions N i × F (e) i</formula><p>from the previous block and a centerline graph C, where N stands for the number of points, F stands for the number of features, i + 1 is the index of the current CSA block, i is the index of the previous block, and (e) stands for "encoding". The CSA block is described in Fig. <ref type="figure" target="#fig_1">2a</ref>. In the first step of a CSA block, a representative sampling procedure in form of Farthest Point Sampling <ref type="bibr" target="#b3">[4]</ref> (FPS) is utilized to downsample P (e) i and create a representative point cloud R ⊆ P.</p><p>For each point r ∈ R, a centerline grouping procedure g(r, C) is performed to extract their point neighborhoods G r ⊆ P. In the last step, all extracted neighbourhoods are processed independently with a PointNet <ref type="bibr" target="#b16">[17]</ref> to construct neighbourhood feature vectors for all the points in R.</p><p>Centerline Grouping: We propose a novel centerline-guided point grouping scheme for point cloud structures. Commonly used Euclidean distance based grouping strategies do not take into account an underlying surface manifold formed by the points. Thus they tend to fail when the point cloud topology is complex, by considering points in the close Euclidean distance to be neighbours while their distance along the formed manifold is much larger (see Fig. <ref type="figure" target="#fig_2">3a</ref>). By utilizing a centerline-guided point grouping, the geodesic metric is facilitated, and thus the point neighbourhoods are constructed along the manifold (see Fig. <ref type="figure" target="#fig_2">3b</ref>). Additionally, grouping along the centerline allows for a robust sequential embedding of the complex vessel trees and thus facilitates the learning of hemodynamic features.</p><p>For a given point cloud P, its representation R and its centerline C, the centerline grouping procedure g(r, C) is performed independently for each r ∈ R. We define a mapping function M : P → V C , which assigns a closest, in Euclidean distance sense, centerline node v ∈ V C to each point p ∈ P. Since a representative point cloud R is a subset of point cloud P, the mapping is also defined for each point r ∈ R. Due to the utilization of a mapping function M , the grouping procedure can be performed directly on the centerline graph C where the topological structure of the vessel tree can be more accurately represented. Based on the 3D coordinates of centerline nodes V C , the weights of the edges E C are calculated as distances between the connected nodes -since the centerline graph is not-mutable during training, the weights can be pre-computed in the pre-processing stage.</p><p>Having a mapping function M we can directly work on the centerline graph itself and thus we define a centerline neighbourhood Q v which is computed independently for each v ∈ M [R] and can be expressed with the following equation:</p><formula xml:id="formula_1">Q v0 = {v ∈ V c : d C (v, v 0 ) ≤ t},<label>(1)</label></formula><p>where d C is a centerline distance function which returns the length of the weighted shortest path between two given nodes in the centerline C and t is the distance threshold which marks whether nodes should be considered neighbours or not. Having centerline neighbourhoods Q extracted we need to map them back onto the point cloud P to obtain the point neighbourhoods G for each r ∈ R:</p><formula xml:id="formula_2">G r = {p ∈ P : M (p) ∈ Q M (r) }. (<label>2</label></formula><formula xml:id="formula_3">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Decoder</head><p>The decoder is built out of the Feature-Propagation (FP) blocks in a similar manner as in PointNet++ <ref type="bibr" target="#b17">[18]</ref>. Its architecture is shown in Fig. <ref type="figure" target="#fig_1">2b</ref> The FP takes as an input a point cloud P (d) i from the previous block and a reference point cloud P (e) i+1 passed via skip-connection from the respective encoder block, where i + 1 is the index of the current FP block, i is the index of the previous block and (d) stands for "decoding". In the first step, the features from the point cloud P </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>In this section, we describe our evaluation of the proposed model architecture in the tasks of pressure drops and vFFR estimation of a synthetic coronary artery geometry with respect to different stenosis severity grades and different biologically relevant ranges of blood flow characteristics. We test our architecture against standard PointNet++ grouping with the same number of adequate layers as a reference due to the impossibility of reproduction <ref type="bibr" target="#b19">[20]</ref> of the other two known relevant methods <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b23">24]</ref>. We train CenterlinePointNet++ and PointNet++ with the same set of hyperparameters. Both need approximately 15 s for inference on the RTX 3090 24 GB graphic card. The models are trained for 500 epochs with the batch size of 8 and Adam optimizer with the default constant learning rate of 0.001. For the loss function we use the Mean Squared Error (MSE) which is the mean of per point squared errors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>We utilize a dataset of 1, 700 synthetically generated coronary arteries to train and evaluate the model's performance. We split the data to train, validation and test set of sizes 1,500, 100 and 100, respectively.</p><p>We generate synthetic coronary arteries using ranges of geometric quantities such as the radii of branches, bifurcation angles, and degree of tapering with distributions similar to other studies <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b12">13]</ref>. On top of that, we model stenotic areas based on Coronary Artery Disease -Reporting and Data System (CAD-RADS) <ref type="bibr" target="#b15">[16]</ref> stenoses percentage intervals. Our point clouds are further preprocessed such that each point is described by the position in the 3D space, Euclidean distance to the centerline and geodesic distance to the inlet (first point on the centerline).</p><p>For the ground-truth (GT) labels generation we use a commercial CFD engine of choice <ref type="bibr" target="#b9">[10]</ref> designed for vFFR calculation.</p><p>The considered simulations for GT are stationary and take up to two hours on a CPU with 16 processes per synthetic coronary artery. We generate labels from a biologically relevant range that aim to simulate a patient under rest, mild exercise and high-intensity exercise conditions <ref type="bibr" target="#b11">[12]</ref>. We experiment with three values of input flow Q in : three, five and seven ml/s, and three values of inlet pressure p in : 80, 100 and 120 mmHg. In our experimental setup, one coronary artery is composed of a surface point cloud with 100,000-200,000 points and a centerline graph with 300-600 vertices, depending on the complexity of the vascular tree. The surface point clouds are uniformly downsampled to 20, 000 points during the training process. In the inference setting the per-point results are obtained via a mean aggregation over multiple inference runs, five in our case, of different random splits of a point cloud into chunks of 20, 000 points. The process of projecting the surface features onto the centerline graph is done by averaging the estimated features of the faces' vertices which intersect with the orthogonal plane to the centerline placed for a given centerline node (Table <ref type="table" target="#tab_0">1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>We showcase the comparison between PointNet++ and proposed Centerline-PointNet++ in the task of pressure drop and vFFR estimation for the synthetic dataset under different biologically relevant boundary conditions (BC) in Fig. <ref type="figure" target="#fig_4">4</ref>. We report the MAE and NMAE which is MAE normalized by the absolute largest pressure drop in the testing set. The metrics are computed for projected results on a centerline for the evaluation to be more informative. Centerline-PointNet++ outperforms PointNet++ in every combination of input flow Q in and inlet pressure p in for both pressure drop and vFFR estimation.</p><p>We show a visual comparison between the PointNet++ and CenterlinePoint-Net++ capabilities in the task of the vFFR in Fig. <ref type="figure" target="#fig_4">4</ref> for two example synthetic simulations of a patient under rest with input flow Q in of 3 ml/s and inlet pressure p in of 80 mmHg. Both models tend to achieve good results on non-stenotic and mild-stenotic segments. However, when it comes to larger stenoses, Point-Net++ lacks correct assessment of the stenosis impact, while CenterlinePoint-Net++ estimates correct values. We attribute this robustness towards sequential embedding done along the centerline which follows the natural blood flow in the coronary artery. Both examples in Fig. <ref type="figure" target="#fig_4">4</ref> showcase the common problem of Point-Net++ for vessel trees with close branches. Since the aggregation is done via Euclidean distance, the branches close to each other in this space are considered neighbours. Due to that, the predicted vFFR on one branch tends to spill on  the second branch as seen on the whole left side of the sample in the first row Fig. <ref type="figure" target="#fig_4">4</ref>.</p><p>We evaluate estimated vFFR with respect to the stenosis severity grade and group stenosis grades into the relevant intervals based on CAD-RADS scale <ref type="bibr" target="#b15">[16]</ref>. Figure <ref type="figure" target="#fig_5">5</ref> showcases scatter plots for PointNet++ vFFR and CenterlinePoint-Net++ vFFR estimation against GT CFD vFFR with respect to the stenosis severity grade. We report the correlation of 0.88 and 0.93 for PointNet++ and CenterlinePointNet++ vFFR estimation, respectively. Performance in correct stenosis impact assessment seems to deteriorate with the increase of stenosis severity grade, however, only outliers achieve the absolute error above 0.1. CenterlinePointNet++ vFFR estimations achieve smaller variations than Point-Net++ over all classes, and significantly lower MAE for the stenosis severity grade (70-90%). We showcase that for the stenosis severity grade ≤ 70% the median of CenterlinePointNet++ estimated vFFR absolute error is kept under 0.01. Additionally, we evaluate the clinical viability of the proposed method by computing the accuracy of whether to perform intervention or not based on the predicted vFFR. We set the vFFR threshold to the clinically accepted one of 0.8 <ref type="bibr" target="#b1">[2]</ref>, and report the accuracy of 94.11% and 95.11% for PointNet++ and CenterlinePointNet++, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>In this study, we propose a novel point cloud based neural network architecture CenterlinePointNet++ which is tailored towards the analysis of complex vessel trees by incorporating multi-modal input of surface point cloud and centerline graph. We show an improvement in the vFFR time estimation from approx. two hours for a CFD simulation to around 15 s per synthetic coronary artery. Our centerline grouping approach is confronted with PointNet++ in the task of pressure drop and vFFR estimation in synthetic coronary arteries and achieves better results in NMAE and MAE for every set of values of the input flow and pressure of CFD simulation. The evaluation of FFR showcases a correlation of 0.93 with the CFD vFFR. One of the limitations of the method is the fact that the model is trained for the specified set of boundary conditions of underlying CFD simulation. In the future, we plan to expand the approach by incorporating boundary conditions as an additional input to the network. We also aim to conduct a comprehensive study using real patients' geometries for both training and evaluation, while comparing the results with invasive FFR.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Diagram of CenterlinePointNet++ architecture. The model incorporates an encoder-decoder structure seen in PointNet++. The encoder branch consists of seven CSA blocks that process the surface point cloud and centerline graph. The decoder branch is built out of seven FP blocks and topped with the head consisting of two Shared MLP layers.</figDesc><graphic coords="3,56,46,54,59,339,85,100,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. CenterlinePointNet++ blocks. The CSA block performs feature extraction by downsampling point cloud with the FPS algorithm, aggregating surface points in a centerline-guided manner and processing them with PointNet. The FP block performs the upsampling procedure by interpolating features onto the new points passed via skip-connection and processing them with the Shared MLP layer.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Grouping comparison. Points Pj and P k are considered to be in the same size neighborhood of Pi when grouped with Euclidean distance, even though their geodesic distances are substantially different. Grouping along the centerline solves this issue by facilitating geodesic metric.</figDesc><graphic coords="5,87,96,54,56,276,79,107,23" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>i+1 by averaging features of three nearest neighbours in Euclidean distance sense. The resulting point cloud P (d) i+1 is then processed with shared MLP which is applied independently to each p ∈ P (d) i+1 to form new per-point feature vectors.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative comparison of vFFR between PointNet++ and CenterlinePoint-Net++. (a) CFD GT vFFR, (b) PointNet++ vFFR, (c) CenterlinePointNet++ vFFR, (d) PointNet++ vFFR MAE, (e) CenterlinePointNet++ vFFR MAE on two examples. Due to the lack of sequential embedding, PointNet++ tends to be less robust in assessing the impact of stenosis on pressure drops.</figDesc><graphic coords="8,44,31,54,05,335,56,105,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Evaluation on vFFR estimation with respect to different stenosis severity grades. The vFFR is estimated at stenotic segments with the maximum percentage of radius change reported as a severity grade (SG). We report a correlation of 0.88 and 0.93 for PointNet++ and CenterlinePointNet++, respectively. Dashed lines at 0.8 indicate the clinical threshold.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison of PointNet++ (PN) and CenterlinePointNet++ (CPN) in the task of pressure drop and vFFR estimation with various BC of CFD GT simulation. Metrics are computed on the centerline-projected surface predictions.</figDesc><table><row><cell>Qin</cell><cell>Pressure drops</cell><cell></cell><cell cols="6">vFFR (pin = 80 mmHg) vFFR (pin = 100 mmHg) vFFR (pin = 120 mmHg)</cell></row><row><cell cols="2">(ml/s) NMAE (%)</cell><cell>MAE (m 2 /s 2 )</cell><cell>MAE (×10 -2 )</cell><cell></cell><cell>MAE (×10 -2 )</cell><cell></cell><cell>MAE (×10 -2 )</cell><cell></cell></row><row><cell></cell><cell cols="4">mean median 75th mean median 75th mean median 75th</cell><cell cols="2">mean median 75th</cell><cell cols="2">mean median 75th</cell></row><row><cell>PN 3</cell><cell>2.01 0.74</cell><cell>1.36 2.23 0.80</cell><cell>1.52 2.83 1.04</cell><cell>1.92</cell><cell>2.18 0.80</cell><cell>1.47</cell><cell>1.89 0.69</cell><cell>1.28</cell></row><row><cell>CPN</cell><cell>1.57 0.55</cell><cell>1.32 1.75 0.64</cell><cell>1.52 2.21 0.77</cell><cell>1.86</cell><cell>1.70 0.60</cell><cell>1.43</cell><cell>1.47 0.52</cell><cell>1.24</cell></row><row><cell>PN 5</cell><cell>1.68 0.63</cell><cell>1.31 4.31 1.59</cell><cell>3.35 5.36 2.01</cell><cell>4.17</cell><cell>4.13 1.55</cell><cell>3.21</cell><cell>3.58 1.34</cell><cell>2.78</cell></row><row><cell>CPN</cell><cell>1.58 0.56</cell><cell>1.12 3.99 1.44</cell><cell>2.79 5.03 1.80</cell><cell>3.59</cell><cell>3.87 1.38</cell><cell>2.75</cell><cell>3.35 1.20</cell><cell>2.39</cell></row><row><cell>PN 7</cell><cell>1.74 0.60</cell><cell>1.34 7.74 2.63</cell><cell>5.90 9.70 3.34</cell><cell>7.44</cell><cell>7.46 2.57</cell><cell>5.73</cell><cell>6.47 2.23</cell><cell>4.96</cell></row><row><cell>CPN</cell><cell>1.54 0.50</cell><cell>1.17 6.86 2.23</cell><cell>5.18 8.56 2.80</cell><cell>6.50</cell><cell>6.58 2.16</cell><cell>5.00</cell><cell>5.71 1.87</cell><cell>4.33</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43990-2 73.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Machine learning for cardiovascular biomechanics modeling: challenges and beyond</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arzani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Sacks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Shadden</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="615" to="627" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Fractional flow reserve: a clinical perspective</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Corcoran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hennigan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Berry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Cardiovasc. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="961" to="974" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Fractional flow reserve: a review</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>De Bruyne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sarma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Heart</title>
+		<imprint>
+			<biblScope unit="volume">94</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="949" to="959" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The farthest point strategy for progressive image sampling</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Eldar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lindenbaum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Porat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zeevi</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/83.623193</idno>
+		<ptr target="https://doi.org/10.1109/83.623193" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1305" to="1315" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Gauge equivariant mesh CNNs: anisotropic convolutions on geometric graphs</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>De Haan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Weiler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno>CoRR abs/2003.05425</idno>
+		<ptr target="https://arxiv.org/abs/2003.05425" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Inductive representation learning on large graphs</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">L</forename><surname>Hamilton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<idno>CoRR abs/1706.02216</idno>
+		<ptr target="https://arxiv.org/abs/1706.02216" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Learning hybrid representations for automatic 3D vessel centerline extraction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>He</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59725-2_3</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59725-23" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="24" to="34" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A machine learning approach for computation of fractional flow reserve from coronary computed tomography</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Itu</surname></persName>
+		</author>
+		<idno type="DOI">10.1152/japplphysiol.00752.2015</idno>
+		<idno>jap.00752.2015</idno>
+		<ptr target="https://doi.org/10.1152/japplphysiol.00752" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Appl. Physiol</title>
+		<imprint>
+			<biblScope unit="volume">121</biblScope>
+			<date type="published" when="1985">1985. 2016. 2015</date>
+			<pubPlace>Bethesda, Md</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Noninvasive CT-derived FFR based on structural and fluid analysis: a comparison with invasive FFR for detection of functionally significant stenosis</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">S</forename><surname>Ko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JACC Cardiovasc. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="663" to="673" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Patient-specific modeling of hemodynamic parameters in coronary arteries</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kosior</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mirota</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Tarnawski</surname></persName>
+		</author>
+		<idno>App. 16/217</idno>
+		<imprint>
+			<date type="published" when="2019-06-20">20 June 2019. 2019</date>
+			<biblScope unit="page">328</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">US Patent</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Prediction of 3D cardiovascular hemodynamics before and after coronary artery bypass surgery via deep learning</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s42003-020-01638-1</idno>
+		<ptr target="https://doi.org/10.1038/s42003-020-01638-1" />
+	</analytic>
+	<monogr>
+		<title level="j">Commun. Biol</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">99</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The comparative method based on coronary computed tomography angiography for assessing the hemodynamic significance of coronary artery stenosis</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ma Lota</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cardiovasc. Eng. Technol</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="364" to="379" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A study of coronary bifurcation shape in a normal population</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Medrano-Gracia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Cardiovasc. Transl. Res</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="82" to="90" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">D</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">N</forename><surname>Van De Vosse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">V</forename><surname>Lawford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Hose</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Gunn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">virtual&quot; (computed) fractional flow reserve: current challenges and limitations</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="1009" to="1017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Cardiovascular disease</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">G</forename><surname>Nabel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">N. Engl. J. Med</title>
+		<imprint>
+			<biblScope unit="volume">349</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="60" to="72" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nikolaev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Weerakkody</surname></persName>
+		</author>
+		<idno type="DOI">10.53347/rID-56786</idno>
+		<ptr target="https://doi.org/10.53347/rID-56786" />
+		<title level="m">Coronary artery disease -reporting and data system. Reference article, Radiopaedia.org</title>
+		<imprint>
+			<date type="published" when="2023-02-14">14 Feb. 2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">PointNet: deep learning on point sets for 3D classification and segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+		<idno>CoRR abs/1612.00593</idno>
+		<ptr target="https://arxiv.org/abs/1612.00593" />
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">PointNet++: deep hierarchical feature learning on point sets in a metric space</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+		<idno>CoRR abs/1706.02413</idno>
+		<ptr target="https://arxiv.org/abs/1706.02413" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Eigenvector grouping for point cloud vessel labeling</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rygiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zieba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Konopczynski</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<ptr target="https://proceedings.mlr.press/v194/rygiel22a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the First International Workshop on Geometric Deep Learning in Medical Image Analysis. Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Bekkers</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Wolterink</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Aviles-Rivero</surname></persName>
+		</editor>
+		<meeting>the First International Workshop on Geometric Deep Learning in Medical Image Analysis. Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2022-11-18">18 November 2022</date>
+			<biblScope unit="volume">194</biblScope>
+			<biblScope unit="page" from="72" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Exploring the capabilities of machine learning (ML) for 1D blood flow: application to coronary flow</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Sklet</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Trondheim, Norway</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>Norwegian University of Science and Technology</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Master&apos;s thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Suk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Haan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lippe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Brune</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wolterink</surname></persName>
+		</author>
+		<title level="m">Mesh convolutional neural networks for wall shear stress estimation in 3D artery models</title>
+		<imprint>
+			<date type="published" when="2021-09">September 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Deep learning for computational hemodynamics: a brief review of recent advances</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Taebi</surname></persName>
+		</author>
+		<idno type="DOI">10.3390/fluids7060197</idno>
+		<ptr target="https://www.mdpi.com/2311-5521/7/6/197" />
+	</analytic>
+	<monogr>
+		<title level="j">Fluids</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">197</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Dynamic filters in graph convolutional networks</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Verma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Boyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Verbeek</surname></persName>
+		</author>
+		<ptr target="https://arxiv.org/abs/1706.05206" />
+	</analytic>
+	<monogr>
+		<title level="m">CoRR abs/1706</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page">5206</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Diagnostic accuracy of a deep learning approach to calculate FFR from coronary CT angiography</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Geriatr. Cardiol. JGC</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="42" to="48" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">TaG-Net: topology-aware graph network for vessel labeling</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-21083-9_11</idno>
+		<idno>978- 3-031-21083-9 11</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">Imaging Systems for GI Endoscopy, and Graphs in Biomedical Image Analysis</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Manfredi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="108" to="117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Interpretable Medical Image Classification Using Prototype Learning and Privileged Information</title>
+				<funder ref="#_Sn7PJxE">
+					<orgName type="full">German Federal Ministry of Education and Research (BMBF)</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">University of Ulm</orgName>
+				</funder>
+				<funder ref="#_hWTsrfe">
+					<orgName type="full">National Cancer Institute and the Foundation for the National Institutes of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Luisa</forename><surname>Gallée</surname></persName>
+							<email>luisa.gallee@uni-ulm.de</email>
+							<idno type="ORCID">0000-0001-5556-7395</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Experimental Radiology</orgName>
+								<orgName type="institution">University Hospital Ulm</orgName>
+								<address>
+									<settlement>Ulm</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Meinrad</forename><surname>Beer</surname></persName>
+							<idno type="ORCID">0000-0001-7523-1979</idno>
+						</author>
+						<author>
+							<persName><forename type="first">Michael</forename><surname>Götz</surname></persName>
+							<email>michael.goetz@uni-ulm.de</email>
+							<idno type="ORCID">0000-0003-0984-224X</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Experimental Radiology</orgName>
+								<orgName type="institution">University Hospital Ulm</orgName>
+								<address>
+									<settlement>Ulm</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">i2SouI -Innovative Imaging</orgName>
+								<orgName type="department" key="dep2">Surgical Oncology Ulm</orgName>
+								<orgName type="institution">University Hospital Ulm</orgName>
+								<address>
+									<settlement>Ulm</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Interpretable Medical Image Classification Using Prototype Learning and Privileged Information</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="435" to="445"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">45DC779BA1028CA574817B9AC94C0986</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_41</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Explainable AI</term>
+					<term>Capsule Network</term>
+					<term>Prototype Learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Interpretability is often an essential requirement in medical imaging. Advanced deep learning methods are required to address this need for explainability and high performance. In this work, we investigate whether additional information available during the training process can be used to create an understandable and powerful model. We propose an innovative solution called Proto-Caps that leverages the benefits of capsule networks, prototype learning and the use of privileged information. Evaluating the proposed solution on the LIDC-IDRI dataset shows that it combines increased interpretability with above state-of-the-art prediction performance. Compared to the explainable baseline model, our method achieves more than 6 % higher accuracy in predicting both malignancy (93.0 %) and mean characteristic features of lung nodules. Simultaneously, the model provides case-based reasoning with prototype representations that allow visual validation of radiologist-defined attributes.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Deep learning-based systems show remarkable predictive performance in many computer vision tasks, including medical image analysis, and are often comparable to human performance. However, the complexity of this technique makes it challenging to extract model knowledge and understand model decisions. This limitation is being addressed by the field of Explainable AI, in which significant progress has been made in recent years. An important line of research is the use of inherently explainable models, which circumvent the need for indirect, errorprone on-top explanations <ref type="bibr" target="#b13">[14]</ref>. A common misconception is that the additional explanation comes with a decrease in performance. However, Rudin et al. <ref type="bibr" target="#b13">[14]</ref> and others have already pointed out that this can be avoided by designing algorithms that build explainability into the core concept, rather than just adding it on top. Our work proves this once again by providing a powerful and explainable solution for medical image classification.</p><p>A promising approach for interpretability is the use of Privileged Information, i.e. information that is only available during training <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b19">20]</ref>. Besides using the additional knowledge to improve performance, it can also help to increase explainability, as has already been shown using the LIDC-IDRI dataset <ref type="bibr" target="#b2">[3]</ref>. In addition to the malignancy of the lung nodules, which is the main goal of the prediction task, the radiologists also marked certain nodule characteristics such as sphericity, margin or spiculation. Shen et al. <ref type="bibr" target="#b15">[16]</ref> used the attributes with a hierarchical 3D CNN approach, demonstrating the potential of using this privileged information. LaLonde et al. <ref type="bibr" target="#b10">[11]</ref> extended this idea using capsule networks, a technique for learning individual, encapsulated representations rather than general convolutional layers <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b14">15]</ref>. This method was used to jointly learn the predefined attributes in the capsules and their associations with the classification target, i.e. malignancy. Explainability is enabled by providing additional attribute values that are essential to the model output. However, the predicted, possibly incorrect scores for the attributes must be trusted, which raises the question of whether there is a way to validate the predictions.</p><p>Prototype Networks are another line of research implementing the idea that the representations of images cluster around a prototypical representation for each class <ref type="bibr" target="#b16">[17]</ref>. The goal is to find embedded prototypes (i.e. examples) that best separate the images by their classes <ref type="bibr" target="#b4">[5]</ref>. This idea has been applied to various methods, such as unsupervised learning <ref type="bibr" target="#b12">[13]</ref>, few-and zero-shot learning <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr">22]</ref>, as well as for capsule networks <ref type="bibr" target="#b20">[21]</ref>, however without the use of privileged information. A successful approach is prototypical models with case-based reasoning, which justify their prediction by showing prototypical training examples similar to the input instance <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b11">12]</ref>. This idea can be used for region-wise prototypical samples <ref type="bibr" target="#b5">[6]</ref>. However, these networks can only tell which prototypical samples resemble the query image, not why. Similar to attention models, regional explanations are learned and provided <ref type="bibr" target="#b21">[23,</ref><ref type="bibr" target="#b22">24]</ref>. It is up to the user to guess which features of the image regions are relevant to the network and are exemplified by the prototypes.</p><p>Our method addresses the limitations of privileged information-based and prototype-based explanation by combining case-based visual reasoning through exemplary representation of high-level attributes to achieve explainability and high-performance. The proposed method is an image classifier that satisfies explainable-by-design with two elements: First, decisive intermediate results of a high-performance CNN are trained on human-defined attributes which are being predicted during application. Second, the model provides prototypical natural images to validate the attribute prediction. In addition to the enhanced explainability offered by the proposed approach, to our knowledge the proposed method outperforms existing studies on the LIDC-IDRI dataset.</p><p>The main contributions of our work are:</p><p>-A novel method that, for the first time to our knowledge, combines privileged information and prototype learning to provide increased explanatory power for medical classification tasks. -A prototype network architecture based on a capsule network that leverages the benefits of both techniques. -An explainable solution outperforming state-of-the-art explainable and nonexplainable methods on the LIDC-IDRI dataset.</p><p>We provide the code with the model architecture and training algorithm of Proto-Caps on GitHub.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>The idea behind our approach is to combine the potential of attribute and prototype learning for a powerful and interpretable learning system. For this, we use a capsule network of attribute capsules from which the target class is predicted. As the attribute prediction can also be susceptible to error, we use prototypes to explain the predictions made for each attribute. Based on <ref type="bibr" target="#b10">[11]</ref>, our approach, called Proto-Caps, consists of a backbone capsule network. The network is trained using multiple heads. An attribute head is used to ensure that each capsule represents a single attribute, a reconstruction head learns the original segmentation, and the main target prediction head learns the final classification. The model is extended by a prototype layer that provides explanations for each attribute decision. The overall architecture of Proto-Caps is shown in Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>The backbone of our approach is a capsule network consisting of three layers: Features of the input image of size 1×32×32 are extracted by a 2D convolutional layer containing 256 kernels of size 9×9. We decided not to use 3D convolutional layers, as preliminary experiments showed only marginal differences (within std. dev. of results), but required significantly more computing time. The primary capsule layer then segregates low-level features into 8 different capsules, with each capsule applying 256 kernels of size 9 × 9. The final dense capsule layer consists of one capsule for each attribute and extracts high-level features, overall producing eight 16-dimensional vectors. These vectors form the starting point for the different prediction branches.</p><p>The target head, a fully connected layer, combines the capsule encodings. The loss function for the malignancy prediction was chosen according to LaLonde et al. <ref type="bibr" target="#b10">[11]</ref>, where the distribution of radiologist malignancy annotations is optimized with the Kullback-Leibler divergence L mal to reflect the inter-observer agreement and thus uncertainty. The reconstruction branch to predict the segmentation mask of the nodule consists of a simple decoder with three fully connected layers with the output filters 512, 1024, and the size of the resulting image 1 × 32 × 32. The reconstruction loss L recon implements the mean square error between the output and the binary segmentation mask. It has been shown that incorporating reconstruction learning is beneficial to performance <ref type="bibr" target="#b10">[11]</ref>. For the attribute head, we propose to use fully connected layers, instead of determining the attribute manifestation by the length of the capsule encoding, as was done previously <ref type="bibr" target="#b10">[11]</ref>. Each capsule vector is processed by a separate linear layer to fit the respective attribute score. We formulate the attribute loss as</p><formula xml:id="formula_0">L attr = (1 -b) a Y a -O a 2 , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where Y a is the ground truth mean attribute score by the radiologists, O a is the network score prediction for the a-th attribute, and b is a random binary mask allowing semi-supervised attribute learning. Two prototypes are learned per possible attribute class, resulting in 8-12 prototypes per attribute (i.e. capsule). During the training, a combined loss function encourages a training sample to be close to a prototype of the correct attribute class and away from prototypes dedicated to others, similar to existing approaches <ref type="bibr" target="#b5">[6]</ref>. Randomly initialized, the prototypes are a representative subset of the training dataset for each attribute after the training. For this, a cluster cost reduces the Euclidean distance of a sample's capsule vector O a to the nearest prototype vector p j of group P as which is dedicated to its correct attribute score.</p><formula xml:id="formula_2">L clu = 1 A A a min pj ∈Pa s O a -p j 2 . (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>In order to clearly distinguish between different attribute specifications, a separation loss is applied to increase the distance to the capsule prototypes that do not have the correct specification, limited by a maximum distance:</p><formula xml:id="formula_4">L sep = 1 A A a min pj / ∈Pa s max(0, dist max -O a -p j 2 ).<label>(3)</label></formula><p>Prototype optimization begins after 100 epochs. In addition to fitting the prototypes with the loss function, each prototype is replaced every 10 epochs by the most similar latent vector of a training sample. The original image of the training sample is stored and used for prototype visualization. During inference, the predicted attribute value is set to the ground truth attribute value of the closest prototype, ignoring the learned dense layers in the attribute head at this stage.</p><p>The overall loss function is the following weighted sum, where λ recon = 0.512 was chosen according to <ref type="bibr" target="#b10">[11]</ref>, and the prototype weights were chosen empirically:</p><formula xml:id="formula_5">L = L mal + λ recon • L recon + L attr + 0.125 • (L clu + 0.1 • L sep )<label>(4)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Data. The proposed approach is evaluated using the publicly available LIDC-IDRI dataset consisting of 1018 clinical thoracic CT scans from patients with Non-Small Cell Lung Cancer (NSCLC) <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3]</ref>. Each lung nodule with a minimum size of 3 mm was segmented and annotated with a malignancy score ranging from 1-highly unlikely to 5-highly suspicious by one to four expert raters. Nodules were also scored according to their characteristics with respect to predefined attributes, namely subtlety (difficulty of detection, 1-extremely subtle, 5-obvious), internal structure (1-soft tissue, 4-air ), pattern of calcification (1popcorn, 6-absent), sphericity (1-linear, 5-round ), margin (1-poorly defined, 5sharp), lobulation (1-no lobulation, 5-marked lobulation), spiculation (1-no spiculation, 5-marked spiculation), and texture (1-non-solid, 5-solid ). The pylidc framework <ref type="bibr" target="#b6">[7]</ref> is used to access and process the data. The mean attribute annotation and the mean and standard deviation of the malignancy annotations are calculated. The latter was used to fit a Gaussian distribution, which serves as the ground truth label for optimization. Samples with a mean expert malignancy score of 3-indeterminate or annotations from fewer than three experts were excluded in consistency with the literature <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11]</ref>.</p><p>Experiment Designs. To ensure comparability with previous work <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11]</ref>, the main metric used is Within-1-Accuracy, where a prediction within one score is considered correct. Five-fold stratified cross-validation was performed using 10 % of the training data for validation and the best run of three is reported.</p><p>The algorithm was implemented using the PyTorch framework version 1.13 and CUDA version 11.6. A learning rate of 0.5 was chosen for the prototype vectors and 0.02 for the other learnable parameters. The batch size was set to 128 and the optimizer was ADAM <ref type="bibr" target="#b9">[10]</ref>. With a maximum of 1000 epochs, but stopping early if there was no improvement in target accuracy within 100 epochs, the experiments lasted an average of three hours on a GeForce RTX 3090 graphics card. The code is publicly available at https://github.com/XRad-Ulm/Proto-Caps.</p><p>Besides pure performance, the effect of reduced availability of attribute annotations was investigated. This was done by using attribute information only for a randomly selected fraction of the nodules during the training.</p><p>To investigate the effect of prototypes on the network performance, an ablation study was performed. Three networks were compared: Proto-Caps (proposed) including learning and applying prototypes during inference, Proto-Caps w/o use where prototypes are only learned but ignored for inference, and Proto-Caps w/o learn using the proposed architecture without any prototypes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head><p>Qualitative. Figure <ref type="figure" target="#fig_1">2</ref> shows examples of model output. The predicted malignancy score is justified by the closest prototypical sample of a certain attribute. The respective original image for each attribute prototype is being saved during the training process and used for visualization during inference. In case B, there are large differences between the margin and lobulation prototype and the sample. Similarly, in case C, the spiculation prediction is very different from the sample.</p><p>During application, these discrepancies between the prototypes and the sample nodule raise suspicion, and help to assess the malignancy prediction. A quantitative evaluation of the relationship between correctness in attribute and in target prediction using logistic regression analysis shows a strong relationship between both with an accuracy of 0.93/0.1.</p><p>Quantitative. Table <ref type="table" target="#tab_0">1</ref> shows the results of our experiments compared to other state-of-the-art approaches, with results taken from original reports. The accuracy of the proposed method exceeds previous work in both the malignancy and almost all attribute predictions, while modelling all given attributes.</p><p>Table <ref type="table" target="#tab_1">2</ref> lists the results obtained when only fractions of the training samples come with attribute information. The experiments indicate that the performance of the given approach is maintained up to a fraction of 10 %. Using no attribute annotations at all, i.e. no privileged information, achieves a similar performance, but results in a loss of explainability, as the high-level features extracted in the capsules are not understandable to humans. This result suggests that privileged information here leads to an increase in interpretability for humans by providing attribute predictions and prototypes without interfering with the model performance. The ablation study shows no significant differences between the three models evaluated. For the malignancy accuracy, Proto-Caps w/o use and Proto-Caps w/o learn achieved μ = 93.9 % (σ = 0.8) and μ = 93.7 % (σ = 1.1), respectively. The average difference in attribute accuracy compared to the proposed methods is 1.7 % and 1.5 % better, respectively, and is more robust across experiments. The best result was obtained when the prototypes were learned but not used, possibly indicating that the prototypes may have a regularising effect during training, but further experiments are needed to confirm this due to the close results. To give an indication of the decoder performance, Proto-Caps w/o use achieved a dice score of 79.7 %. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion and Conclusion</head><p>We propose a new method, named Proto-Caps, which combines the advantages of privileged information, and prototype learning for an explainable network, achieving more than 6 % better accuracy than the state-of-the-art explainable method. As shown by qualitative results (Fig. <ref type="figure" target="#fig_1">2</ref>), the obtained prototypes can be used to detect potential false classifications. Our method is based on capsule networks, which allow prediction based on attribute-specific prototypes. Compared to class-specific prototypes, our approach is more specific and allows better interpretation of the predictions made. In summary, Proto-Caps outputs prediction results for the main classification task and for predefined attributes, and provides visual validation through the prototypical samples of the attributes.</p><p>The experiments demonstrate that it outperforms state-of-the-art methods that provide less explainability. Our data reduction studies show that the proposed solution is robust to the number of annotated examples, and good results are obtained even with a 90% reduction in privileged information. This opens the door for application to other datasets by reducing the additional annotation overhead. While we did see a reduction in performance with too few labels, our results suggest that this is mainly due to inhomogeneous coverage of individual attribute values. In this respect, it would be interesting to find out how a specific selection of the annotated samples, e.g. with extremes, affects the accuracies, especially since our results show that the overall performance is robust even when the attributes are not explicitly trained, i.e. without additional privileged information. Another area of research would be to explore other types of privileged information that require less extra annotation effort, such as medical reports, to train the attribute capsules. It would also be worth investigating more sophisticated 3D-based capsule networks.</p><p>In conclusion, we believe that the approach of leveraging privileged information with comprehensible architectures and prototype learning is promising for various high-risk application domains and offers many opportunities for further research.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Proposed Model Architecture. The backbone capsule network results in capsules representing predefined attributes. For each capsule, a set of prototypes is trained. To fit the attribute scores, the capsule vectors are fed through individual dense layers. The latent vectors of all capsules are being accumulated for a dense layer to predict a target score and for a decoder network to reconstruct the region of interest.</figDesc><graphic coords="4,41,79,54,20,340,24,225,52" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. One correct and two wrongly predicted examples with exemplary attribute prototypes. Prediction ŷ and ground truth label y of malignancy and attribute respectively. Identifying false attribute predictions can help to identify misclassification in malignancy.</figDesc><graphic coords="7,55,98,110,24,340,09,198,01" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with literature values of other works, attribute scores are reported if available. Mean μ and standard deviation σ calculated from 5-fold experiments. Scores reported as Within-1-Accuracy, except for<ref type="bibr" target="#b15">[16]</ref>. The best result is in bold.</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell cols="6">Attribute Prediction Accuracy in %</cell><cell></cell><cell>Malig-</cell></row><row><cell></cell><cell></cell><cell cols="2">Sub IS</cell><cell cols="6">Cal Sph Mar Lob Spic Tex</cell><cell>nancy</cell></row><row><cell>Non-explainable</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>3D-CNN+MTL [8]</cell><cell></cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>90.0</cell></row><row><cell>TumorNet [9]</cell><cell></cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>92.3</cell></row><row><cell>CapsNet [11]</cell><cell></cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>77.0</cell></row><row><cell>Explainable</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>HSCNN [16] (binary ACC.)</cell><cell></cell><cell>71.9</cell><cell>-</cell><cell cols="3">90.8 55.2 72.5</cell><cell>-</cell><cell>-</cell><cell>83.4</cell><cell>84.2</cell></row><row><cell>X-Caps [11]</cell><cell></cell><cell>90.4</cell><cell>-</cell><cell>-</cell><cell cols="5">85.4 84.1 70.7 75.2 93.1</cell><cell>86.4</cell></row><row><cell>Proto-Caps (proposed)</cell><cell cols="10">μ 89.1 99.8 95.4 96.0 88.3 87.9 89.1 93.3 93.0</cell></row><row><cell></cell><cell>σ</cell><cell>5.2</cell><cell>0.2</cell><cell>1.3</cell><cell>2.2</cell><cell>3.1</cell><cell>0.8</cell><cell>1.3</cell><cell>1.0</cell><cell>1.5</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Results of data reduction studies where attribute information was only available in fractions of the training dataset. Mean μ and standard deviation σ calculated from 5-fold experiments. Scores reported as Within-1-Accuracy.</figDesc><table><row><cell></cell><cell></cell><cell cols="6">Attribute Prediction Accuracy in %</cell><cell></cell><cell>Malig-</cell></row><row><cell></cell><cell cols="8">Sub IS Cal Sph Mar Lob Spic Tex</cell><cell>nancy</cell></row><row><cell cols="9">100 % attribute labels μ 89.1 99.8 95.4 96.0 88.3 87.9 89.1 93.3</cell><cell>93.0</cell></row><row><cell cols="9">σ 5.2 0.2 1.3 2.2 3.1 0.8 1.3 1.0</cell><cell>1.5</cell></row><row><cell cols="9">10 % attribute labels μ 92.6 99.8 95.7 94.9 90.3 88.8 86.9 92.3</cell><cell>92.4</cell></row><row><cell cols="9">σ 0.9 0.2 0.9 4.1 1.6 1.6 2.4 1.4</cell><cell>0.8</cell></row><row><cell cols="9">1 % attribute labels μ 91.0 99.8 92.8 95.5 79.9 85.7 85.6 91.2</cell><cell>90.2</cell></row><row><cell cols="9">σ 4.5 0.2 1.4 2.3 13.1 4.4 6.8 1.7</cell><cell>1.1</cell></row><row><cell>0 % attribute labels μ</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>92.4</cell></row><row><cell>σ</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>1.0</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This research was supported by the <rs type="funder">University of Ulm</rs> (Baustein, L.SBN.0214), and the <rs type="funder">German Federal Ministry of Education and Research (BMBF)</rs> within <rs type="grantNumber">RACOON COMBINE "NUM 2.0</rs>" (FKZ: <rs type="grantNumber">01KX2121</rs>). We acknowledge the <rs type="funder">National Cancer Institute and the Foundation for the National Institutes of Health</rs> for the critical role in the creation of the publicly available LIDC/IDRI Dataset.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Sn7PJxE">
+					<idno type="grant-number">RACOON COMBINE &quot;NUM 2.0</idno>
+				</org>
+				<org type="funding" xml:id="_hWTsrfe">
+					<idno type="grant-number">01KX2121</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Brain tumor type classification via capsule networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Afshar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mohammadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">N</forename><surname>Plataniotis</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICIP.2018.8451379</idno>
+		<ptr target="https://doi.org/10.1109/ICIP.2018.8451379" />
+	</analytic>
+	<monogr>
+		<title level="m">25th IEEE International Conference on Image Processing (ICIP)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="3129" to="3133" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The lung image database consortium (LIDC) and image database resource initiative (IDRI): a completed reference database of lung nodules on CT scans</title>
+		<author>
+			<persName><forename type="first">Iii</forename><surname>Armato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename></persName>
+		</author>
+		<idno type="DOI">10.1118/1.3528204</idno>
+		<ptr target="https://doi.org/10.1118/1.3528204" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phy</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="915" to="931" />
+			<date type="published" when="2011">2011</date>
+			<publisher>Wiley Online Library</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Data from LIDC-IDRI. The Cancer Imaging Archive</title>
+		<author>
+			<persName><forename type="first">Iii</forename><surname>Armato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename></persName>
+		</author>
+		<idno type="DOI">10.7937/K9/TCIA.2015.LO9QL9SX</idno>
+		<ptr target="https://doi.org/10.7937/K9/TCIA.2015.LO9QL9SX" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note>Data set</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A case-based interpretable deep learning model for classification of mass lesions in digital mammography</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Barnett</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s42256-021-00423-x</idno>
+		<ptr target="https://doi.org/10.1038/s42256-021-00423-x" />
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1061" to="1070" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Prototype selection for interpretable classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bien</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tibshirani</surname></persName>
+		</author>
+		<idno type="DOI">10.1214/11-AOAS495</idno>
+		<ptr target="https://doi.org/10.1214/11-AOAS495" />
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Appl. Stat</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="2403" to="2424" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">This looks like that: deep learning for interpretable image recognition</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barnett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rudin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Lung nodule malignancy classification using only radiologist-quantified image features as inputs to statistical learning algorithms: probing the lung image database consortium dataset with two statistical learning methods</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Hancock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Magnan</surname></persName>
+		</author>
+		<idno type="DOI">10.1117/1.JMI.3.4.044504</idno>
+		<ptr target="https://doi.org/10.1117/1.JMI.3.4.044504" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="44504" to="044504" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Risk stratification of lung nodules using 3D CNN-based multi-task learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hussein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Bagci</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-59050-9_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-59050-9_20" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10265</biblScope>
+			<biblScope unit="page" from="249" to="260" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">TumorNet: Lung nodule characterization using multi-view convolutional neural network with Gaussian process</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hussein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gillies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Bagci</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ISBI.2017.7950686</idno>
+		<ptr target="https://doi.org/10.1109/ISBI.2017.7950686" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 14th International Symposium on Biomedical Imaging</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017. 2017. 2017</date>
+			<biblScope unit="page" from="1007" to="1010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Encoding visual attributes in capsules for explainable medical diagnoses</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Lalonde</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Torigian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Bagci</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8_29" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="294" to="304" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Deep learning for case-based reasoning through prototypes: a neural network that explains its predictions</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rudin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page">1</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Transferrable prototypical networks for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Ngo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mei</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2019.00234</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2019.00234" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="2239" to="2247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rudin</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s42256-019-0048-x</idno>
+		<ptr target="https://doi.org/10.1038/s42256-019-0048-x" />
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="206" to="215" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Dynamic routing between capsules</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sabour</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Frosst</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">An interpretable deep hierarchical semantic convolutional neural network for lung nodule malignancy classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">X</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Aberle</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Bui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hsu</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.eswa.2019.01.048</idno>
+		<ptr target="https://doi.org/10.1016/j.eswa.2019.01.048" />
+	</analytic>
+	<monogr>
+		<title level="j">Expert Syst. Appl</title>
+		<imprint>
+			<biblScope unit="volume">128</biblScope>
+			<biblScope unit="page">95</biblScope>
+			<date type="published" when="2019">2019</date>
+			<publisher>Elsevier</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Prototypical networks for few-shot learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Snell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Swersky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zemel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Hierarchical attention prototypical networks for few-shot text classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lv</surname></persName>
+		</author>
+		<idno type="DOI">10.18653/v1/D19-1045</idno>
+		<ptr target="https://doi.org/10.18653/v1/D19-1045" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)</title>
+		<meeting>the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="476" to="485" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Learning using privileged information: similarity control and knowledge transfer</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vapnik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Izmailov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="2023" to="2049" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A new learning paradigm: learning using privileged information</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vapnik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vashist</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neunet.2009.06.042</idno>
+		<ptr target="https://doi.org/10.1016/j.neunet.2009.06.042" />
+	</analytic>
+	<monogr>
+		<title level="j">Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="544" to="557" />
+			<date type="published" when="2009">2009. 2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A dynamic routing CapsNet based on increment prototype clustering for overcoming catastrophic forgetting</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Akata</surname></persName>
+		</author>
+		<idno type="DOI">10.1049/cvi2.12068</idno>
+		<ptr target="https://doi.org/10.1049/cvi2.12068" />
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="21969" to="21980" />
+			<date type="published" when="2020">2022. 2020</date>
+			<publisher>Wiley Online Library</publisher>
+		</imprint>
+	</monogr>
+	<note>IET Comput. Vis.</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning multi-attention convolutional neural network for fine-grained image recognition</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV.2017.557</idno>
+		<ptr target="https://doi.org/10.1109/ICCV.2017.557" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5209" to="5217" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Learning deep features for discriminative localization</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lapedriza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oliva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2016.319</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2016.319" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2921" to="2929" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

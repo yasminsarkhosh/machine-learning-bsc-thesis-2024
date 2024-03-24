@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Joint Dense-Point Representation for Contour-Aware Graph Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Kit</forename><forename type="middle">Mills</forename><surname>Bransby</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Greg</forename><surname>Slabaugh</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Queen Mary University of London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Christos</forename><surname>Bourantas</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Queen Mary University of London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Cardiology</orgName>
+								<orgName type="institution">Barts Health NHS Trust</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Qianni</forename><surname>Zhang</surname></persName>
+							<email>qianni.zhang@qmul.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Queen Mary University of London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Joint Dense-Point Representation for Contour-Aware Graph Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="519" to="528"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">F72B991788D794A6FC8AAB15F2A21E7A</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_50</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Semantic Segmentation • Graph Convolutional Networks</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>We present a novel methodology that combines graph and dense segmentation techniques by jointly learning both point and pixel contour representations, thereby leveraging the benefits of each approach. This addresses deficiencies in typical graph segmentation methods where misaligned objectives restrict the network from learning discriminative vertex and contour features. Our joint learning strategy allows for rich and diverse semantic features to be encoded, while alleviating common contour stability issues in dense-based approaches, where pixel-level objectives can lead to anatomically implausible topologies. In addition, we identify scenarios where correct predictions that fall on the contour boundary are penalised and address this with a novel hybrid contour distance loss. Our approach is validated on several Chest X-ray datasets, demonstrating clear improvements in segmentation stability and accuracy against a variety of dense-and point-based methods. Our source code is freely available at: www.github.com/kitbransby/Joint_Graph_Segmentation.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Semantic segmentation is a fundamental task in medical imaging used to delineate regions of interest, and has been applied extensively in diagnostic radiology. Recently, deep learning methods that use a dense probability map to classify each pixel such as UNet <ref type="bibr" target="#b1">[2]</ref>, R-CNN <ref type="bibr" target="#b2">[3]</ref>, FCN <ref type="bibr" target="#b3">[4]</ref> have advanced the state-of-the-art in this area. Despite overall excellent performance, dense-based approaches learn using a loss defined at the pixel-level which can lead to implausible segmentation boundaries such as unexpected interior holes or disconnected blobs <ref type="bibr" target="#b0">[1]</ref>. This is a particular problem in medical image analysis where information-poor, occluded or artefact-affected areas are common and often limit a network's ability to predict reasonable boundaries. Furthermore, minimising the largest error (Hausdorff distance (HD)) is often prioritised over general segmentation metrics such as Dice Similarity (DS) or Jaccard Coefficient (JC) in medical imaging, as stable and trustworthy predictions are more desirable.</p><p>To address this problem in segmentation networks, <ref type="bibr">Gaggion et al.</ref> proposed HybridGNet <ref type="bibr" target="#b0">[1]</ref> that replaces the convolutional decoder in UNet with a graph convolutional network (GCN), where images are segmented using a polygon generated from learned points. Due to the relational inductive bias of graph networks where features are shared between neighbouring nodes in the decoder, there is a natural smoothing effect in predictions leading to stable segmentation and vastly reduced HD. In addition this approach is robust to domain shift and can make reasonable predictions on unseen datasets sourced from different medical centres, whereas dense-based methods fail due to domain memorization <ref type="bibr" target="#b4">[5]</ref>. In HybridGNet, improved stability and HD comes at the cost of reduced contour detail conveyed by sub-optimal DS and JC metrics when compared to dense-based approaches such as UNet. Many methods have addressed this problem by rasterizing polygon points predicted by a decoder to a dense mask and then training the network using typical pixel-level losses such as Dice or crossentropy <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b9">10]</ref>. These approaches have merit but are often limited by their computational requirements. For example, in CurveGCN <ref type="bibr" target="#b6">[7]</ref>, the rasterization process uses OpenGL polygon triangulation which is not differentiable, and the gradients need to be approximated using Taylor expansion which is computationally expensive and can therefore only be applied at the fine-tuning stage <ref type="bibr" target="#b7">[8]</ref>. While in ACDRNet <ref type="bibr" target="#b9">[10]</ref>, rasterization is differentiable, however the triangulation process is applicable only to convex polygons, and therefore limits application to more complicated polygon shapes. Rasterization is extended to non-convex polygons in BoundaryFormer <ref type="bibr" target="#b8">[9]</ref> by bypassing the triangulation step and instead approximating the unsigned distance field. This method gives excellent results on MS-COCO dataset <ref type="bibr" target="#b10">[11]</ref>, however is computationally expensive (see Sect. <ref type="bibr">3.3)</ref>.</p><p>With this in mind, we return to HybridGNet which efficiently optimises points directly and theorise about the causes of the performance gap relative to dense segmentation models. We identify that describing segmentation contours using points is a sub-optimal approach because (1) points are an incomplete representation of the segmentation map; (2) the supervisory signal is usually weaker (n distances are calculated from n pairs of points, versus, h x w distances for pairs of dense probability maps); (3) the distance from the contour is more meaningful than the distance from the points representing the contour, hence minimising the point-wise distance can lead to predictions which fall on the contour being penalised.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contributions:</head><p>We propose a novel joint architecture and contour loss to address this problem that leverages the benefits of both point and dense approaches. First, we combine image features from an encoder trained using a point-wise distance with image features from a decoder trained using a pixel-level objective. Our motivation is that contrasting training strategies enable diverse image features to be encoded which are highly detailed, discriminative and semantically rich when combined. Our joint learning strategy benefits from the segmentation accuracy of dense-based approaches, but without topological errors that regularly afflict models trained using a pixel-level loss. Second, we propose a novel hybrid contour distance (HCD) loss which biases the distance field towards pre-dictions that fall on the contour boundary using a sampled unsigned distance function which is fully differentiable and computationally efficient. To our knowledge this is the first time unsigned distance fields have been applied to graph segmentation tasks in this way. Our approach is able to generate highly plausible and accurate contour predictions with lower HD and higher DS/JC scores than a variety of dense and graph-based segmentation baselines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Network Design</head><p>We implement an architecture consisting of two networks, a Dense-Graph (DG) network and a Dense-Dense (DD) network, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. Each network takes the same image input X of height H and width W with skip connections passing information from the decoder of DD to the encoder of DG. For DG, we use a HybridGNet-style architecture containing a convolutional encoder to learn image features at multiple resolutions, and a graph convolutional decoder to regress the 2D coordinates of each point. In DG, node features are initialised in a variational autoencoder (VAE) bottleneck where the final convolutional output is flattened to a low dimensional latent space vector z. We sample z from a distribution Normal(μ, σ) using the reparameterization trick <ref type="bibr" target="#b11">[12]</ref>, where μ and σ are learnt parameters of the encoder. Image-to-Graph Skip Connections (IGSC) <ref type="bibr" target="#b0">[1]</ref> are used to sample dense feature maps F I ∈ R H×W ×C from DG's encoder using node position predictions P ∈ R N ×2 from DG's graph decoder and concatenate these with previous node features F G ∈ R N ×f to give new node features F G ∈ R N ×(f +C+2) . Here, N is the number of nodes in the graph and f is the dimension of the node embedding. We implement IGSC at every encoder-decoder level and pass node predictions as output, resulting in seven node predictions. For DD, we use a standard UNet using the same number of layers and dimensions as the DG encoder with a dense segmentation prediction at the final decoder layer. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Graph Convolutional Network</head><p>Our graph decoder passes features initialised from the VAE bottleneck through six Chebyshev spectral graph convolutional <ref type="bibr" target="#b12">[13]</ref> (ChebConv) layers using K-order polynomial filters. Briefly, this is defined by</p><formula xml:id="formula_0">X = σ( k K=1 Z (k) • Θ (k) )</formula><p>where Θ (k) ∈ R fin × fout are learnable weights and σ is a ReLU activation function. Z (k)  is computed recursively such that Z (1) = X, Z (2) = L•Z (1) , 2) where X ∈ R N × fin are graph features, and L represents the scaled and normalized graph Laplacian <ref type="bibr" target="#b13">[14]</ref>. In practice, this allows for node features to be aggregated within a K-hop neighbourhood, eventually regressing the 2D location of each node using additional ChebConv prediction layers (f out = 2). As in <ref type="bibr" target="#b0">[1]</ref>, our graph network also includes an unpooling layer after ChebConv block 3 to upsample the number of points by adding a new point in between existing ones. </p><formula xml:id="formula_1">Z (k) = 2• L•Z (k-1) - Z (k-</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Joint Dense-Point Learning</head><p>As typical DG networks are trained with a point-wise distance loss and not a pixel-level loss, the image encoder is not directly optimised to learn clear and well-defined boundary features. This misalignment problem results in the DG encoder learning features pertinent to segmentation which are distinctively different from those learnt in DD encoders. This is characterised by activation peaks in different image regions such as the background and other non-boundary areas (see Fig. <ref type="figure" target="#fig_1">2</ref>). To leverage this observation, we enrich the DG encoder feature maps at multiple scales by fusing them with image features learnt by a DD decoder using a pixel-level loss. These diverse and highly discriminative features are concatenated before being passed through the convolutional block at each level. Current GCN feature learning paradigms aim at combining feature maps from neighbouring or adjacent levels so as to aggregate similar information. This results in a "coarse-to-fine" approach by first passing high level features to early graph decoder blocks, followed by low level features to late graph decoder blocks. Our joint learning approach is similar to this strategy but also supplements each DG encoder level with both semantically rich and highly detailed contour features learnt by the DD network. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Hybrid Contour Distance</head><p>Mean squared error (MSE) is a spatially symmetric loss which is agnostic to true contour borders. We alleviate this pitfall by designing an additional contouraware loss term that is sensitive to the border. To achieve this we precompute a 2D unsigned distance map S from the dense segmentation map for each class c (i.e. lungs, heart), where each position represents the normalised distance to the closest contour border of that class. Specifically, for a dense segmentation map M we use a Canny filter <ref type="bibr" target="#b14">[15]</ref> to find the contour boundary δM and then determine the minimum distance between a point x ∈ c and any point p on the boundary δM c . This function is positive for both the interior and exterior regions, and zero on the boundary. Our method is visualised in Fig. <ref type="figure" target="#fig_2">3</ref> (first row) and formalised below:</p><formula xml:id="formula_2">S c (x) = min |x -p | for all p ∈ δM c (1)</formula><p>During training, we sample S c as an additional supervisory signal using the predicted 2D point coordinates ŷi ∈ c, and combine with MSE with weight β.</p><p>The effect of β is illustrated in Fig. <ref type="figure" target="#fig_2">3</ref> (second row) and full HCD loss function is defined below, where N is the number of points and y i ∈ c is the ground truth point coordinate.</p><formula xml:id="formula_3">L HCD = 1 N N i=1 [(y i -ŷi ) 2 + βS c (ŷ i )]<label>(2)</label></formula><p>3 Experiments and Results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We obtain four publicly available Chest X-ray segmentation datasets (JSRT <ref type="bibr" target="#b15">[16]</ref>, Padchest <ref type="bibr" target="#b16">[17]</ref>, Montgomery <ref type="bibr" target="#b17">[18]</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Model Implementation and Training</head><p>We implement our model in PyTorch and use PyTorch-Geometric for the graph layer. All models were trained for 2500 epochs using a NVIDIA A100 GPU from Queen Mary's Andrena HPC facility. For reliable performance estimates, all models and baselines were trained from scratch three times, the mean scores obtained for quantitative analysis and the median model used for qualitative analysis. Hyperparameters for all experiments were unchanged from <ref type="bibr" target="#b0">[1]</ref>. To impose a unit Gaussian prior on the VAE bottleneck we train the network with an additional KL-divergence loss term with weight 1e -5 , and use β = 2.5e -2 for the HCD weight. For joint models we pretrain the first UNet model separately using the recipe from <ref type="bibr" target="#b0">[1]</ref> and freeze its weights when training the full model. This is done to reduce complexity in our training procedure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison to Existing Methods and Ablation Study</head><p>We compare our approach to a variety of different dense-and point-based segmentation methods. First we validate our joint DD-DG learning approach by comparing to a DD-only segmentation network (UNet <ref type="bibr" target="#b1">[2]</ref>) and DG-only segmentation networks (HybridGNet <ref type="bibr" target="#b5">[6]</ref>, HybridGNet+ISGC <ref type="bibr" target="#b0">[1]</ref>). Next, we explore five alternative configurations of our joint architecture to demonstrate that our design choices are superior. These are: (1) UNet Joint: a network that uses our joint learning strategy but with two DD (UNet) networks, (2) Hourglass: joint learning but with no sharing between DD decoder and DG encoder, only the output of DD is passed to the input of DG, similar to the stacked hourglass network <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b21">22]</ref>, (3) Hourglass Concat: as above, but the output of DD is concatenated with the input and both are passed to DG, (4) Multi-task: a single dense encoder is shared between a dense and graph decoder, similar to <ref type="bibr" target="#b22">[23]</ref>, <ref type="bibr" target="#b4">(5)</ref> No Joint: our network with no joint learning strategy.</p><p>To demonstrate the effectiveness of our HCD loss, we compare to our joint network trained with the contour term removed (MSE only). Our HCD loss is similar to differentiable polygon rasterization in BoundaryFormer <ref type="bibr" target="#b8">[9]</ref>, as they both use the distance field to represent points with respect to the true boundary. However, our method precomputes the distance field for each example and samples it during training, while BoundaryFormer approximates it on the fly. Hence we also compare to a single DG network (HybridGNet+IGSC) where each point output is rendered to a dense 1028px × 1028px segmentation map using rasterization and the full model is trained using a pixel-level loss.</p><p>Tables <ref type="table" target="#tab_1">1</ref> and<ref type="table" target="#tab_2">2</ref> demonstrate that our methodology outperforms all pointand dense-based segmentation baselines on both datasets. As seen in Fig. <ref type="figure" target="#fig_3">4</ref>, the performance increase from networks that combine image features from dense and point trained networks (column 7,9) is superior to when image features from two dense trained networks are combined (column 5). Furthermore, concatenating features at each encoder-decoder level (Tables <ref type="table" target="#tab_1">1</ref> and<ref type="table" target="#tab_2">2</ref>, row 11) instead of at the input-output level (row 5-6) shows improved performance. The addition of HCD supervision to a DG model (Tables <ref type="table" target="#tab_1">1</ref> and<ref type="table" target="#tab_2">2</ref>, row 8) gives similar improvements in segmentation when compared to using a differentiable rasterization pipeline (row 10), yet is far more computationally efficient (Table <ref type="table" target="#tab_2">2</ref>, column 7). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We proposed a novel segmentation architecture which leverage the benefits of both dense-and point-based algorithms to improve accuracy while reducing topological errors. Extensive experiments support our hypothesis that networks that utilise joint dense-point representations can encode more discriminative features which are both semantically rich and highly detailed. Limitations in segmentation methods using a point-wise distance were identified, and remedied with a new contour-aware loss function that offers an efficient alternative to differentiable rasterization methods. Our methodology can be applied to any graph segmentation network with a convolutional encoder that is optimised using a point-wise loss, and our experiments across four datasets demonstrate that our approach is generalizable to new data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Network Architecture: a Dense-Dense network (top) enriches image features in a Dense-Graph network (bottom).</figDesc><graphic coords="3,57,96,450,32,336,16,93,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Feature map activation comparison between UNet encoder, UNet decoder, HybridGNet encoder and our encoder, using two examples. Top four most activated channels are summed channel-wise for convolutional layers 1-5 in each encoder/decoder. L→R: decreasing resolution, increasing channel depth. Note, activations in our encoder consistently highlight areas which are more pertinent to segmentation</figDesc><graphic coords="4,43,29,228,35,337,60,145,84" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Our Hybrid Contour Distance loss biases the distance field to contours rather than the points representing the contour. Top L→R: Segmentation mask represented with edges, unsigned distance field for lungs, and heart. Bottom: Effect of beta in HCD.</figDesc><graphic coords="5,57,48,169,85,337,96,153,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig.4. JSRT &amp; Padchest: Qualitative Analysis. Note that our method does not suffer from the topological errors of dense-based methods but benefits from their segmentation accuracy. Specifically, improvements (white boxes) are most prevalent in areas of complexity such as where the heart and lungs intersect.</figDesc><graphic coords="7,56,97,53,90,338,08,152,80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>, and Shenzen [19]), with 245, 137, 566 and 138 examples respectively. JSRT cases are from patients diagnosed with lung nodules, while Padchest contains patients with a cardiomegaly diagnosis and features 20 examples where a pacemaker occludes the lung border. These two datasets contain heart and lung contour ground truth labels and are combined in a single dataset of 382 examples. Montgomery and Shenzen contain lung contour ground truth labels only, and are combined into a second dataset of 704 cases where 394 examples are from patients with tuberculosis and 310 are from patients without.</figDesc><table /><note><p><p><p>Each combined dataset is randomly split into 70% train, 15% validation and 15% test examples, each with a 1024px × 1024px resolution X-ray image and ground truth point coordinates for organ contours obtained from</p><ref type="bibr" target="#b4">[5]</ref></p>.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>JSRT &amp; Padchest Dataset: Quantitative Analysis</figDesc><table><row><cell></cell><cell cols="3">Predict Supervision Lungs</cell><cell></cell><cell></cell><cell>Heart</cell></row><row><cell></cell><cell></cell><cell></cell><cell>DC↑</cell><cell>HD↓</cell><cell>JC↑</cell><cell>DC↑</cell><cell>HD ↓</cell><cell>JC↑</cell></row><row><cell>HybridGNet</cell><cell>point</cell><cell>point</cell><cell cols="4">0.9313 17.0445 0.8731 0.9065 15.3786 0.8319</cell></row><row><cell cols="2">HybridGNet+IGSC point</cell><cell>point</cell><cell cols="4">0.9589 13.9955 0.9218 0.9295 13.2500 0.8702</cell></row><row><cell>UNet</cell><cell>dense</cell><cell>dense</cell><cell cols="4">0.9665 28.7316 0.9368 0.9358 29.6317 0.8811</cell></row><row><cell>UNet Joint</cell><cell>dense</cell><cell>dense</cell><cell cols="4">0.9681 26.3758 0.9395 0.9414 24.9409 0.8909</cell></row><row><cell>Hourglass</cell><cell>point</cell><cell>both</cell><cell cols="4">0.9669 13.4225 0.9374 0.9441 12.3434 0.8954</cell></row><row><cell>Hourglass Concat</cell><cell>point</cell><cell>both</cell><cell cols="4">0.9669 13.5275 0.9374 0.9438 12.1554 0.8948</cell></row><row><cell>Multi-task</cell><cell>point</cell><cell>both</cell><cell cols="4">0.9610 15.0490 0.9257 0.9284 13.1997 0.8679</cell></row><row><cell>No Joint</cell><cell>point</cell><cell>point</cell><cell cols="4">0.9655 13.2137 0.9341 0.9321 13.1826 0.8748</cell></row><row><cell>MSE Only</cell><cell>point</cell><cell>both</cell><cell cols="4">0.9686 12.4058 0.9402 0.9439 12.0872 0.8953</cell></row><row><cell>Rasterize</cell><cell>point</cell><cell>dense</cell><cell cols="4">0.9659 13.7267 0.9349 0.9344 12.9118 0.8785</cell></row><row><cell>Ours</cell><cell>point</cell><cell>both</cell><cell cols="4">0.9698 13.2087 0.9423 0.9451 11.7721 0.8975</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Montgomery &amp; Shenzen Dataset: Quantitative Analysis + Inference Time</figDesc><table><row><cell></cell><cell cols="3">Predict Supervision DC↑</cell><cell>HD↓</cell><cell>JC↑</cell><cell>Inference (s)</cell></row><row><cell>HybridGNet</cell><cell>point</cell><cell>point</cell><cell cols="2">0.9459 12.0294 0.8989 0.0433</cell></row><row><cell cols="2">HybridGNet+IGSC point</cell><cell>point</cell><cell cols="2">0.9677 9.7591 0.9380 0.0448</cell></row><row><cell>UNet</cell><cell>dense</cell><cell>dense</cell><cell cols="2">0.9716 16.7093 0.9453 0.0047</cell></row><row><cell>UNet Joint</cell><cell>dense</cell><cell>dense</cell><cell cols="2">0.9713 16.5447 0.9447 0.0103</cell></row><row><cell>Hourglass</cell><cell>point</cell><cell>both</cell><cell cols="2">0.9701 10.9284 0.9434 0.1213</cell></row><row><cell>Hourglass Concat</cell><cell>point</cell><cell>both</cell><cell cols="2">0.9712 10.8193 0.9448 0.1218</cell></row><row><cell>Multi-task</cell><cell>point</cell><cell>both</cell><cell cols="2">0.9697 10.8615 0.9417 0.0535</cell></row><row><cell>No Joint</cell><cell>point</cell><cell>point</cell><cell cols="2">0.9701 9.8246 0.9424 0.0510</cell></row><row><cell>MSE Only</cell><cell>point</cell><cell>both</cell><cell cols="2">0.9729 9.6527 0.9474 0.1224</cell></row><row><cell>Rasterize</cell><cell>point</cell><cell>dense</cell><cell cols="2">0.9718 9.4485 0.9453 0.2421</cell></row><row><cell>Ours</cell><cell>point</cell><cell>both</cell><cell cols="2">0.9732 10.2166 0.9481 0.1226</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This research is part of <rs type="institution">AI-based Cardiac Image Computing (AICIC)</rs> funded by the faculty of Science and Engineering at <rs type="institution">Queen Mary University of London</rs>.</p></div>
+			</div>			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Improving anatomical plausibility in medical image segmentation via hybrid graph neural networks: applications to chest x-ray analysis</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gaggion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mansilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mosquera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Milone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015, Par III</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Rich feature hierarchies for accurate object detection and semantic segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Donahue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="580" to="587" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Fully convolutional networks for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shelhamer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="3431" to="3440" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multi-center anatomical segmentation with heterogeneous labels via landmark-based models</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gaggion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Vakalopoulou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Milone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 20th International Symposium on Biomedical Imaging</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Hybrid graph convolutional neural networks for landmark-based anatomical segmentation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gaggion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mansilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Milone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_57" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="600" to="610" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Fast interactive object annotation with Curve-GCN</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fidler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="5257" to="5266" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">OpenDR: an approximate differentiable renderer</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Loper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Black</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10584-0_11</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10584-0_11" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2014</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8695</biblScope>
+			<biblScope unit="page" from="154" to="169" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Instance segmentation with mask-supervised polygonal boundary transformers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lazarow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Tu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="4382" to="4391" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">End to end trainable active contours via differentiable rendering</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shaharabany</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wolf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Microsoft COCO: common objects in context</title>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10602-1_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10602-1_48" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2014</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8693</biblScope>
+			<biblScope unit="page" from="740" to="755" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Auto-encoding variational Bayes</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2nd International Conference on Learning Representations, ICLR</title>
+		<meeting><address><addrLine>Banff, Canada</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014-04-16">14-16 April 2014. 2014</date>
+		</imprint>
+	</monogr>
+	<note>Conference Track Proceedings</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Convolutional neural networks on graphs with fast localized spectral filtering</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Defferrard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Bresson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vandergheynst</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">Pytorch</forename><surname>Geometric</surname></persName>
+		</author>
+		<ptr target="https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html" />
+		<title level="m">Cheb Conv Module</title>
+		<imprint>
+			<date type="published" when="2023-02-07">7 Feb 2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A computational approach to edge detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Canny</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="679" to="698" />
+			<date type="published" when="1986">1986</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Development of a digital image database for chest radiographs with and without a lung nodule: receiver operating characteristic analysis of radiologists&apos; detection of pulmonary nodules</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shiraishi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Roentgenol</title>
+		<imprint>
+			<biblScope unit="volume">174</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="71" to="74" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">PadChest: a large chest x-ray image dataset with multi-label annotated reports</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bustos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pertusa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Salinas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De La Iglesia-Vayá</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page">101797</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Lung segmentation in chest radiographs using anatomical atlases with nonrigid registration</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Candemir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="577" to="590" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Automatic tuberculosis screening using chest radiographs</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jaeger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="233" to="245" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Apocrita -high performance computing cluster for Queen Mary University of London</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Butcher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zalewski</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.438045</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.438045" />
+	</analytic>
+	<monogr>
+		<title level="j">Zenodo</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Stacked hourglass networks for human pose estimation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Newell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46484-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46484-8_29" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9912</biblScope>
+			<biblScope unit="page" from="483" to="499" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Graph stacked hourglass networks for 3D human pose estimation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Takano</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="16105" to="16114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Joint semantic-geometric learning for polygonal building segmentation</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="1958" to="1965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

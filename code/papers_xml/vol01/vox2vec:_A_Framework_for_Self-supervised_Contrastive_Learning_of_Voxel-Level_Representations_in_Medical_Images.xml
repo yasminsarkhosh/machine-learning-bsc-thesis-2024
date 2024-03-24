@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">vox2vec: A Framework for Self-supervised Contrastive Learning of Voxel-Level Representations in Medical Images</title>
+				<funder ref="#_HAPmARZ">
+					<orgName type="full">Russian Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Mikhail</forename><surname>Goncharov</surname></persName>
+							<email>mikhail.goncharov2@skoltech.ru</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Skolkovo Institute of Science and Technology</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vera</forename><surname>Soboleva</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Artificial Intelligence Research Institute (AIRI)</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Anvar</forename><surname>Kurmukov</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Institute for Information Transmission Problems</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Maxim</forename><surname>Pisov</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="institution">IRA-Labs</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mikhail</forename><surname>Belyaev</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Skolkovo Institute of Science and Technology</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Institute for Information Transmission Problems</orgName>
+								<address>
+									<settlement>Moscow</settlement>
+									<country key="RU">Russia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">vox2vec: A Framework for Self-supervised Contrastive Learning of Voxel-Level Representations in Medical Images</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="605" to="614"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">6ECDD45BEB609EF0803BDDA780AF34D3</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_58</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T12:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Contrastive Self-Supervised Representation Learning • Medical Image Segmentation</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper introduces vox2vec -a contrastive method for self-supervised learning (SSL) of voxel-level representations. vox2vec representations are modeled by a Feature Pyramid Network (FPN): a voxel representation is a concatenation of the corresponding feature vectors from different pyramid levels. The FPN is pre-trained to produce similar representations for the same voxel in different augmented contexts and distinctive representations for different voxels. This results in unified multi-scale representations that capture both global semantics (e.g., body part) and local semantics (e.g., different small organs or healthy versus tumor tissue). We use vox2vec to pre-train a FPN on more than 6500 publicly available computed tomography images. We evaluate the pre-trained representations by attaching simple heads on top of them and training the resulting models for 22 segmentation tasks. We show that vox2vec outperforms existing medical imaging SSL techniques in three evaluation setups: linear and non-linear probing and end-to-end fine-tuning. Moreover, a non-linear head trained on top of the frozen vox2vec representations achieves competitive performance with the FPN trained from scratch while having 50 times fewer trainable parameters. The code is available at https://github.com/mishgon/vox2vec.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation often relies on supervised model training <ref type="bibr" target="#b13">[14]</ref>, but this approach has limitations. Firstly, it requires costly manual annotations.</p><p>Secondly, the resulting models may not generalize well to unseen data domains. Even small changes in the task may result in a significant drop in performance, requiring re-training from scratch <ref type="bibr" target="#b17">[18]</ref>.</p><p>Self-supervised learning (SSL) is a promising solution to these limitations. SSL pre-trains a model backbone to extract informative representations from unlabeled data. Then, a simple linear or non-linear head on top of the frozen pre-trained backbone can be trained for various downstream tasks in a supervised manner (linear or non-linear probing). Alternatively, the backbone can be finetuned for a downstream task along with the head. Pre-training the backbone in a self-supervised manner enables scaling to larger datasets across multiple data and task domains. In medical imaging, this is particularly useful given the growing number of available datasets.</p><p>In this work, we focus on contrastive learning <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b11">12]</ref>, one of the most effective approaches to SSL in computer vision. In contrastive learning, the model is trained to produce similar vector representations for augmented views of the same image and dissimilar representations for different images. Contrastive methods can also be used to learn dense, i.e., patch-level or even pixel-or voxellevel representations: pixels of augmented image views from the same region of the original image should have similar representations, while different pixels should have dissimilar ones <ref type="bibr" target="#b22">[23]</ref>.</p><p>Several works have implemented contrastive learning of dense representations in medical imaging <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b28">29]</ref>. Representations in <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b24">25]</ref> do not resolve nearby voxels due to the negative sampling strategy and the architectural reasons. This makes them unsuitable for full-resolution segmentation, especially in linear and non-linear probing regimes. In the current SotA dense SSL methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b25">26]</ref>, authors employ restorative learning in addition to patch-level contrastive learning, in order to pre-train voxel-level representations in full-resolution. In <ref type="bibr" target="#b28">[29]</ref>, separate global and voxel-wise representations are learned in a contrastive manner to implement efficient dense image retrieval.</p><p>The common weakness of all the above works is that they do not evaluate their SSL models in linear or non-linear probing setups, even though these setups are de-facto standards for evaluation of SSL methods in natural images <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b22">23]</ref>. Moreover, fine-tuned models can deviate drastically from their pre-trained states due to catastrophical forgetting <ref type="bibr" target="#b10">[11]</ref>, while models trained in linear or non-linear probing regimes are more robust as they have several orders of magnitude fewer trainable parameters.</p><p>Our contributions are threefold. First, we propose vox2vec, a framework for contrastive learning of voxel-level representations. Our simple negative sampling strategy and the idea of storing voxel-level representations in a feature pyramid form result in high-dimensional, fine-grained, multi-scale representations suitable for the segmentation of different organs and tumors in full resolution. Second, we employ vox2vec to pre-train a FPN architecture on a diverse collection of six unannotated datasets, totaling over 6,500 CT images of the thorax and abdomen. We make the pre-trained model publicly available to simplify the reproduction of our results and to encourage practitioners to utilize this model as a starting point for the segmentation algorithms training. Finally, we compare the pretrained model with the baselines on 22 segmentation tasks on seven CT datasets in three setups: linear probing, non-linear probing, and fine-tuning. We show that vox2vec performs slightly better than SotA models in the fine-tuning setup and outperforms them by a huge margin in the linear and non-linear probing setups. To the best of our knowledge, this is the first successful attempt to evaluate dense SSL methods in the medical imaging domain in linear and non-linear probing regimes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>In recent years, self-supervised learning in computer vision has evolved from simple pretext tasks like Jigsaw Puzzles <ref type="bibr" target="#b21">[22]</ref>, Rotation Prediction <ref type="bibr" target="#b16">[17]</ref>, and Patch Position Prediction <ref type="bibr" target="#b9">[10]</ref> to the current SotA methods such as restorative autoencoders <ref type="bibr" target="#b12">[13]</ref> and contrastive <ref type="bibr" target="#b7">[8]</ref> or non-contrastive <ref type="bibr" target="#b8">[9]</ref> joint embedding methods.</p><p>Several methods produce dense or pixel-wise vector representations <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b27">28</ref>] to pre-train models for downstream tasks like segmentation or object detection. In <ref type="bibr" target="#b22">[23]</ref>, pixel-wise representations are learned by forcing local features to remain constant over different viewing conditions. This means that matching regions describing the same location of the scene on different views should be positive pairs, while non-matching regions should be negative pairs. In <ref type="bibr" target="#b27">[28]</ref>, authors define positive and negative pairs as spatially close and distant pixels, respectively. While in <ref type="bibr" target="#b5">[6]</ref>, authors minimize the mean square distance between matched pixel embeddings, simultaneously preserving the embedding variance along the batch and decorrelating different embedding vector components.</p><p>The methods initially proposed for natural images are often used to pretrain models on medical images. In <ref type="bibr" target="#b24">[25]</ref>, authors propose the 3D adaptation of Jigsaw Puzzle, Rotation Prediction, Patch Position Prediction, and image-level contrastive learning. Another common way for pre-training on medical images is to combine different approaches such as rotation prediction <ref type="bibr" target="#b25">[26]</ref>, restorative autoencoders <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b25">26]</ref>, and image-level contrastive learning <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b25">26]</ref>.</p><p>Several methods allows to obtain voxel-wise features. The model <ref type="bibr" target="#b28">[29]</ref> maximizes the consistency of local features in the intersection between two differently augmented images. The algorithm <ref type="bibr" target="#b28">[29]</ref> was mainly proposed for image retrieval and uses only feature representations in the largest and smallest scales in separate contrastive losses, while vox2vec produce voxels' representations via concatenation of feature vectors from a feature pyramid and pre-train them in a unified manner using a single contrastive loss. Finally, a number of works propose semisupervised contrastive learning methods <ref type="bibr" target="#b19">[20]</ref>, however, they require additional task-specific manual labeling.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Method</head><p>In a nutshell, vox2vec pre-trains a neural network to produce similar representations for the same voxel placed in different contexts (positive pairs) and predict distinctive representations for different voxels (negative pairs). In the following Sects. 3.1, 3.2, 3.3, we describe in detail the main components of our method: 1) definition and sampling of positive and negative pairs of voxels; 2) modeling voxel-level representations via a neural network; 3) computation of the contrastive loss. The whole pre-training pipeline is schematically illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. We also describe the methodology of the evaluation of the pre-trained representations on downstream segmentation tasks in Sect. 3.4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Sampling of Positive and Negative Pairs</head><p>We define a positive pair as any pair of voxels that correspond to the same location in a given volume. Conversely, we call a negative pair any pair of voxels that correspond to different locations in the same volume as well as voxels belonging to different volumes. Figure <ref type="figure" target="#fig_0">1</ref> (left) illustrates our strategy for positive and negative pairs sampling. For a given volume, we sample two overlapping 3D patches of size (H, W, D). We apply color augmentations to them, including random gaussian blur, random gaussian sharpening, adding random gaussian noise, clipping the intensities to the random Hounsfield window, and rescaling them to the (0, 1) interval. Next, we sample m different positions from the patches' overlapping region. Each position yields a pair of voxels -one from each patch, which results in a total of m positive pairs of voxels. At each pre-training iteration, we repeat this procedure for n different volumes, resulting in 2•n patches containing N = n • m positive pairs. Thus, each sampled voxel has one positive counterpart and forms negative pairs with all the remaining 2N -2 voxels.</p><p>In our experiments we set (H, W, D) = (128, 128, 32), n = 10 and m = 1000.</p><p>We exclude the background voxels from the sampling and do not penalize their representations. We obtain the background voxels by using a simple twostep algorithm: 1) thresholding voxels with an intensity less than -500 HU; 2) keep voxels from the same connected component as the corner voxel of the CT volume, using a flood fill algorithm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Architecture</head><p>A standard architecture for voxel-wise prediction is 3D UNet <ref type="bibr" target="#b23">[24]</ref>. UNet's backbone returns a feature map of the same resolution as the input patch. However, our experiments show that this feature map alone is insufficient for modeling self-supervised voxel-level representations. The reason is that producing a feature map with more than 100 channels in full resolution is infeasible due to memory constraints. Meanwhile, to be suitable for many downstream tasks, representations should have a dimensionality of about 1000, as in <ref type="bibr" target="#b7">[8]</ref>.</p><p>To address this issue, we utilize a 3D FPN architecture instead of a standard 3D UNet. FPN returns voxel-level representations in the form of a feature pyramid. The pyramid's base is a feature map with 16 channels of the same resolution as the input patch. Each next pyramid level has twice as many channels and two times lower resolution than the previous one. Each voxel's representation is a concatenation of the corresponding feature vectors from all the pyramid levels. We use FPN with six pyramid levels, which results in 1008-dimensional representations. See Fig. <ref type="figure" target="#fig_0">1</ref> (right) for an illustration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Loss Function</head><p>At each pre-training iteration, we fed 2 • n patches to the FPN and obtain the representations for N positive pairs of voxels. We denote the representations in i-th positive pair as h (1) i and h <ref type="bibr" target="#b1">(2)</ref> i , i = 1, . . . , N. Following <ref type="bibr" target="#b7">[8]</ref>, instead of penalizing the representations directly, we project them on 128-dimensional unit sphere via a trainable 3-layer perceptron g(•) followed by l2-normalization: z</p><formula xml:id="formula_0">(1) i = g(h (1) i )/ g(h (1) i ) , z (2) i = g(h (2) i )/ g(h (2)</formula><p>i ) , i = 1, . . . , N. Similar to <ref type="bibr" target="#b7">[8]</ref> we use the InfoNCE loss as a contrastive objective:</p><formula xml:id="formula_1">L = N i=1 k∈{1,2} L k i ,</formula><p>where</p><formula xml:id="formula_2">L k i = -log exp( z (1) i , z (2) i /τ ) exp( z (1) i , z (2) i /τ ) + j∈{1,...,N }\{i} l∈{1,2} exp( z (k) i , z (l) j /τ ) .</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Evaluation Protocol</head><p>We evaluate the quality of self-supervised voxel-level representations on downstream segmentation tasks in three setups: 1) linear probing, 2) non-linear probing, and 3) end-to-end fine-tuning. Linear or non-linear probing means training a voxel-wise linear or non-linear classifier on top of the frozen representations. If the representations are modeled by the UNet model, such classifier can be implemented as one or several 1 × 1 convolutional layers with a kernel size 1 on top of the output feature map. A linear voxel-wise head (linear FPN head) can be implemented as follows. Each pyramid level is separately fed to its own convolutional layer with kernel size 1. Then, as the number of channels on all pyramid levels has decreased, they can be upsampled to the full resolution and summed up. This operation is equivalent to applying a linear classifier to FPN voxel-wise representations described in Sect. 3.2. Linear FPN head has four orders of magnitude fewer parameters than FPN. The architecture of the non-linear voxel-wise head replicates the UNet's decoder but sets the kernel size of all convolutions to 1. It has 50 times fewer parameters than the entire FPN architecture.</p><p>In the end-to-end fine-tuning setup, we attach the voxel-wise non-linear head, but in contrast to the non-linear probing regime, we also train the backbone.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Pre-training</head><p>We use vox2vec to pre-train both FPN and UNet models (further vox2vec-FPN and vox2vec-UNet) in order to ablate the effect of using a feature pyramid instead of single full-resolution feature map for modeling voxel-wise representations. For pre-training, we use 6 public CT datasets <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b26">27]</ref>, totaling more than 6550 CTs, covering abdomen and thorax domains. We do not use the annotations for these datasets during the pre-training stage. Pre-processing includes the following steps: 1) cropping to the minimal volume containing all the voxels with the intensity greater than -500 HU; 2) interpolation to the voxel spacing of 1 × 1 × 2 mm 3 (intensities are clipped and rescaled at the augmentation step, see Sect. 3.1). We pre-train both models for 100K batches using the Adam optimizer <ref type="bibr" target="#b15">[16]</ref> with a learning rate of 0.0003. Both models are trained on a single A100-40Gb GPU for an average of 3 days. Further details about the pre-training setup can be found in Supplementary materials.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Evaluation</head><p>We evaluate our method on the Beyond the Cranial Vault Abdomen (BTCV) <ref type="bibr" target="#b18">[19]</ref> and Medical Segmentation Decathlon (MSD) <ref type="bibr" target="#b3">[4]</ref> datasets. The BTCV dataset consists of 30 CT scans along with 13 different organ annotations. We test our method on 6 CT MSD datasets, which include 9 different organ and tumor segmentation tasks. A 5 fold cross-validation is used for BTCV experiments, and a 3 fold cross-validation for MSD experiments. The segmentation performance of each model on BTCV and MSD datasets is evaluated by the Dice score.</p><p>For our method, the pre-processing steps are the same for all datasets, as at the pre-training stage, but in addition, intensities are clipped to (-1350, 1000) HU window and rescaled to (0, 1).</p><p>We compare our results with the current state-of-the-art self-supervised methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b25">26]</ref> in medical imaging. The pre-trained weights for the SwinUNETR encoder and TransVW UNet are taken from the official repositories of corresponding papers. In these experiments, we keep the crucial pipeline hyperparameters (e.g., spacing, clipping window, patch size) the same as in the original works. To evaluate the pre-trained SwinUNETR and TransVW in linear and nonlinear probing setups, we use similar linear and non-linear head architectures as for vox2vec-FPN (see Sect. 3.4). SwinUNETR and TransVW cost 391 GFLOPs and 1.2 TFLOPS, correspondingly, compared to 115 GFLOPs of vox2vec-FPN.</p><p>We train all models for 45000 batches of size 7 (batch size for SwinUNETR is set to 3 due to memory constraints), using the Adam optimizer with a learning rate of 0.0003. In the fine-tuning setup, we freeze the backbone for the first 15000 batches and then exponentially increase the learning rate for the backbone parameters from 0.00003 up to 0.0003 during 1200 batches.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Results</head><p>The mean value and standard deviation of Dice score across 5 folds on the BTCV dataset for all models in all evaluation setups are presented in Table <ref type="table" target="#tab_0">1</ref>. vox2vec-FPN performs slightly better than other models in the fine-tuning setup. However, considering the standard deviation, all the fine-tuned models perform on par with their counterparts trained from scratch.</p><p>Nevertheless, vox2vec-FPN significantly outperforms other models in linear and non-linear regimes. On top of that, we observe that in non-linear probing regime, it performs (within the standard deviation) as well as the FPN trained from scratch while having x50 times fewer trainable parameters (see Fig. <ref type="figure">2</ref>). We demonstrate an example of the excellent performance of vox2vec-FPN in both linear and non-linear probing regimes in Supplementary materials.</p><p>We reproduce the key results on MSD challenge CT datasets, which contain tumor and organ segmentation tasks. Table <ref type="table" target="#tab_1">2</ref> shows that in the vox2vec representation space, organ voxels can be separated from tumor voxels with a quality comparable to the model trained from scratch. A t-SNE embedding of vox2vec representations on MSD is available in the Supplementary materials. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>In this work, we present vox2vec -a self-supervised framework for voxel-wise representation learning in medical imaging. Our method expands the contrastive learning setup to the feature pyramid architecture allowing to pre-train effective representations in full resolution. By pre-training a FPN backbone to extract informative representations from unlabeled data, our method scales to large datasets across multiple task domains. We pre-train a FPN architecture on more than 6500 CT images and test it on various segmentation tasks, including different organs and tumors segmentation in three setups: linear probing, nonlinear probing, and fine-tuning. Our model outperformed existing methods in all regimes. Moreover, vox2vec establishes a new state-of-the-art result on the linear and non-linear probing scenarios. Still, this work has a few limitations to consider. We plan to investigate further how the performance of vox2vec scales with the increasing size of the pre-training dataset and the pre-trained architecture size. Another interesting research direction is exploring the effectiveness of vox2vec with regard to domain adaptation to address the challenges of domain shift between different medical imaging datasets obtained from different sources. A particular interest is a lowshot scenario when only a few examples from the target domain are available.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>FPNFig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of the vox2vec pre-training pipeline. Left: two overlapping augmented 3D patches are sampled from each volume in a batch. Markers of the same color and shape denote positive pairs of voxels. Right: voxel-level representations are obtained via the concatenation of corresponding feature vectors from different levels of the FPN. Finally, the representations are projected to the space where contrastive loss is computed.</figDesc><graphic coords="4,43,29,53,93,228,64,237,82" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Average cross validation Dice scores on BTCV multi-organ segmentation dataset. 90.7 59.5 72.7 96.3 83.2 91.3 83.9 69.2 73.9 65.2 79.5 ± 1.3</figDesc><table><row><cell>model</cell><cell>Sp</cell><cell>Kid</cell><cell>Gb</cell><cell>Es</cell><cell>Li</cell><cell>St</cell><cell>Aor</cell><cell>IVC</cell><cell>PSV</cell><cell>Pa</cell><cell>AG</cell><cell>Avg</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">from scratch</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">TransVW UNet 79.2</cell><cell>82.7</cell><cell>43.9</cell><cell>65.9</cell><cell>83.7</cell><cell>62.1</cell><cell>86.6</cell><cell>76.9</cell><cell>61.3</cell><cell>56.7</cell><cell>51.4</cell><cell>68.0 ± 2.1</cell></row><row><cell>SwinUNETR</cell><cell>90.8</cell><cell>87.8</cell><cell>60.4</cell><cell>69.8</cell><cell>94.7</cell><cell>79.8</cell><cell>88.0</cell><cell>81.8</cell><cell>67.7</cell><cell>69.6</cell><cell>61.5</cell><cell>77.0 ± 2.5</cell></row><row><cell>UNet</cell><cell>91.1</cell><cell>88.5</cell><cell>58.8</cell><cell>72.3</cell><cell cols="3">96.0 83.8 89.0</cell><cell>83.2</cell><cell>68.3</cell><cell>70.4</cell><cell>63.2</cell><cell>78.2 ± 2.3</cell></row><row><cell>FPN</cell><cell cols="6">92.4 89.5 60.9 70.1 96.3 82.7</cell><cell cols="3">90.1 83.9 69.0</cell><cell>71.8</cell><cell>62.5</cell><cell>78.5 ± 2.2</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">linear probing</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>TransVW</cell><cell>34.4</cell><cell>25.7</cell><cell>8.9</cell><cell>34.4</cell><cell>56.8</cell><cell>12.1</cell><cell>47.2</cell><cell>19.0</cell><cell>18.8</cell><cell>8.2</cell><cell>20.6</cell><cell>25.6 ± 1.1</cell></row><row><cell>SwinUNETR</cell><cell>44.4</cell><cell>38.3</cell><cell>7.6</cell><cell>23.7</cell><cell>72.4</cell><cell>17.8</cell><cell>36.6</cell><cell>26.9</cell><cell>19.4</cell><cell>3.6</cell><cell>11.8</cell><cell>27.1 ± 2.4</cell></row><row><cell>random-FPN</cell><cell>68.0</cell><cell>61.2</cell><cell>30.0</cell><cell>38.0</cell><cell>81.6</cell><cell>45.3</cell><cell>65.0</cell><cell>52.4</cell><cell>27.7</cell><cell>22.9</cell><cell>26.0</cell><cell>46.6 ± 3.0</cell></row><row><cell>vox2vec-UNet</cell><cell>79.4</cell><cell>79.8</cell><cell>29.9</cell><cell>37.7</cell><cell>90.5</cell><cell>62.5</cell><cell>78.8</cell><cell>70.8</cell><cell>36.0</cell><cell>40.9</cell><cell>33.6</cell><cell>57.9 ± 2.0</cell></row><row><cell>vox2vec-FPN</cell><cell>83.7</cell><cell>84.0</cell><cell>43.7</cell><cell>58.0</cell><cell>93.1</cell><cell>67.5</cell><cell>85.6</cell><cell>77.5</cell><cell>56.6</cell><cell>58.8</cell><cell>53.3</cell><cell>69.2 ± 1.2</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="4">non-linear probing</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>TransVW</cell><cell>24.9</cell><cell>31.5</cell><cell>6.7</cell><cell>28.1</cell><cell>45.1</cell><cell>9.0</cell><cell>44.9</cell><cell>27.2</cell><cell>19.0</cell><cell>7.2</cell><cell>15.4</cell><cell>23.5 ± 2.7</cell></row><row><cell>random-FPN</cell><cell>76.7</cell><cell>67.0</cell><cell>34.1</cell><cell>47.1</cell><cell>83.7</cell><cell>52.8</cell><cell>70.2</cell><cell>57.5</cell><cell>30.2</cell><cell>28.6</cell><cell>31.5</cell><cell>52.1 ± 4.9</cell></row><row><cell>SwinUNETR</cell><cell>77.0</cell><cell>74.4</cell><cell>48.1</cell><cell>52.1</cell><cell>87.0</cell><cell>53.7</cell><cell>73.5</cell><cell>58.1</cell><cell>47.2</cell><cell>35.3</cell><cell>39.9</cell><cell>58.5 ± 2.6</cell></row><row><cell>vox2vec-UNet</cell><cell>80.3</cell><cell>81.4</cell><cell>34.1</cell><cell>42.7</cell><cell>91.1</cell><cell>64.0</cell><cell>79.6</cell><cell>71.6</cell><cell>42.7</cell><cell>43.3</cell><cell>37.6</cell><cell>60.6 ± 3.0</cell></row><row><cell>vox2vec-FPN</cell><cell>91.0</cell><cell>89.2</cell><cell>50.7</cell><cell>67.5</cell><cell>95.3</cell><cell>78.2</cell><cell>89.4</cell><cell>80.7</cell><cell>64.9</cell><cell>66.1</cell><cell>59.9</cell><cell>75.5 ± 1.7</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">fine-tuning</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>TransVW</cell><cell>77.8</cell><cell>80.7</cell><cell>42.9</cell><cell>66.5</cell><cell>83.6</cell><cell>59.3</cell><cell>86.2</cell><cell>77.3</cell><cell>63.7</cell><cell>54.4</cell><cell>54.0</cell><cell>67.8 ± 1.9</cell></row><row><cell>SwinUNETR</cell><cell>84.2</cell><cell>86.7</cell><cell>58.4</cell><cell>70.4</cell><cell>94.5</cell><cell>76.0</cell><cell>87.7</cell><cell>82.1</cell><cell>67.0</cell><cell>69.8</cell><cell>61.0</cell><cell>75.8 ± 3.3</cell></row><row><cell>vox2vec-UNet</cell><cell>91.4</cell><cell>90.1</cell><cell>52.3</cell><cell>72.5</cell><cell>95.8</cell><cell>83.0</cell><cell>89.9</cell><cell>82.6</cell><cell>66.5</cell><cell>71.1</cell><cell>61.8</cell><cell>77.6 ± 1.0</cell></row><row><cell>vox2vec-FPN</cell><cell>91.4</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table><note><p>Fig. 2. Dice score on BTCV crossvalidation averaged for all organs w.r.t. the number of trainable paramaters of different models in different evaluation setups.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Cross validation Dice score on CT tasks of MSD challenge.</figDesc><table><row><cell></cell><cell>Liver</cell><cell>Lung</cell><cell>Pancreas</cell><cell cols="4">Hepatic vessel Spleen Colon</cell></row><row><cell>model</cell><cell cols="7">organ tumor tumor organ tumor organ tumor organ cancer</cell></row><row><cell></cell><cell></cell><cell cols="2">from scratch</cell><cell></cell><cell></cell><cell></cell></row><row><cell>FPN</cell><cell>94.4 44.6</cell><cell cols="2">53.1 77.1 28.0</cell><cell>53.7</cell><cell>49.4</cell><cell>96.0</cell><cell>32.2</cell></row><row><cell></cell><cell></cell><cell cols="2">non-linear probing</cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">vox2vec-FPN 94.7 43.9</cell><cell>49.5</cell><cell>71.4 28.5</cell><cell>58.1</cell><cell>54.8</cell><cell>95.1</cell><cell>24.8</cell></row><row><cell></cell><cell></cell><cell cols="2">fine-tuning</cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">SwinUNETR 95.0 49.3</cell><cell>55.2</cell><cell cols="2">75.2 35.9 60.9</cell><cell>57.5</cell><cell>95.5</cell><cell>29.2</cell></row><row><cell cols="4">vox2vec-FPN 95.6 51.0 56.6 77.0 31.8</cell><cell>59.5</cell><cell>62.4</cell><cell>96.1</cell><cell>30.1</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">Russian Science Foundation</rs> grant number <rs type="grantNumber">20-71-10134</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_HAPmARZ">
+					<idno type="grant-number">20-71-10134</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_58.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Data from the national lung screening trial (NLST</title>
+		<idno type="DOI">10.7937/TCIA.HMQ8-J677</idno>
+		<ptr target="https://wiki.cancerimagingarchive.net/x/-oJY" />
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Transferable visual words: exploiting the semantics of anatomical patterns for selfsupervised learning</title>
+		<idno type="DOI">10.1109/TMI.2021.3060634</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2021.3060634" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2857" to="2868" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Aerts</surname></persName>
+		</author>
+		<title level="m">Data from NSCLC-radiomics. The cancer imaging archive</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The medical segmentation decathlon</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Antonelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4128</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The lung image database consortium (LIDC) and image database resource initiative (IDRI): a completed reference database of lung nodules on CT scans</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Armato</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Iii</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="915" to="931" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bardes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ponce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.2210.01571</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.2210.01571" />
+	</analytic>
+	<monogr>
+		<title level="m">VICRegL: Self-Supervised Learning of Local Visual Features</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Contrastive learning of global and local features for medical image segmentation with limited annotations</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chaitanya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Erdil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Karani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="12546" to="12558" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Exploring simple siamese representation learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="15750" to="15758" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unsupervised visual representation learning by context prediction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Doersch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1422" to="1430" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Catastrophic forgetting in connectionist networks</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>French</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Cogn. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="128" to="135" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Dimensionality Reduction by Learning an Invariant Mapping</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hadsell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2006.100</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2006.100" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR 2006)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2006">2006. 2006</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1735" to="1742" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Masked autoencoders are scalable vision learners</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Doll'ar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2022">2022. 2022</date>
+			<biblScope unit="page" from="15979" to="15988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">AMOS: a large-scale abdominal multi-organ benchmark for versatile medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.08023</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.1412.6980</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.1412.6980" />
+		<title level="m">Adam: A Method for Stochastic Optimization. arXiv</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Unsupervised representation learning by predicting image rotations</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Komodakis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gidaris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations (ICLR</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Neglectable effect of brain MRI data prepreprocessing for tumor segmentation</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kondrateva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Druzhinina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dalechina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shirokikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Belyaev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kurmukov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2204.05278</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Miccai multiatlas labeling beyond the cranial vault-workshop and challenge</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</title>
+		<meeting>MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">12</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Voxel-level siamese representation learning for abdominal multi-organ segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">E</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">G</forename><surname>Shin</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cmpb.2021.106547</idno>
+		<ptr target="https://doi.org/10.1016/j.cmpb.2021.106547" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Programs Biomed</title>
+		<imprint>
+			<biblScope unit="volume">213</biblScope>
+			<biblScope unit="page">106547</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Fast and low-GPU-memory abdomen CT organ segmentation: the flare challenge</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102616</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of visual representations by solving jigsaw puzzles</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Noroozi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Favaro</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46466-4_5</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46466-4_5" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9910</biblScope>
+			<biblScope unit="page" from="69" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of dense visual representations</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">O</forename><surname>Pinheiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Almahairi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Benmalek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Golemo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Courville</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="4489" to="4500" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">3D self-supervised methods for medical imaging</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Taleb</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="18158" to="18172" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Self-supervised pre-training of Swin transformers for 3D medical image analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20730" to="20740" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Medical imaging data resource center -RSNA international COVID radiology database release 1a -chest CT COVID+ (MIDRC-RICORD-1a</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tsai</surname></persName>
+		</author>
+		<idno type="DOI">10.7937/VTW4-X588</idno>
+		<ptr target="https://wiki.cancerimagingarchive.net/x/DoDTB" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Propagate yourself: exploring pixel-level consistency for unsupervised visual representation learning</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="16684" to="16693" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">SAM: self-supervised learning of pixel-wise anatomical embeddings in radiological images</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2658" to="2669" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

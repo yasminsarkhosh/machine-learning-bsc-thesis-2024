@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">PET Image Denoising with Score-Based Diffusion Probabilistic Models</title>
+				<funder ref="#_ahTvxZn">
+					<orgName type="full">Sichuan Science and Technology Program</orgName>
+				</funder>
+				<funder ref="#_3HpP639">
+					<orgName type="full">Sichuan University</orgName>
+				</funder>
+				<funder ref="#_Rt5SjPk">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Chenyu</forename><surname>Shen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Cyber Science and Engineering</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ziyuan</forename><surname>Yang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Yi</forename><surname>Zhang</surname></persName>
+							<email>yzhang@scu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Cyber Science and Engineering</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">PET Image Denoising with Score-Based Diffusion Probabilistic Models</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="270" to="278"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">9D0682CA574285EC8421B4D3F3CCB822</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_26</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T12:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>PET denoising</term>
+					<term>diffusion probabilistic model</term>
+					<term>latent space conditions</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Low-count positron emission tomography (PET) imaging is an effective way to reduce the radiation risk of PET at the cost of a low signal-to-noise ratio. Our study aims to denoise low-count PET images in an unsupervised mode since the mainstream methods usually rely on paired data, which is not always feasible in clinical practice. We adopt the diffusion probabilistic model in consideration of its strong generation ability. Our model consists of two stages. In the training stage, we learn a score function network via evidence lower bound (ELBO) optimization. In the sampling stage, the trained score function and low-count image are employed to generate the corresponding high-count image under two handcrafted conditions. One is based on restoration in latent space, and the other is based on noise insertion in latent space. Thus, our model is named the bidirectional condition diffusion probabilistic model (BC-DPM). Real patient whole-body data are utilized to evaluate our model. The experiments show that our model achieves better performance in both qualitative and quantitative aspects compared to several traditional and recently proposed learning-based methods.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Positron emission tomography (PET) is an imaging modality in nuclear medicine that has been successfully applied in oncology, neurology, and cardiology. By injecting a radioactive tracer into the human body, the molecular-level activity in tissues can be observed. To mitigate the radiation risk to the human body, it is essential to reduce the dose or shorten the scan time, leading to a low signalto-noise ratio and further negatively influencing the accuracy of diagnosis.</p><p>Recently, the denoising diffusion probabilistic model (DDPM) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11]</ref> has become a hot topic in the generative model community. The original DDPM was designed for generation tasks, and many recent works have proposed extending it for image restoration or image-to-image translation. In supervised mode, Saharia et al. <ref type="bibr" target="#b7">[8]</ref> proposed a conditional DDPM to perform single-image super-resolution, which integrates a low-resolution image into each reverse step. In unsupervised mode, to handle the stochasticity of the generative process, Choi proposed iterative latent variable refinement (ILVR) <ref type="bibr" target="#b0">[1]</ref> to guarantee the given condition in each transition, thus generating images with the desired semantics. DDPM has also been applied in medical imaging. To explore its generalization ability, Song et al. <ref type="bibr" target="#b11">[12]</ref> proposed a fully unsupervised model for medical inverse problems, providing the measuring process and the prior distribution learned with a scorebased generative model. For PET image denoising, Gong et al. <ref type="bibr" target="#b3">[4]</ref> proposed two paradigms. One is directly feeding noisy PET images and anatomical priors (if available) into the score function network, which relies on paired high-quality and low-quality PET images. The other is feeding only MR images into the score function network while using noisy PET images in the inference stage under the assumption that PET image noise obeys a Gaussian distribution.</p><p>In this paper, we propose a conditional diffusion probabilistic model for lowcount PET image denoising in an unsupervised manner without the Gaussian noise assumption or paired datasets. Our model is divided into two stages. In the training stage, we leverage the standard DDPM to train the score function network to learn a prior distribution of PET images. Once the network is trained, we transplant it into the sampling stage, in which we design two conditions to control the generation of high-count PET images given corresponding lowcount PET images. One condition is that the denoised versions of low-count PET images are similar to high-count PET images. The other condition is that when we add noise to high-count PET images, they degrade to low-count PET images. As a result, our model is named the bidirectional condition diffusion probabilistic model (BC-DPM). In particular, to simulate the formation of PET noise, we add noise in the sinogram domain. Additionally, the two proposed conditions are implemented in latent space. Notably, Our model is 'one for all', that is, once we have trained the score network, we can utilize this model for PET images with different count levels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Letting X ⊂ X be a high-count PET image dataset and Y ⊂ Y be a low-count PET image dataset, x 0 and y 0 denote instances in X and Y , respectively. Our goal is to estimate a mapping F(Y) = X , and the proposed BC-DPM provides an unsupervised technique to solve this problem. BC-DPM includes two stages. In the training stage, it requires only X without paired (X, Y ), and in the sampling stage, it produces the denoised x 0 for a given y 0 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Training Stage</head><p>BC-DPM acts the same as the original DDPM in the training stage, it consists of a forward process and a reverse process. In the forward process, x 0 is gradually contaminated by fixed Gaussian noise, producing a sequence of latent space data {x 1 , x 2 , ..., x T }, where x T ∼ N (0, I). The forward process can be described formally by a joint distribution q(x 1:T |x 0 ) given x 0 . Under the Markov property, it can be defined as:</p><formula xml:id="formula_0">q(x 1:T |x 0 ) := T t=1 q(x t |x t-1 ), q(x t |x t-1 ) := N (x t ; 1 -β t x t-1 , β t I),<label>(1)</label></formula><p>where {β 1 , β 2 , ..., β T } is a fixed variance schedule with small positive constants and I represents the identity matrix. Notably, the forward process allows x t to be sampled directly from x 0 :</p><formula xml:id="formula_1">x t = √ ᾱt x 0 + √ 1 -ᾱt ,<label>(2)</label></formula><p>where ᾱt := t s=1 α s , α t := 1β t and ∼ N (0, I). The reverse process is defined by a Markov chain starting with p(x T ) = N (x T ; 0, I):</p><formula xml:id="formula_2">p θ (x 0:T ) := p(x T ) T t=1 p θ (x t-1 |x t ), p θ (x t-1 |x t ) := N (x t-1 ; μ θ (x t , t), σ θ (x t , t)I).</formula><p>(3) Given the reverse process, p θ (x 0 ) can be expressed by setting up an integral over the x 1:T variables p θ (x 0 ) := p θ (x 0:T )dx 1:T , and the parameter θ can be updated by optimizing the following simple loss function:</p><formula xml:id="formula_3">L simple (θ) = E t,x0, [ -θ ( √ ᾱt x 0 + √ 1 -ᾱt , t) 2 ].<label>(4)</label></formula><p>The θ (x t , t) used in this paper heavily relies on that proposed by Dhariwal et al. <ref type="bibr" target="#b2">[3]</ref>. The pseudocode for the training stage is given in Algorithm 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1:</head><p>Training stage.</p><formula xml:id="formula_4">repeat x 0 ∼ q(x 0 ) t ∼ Uniform(1, 2, ..., T ) ∼ N (0, I) Update θ by optimizing E t,x0, [ -θ ( √ ᾱt x 0 + √ 1 -ᾱt , t) 2 ]</formula><p>until convergence</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Sampling Stage</head><p>The main difference between BC-DPM and the original DDPM lies in the sampling stage. Due to the stochasticity of the reverse process p θ (x 0:T ), it is difficult for the original DDPM to generate images according to our expectation. To overcome this obstacle, the proposed BC-DPM models p θ (x 0 |c) given condition c instead of modeling p θ (x 0 ) as</p><formula xml:id="formula_5">p θ (x 0 |c) = p θ (x 0:T |c)dx 1:T , p θ (x 0:T |c) = p(x T ) T t=1 p θ (x t-1 |x t , c). (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>Condition c derives from specific prior knowledge from the high-count PET image x 0 and the low-count PET image y 0 . With c, BC-DPM can control the generation of x 0 given y 0 . Then, the core problem is to design a proper condition c. A natural choice is D(y 0 ) ≈ x 0 , that is, the restoration task itself. We must clarify that it will not cause a 'deadlock' for the following two reasons. One is that the final form of the condition D(y 0 ) ≈ x 0 does not involve x 0 , and the other is that we choose a relatively simple denoiser in the condition, which can be viewed as a 'coarse to fine' operation. In practice, we utilize a Gaussian filter GF(•) as the denoiser in this condition. However, the Gaussian filter usually leads to smoothed images. Based on this property, we observe that the PSNR value between GF(y 0 ) and x 0 is usually inferior to that between GF(y 0 ) and GF(x 0 ), which means that the condition GF(y 0 ) ≈ GF(x 0 ) is more accurate than GF(y 0 ) ≈ x 0 . Thus, we choose GF(y 0 ) ≈ GF(x 0 ) in our experiments.</p><p>However, if we only utilize the above condition, the training is unstable, and distortion may be observed. To address this problem, another condition needs to be introduced. The above condition refers to denoising, so conversely, we can consider adding noise to x 0 ; that is, y 0 ≈ A(x 0 ). According to the characteristics of PET noise, Poisson noise is used in the sinogram domain instead of the image domain. We define this condition as P † (P o(P(x 0 ) + r + s)) ≈ y 0 , where P, P o, P † , r and s represent the Radon transform, Poisson noise insertion, inverse Radon transform, random coincidence and scatter coincidence, respectively. Now, we have two conditions GF(y 0 ) ≈ GF(x 0 ) and P † (P o(P(x 0 )+r + s)) ≈ y 0 from the perspectives of denoising and noise insertion, respectively. Since the conditions involve x 0 , we have to convert the conditions from the original data space into latent space under certain circumstances to avoid estimating x 0 . Let us denote each transition in the reverse process under global conditions as:</p><formula xml:id="formula_7">p θ (x t-1 |x t , c 1 , c 2 ) = p θ (x t-1 |x t , GF(x 0 ) = GF(y 0 ), P † (P o(P(x 0 ) + r + s)) = y 0 ).<label>(6)</label></formula><p>In Eq. ( <ref type="formula" target="#formula_1">2</ref>), x t can be represented by a linear combination of x 0 and . Then, we can express x 0 with x t and :</p><formula xml:id="formula_8">x 0 ≈ f θ (x t , t) = (x t - √ 1 -ᾱt θ (x t , t))/ √ ᾱt . (<label>7</label></formula><formula xml:id="formula_9">)</formula><p>Similarly, applying the same diffusion process to y 0 , we have {y 1 , y 2 , ..., y T }, and y 0 can be expressed with y t and :</p><formula xml:id="formula_10">y 0 ≈ f θ (y t , t) = (y t - √ 1 -ᾱt θ (y t , t))/ √ ᾱt . (<label>8</label></formula><formula xml:id="formula_11">)</formula><p>Replacing x 0 and y 0 with f θ (x t , t) and f θ (y t , t) in Eq. ( <ref type="formula" target="#formula_7">6</ref>), respectively, we have:</p><formula xml:id="formula_12">p θ (x t-1 |x t , c 1 , c 2 ) ≈ E q(yt-1|y0) [p θ (x t-1 |x t , GF(x t-1 ) = GF(y t-1 ), P † (P o(P(x t-1 ) + r + s)) = y t-1 )].<label>(9)</label></formula><p>Assume that</p><formula xml:id="formula_13">x t-1 = (1 -λ)(GF(y t-1 ) + (I -GF)(x t-1 ))</formula><p>+ λ(y t-1 + x t-1 -P † (P o(P(x t-1 ) + r + s)), <ref type="bibr" target="#b9">(10)</ref> where x t-1 is sampled from p θ (x t-1 |x t ), and λ ∈ [0, 1] is a balancing factor between the two conditions. Thus, we have E q(y t-1 |y 0 ) [p θ (x t-1 |xt, GF(x t-1 ) = GF(y t-1 ), P † (P o(P(x t-1 ) + r + s)) = y t-1 )] ≈ p θ (x t-1 |xt, GF(x t-1 ) = GF(y t-1 ), P † (P o(P(x t-1 ) + r + s)) = y t-1 ).</p><p>(11)</p><p>Finally, we have p θ (x t-1 |x t , GF(x 0 ) = GF(y 0 ), P † (P o(P(x 0 ) + r + s)) = y 0 ) = p θ (x t-1 |x t , GF(x t-1 ) = GF(y t-1 ), P † (P o(P(x t-1 ) + r + s)) = y t-1 ), <ref type="bibr" target="#b11">(12)</ref> which indicates that under the assumption of Eq. ( <ref type="formula">10</ref>), the global conditions on (x 0 , y 0 ) can be converted to local conditions on (x t-1 , y t-1 ) in each transition from x t to x t-1 . Now, given a low-count PET image y 0 , to estimate x 0 , we can sample from white noise x T using the following two steps iteratively. The first step is to generate an immediate x t-1 from p θ (x t-1 |x t ). The second step is to generate x t-1 from x t-1 using Eq. <ref type="bibr" target="#b9">(10)</ref>. In practice, we note that there is no need to operate the two local conditions in each transition; instead, we only need the last l transitions. Generally speaking, The larger l is, the more blurred the image will be. As l decreases, the image gets more noisy. We provide the sampling procedure of BC-DPM in Algorithm 2.</p><p>Algorithm 2: Sampling stage. Figure <ref type="figure" target="#fig_0">1</ref> illustrates the whole model. In the training stage, q denotes fixed Gaussian noise for the forward process, and p θ denotes a learned transition in the reverse process. Once p θ is trained, it is moved to the sampling stage. In the sampling stage, we first use the same q to diffuse y 0 to {y 1 , y 2 , ..., y T }. Then, we start with white noise x T followed by a transition from x t+1 to x t for each t ∈ {0, 1, 2, ..., T -1}. Each transition consists of p θ and a conditional block. p θ is responsible for sampling an immediate x t from x t+1 . Then, the conditional block takes x t and y t as inputs and outputs x t . Figure <ref type="figure" target="#fig_1">2</ref> shows the detailed structure of the conditional block. There are two parallel branches. One calculates the difference between GF(x t ) and GF(y t ), which represents the condition of denoising, and the other computes the difference between x t and y t , where x t is derived by adding noise to x t in the sinogram domain. Then, we sum the two branches weighted by λ and subtract x t to output the final result x t .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Setup</head><p>To evaluate the proposed method, real clinical data downloaded from TCIA were tested <ref type="bibr" target="#b1">[2]</ref>. The computer simulation modeled the geometry of a CTI ECAT 921 PET scanner, and the system matrix P was modeled using Siddon's refined method to calculate the ray path integral <ref type="bibr" target="#b4">[5]</ref>. To simulate low-count PET images, we first generated a noise-free sinogram by forward projecting the original data, obtaining a sinogram with a matrix size of 160 (radial bins) × 192 (azimuthal angles). Then, uniform random events were added to the noise-free sinogram as background, which accounted for 20% of total true coincidences. Independent Poisson noise with different levels was injected, raising the total number of events to 1M, 0.3M, and 0.1M, respectively. Finally, these sinograms were reconstructed by the ML-EM algorithm with 100 iterations. We used 3000 2D slices from 60 patients as the training set and 400 slices from another 10 patients as the test set.</p><p>Our method was implemented with PyTorch on a GeForce GTX 1080Ti GPU. We trained the network using the AdamW algorithm with β 1 = 0.9, β 2 = 0.999, and weight decay = 0.01. The learning rate was set to 0.0001, and the batch size was 8. In our experiments, similar to DDPM, we set the number of diffusion steps to T = 1000. For the variance schedule in the forward process, we employed a linear schedule from β 1 = 0.0001 to β T = 0.02. In the sampling stage, we evenly sampled 100 steps from 1 to T and then performed generation only on these 100 steps, reducing the number of steps from 1000 to 100 by employing the trick in <ref type="bibr" target="#b6">[7]</ref>. For the count levels of 1M, 0.3M, and 0.1M in the real clinical data study, we set l to 5, 10, and 15, respectively. In all cases, we set λ = 0.2 to balance the two conditions. As the diffusion model can generate different results due to stochasticity, we ran the model five times and used the average of the five results as the final result.</p><p>We compared our method with two conventional methods, Gaussian Filter and BM3D, and two unsupervised/unpaired methods, Noise2Void with parameter transfer (N2V-PT) <ref type="bibr" target="#b9">[10]</ref> and unsupervised CycleWGAN <ref type="bibr" target="#b12">[13]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experimental Results</head><p>Figure <ref type="figure" target="#fig_2">3</ref> shows the results using various methods at three count levels. It can be observed that our method obtains the best performance in all cases. At the 1M  count level, the noise is small, and all methods obtain adequate results. At the 0.3M count level, the noise becomes higher. The Gaussian filter compromises the details for noise reduction. N2V-PT exhibits strange patterns due to the violation of the pixel independence assumption in PET noise. At the extremely low-count level, 0.1M, the Gaussian filter and N2V-PT cannot obtain clinically useful results, while our method can accurately recover some details due to its strong capacity for generation under these conditions. Table <ref type="table" target="#tab_1">1</ref> reports the quantitative results, showing that our proposed BC-DPM outperforms other methods in terms of both PSNR and SSIM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In conclusion, a PET denoising model based on diffusion probabilistic models is proposed in this paper. Our model is trained in an unsupervised manner and denoises low-count PET images without any anatomical prior as a reference. To enable the DPM to generate high-count PET images from corresponding lowcount PET images, we design bidirectional conditions derived from relations between the low-count image and the potential high-count image. One condition is that the denoised low-count image approximates the high-count image. The other is that after adding noise, the high-count image approximates the lowcount image. For implementation, we transfer the bidirectional conditions to latent space, which helps free the model from its dependence on the high-count image. Experiments on real clinical data demonstrate that our model is superior in noise suppression and detail preservation to other state-of-the-art methods.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of our proposed BC-DPM model.</figDesc><graphic coords="2,70,47,53,75,311,80,220,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The proposed conditional block in the sampling stage.</figDesc><graphic coords="3,41,79,54,26,340,24,143,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Denoising results from different methods. The first row is under a count level of 1M, the second row is under a count level of 0.3M, and the third row is under a count level of 0.1M.</figDesc><graphic coords="8,55,98,54,23,340,24,151,48" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>PSNR and SSIM values of various methods of patient data under different count levels.</figDesc><table><row><cell>Methods</cell><cell>1M</cell><cell></cell><cell>0.3M</cell><cell></cell><cell>0.1M</cell></row><row><cell></cell><cell>PSNR</cell><cell>SSIM</cell><cell>PSNR</cell><cell>SSIM</cell><cell>PSNR</cell><cell>SSIM</cell></row><row><cell>Gaussian</cell><cell cols="6">32.9406 0.9713 31.5443 0.9611 30.9818 0.9531</cell></row><row><cell>BM3D</cell><cell cols="6">32.0151 0.9564 31.6693 0.9527 28.2746 0.9117</cell></row><row><cell>N2V-PT</cell><cell cols="6">34.4333 0.9767 33.4353 0.9695 31.0254 0.9545</cell></row><row><cell cols="7">CycleWGAN 35.1976 0.9821 33.6778 0.9653 31.6183 0.9500</cell></row><row><cell>BC-DPM</cell><cell cols="6">35.6297 0.9831 33.9297 0.9700 32.1648 0.9621</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported in part by the <rs type="funder">National Natural Science Foundation of China</rs> under Grant <rs type="grantNumber">62271335</rs>; in part by the <rs type="funder">Sichuan Science and Technology Program</rs> under Grant <rs type="grantNumber">2021JDJQ0024</rs>; and in part by the <rs type="funder">Sichuan University</rs> "<rs type="programName">From 0 to 1" Innovative Research Program</rs> under Grant <rs type="grantNumber">2022SCUH0016</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Rt5SjPk">
+					<idno type="grant-number">62271335</idno>
+				</org>
+				<org type="funding" xml:id="_ahTvxZn">
+					<idno type="grant-number">2021JDJQ0024</idno>
+				</org>
+				<org type="funding" xml:id="_3HpP639">
+					<idno type="grant-number">2022SCUH0016</idno>
+					<orgName type="program" subtype="full">From 0 to 1&quot; Innovative Research Program</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0 26.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">ILVR: conditioning method for denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Choi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="14347" to="14356" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The cancer imaging archive (TCIA): maintaining and operating a public information repository</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Clark</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imag</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="1045" to="1057" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Diffusion models beat GANs on image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="8780" to="8794" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">PET image denoising based on denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Gong</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.06167</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A fast ray-tracing technique for TCT and ECT studies</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>You</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the IEEE Nuclear Science Symposium</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="1515" to="1518" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Improved denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Nichol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Machine Learning</title>
+		<meeting>the International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">139</biblScope>
+			<biblScope unit="page" from="8162" to="8171" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Image super-resolution via iterative refinement</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Saharia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep unsupervised learning using nonequilibrium thermodynamics</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sohl-Dickstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Machine Learning</title>
+		<meeting>the International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2256" to="2265" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Noise2Void: unsupervised denoising of PET images</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">A</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Score-based generative modeling through stochastic differential equations</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Learning Representations</title>
+		<meeting>the International Conference on Learning Representations</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Solving inverse problems in medical imaging with score-based generative models</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Learning Representations</title>
+		<meeting>the International Conference on Learning Representations</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Supervised learning with cyclegan for low-dose FDG PET image denoising</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page">101770</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

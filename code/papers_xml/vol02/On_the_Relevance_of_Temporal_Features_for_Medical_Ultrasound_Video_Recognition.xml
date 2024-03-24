@@ -1,0 +1,886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">On the Relevance of Temporal Features for Medical Ultrasound Video Recognition</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">D</forename><surname>Hudson Smith</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Clemson University</orgName>
+								<address>
+									<postCode>29634</postCode>
+									<settlement>Clemson</settlement>
+									<region>SC</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">John</forename><forename type="middle">Paul</forename><surname>Lineberger</surname></persName>
+							<idno type="ORCID">0000-0002-0267-9999</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Clemson University</orgName>
+								<address>
+									<postCode>29634</postCode>
+									<settlement>Clemson</settlement>
+									<region>SC</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">George</forename><forename type="middle">H</forename><surname>Baker</surname></persName>
+							<email>baker@musc.edu</email>
+							<idno type="ORCID">0000-0001-9880-9665</idno>
+							<affiliation key="aff1">
+								<orgName type="institution">Medical University of South Carolina</orgName>
+								<address>
+									<postCode>29425</postCode>
+									<settlement>Charleston</settlement>
+									<region>SC</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">On the Relevance of Temporal Features for Medical Ultrasound Video Recognition</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">422F460F71DCA1BB31917D0CE3942299</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-070.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Ultrasound</term>
+					<term>Video</term>
+					<term>Sample Efficiency</term>
+					<term>Attention Supplementary Information The online version contains supplementary material</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Many medical ultrasound video recognition tasks involve identifying key anatomical features regardless of when they appear in the video suggesting that modeling such tasks may not benefit from temporal features. Correspondingly, model architectures that exclude temporal features may have better sample efficiency. We propose a novel multi-head attention architecture that incorporates these hypotheses as inductive priors to achieve better sample efficiency on common ultrasound tasks. We compare the performance of our architecture to an efficient 3D CNN video recognition model in two settings: one where we expect not to require temporal features and one where we do. In the former setting, our model outperforms the 3D CNN -especially when we artificially limit the training data. In the latter, the outcome reverses. These results suggest that expressive time-independent models may be more effective than state-of-the-art video recognition models for some common ultrasound tasks in the low-data regime. Code is available at https://github.com/MedAI-Clemson/pda detection.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction and Related Work</head><p>Ultrasound (US) is one of the most common imaging techniques in medical practice, with applications to fetal imaging, cardiac imaging, sports medicine, and more. With the rise of US for routine clinical care, there is a growing interest in applying computer vision techniques to automate or enhance the analysis of US imagery <ref type="bibr" target="#b13">[13]</ref>. Many US examinations involve the collection of video clips showing different anatomical regions. The medical imaging community is in the early stages of applying techniques from the video recognition community to US recognition tasks. These applications face several challenges arising from the nature of US as an imaging modality, differences between US imagery and natural imagery, and the lack of large representative datasets. To make matters worse, the collection of large medical datasets is often unethical or prohibitively costly. There is, therefore, a significant need for efficient methods that can produce high levels of performance using the minimum number of samples. In this work, we propose an efficient US video recognition architecture that takes advantage the nature of common US recognition tasks.</p><p>To design an efficient US recognition architecture, it is necessary to consider the space of US recognition tasks and evaluate the algorithmic structures needed to efficiently capture the semantics in those settings. We posit that many of these tasks amount to the identification of specific visual characteristics at key moments in the clip. The identification of the standard plane in fetal head US depends on recognizing key structures in fetal brain tissue <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b19">19]</ref>; the quality assessment of FAST clips <ref type="bibr" target="#b25">[24]</ref> relies on the ability to recognize that key organs and other structures have been visualized in the clip; view identification relies on recognizing orientation of the anatomical structures in relation to one another <ref type="bibr" target="#b8">[8,</ref><ref type="bibr" target="#b11">11]</ref>; and the quantification of heart function requires measurement of ventricular volumes at two key moments in the cardiac cycle <ref type="bibr" target="#b22">[22]</ref>. Based on these observations, we propose a novel US Video Network (USVN) that treats frames as independent and unordered. USVN constructs expressive video representations by combining information from multiple frames using a novel multi-head attention mechanism. We demonstrate a setting in which USVN yields better performance and far better sample efficiency than a competing model that includes temporal features. We also demonstrate that, in a setting where temporal dependence is important, USVN lags behind the competing model. These contrasting outcomes demonstrate the importance of tailoring the model architecture to the structure of the US recognition task in data-constrained settings.</p><p>A large body of work has addressed video recognition tasks, including object tracking <ref type="bibr" target="#b14">[14]</ref>, temporal action localization <ref type="bibr" target="#b29">[28]</ref>, captioning <ref type="bibr" target="#b0">[1]</ref>, action recognition <ref type="bibr" target="#b31">[30]</ref>, and many others. Driven by the availability of large human action datasets, the field of action recognition has focused on the need to capture expressive spatiotemporal features. This has led to the development of two-stream networks using optical flow <ref type="bibr" target="#b21">[21]</ref>, the use of 3D convolutional networks <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b26">25]</ref>, and, of course, the use of transformer-based architectures <ref type="bibr" target="#b15">[15,</ref><ref type="bibr" target="#b18">18]</ref>. Our main point of departure with these methods is the importance placed upon temporal features. We posit that temporal features are not relevant in some common US tasks and that excluding these features leads to better sample efficiency. To explore this idea, we assume temporal independence a priori, placing our problem formulation in the format of a Multi-instance Learning (MIL) task.</p><p>Multi-instance learning (MIL) describes the situation where labels apply to bags of instances rather than to individual instances. Instances within a bag are assumed to be unordered and, conditional on the bag label, independent from one another <ref type="bibr" target="#b1">[2]</ref>. Under our assumption that all video frames can be treated independently, video recognition can be viewed as MIL where the bag is the video, and the instances are the frames. MIL has a long history of applications to video recognition that predates deep learning <ref type="bibr" target="#b5">[5,</ref><ref type="bibr" target="#b6">6,</ref><ref type="bibr" target="#b24">23,</ref><ref type="bibr" target="#b30">29]</ref>. In the classical formulation of MIL it is assumed that instances have unobserved labels, and the task is to extract these as latent variables and aggregate them to predict the baglevel label. In their paper Attention-based deep multiple instance learning Ilse, Tomczak, and Welling <ref type="bibr" target="#b9">[9]</ref> depart from this classical perspective by aggregating embeddings rather than instance labels. We take a similar approach. Unlike their work, however, we use multiple attention heads focused on different subspaces of the image-level embeddings, with their work as a special case of ours. To our knowledge, we are the first to introduce a MIL formalism using multiple attention heads in this way.</p><p>There is growing interest in applying action recognition techniques to medical US video with applications to fetal <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b20">20]</ref>, abdominal <ref type="bibr" target="#b11">[11,</ref><ref type="bibr" target="#b25">24]</ref>, and cardiac <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b17">17,</ref><ref type="bibr" target="#b22">22]</ref> US. Most existing applications make MIL assumptions but only apply a fixed pooling function to frame-level labels. Howard et al. <ref type="bibr" target="#b8">[8]</ref> apply a range of techniques, including average pooling, two-stream networks, and 3D convolutions to identifying cardiac views. They conclude that two-stream networks yield the best performance. The authors do not test any methods that adaptively pool frame information in a time-independent manner. Lei et al. <ref type="bibr" target="#b12">[12]</ref> specifically consider the detection of Patent Ductus Arteriosus (PDA). They make MIL assumptions by applying the video-level label to the individual frames and training a 2D CNN to estimate these noisy labels. Video-level labels are generated by applying a decision threshold to the frame-level predictions and then voting with equal weight across frames. Ouyang et al. <ref type="bibr" target="#b16">[16]</ref> use 3D convolutions, specifically the R(2+1)D architecture <ref type="bibr" target="#b26">[25]</ref>, to predict ejection fraction from cardiac US obtaining human-level performance. They do not assess the performance of any time-independent methods. Among these examples, we see a divide between methods that have no ability to adaptively weight different frames and those that can express arbitrary spatiotemporal features. We fill this gap by proposing a time-independent method that adaptively pools information from different moments in time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Proposed Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">USVN</head><p>Architecture. Our video recognition architecture, shown in Fig. <ref type="figure" target="#fig_0">1</ref>, pools information across frames using a multi-head attention mechanism. Like the attention mechanism in the transformer architecture <ref type="bibr" target="#b27">[26]</ref>, we compute attentions over subspaces of the frame-level representations. We hypothesize that US video recognition requires the detection of distinct visual features that may appear at different points of time in the video. The individual attention heads can function as detectors of these features. Unlike ordinary multi-head attention, the subspaces are not compared with other frames in the sequence but with a set of global query vectors inferred during training. The use of global query vectors arises from our inductive prior that the recognition task amounts to locating key pieces of information at any point in the sequence, and the inferred query vectors are representations of that key information.</p><p>Frames are first embedded into 2048-dimensional vectors using a CNN encoder. This encoder is initialized via ImageNet pretraining and fine-tuned during training. Rather than learn N a projections from scratch for the attention weighting, we simply partition the frame representations into N a vectors h t i each of size d a = 2048/N a and rely on the final convolutional layers of the CNN to adapt. We then compute the un-normalized attention scores via dot product with the global query vectors:</p><formula xml:id="formula_0">λ t i = h t i • q i .</formula><p>The resulting scores are normalized resulting in N a attention vectors, a i = softmax(λ i ), where the arrow notation represents vectorization in time. The video-level representation from the i th head is then simply H i = a i • h i , and the full video representation is the concatenation H = concat([H 1 , H 2 , . . . , H Na ]). The video-level prediction can then be computed using a shallow fully-connected network, y = f (H).</p><p>Augmentation by Frame Sampling. Because USVN treats all frames independently, it is not necessary to use contiguous spans of frames during training. Instead, we randomly sample fixed-size sets of frames from each video. This can have a regularizing effect by using novel frames for each training epoch. During evaluation we use all video frames. We accommodate the varying numbers of frames in each video by zero padding and masked attention.</p><p>Model Interpretability. We identify prototype frames for each attention head. These prototypes produce embedding subspace vectors h t i that are closely aligned with the corresponding query vector q i . These prototype images can then be qualitatively evaluated by the clinical specialist (see Supplemental Material).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Benchmark Implementations</head><p>A simple and common approach for video recognition is to use fixed pooling functions to aggregate the frame-level representations across time, treating each element of the representation as a channel. We evaluate this approach using max and average pooling functions. Our attention-based method can implement average pooling by assigning equal weight to all frames for each attention head. Neglecting potential optimization challenges, this suggests that attention-based pooling should be at least as good as average pooling. On the other hand, our model can only approximate max pooling in the N a = 2048 case by assigning very large, positive values to the single-element query vectors causing the attentions to become sharply concentrated at one time step. However, this solution pushes the softmax over time into regions with very small gradients. We conclude that max pooling can learn video representations that cannot be expressed by USVN (and vice versa). R(2+1)D is a 3D CNN video recognition architecture that decomposes the spatial and temporal convolution into two successive steps <ref type="bibr" target="#b26">[25]</ref>. First, a 2D convolution is applied over space then a 1D convolution is applied over time. Compared to its 3D ResNet counterparts on Sports-1M and Kinetics datasets, R(2+1)D is a very capable model that can learn complex features while having the same number of parameters in a more data-efficient way. We choose to benchmark against this architecture due to its efficiency and because this is the architecture used by Ouyang et al. to achieve human-level performance on the EchoNet-Dynamic US dataset <ref type="bibr" target="#b16">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>Patent Ductus Arteriosus (PDA). PDA is an opening between the aorta and pulmonary artery that, in severe cases, can cause heart failure shortly after birth. Ultrasound imaging is the primary diagnostic tool for detecting and characterizing PDA. Specifically, doppler US imaging can visualize the motion of the blood through the PDA opening. This motion appears as a characteristic blob of color in the region of the PDA. Physicians are trained to recognize the color and shape of the blob as well as where it appears in relation to other visible anatomy. Superficially, this recognition task makes no reference to the dynamics of the video. We therefore expect that temporal features are not required for accurate PDA recognition. For this dataset we train USVN to predict whether or not an image indicates the presence of PDA. The model output, y, is therefore a single number interpreted as the log-odds of PDA.</p><p>We retrospectively collected a set of 1,145 doppler US clips from 165 distinct examinations involving 66 distinct patients. Each clip was labeled to indicate the presence (661 clips) or absence (484 clips) of PDA. Patients were divided into training (44), validation <ref type="bibr" target="#b11">(11)</ref>, and test <ref type="bibr" target="#b11">(11)</ref> sets with stratification on the presence of PDA. These sets contained 755, 118, and 272 videos, respectively.</p><p>The large variation in the number of videos in the validation and test sets results from the fact that patients have a variable number of examinations ranging from 1 to 10. </p><formula xml:id="formula_1">EF = 1 -ESV/EDV.<label>(1)</label></formula><p>The echocardiograms were obtained by registered sonographers and level 3 echocardiographers. For each of these videos, a masking and cropping transformation was performed to remove text and instrument information from the scanning area.</p><p>For this dataset, we train USVN to predict ejection fraction. Rather than predict EF directly, we output a tuple of real numbers (y 1 , y 2 ) and insert them in place of ESV and EDV in Eq. ( <ref type="formula" target="#formula_1">1</ref>). This choice is motivated by the knowledge that ESV and EDV are determined from different phases of the cardiac cycle. We speculate that decomposing EF into ESV and EDV effectively linearizes the estimation of EF as a function of the video representation H with different attention heads responsible for estimating ESV and EDV.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>Model Performance. Table <ref type="table" target="#tab_0">1</ref> summarizes the performance of USVN and our benchmark implementations on the PDA and EchoNet tasks. For PDA classification, we evaluate using the area under the ROC curve (ROC AUC). For EchoNet, we use the percent of variance explained (r 2 ). USVN results are based on N a = 16 and N a = 128 for PDA and EchoNet, respectively, based on a hyperparameter search (see Supplemental Material). For the PDA dataset, we expected that temporal features are not beneficial and, indeed, we see that R(2+1)D performs worse than all other methods, likely due to the unneeded capacity in the temporal convolutions and the relatively small size of the PDA dataset. USVN leads to a small benefit over average and max pooling for this task. The EchoNet task does benefit from modeling temporal features as indicated by R(2+1)D obtaining the highest score. However, USVN significantly outperforms the fixed pooling methods and is surprisingly close to R(2+1)D. This suggests that temporal features play a relatively small part in explaining the variability in the EchoNet dataset. Sample Efficiency. In Fig. <ref type="figure" target="#fig_1">2</ref> we evaluate the sample efficiency of USVN by artificially limiting the amount of training data. In the case of PDA, we downsample the number of patients because videos from a single patient are correlated with one another. For EchoNet, we downsample the number of videos. In both cases, we use the full validation and test sets to better isolate variation due to limited training data from variation due to model selection and evaluation.</p><p>For PDA, R(2+1)D underperforms the time-independent methods, and the gap is larger for smaller numbers of training patients (see Fig. <ref type="figure" target="#fig_1">2</ref>, top panel). Surprisingly, USVN and average pooling have very similar performance across samples and saturate for a small subset of the available patients. R(2+1)D needs all available patients to approach a similar level of performance. This result aligns with our expectation that the inductive prior of time independence can yield sample efficiency benefits when applied to the appropriate task. R(2+1)D outperforms the time-independent models across all samples for the EchoNet task (see Fig. <ref type="figure" target="#fig_1">2</ref>, bottom panel). Despite being a much simpler architecture than R(2+1)D and approaching similar levels of performance, USVN does not exhibit any sample efficiency benefits in the low-data regime for the EchoNet task. Solving the EchoNet task with spatial features alone may require more adaptation of the pretrained encoder than is required when solving with temporal features. For instance, it may be possible through extensive adaptation of the encoder network to recognize the visual characteristics associated with the end of diastole. However, the end of diastole may also manifest as, for example, an extremum in time of some visual characteristic. A model with access to temporal features such as R(2+1)D may be able to capture such an extremum with relatively little adaptation of the pretrained network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Implementation Details</head><p>For the fixed pooling methods and USVN, we use an ImageNet-pretrained ResNet50 image encoder provided through the timm library <ref type="bibr" target="#b28">[27]</ref>. We train using the timm implementation of the AdamP optimizer <ref type="bibr" target="#b7">[7]</ref> with β 1, 2 = 0.9, 0.999, weight decay of 0.001, batch size of 20 clips, and initial learning rates of 3 • 10 -5 and 0.001 for PDA and EchoNet, respectively. We sample 32 frames per clip during training. We reduce the learning rate by a factor of 10 after 3 epochs with no improvement of the validation loss, and we terminate training after ten consecutive epochs of no improvement. We use 50% dropout on the inputs to the linear layer for each dataset.</p><p>To reproduce the results of R(2+1)D on Echonet Dynamic Dataset by Ouyang et al. <ref type="bibr" target="#b16">[16]</ref>, we cloned their github repo and re-ran their experiments with their best found hyperparameters. Our training runs show similar, if not better, results than stated in the original work. To adapt the model for PDA classification, we modified their data loader, training script, and the R(2+1)D model to allow PDA images. We also removed the manual bias term initialization, left over from predicting ejection fraction on the fully connected linear layer, and initialize it randomly instead. Finally, we replaced MSE loss with binary cross entropy with logits in the training loop. Every run was done for 45 epochs with a batch size of 20 for Echonet Dynamic dataset and 10 for PDA dataset. Model saving occurred for every epoch that showed improvement to the validation loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions and Discussion</head><p>The field of video recognition has been driven by large human action recognition datasets. Unlike videos of human actions, the accurate recognition of medical ultrasound images often only requires identifying key pieces of information at any point in the video and does not make reference to the sequence of events. The contrast between results for the PDA task (where USVN excels) and the EchoNet task (where USVN suffers) demonstrates the importance of tailoring the model architecture to the task at hand in data-constrained settings. Our results suggest that models developed for human action recognition are not optimal in some practical scenarios involving medical ultrasound and that models that assume temporal independence have better sample efficiency. We introduce an architecture, USVN, that is tailored to the medical ultrasound context and demonstrate a situation where the inductive prior of time independence leads to significant sample efficiency benefits. We also present a situation where temporal features are relevant and show that, even for very small datasets, USVN produces no efficiency benefits. Practitioners of deep learning who work with medical ultrasound in the low-data regime should take care to match the architecture choice to the nature of the recognition task.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Proposed video-recognition architecture. Frame representations from ResNet50 are partitioned into Na equal-sized vectors, h t i , represented by the colored boxes at each time step. These are compared by dot product with global query vectors qi to compute attention weights a t i . The video-level representation, Hi, is the attention-weighted sum of the partitions across frames. y is the video-level prediction.</figDesc><graphic coords="3,112,80,54,32,198,70,175,39" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Dependence on number of patients in training set for PDA classification (top)and EchoNet ejection fraction prediction (bottom). For PDA, we show patients, rather than videos along the x-axis due to the non-independence of videos from the same patient. For EchoNet, we omit the "max pool" variant because it failed to obtain positive r 2 values for several points along the x-axis. Performance is measured on the test set.</figDesc><graphic coords="7,135,30,155,51,153,31,154,27" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Model performance comparison. EchoNet benefits from modeling temporal features; PDA does not. Performance is measured on the test set.</figDesc><table><row><cell>Model</cell><cell>PDA</cell><cell>EchoNet</cell></row><row><cell></cell><cell cols="2">(ROC AUC) (r 2 )</cell></row><row><cell>R(2+1)D</cell><cell>0.816</cell><cell>0.822</cell></row><row><cell cols="2">Average Pool 0.837</cell><cell>0.679</cell></row><row><cell>Max Pool</cell><cell>0.835</cell><cell>0.657</cell></row><row><cell cols="2">USVN (Ours) 0.855</cell><cell>0.765</cell></row></table><note><p>EchoNet-Dynamic. The Echonet Dynamic dataset consists of 10,030 apical-4 chamber echocardiograms downsampled to 112 × 112. Each study has clinical measurements: ejection fraction (EF), end systolic volume (ESV), and end diastolic volume (EDV). EF is commonly used to assess cardiac function and is computed from ESV and EDV as</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. We thank <rs type="institution">Clemson University</rs> for their generous allotment of compute time on the <rs type="institution">Palmetto Cluster</rs>.</p></div>
+			</div>			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Automatic image and video caption generation with deep learning: a concise review and algorithmic overlap</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Amirian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Rasheed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">R</forename><surname>Taha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Arabnia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="218386" to="218400" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Multiple instance learning: a survey of problem characteristics and applications. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Carbonneau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Cheplygina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Granger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gagnon</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="page" from="329" to="353" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">automatic fetal ultrasound standard plane detection using knowledge transferred recurrent neural networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24553-9_62</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24553-962" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9349</biblScope>
+			<biblScope unit="page" from="507" to="514" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Deep residual recurrent neural networks for characterisation of cardiac cycle phase from echocardiograms</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">T</forename><surname>Dezaki</surname></persName>
+		</author>
+		<editor>Cardoso, M.J., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-319-67558-9_12</idno>
+		<idno>DLMIA/ML-CDS -2017</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67558-912" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">10553</biblScope>
+			<biblScope unit="page" from="100" to="108" />
+			<date type="published" when="2017">2017</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Horror video scene recognition based on multi-view multi-instance learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-37431-9_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-37431-946" />
+	</analytic>
+	<monogr>
+		<title level="m">ACCV 2012</title>
+		<editor>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Lee</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Matsushita</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Rehg</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Hu</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">7726</biblScope>
+			<biblScope unit="page" from="599" to="610" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Multi-layer multi-instance learning for video concept detection</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">S</forename><surname>Hua</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Multimedia</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1605" to="1616" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<author>
+			<persName><forename type="first">B</forename><surname>Heo</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2006.08217</idno>
+		<title level="m">Adamp: slowing down the slowdown for momentum optimizers on scale-invariant weights</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Improving ultrasound video classification: an evaluation of novel deep learning methods in echocardiography</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Howard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Attention-based deep multiple instance learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ilse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tomczak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="2127" to="2136" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">3D convolutional neural networks for human action recognition</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="221" to="231" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Development and validation of a deep learning strategy for automated view classification of pediatric focused assessment with sonography for trauma</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Kornblith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Ultrasound Med</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1915" to="1924" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Patent ductus arteriosus (PDA) detection in echocardiograms using deep learning</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ashrafi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Intell.-Based Med</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">100054</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep learning in medical ultrasound analysis: a review</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Engineering</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="261" to="275" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Multiple object tracking: a literature review</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Milan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">K</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">293</biblScope>
+			<biblScope unit="page">103448</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Action transformer: a self-attention model for short-time pose-based human action recognition. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Mazzia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Angarano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Salvetti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Angelini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chiaberge</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">124</biblScope>
+			<biblScope unit="page">108487</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Video-based AI for beat-to-beat assessment of cardiac function</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ouyang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">580</biblScope>
+			<biblScope unit="issue">7802</biblScope>
+			<biblScope unit="page" from="252" to="256" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learning spatio-temporal aggregation for fetal heart analysis in ultrasound video</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Patra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Noble</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-67558-9_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67558-932" />
+	</analytic>
+	<monogr>
+		<title level="m">DLMIA/ML-CDS -2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10553</biblScope>
+			<biblScope unit="page" from="276" to="284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Spatial temporal transformer network for skeleton-based action recognition</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Plizzari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cannici</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Matteucci</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-68796-0_50</idno>
+		<idno>978-3-030-68796-0 50</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">ICPR 2021</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Del Bimbo</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12663</biblScope>
+			<biblScope unit="page" from="694" to="701" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Automatic fetal ultrasound standard plane recognition based on deep learning and IIoT</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Industr. Inf</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="7771" to="7780" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Automated fetal head classification and segmentation using ultrasound video</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Rasheed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Junejo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Malik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Saqib</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="160249" to="160267" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Two-stream convolutional networks for action recognition in videos</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Fully convolutional regression network for accurate detection of measurement points</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sofka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rothberg</surname></persName>
+		</author>
+		<editor>Cardoso, M.J., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-319-67558-9_30</idno>
+		<idno>DLMIA/ML-CDS -2017</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67558-930" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">10553</biblScope>
+			<biblScope unit="page" from="258" to="266" />
+			<date type="published" when="2017">2017</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Activity recognition from sparsely labeled data using multiinstance learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Stikic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-01721-6_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-01721-610" />
+	</analytic>
+	<monogr>
+		<title level="m">LoCA 2009</title>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Choudhury</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Quigley</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Strang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Suginuma</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="volume">5561</biblScope>
+			<biblScope unit="page" from="156" to="173" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Deep learning for fast quality assessment</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Taye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Morrow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hagan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Ultrasound Med</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="71" to="79" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A closer look at spatiotemporal convolutions for action recognition</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Torresani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Paluri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="6450" to="6459" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wightman</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.4414861</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4414861" />
+		<title level="m">Pytorch image models</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">A survey on temporal action localization</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="70477" to="70487" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Multiple instance learning for labeling faces in broadcasting news video</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Hauptmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 13th Annual ACM International Conference on Multimedia</title>
+		<meeting>the 13th Annual ACM International Conference on Multimedia</meeting>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<biblScope unit="page" from="31" to="40" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">A comprehensive survey of vision-based human action recognition methods</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">B</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sensors</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">1005</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

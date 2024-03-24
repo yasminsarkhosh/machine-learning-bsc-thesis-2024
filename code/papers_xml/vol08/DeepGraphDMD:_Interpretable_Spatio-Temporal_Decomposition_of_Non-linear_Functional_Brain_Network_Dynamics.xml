@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">DeepGraphDMD: Interpretable Spatio-Temporal Decomposition of Non-linear Functional Brain Network Dynamics</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><roleName>Md</roleName><forename type="first">Asadullah</forename><surname>Turja</surname></persName>
+							<email>mturja@cs.unc.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of North Carolina at Chapel Hill</orgName>
+								<address>
+									<settlement>Chapel Hill</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Martin</forename><surname>Styner</surname></persName>
+							<email>styner@email.unc.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of North Carolina at Chapel Hill</orgName>
+								<address>
+									<settlement>Chapel Hill</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Guorong</forename><surname>Wu</surname></persName>
+							<email>guorongwu@med.unc.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Psychiatry</orgName>
+								<orgName type="institution">University of North Carolina at Chapel Hill</orgName>
+								<address>
+									<settlement>Chapel Hill</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">DeepGraphDMD: Interpretable Spatio-Temporal Decomposition of Non-linear Functional Brain Network Dynamics</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">0E6BCF18EE886E5A6741E51E2F4AB13A</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_35</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:55+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Component Analysis</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Functional brain dynamics is supported by parallel and overlapping functional network modes that are associated with specific neural circuits. Decomposing these network modes from fMRI data and finding their temporal characteristics is challenging due to their timevarying nature and the non-linearity of the functional dynamics. Dynamic Mode Decomposition (DMD) algorithms have been quite popular for solving this decomposition problem in recent years. In this work, we apply GraphDMD-an extension of the DMD for network data-to extract the dynamic network modes and their temporal characteristics from the fMRI time series in an interpretable manner. GraphDMD, however, regards the underlying system as a linear dynamical system that is sub-optimal for extracting the network modes from non-linear functional data. In this work, we develop a generalized version of the GraphDMD algorithm-DeepGraphDMD-applicable to arbitrary non-linear graph dynamical systems. DeepGraphDMD is an autoencoder-based deep learning model that learns Koopman eigenfunctions for graph data and embeds the nonlinear graph dynamics into a latent linear space. We show the effectiveness of our method in both simulated data and the HCP resting-state fMRI data. In the HCP data, DeepGraphDMD provides novel insights into cognitive brain functions by discovering two major network modes related to fluid and crystallized intelligence.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The human brain has evolved to support a set of complementary and temporally varying brain network organizations enabling parallel and higher-order information processing <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b23">24]</ref>. Decoupling these networks from a non-linear mixture of signals (such as functional MRI) and extracting their temporal characteristics in an interpretable manner has been a long-standing challenge in the neuroscience community.</p><p>Conventional mode/component decomposition methods such as Principal Component Analysis (PCA) or Independent Component Analysis (ICA) assume the modes to be static <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b25">26]</ref> and thus sub-optimal for the functional networks generated by time-varying modes. Dynamic Mode Decomposition (DMD) can be treated as a dynamic extension of such component analysis methods since it allows its modes to oscillate over time with a fixed frequency <ref type="bibr" target="#b17">[18]</ref>. This assumption is appropriate for the human brain as the functional brain organizations are supported by oscillatory network modes <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b26">27</ref>]. An extension of DMD for network data called GraphDMD <ref type="bibr" target="#b3">[4]</ref> preserves the graph structure of the networks during the decomposition. In our work, we extend GraphDMD to a sequence of sliding window based dynamic functional connectivity (dNFC) networks to extract independent and oscillatory functional network modes.</p><p>Under the hood, GraphDMD regards the network sequence as a linear dynamical system (LDS) where a linear operator shifts the current network state one time-point in the future. The LDS assumption, however, is not optimal for modeling functional brain networks that exhibit complex non-linearity such as rapid synchronization and desynchronization as well as transient events <ref type="bibr" target="#b5">[6]</ref>. Articles <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b12">13]</ref> propose switching linear dynamical system (SLDS) to tackle the nonlinearity of spatiotemporal data by a piecewise linear approximation. While these models offer interpretability, their shallow architecture limits their generalizability to arbitrary nonlinear systems. On the other hand, the methods in <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b20">21]</ref> model the non-linearity with a deep neural network. While these models have more representation capabilities compared to SLDS, the latent states are not interpretable. More importantly, all of these methods consider the node-level dynamics instead of the network dynamics.</p><p>Here, we propose a novel Deep Graph Dynamic Mode Decomposition (Deep-GraphDMD) algorithm that applies to arbitrary non-linear network dynamics while maintaining interpretability in the latent space. Our method uses Koopman operator theory to lift a non-linear dynamical system into a linear space through a set of Koopman eigenfunctions (Fig. <ref type="figure" target="#fig_0">1a</ref>). There has been a growing line of work that learns these measurement functions using deep autoencoder architectures <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b21">22]</ref>. Training these autoencoders for network data, however, has two unique challenges -1. preserving the edge identity in the latent space so that the network modes are interpretable, 2. enforcing linearity in the latent space for the high dimensional network data. In DeepGraphDMD, we tackle the first challenge by indirectly computing the network embeddings by a novel node embedding scheme. For the second challenge, we introduce a sparse Koopman operator to reduce the complexity of the learning problem. We evaluate the effectiveness of our novel method in both simulated data and resting-state fMRI (rs-fMRI) data from Human Connectome Project.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Let's assume X ∈ R n×t is a matrix containing the BOLD (blood-oxygen-leveldependent) signal of n brain regions (ROIs) in its rows at t time frames sampled at every kΔt time points, where Δt is the temporal resolution. To compute the dynamic connectivity matrix at time point kΔt, a snapshot X k = X :,k:k+s is taken in a sliding window of s time frames. A correlation matrix G k ∈ R n×n is then computed from X k by taking the pearson correlation between the rows of X k , i.e., G ij k = pearson(x i k , x j k ) where x i k , x j k are the i th and j th row of X k respectively. This yields a sequence of graphs</p><formula xml:id="formula_0">G = [G 1 , G 2 , • • • , G t-s+1 ]. Let's also assume that g k ∈ R n 2 is a vectorized version of G k , i.e. g k = vec(G k ) and g ∈ R n 2 ×(t-s+1</formula><p>) is a matrix containing g k in its columns. The goal is to decouple the overlapping spatiotemporal modes from the network sequence G using -1. Graph Dynamic Mode Decomposition algorithm, and 2. a novel Deep Learning-based Graph Dynamic Mode Decomposition algorithm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Graph Dynamic Mode Decomposition</head><p>GraphDMD <ref type="bibr" target="#b3">[4]</ref> assumes that g k follows an LDS:</p><formula xml:id="formula_1">g k+1 = Ag k (1)</formula><p>where A ∈ R n 2 ×n 2 is a linear operator that shifts the current state g k to the state at the next time frame g k+1 . To extract the low dimensional global network dynamics, GraphDMD projects A into a lower dimensional space Â using tensortrain decomposition, applies eigendecomposition of Â, and projects the eigenvectors back to the original space which we refer to as dynamic modes (DMs). GraphDMD uses tensor-train decomposition to maintain the network structure of g k and thus, the DMs from GraphDMD can be reshaped into n × n adjacency matrix forms. Let's assume these DMs are Φ 1 , Φ 2 , • • • , Φ r where Φ p ∈ C n×n and the corresponding eigenvalues are λ 1 , λ 2 , • • • , λ r where λ p ∈ C (Fig. <ref type="figure" target="#fig_0">1b</ref>). Here, r is the total number of DMs. Φ p corresponds to the coherent spatial mode and λ p defines its temporal characteristics (growth/decay rate and frequencies). We can see this by unrolling Eq. 1 in time:</p><formula xml:id="formula_2">g k+1 = A k g 1 = r p=1 Φ p λ k p b p = r p=1 Φ p a k p exp(ω p kΔt)b p (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where λ p = a p exp(ω p Δt), Φ † is the conjugate transpose of Φ, b p = vec(Φ † p )g 1 is the projection of the initial value onto the DMD modes, a p = ||λ p || is the growth/decay rate and ω p = Im(ln λ p )/Δt is the angular frequency of Φ p .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Adaptation of Graph-DMD for Nonlinear Graph Dynamics</head><p>Since the dynamics of the functional networks are often non-linear, the linearity assumption of Eq. 1 is sub-optimal. In this regard, we resort to Koopman operator theory to transform the non-linear system into an LDS using a set of Koopman eigenfunctions ψ, i.e., ψ(g k+1 ) = Aψ(g k ) <ref type="bibr" target="#b8">[9]</ref>. We learn ψ using a deep autoencoder-based architecture-DeepGraphDMD-where the encoder and the decoder are trained to approximate ψ and ψ -1 , respectively. We enforce ψ(g k ) to follow an LDS by applying Latent Koopman Invariant Loss <ref type="bibr" target="#b21">[22]</ref> in the form:</p><formula xml:id="formula_4">L lkis = ||Y -(Y Y † )Y || 2 F (3) where Y = ⎛ ⎝ ψ(g 1 ) ψ(g 2 ) • • • ψ(g t-s ) ⎞ ⎠ , Y = ⎛ ⎝ ψ(g 2 ) ψ(g 3 ) • • • ψ(g t-s+1 ) ⎞ ⎠ are</formula><p>two matrices with columns stacked with ψ(g k ) and Y † is the right inverse of Y . After training, we reshape ψ(g k ) into a n × n network ψ(G k ) and generate the latent network sequence ψ(G 1 ), • • • , ψ(G t-s+1 ). We then apply GraphDMD (described in Sect. 2.1) on this latent and linearized network sequence to extract the DMs Φ p and their corresponding λ p .</p><p>However, there are two unique challenges of learning network embeddings using the DeepGraphDMD model: 1. the edge identity and, thus, the interpretability will be lost in the latent space if we directly embed g k using ψ, and 2. Y † doesn't exist, and thus L lkis can't be computed because Y is low rank with the number of rows n(n-1)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>2</head><p>&gt;&gt; the number of columns t -s + 1. To solve the first problem, instead of learning ψ(g k ) directly, we embed the BOLD signal x i k of each ROI independently using the encoder to learn the latent embeddings z i k (Fig. <ref type="figure" target="#fig_0">1a</ref>). We then compute the pearson correlation between the latent embeddings of the ROIs to get the Koopman eigenfunctions of g k i.e., ψ(g ij k ) = pearson(z i k , z j k ). The weights of the encoder and decoder are shared across the ROIs.</p><p>The second problem arises because the Koopman operator A regresses the value of an edge at the next time-point as a linear combination of all the other edges at the current time-point, i.e., g ij k+1 =</p><p>N p,q=1 w pq g pq k . This results in O(n<ref type="foot" target="#foot_1">2</ref> ) covariates with t -s + 1 &lt;&lt; O(n 2 ) samples making the regression ill-posed. We propose a sparse Koopman operator where each edge g ij k is regressed using only the edges that share a common end-point with it, i.e., g ij k+1 = n p=1,p =i,j w ip g ip k + n q=1,q =i,j w qj g qj k +w ij g ij k (Supplementary Fig. <ref type="figure" target="#fig_0">1</ref>). Since there are only O(n) such edges, it solves the ill-posedness of the regression.</p><p>Other than L lkis , we also train the autoencoder with a reconstruction loss L recon which is the mean-squared error (MSE) between x i k and the reconstructed output from the decoder xi k . Moreover, a regularizer L reg in the form of an MSE loss between g k and the latent ψ(g k ) is also added. The final loss is the following:</p><formula xml:id="formula_5">L = L recon + αL lkis + βL reg (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where α and β are hyper-parameters. We choose α, β, and other hyperparameters using grid search on the validation set. The network architecture and the values of the hyper-parameters of DeepGraphDMD training are shown in Supplementary Fig. <ref type="figure" target="#fig_0">1</ref>. The code is available in<ref type="foot" target="#foot_0">1</ref> .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Window-Based GraphDMD</head><p>We apply GraphDMD in a short window of size 64 time frames with a step size of 4 time frames instead of the whole sequence G because, in real-world fMRI data, both the frequency and the structure of the DMs can change over time.</p><p>We then combine the DMs across different sliding windows using the following post-processing steps:</p><p>Post-processing of the DMs: We first group the DMs within the frequency bins: 0-0.01 Hz, 0.01-0.04 Hz, 0.04-0.08 Hz, 0.08-0.12 Hz, and 0.12-0.16 Hz. We then cluster the DMs within each frequency bin using a clustering algorithm and select the cluster centroids as the representative DMs (except for the first bin where we average the DMs). We chose the optimal clustering algorithm to be Spherical KMeans <ref type="bibr" target="#b0">[1]</ref> (among Gaussian Mixture Model, KMeans, Spherical KMeans, DBSCAN, and, KMedoids) and the optimal number of clusters to be 3 for every frequency bin based on silhouette analysis <ref type="bibr" target="#b16">[17]</ref> (Supplementary Fig. <ref type="figure" target="#fig_1">2</ref>). We use this frequency binning technique to allow for slight variations of ω of a DM over the scanning session. To align these representative DMs across subjects, we apply another round of spherical clustering on the DMs from all subjects and align them based on their cluster memberships.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>We use rs-fMRI for 840 subjects from the HCP Dense Connectome dataset 2 <ref type="bibr" target="#b24">[25]</ref>.</p><p>Each fMRI image was acquired with a temporal resolution (Δt) of 0.72 s and a 2 mm isotropic spatial resolution using a 3T Siemens Skyra scanner. Individual subjects underwent four rs-fMRI runs of 14.4 min each (1200 frames per run). Group-ICA using FSL's MELODIC tool <ref type="bibr" target="#b6">[7]</ref> was applied to parcellate the brain into 50 functional regions (ROIs). To find the correlation between cognition with the rs-fMRI data, we select two behavioral measures related to fluid intelligence: CogFluidComp, PMAT24 A CR and one measure related to crystallized intelligence: ReadEng, and, the normalized scores of the fluid and crystallized cognition measures: CogTotalComp. We regress out the confounding factors: age, gender, and head motion from these behavioral measures using ordinary least squares <ref type="bibr" target="#b11">[12]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Baseline Methods</head><p>We compare GraphDMD and DeepGraphDMD against three decomposition methods: Principal Component Analysis (PCA), Independent Component Analysis (ICA), and standard Dynamic Mode Decomposition (DMD) <ref type="bibr" target="#b17">[18]</ref>. We use the sklearn decomposition library for PCA <ref type="foot" target="#foot_2">3</ref> and ICA<ref type="foot" target="#foot_3">4</ref> and the pyDMD<ref type="foot" target="#foot_4">5</ref> library for standard DMD. We apply PCA and ICA on g, and DMD directly on the bold signal X instead of g (for reasons described in Sect. 4.2). We choose the number of components (n_components) to be three for these decomposition methods, (Results for other n_components values are shown in Supplementary Table <ref type="table" target="#tab_0">1</ref>). The components are aligned across subjects using spherical clustering similar to the GraphDMD modes (Sect. 2.3). We also compare with static functional connectivity (sFC), which is the pairwise pearson correlation between brain regions across all time frames.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Simulation Study</head><p>We generate a sequence of dynamic adjacency matrices G using Eq. 2 from three time-varying modes Φ 1 , Φ 2 , Φ 3 with corresponding frequencies ω 1 ∼ N (0.1, 0.05), ω 2 ∼ N(1, 0.1), ω 3 ∼ N(2.5, 0.1) (Hz). Each Φ p is a 32 × 32 block diagonal matrices with block sizes 16, 8, and 4. We choose a 1 = 1.01, a 2 = 0.9, a 3 = 1.05 and b 1 = b 2 = b 3 = 1. We simulate the process for k = 1, • • • , 29 time-points yielding a sequence of 30 matrices of shape 32 × 32. We repeat the process ten times with different ω 1 , ω 2 , ω 3 and generate ten matrix sequences. We apply PCA, ICA, and GraphDMD (Sect. 2.1) on G to extract three components and compare them against the ground truth modes using pearson correlation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Application of GraphDMD and DeepGraphDMD in HCP Data</head><p>Comparison of DMs with sFC: The ground truth DMs are unknown for the HCP dataset; however, we can use the sFC as a substitute for the ground truth DM with ω = 0 (static DM). sFC offsets the DMs with ω &gt; 0 as they have both positive and negative cycles, and thus only retain the static DM. For comparison, we compute the pearson correlation between the DM within the frequency bin 0-0.01 Hz and sFC for both GraphDMD and DeepGraphDMD. For PCA and ICA, we take the maximum value of the correlation between sFC and the (PCA or ICA) components.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Regression Analysis of Behavioral Measures from HCP:</head><p>In this experiment, we regress the behavioral measures with the DMs within each frequency bin (Sect. 2.3) using Elastic-net. As an input to the Elastic-net, we take the real part of the upper diagonal part of the DM and flatten it into a vector. We then train the Elastic-net in two ways-1. single-band: where we train the Elastic-net independently with the DMs in each frequency bin, and 2. multi-band: we concatenate two DMs in the frequency bins: 0-0.01 Hz and 0.08-0.12 Hz and regress using the concatenated vector. For evaluation, we compute the correlation coefficient r between the predicted and the true values of the measures.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Simulation Study</head><p>In Fig. <ref type="figure" target="#fig_1">2a</ref>, we show the results after applying PCA, ICA, and, GraphDMD on the simulated data described in Sect. 3.3. Since the DMs in this data are oscillating, the data generated from this process are more likely to be overlapping compared to when the modes are static. As a result, methods that assume static modes, such as PCA and ICA, struggle to decouple the DMs and discover modes in overlapping high-density regions. For example, in Mode 2 of ICA, we can see the remnants of Mode 3 in the blue boxes and Mode 1 (negative cycle) in the orange boxes. We observe similar scenarios in the Mode 3 of ICA and Mode 1, Mode 2, and Mode 3 of PCA (the red boxes). On the other hand, the DMs from GraphDMD have fewer remnants from other modes and closely resemble the ground truth. To empirically compare, the mean (± std) pearson correlation for PCA, ICA, and, GraphDMD are 0.81(±0.04), 0.88(±0.03), and 0.98(±0.01).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Application of GraphDMD and DeepGraphDMD in HCP Data</head><p>Comparison of DMs with sFC: The average pearson correlations with sFC across all the subjects are 0.6(±0.09), 0.6(±0.09), 0.84(±0.09), and 0.86(±0.05) for PCA, ICA, GraphDMD, and, DeepGraphDMD (Fig. <ref type="figure" target="#fig_1">2b</ref>) respectively. This shows that the DMD-based methods can robustly decouple the static DM from time-varying DMs. In comparison, the corresponding PCA and ICA component has significantly lower correlation due to the overlap from the higher frequency components.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Regression Analysis of Behavioral Measures from HCP:</head><p>We show the values of r across different methods in Table <ref type="table" target="#tab_0">1</ref>. We only show the results for two frequency bins 0-0.01 Hz and 0.08-0.12 Hz, as the DMs in the other bins are not significantly correlated (r &lt; 0.2) with the behavioral measures (Supplementary Table <ref type="table">2</ref>). The table shows that multi-band training with the DMs from the DMD-based methods significantly improves the regression performance over the baseline methods. Compared to sFC, GraphDMD improves r by 22%, 6%, 0.7%, and, 3% for CogFluidComp, PMAT24 A CR, ReadEng, CogTotalComp, respectively and DeepGraphDMD further improves the performance by 5%, 2.2%, 0.7%, and, 1.5%, respectively. Significant performance improvement for CogFluidComp can be explained by the DM within the bin 0.08-0.12 Hz. This DM provides additional information related to fluid intelligence (r = 0.227 for GraphDMD) to which the sFC doesn't have access. By considering non-linearity, DeepGraphDMD extracts more robust and less noisy DMs (Fig. <ref type="figure" target="#fig_1">2b-c</ref>), and hence, it improves the regression performance by 8% compared to GraphDMD in this frequency bin. By contrast, the standard DMD algorithm yields unstable modes with a p &lt;&lt; 1 when applied to the network sequence G. These modes have no correspondence across subjects and thus can't be used for regression. We instead apply DMD on the BOLD signal X, but the DMD modes show little  Graph DMD 0-0.01 0.254 ± 0.003 0.289 ± 0.004 0.402 ± 0.004 0.438 ± 0.003 0.08-0.12 0.227 ± 0.004 0.193 ± 0.004 0.145 ± 0.004 0.248 ± 0.004 0-0.01, 0.08-0.12 0.308 ± 0.004 0.312 ± 0.004 0.410 ± 0.003 0.454 ± 0.004 Deep Graph DMD 0-0.01 0.259 ± 0.003 0.290 ± 0.002 0.404 ± 0.002 0.439 ± 0.002 0.08-0.12 0.245 ± 0.002 0.201 ± 0.004 0.144 ± 0.003 0.251 ± 0.004 0-0.01, 0.08-0.12 0.325 ± 0.003 0.319 ± 0.003 0.413 ± 0.002 0.461 ± 0.003 correlation with the behavioral measures. PCA and ICA perform significantly worse than the baseline sFC method for all behavioral measures.</p><p>Traditional dynamical functional connectivity analysis methods (such as sliding window-based techniques) consider a sequence of network states. However, our results show that these states can be further decomposed into more atomic network modes. The importance of decoupling these network modes from nonlinearly mixed fMRI signals using DeepGraphDMD has been shown in regressing behavioral measures from HCP data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>In this paper, we proposed a novel algorithm-DeepGraphDMD-to decouple spatiotemporal network modes in dynamic functional brain networks. Unlike other decomposition methods, DeepGraphDMD accounts for both the non-linear and the time-varying nature of the functional modes. As a result, these functional modes from DeepGraphDMD are more robust compared to their linear counterpart in GraphDMD and are shown to be correlated with fluid and crystallized intelligence measures.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) Illustration of the DeepGraphDMD model that embeds a nonlinear graph dynamical system into a linear space, and, (b) interpretable dynamic modes and their temporal characteristics after applying GraphDMD in the linear space.</figDesc><graphic coords="3,41,79,53,72,340,21,120,97" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. (a) Ground truth network modes from simulated data (column 1) and extracted network modes from PCA (2nd column), ICA (3rd column), and, GraphDMD (4th column), (b) Circle plot of the average DMs with ω ≈ 0, (c) ω ∈ [0.08 -0.12] from DeepGraphDMD organized based on common resting-state networks [19].</figDesc><graphic coords="8,55,98,267,71,340,18,106,90" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison of r for the behavioral measures across different methods.</figDesc><table><row><cell></cell><cell cols="2">Frequency (Hz) CogFluidComp PMAT24 A CR ReadEng</cell><cell>CogTotalComp</cell></row><row><cell>sFC</cell><cell>N/A</cell><cell cols="2">0.253 ± 0.003 0.294 ± 0.004 0.407 ± 0.004 0.440 ± 0.004</cell></row><row><cell>PCA</cell><cell>N/A</cell><cell cols="2">0.109 ± 0.003 0.126 ± 0.003 0.224 ± 0.003 0.238 ± 0.003</cell></row><row><cell>ICA</cell><cell>N/A</cell><cell cols="2">0.148 ± 0.005 0.158 ± 0.004 0.239 ± 0.005 0.266 ± 0.006</cell></row><row><cell>DMD</cell><cell cols="3">0-0.01, 0.08-0.12 0.064 ± 0.002 0.169 ± 0.002 0.132 ± 0.003 0.138 ± 0.006</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://github.com/mturja-vf-ic-bd/DeepGraphDMD.git.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>https://www.humanconnectome.org/storage/app/media/documentation/s1200/ HCP1200-DenseConnectome+PTN+Appendix-July2017.pdf.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_2"><p>sklearn.decomposition.PCA.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="4" xml:id="foot_3"><p>sklearn.decomposition.FastICA.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="5" xml:id="foot_4"><p>https://mathlab.github.io/PyDMD/dmd.html.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3 35.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Clustering on the unit hypersphere using von Mises-Fisher distributions</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sra</surname></persName>
+		</author>
+		<ptr target="http://jmlr.org/papers/v6/banerjee05a.html" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">46</biblScope>
+			<biblScope unit="page" from="1345" to="1382" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Dynamic mode decomposition of resting-state and task fMRI</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Casorso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Kong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Van De Ville</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">T</forename><surname>Yeo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Liégeois</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2019.03.019</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811919301922" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">194</biblScope>
+			<biblScope unit="page" from="42" to="54" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Nonparametric Bayesian learning of switching linear dynamical systems</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Sudderth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jordan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Willsky</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paperfiles/paper/2008/file/" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Koller</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Schuurmans</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Bottou</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2008">2008</date>
+			<biblScope unit="volume">21</biblScope>
+		</imprint>
+	</monogr>
+	<note>2b4aa3ad78bdd6b366cc179-Paper.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Physically-interpretable classification of biological network dynamics for complex collective motions</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Fujii</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Takeishi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hojo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Inaba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kawahara</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41598-020-58064-w</idno>
+		<ptr target="https://doi.org/10.1038/s41598-020-58064-w" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Linear dynamical neural population models through nonlinear embeddings</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">W</forename><surname>Archer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Paninski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Cunningham</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paperfiles/paper/2016/file/76" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Lee</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Sugiyama</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">U</forename><surname>Luxburg</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Garnett</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">29</biblScope>
+		</imprint>
+	</monogr>
+	<note>dc611d6ebaafc66cc0879c71b5db5c-Paper.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Robust, transient neural dynamics during conscious perception</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">J</forename><surname>He</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/J.TICS.2018.04.005</idno>
+		<ptr target="https://pubmed.ncbi.nlm.nih.gov/29764721/" />
+	</analytic>
+	<monogr>
+		<title level="j">Trends Cogn. Sci</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="563" to="565" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Fast and robust fixed-point algorithms for independent component analysis</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hyvarinen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="626" to="634" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Predicting behavior through dynamic modes in resting-state fMRI data</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ikeda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kawano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Watanabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Yamashita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kawahara</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2021.118801</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811921010727" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">247</biblScope>
+			<biblScope unit="page">118801</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Hamiltonian systems and transformation in Hilbert space</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">O</forename><surname>Koopman</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/PNAS.17.5.315</idno>
+		<ptr target="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1076052/" />
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. U.S.A</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">315</biblScope>
+			<date type="published" when="1931">1931</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Structured inference networks for nonlinear state space models</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">G</forename><surname>Krishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Shalit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Sontag</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Conference on Artificial Intelligence</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Extracting reproducible time-resolved resting state networks using dynamic mode decomposition</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Kunert-Graf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Eschenburg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Galas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Kutz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">D</forename><surname>Rane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">W</forename><surname>Brunton</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fncom.2019.00075</idno>
+		<ptr target="https://www.frontiersin.org/articles/10.3389/fncom" />
+	</analytic>
+	<monogr>
+		<title level="j">Front. Comput. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page">75</biblScope>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Resting brain dynamics at different timescales capture distinct aspects of human behavior</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Liégeois</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">2317</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Bayesian learning and inference in recurrent switching linear dynamical systems</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Linderman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Paninski</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<ptr target="https://proceedings.mlr.press/v54/linderman17a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th International Conference on Artificial Intelligence and Statistics. Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Singh</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</editor>
+		<meeting>the 20th International Conference on Artificial Intelligence and Statistics. Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="914" to="922" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep learning for universal linear embeddings of nonlinear dynamics</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lusch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nathan Kutz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Brunton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">4950</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Analysis of fMRI data by blind separation into independent spatial components. Hum</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Mckeown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="160" to="188" />
+			<date type="published" when="1998">1998</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Parallel cognitive processing streams in human prefrontal cortex: parsing areal-level brain network for response inhibition</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Osada</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.celrep.2021.109732</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S2211124721011815" />
+	</analytic>
+	<monogr>
+		<title level="j">Cell Rep</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page">109732</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Silhouettes: a graphical aid to the interpretation and validation of cluster analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Rousseeuw</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/0377-0427(87)90125-7</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/0377042787901257" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Appl. Math</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="90125" to="90127" />
+			<date type="published" when="1987">1987</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Dynamic mode decomposition of numerical and experimental data</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Schmid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Fluid Mech</title>
+		<imprint>
+			<biblScope unit="volume">656</biblScope>
+			<biblScope unit="page" from="5" to="28" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A set of functionally-defined brain regions with improved representation of the subcortex and cerebellum</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Seitzman</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2019.116290</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S105381191930881X" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">206</biblScope>
+			<biblScope unit="page">116290</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Brain mechanisms of serial and parallel processing during dual-task performance</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sigman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Dehaene</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">30</biblScope>
+			<biblScope unit="page" from="7585" to="7598" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">LFADS -latent factor analysis via dynamical systems</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sussillo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jozefowicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Abbott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pandarinath</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning Koopman invariant subspaces for dynamic mode decomposition</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Takeishi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kawahara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yairi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 31st International Conference on Neural Information Processing Systems</title>
+		<meeting>the 31st International Conference on Neural Information Processing Systems</meeting>
+		<imprint>
+			<publisher>Curran Associates Inc., Red Hook</publisher>
+			<date type="published" when="2017">2017. 2017</date>
+			<biblScope unit="page" from="1130" to="1140" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Learning the latent heat diffusion process through structural brain network from longitudinal β-amyloid data</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Turja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Styner</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<ptr target="https://proceedings.mlr.press/v143/turja21a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fourth Conference on Medical Imaging with Deep Learning. Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Heinrich</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Lellmann</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Schläfer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Ernst</surname></persName>
+		</editor>
+		<meeting>the Fourth Conference on Medical Imaging with Deep Learning. Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">143</biblScope>
+			<biblScope unit="page" from="761" to="773" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Constructing consistent longitudinal brain networks by group-wise graph learning</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Turja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C P</forename><surname>Zsembik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32248-9_73</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32248-973" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11766</biblScope>
+			<biblScope unit="page" from="654" to="662" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The human connectome project: a data acquisition perspective</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Van Essen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="2222" to="2231" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Functional principal component analysis of fMRI data</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Viviani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Grön</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Spitzer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="109" to="129" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A spatio-temporal decomposition framework for dynamic functional connectivity in the human brain</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xiao</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2022.119618</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811922007339" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">263</biblScope>
+			<biblScope unit="page">119618</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

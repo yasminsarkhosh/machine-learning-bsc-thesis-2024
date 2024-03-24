@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Transfer Learning Approach to Localising a Deep Brain Stimulation Target</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Ying-Qiu</forename><surname>Zheng</surname></persName>
+							<email>ying-qiu.zheng@ndcn.ox.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="department">Wellcome Centre for Integrative Neuroimaging</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Harith</forename><surname>Akram</surname></persName>
+							<idno type="ORCID">0000-0002-2899-628X</idno>
+							<affiliation key="aff1">
+								<orgName type="institution" key="instit1">UCL Institute of Neurology</orgName>
+								<orgName type="institution" key="instit2">Queen Square</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Stephen</forename><surname>Smith</surname></persName>
+							<idno type="ORCID">0000-0001-8166-069X</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Wellcome Centre for Integrative Neuroimaging</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Saad</forename><surname>Jbabdi</surname></persName>
+							<idno type="ORCID">0000-0003-3234-5639</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Wellcome Centre for Integrative Neuroimaging</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Transfer Learning Approach to Localising a Deep Brain Stimulation Target</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">8ECA948F9EB2E5D40AEF64136E35B9DC</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_17</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T12:06+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Surgical targeting</term>
+					<term>Deep brain stimulation</term>
+					<term>MR-guided surgery</term>
+					<term>Ventral intermediate nucleus of thalamus</term>
+					<term>Transfer learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The ventral intermediate nucleus of thalamus (Vim) is a wellestablished surgical target in magnetic resonance-guided (MR-guided) surgery for the treatment of tremor. As the structure is not identifiable from conventional MR sequences, targeting the Vim has predominantly relied on standardised Vim atlases and thus fails to model individual anatomical variability. To overcome this limitation, recent studies define the Vim using its white matter connectivity with both primary motor cortex and dentate nucleus, estimated via tractography. Although successful in accounting for individual variability, these connectivity-based methods are sensitive to variations in image acquisition and processing, and require high-quality diffusion imaging techniques which are often not available in clinical contexts. Here we propose a novel transfer learning approach to accurately target the Vim particularly on clinical-quality data. The approach transfers anatomical information from publicly available high-quality datasets to a wide range of white matter connectivity features in low-quality data, to augment inference on the Vim. We demonstrate that the approach can robustly and reliably identify the Vim despite compromised data quality, and is generalisable to different datasets, outperforming previous surgical targeting methods.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Functional neurosurgical techniques, such as deep brain stimulation (DBS), and MR-guided stereotactic ablation, have been used as effective treatments of neurological and psychiatric disorders for decades. By intervening on a target brain structure, a neurosurgical treatment typically modulates brain activity in disease-related circuits and can often mitigate the disease symptoms and restore brain function when drug treatments are ineffective. An example is the ventral intermediate nucleus of thalamus (Vim), a well-established surgical target in DBS and stereotactic ablation for the treatment of tremor in Parkinson's Disease, essential tremor, and multiple sclerosis <ref type="bibr" target="#b0">[1]</ref>. The Vim plays a central role in tremor circuitry <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref>. It receives efferent fibers from the dentate nucleus of the contralateral cerebellum and projects primarily to the primary motor cortex (M1) <ref type="bibr" target="#b4">[5]</ref>, as part of the dentato-thalamo-cortical pathway (DTCp).</p><p>As the structure is not readily visible on conventional MR images, targeting the Vim has relied primarily on standardised coordinates provided by stereotactic atlases, instead of directly targeting the structure based on subject-specific image-derived features. Such standardised stereotactic coordinates/atlases provide a reproducible way to identify the nucleus. However, the atlas-based Vim targeting falls short of accounting for the inter-individual and often interhemispheric anatomical variability, which are often substantial for thalamic nuclei <ref type="bibr" target="#b13">[14]</ref>, whilst efficacy of stereotactic operations heavily depends on accurate identification of the target nucleus.</p><p>To overcome this limitation, several recent studies proposed to localise the Vim using its anatomical connectivity features (e.g., with M1 and the dentate nucleus) in vivo on an individual basis <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b15">16]</ref>, aided by cutting-edge diffusion-weighted imaging (DWI) and tractography techniques. DWI allows estimation of local fiber orientations, based upon which tractography generates streamline samples representative of the underlying white matter pathway, starting from a given seed. Typically, these studies identify Vim by finding the region of maximum connectivity with both M1 and contralateral dentate, and thus better capture individual variations of the nucleus, leading to improved clinical outcome <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>.</p><p>However, the connectivity-driven Vim requires high angular resolution diffusion imaging (HARDI) techniques to allow reconstruction of Vim's connectivity features, which are often not readily available in advanced-care clinical contexts. Furthermore, even with cutting-edge HARDI and higher order diffusion modelling techniques, the connectivity-derived Vim has exhibited considerable variations across different acquisition protocol and processing pipelines, suggesting that they have to be used with caution to ensure that they adhere to the true underlying anatomical variability instead of simply reflecting the methodological confounds erroneously interpreted as variability.</p><p>Given the limitations of the standardised approaches and connectivity-based methods, we propose a novel approach, HQ-augmentation, to reliably target the Vim, particularly for clinical (or generally lower-quality) data. We utilised the publicly-available high-quality (HQ) Human Connectome Project (HCP) dataset <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref> to augment surgical targeting of the Vim on low-quality (LQ) data. More specifically, the approach transfers the anatomical information derived from high-quality data, i.e., the approximate position of the Vim, to a wide range of low-quality white matter connectivity features in order to infer the likelihood that a given voxel is classified as part of Vim on the corresponding low-quality data. We demonstrate that the proposed approach not only yields Fig. <ref type="figure">1</ref>. Schematic illustration of the HQ-augmentation model. The process begins with the use of HQ diffusion data to establish a "ground truth" Vim within the thalamic masks, utilising white matter connectivity with the M1 and contralateral cerebellum. Following this, surrogate low-quality diffusion datasets are generated through intentional degradation of the HQ datasets. The HQ-augmentation model is then trained using the "ground truth" Vim derived from the HCP HQ data as target labels, and a broad set of HCP's low-quality connectivity profiles (in the form of voxel-by-ROI matrices) as input features. After training, the model is applied to unseen low-quality datasets, which include surrogate low-quality HCP and UK Biobank diffusion data, to predict Vim location. The performance of the model is subsequently evaluated against the corresponding HQ "ground truth" data.</p><p>consistent Vim targets despite compromised data quality, but also preserves inter-individual anatomical variability of the structure. Furthermore, the approach generalises to unseen datasets with different acquisition protocols, showing potential of translating into a reliable clinical routine for MR-guided surgical targeting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Materials and Methods</head><p>HQ Dataset I: Human Connectome Project (HCP) 3T MRI Datasets. We leveraged the 3T diffusion MRI data from HCP <ref type="bibr" target="#b17">[18]</ref> as the HQ dataset. The minimally pre-processed T1-, T2-, and diffusion-weighted MRI scans from a total of 1,062 healthy young adults were included, among which 43 subjects were scanned twice. Diffusion-weighted imaging was acquired at isotropic spatial resolution 1.25 mm, with three shells (b-values = 1000, 2000 and 3000 s/mm 2 ) and approximately 90 unique diffusion directions per shell, acquired twice (total scan time 60 min per subject) <ref type="bibr" target="#b16">[17]</ref>.</p><p>HQ Dataset II: UK Biobank (UKB) 3T MRI Datasets. The UKB 3T MRI datasets <ref type="bibr" target="#b23">[24]</ref> were also used as HQ data. The T1, T2 and diffusion-weighted scans from 2,560 subjects with retest (second scan) sessions were included. The diffusion MRI was carried out at isotropic spatial resolution 2 mm with two shells (b-values = 1000 and 2000 s/mm 2 ), 50 diffusion directions per shell (total scan time 6min per subject).</p><p>Surrogate Low-Quality (LQ) Datasets. We considered a range of lowquality datasets representing the typical data quality in clinical contexts. This included 1) HCP surrogate low angular resolution diffusion dataset, obtained by extracting the b = 0 s/mm 2 and 32 b = 1000 s/mm 2 volumes from HQ HCP 3T diffusion MRI ("LQ-LowAngular"); 2) HCP surrogate low spatial resolution dataset, obtained by downsampling the HCP 3T diffusion MRI to isotropic 2 mm sptial resolution ("LQ-LowSpatial"); 3) HCP surrogate low angular and spatial resolution dataset, created by downsampling the surrogate low-angularresolution dataset to isotropic 2 mm spatial resolution ("LQ-LowAngular-LowSpatial"); 4) UKB surrogate low angular resolution dataset, created by extracting the b = 0 s/mm 2 and 32 b = 1000 s/mm 2 volumes from the original UKB diffusion dataset ("LQ-UKB").</p><p>The Connectivity-Driven Approach. We followed the practice in <ref type="bibr" target="#b10">[11]</ref> to generate connectivity-driven Vim. This approach identifies the Vim by finding the maximum probability of connection to M1 and contralateral dentate nucleus within the thalamic mask, generated via probablistic tractography. When this is applied to HQ original data, it generates the ground truth segmentations. When it is applied to LQ surrogate data, it provides results against which other methods (atlas-based and HQ-augmentation) can be compared.</p><p>The Atlas-Defined Approach. We used a previously published and validated Vim atlas <ref type="bibr" target="#b10">[11]</ref> to find atlas-defined Vim on individual subjects. The atlas was registered into the individual T1 space (also referred to native space) via the warp fields between the corresponding individual T1 scans and the MNI152 standard brain. The warped group-average Vim atlas was thresholded at 50% percentile in the native space as the atlas-defined Vim.</p><p>The HQ-Augmentation Approach. The goal of this approach is to leverage anatomical information in HQ data to infer the likelihood of a voxel belonging to the Vim, given a wide range of tract-density features (multiple distinct tract bundles) derived from low-quality data. The HQ-augmentation model was trained on the HCP dataset for each type of low-quality dataset. Using the HCP HQ data, we first generated the connectivity-driven Vim (referred to as HQ-Vim) as the "ground truth" location of the nucleus, serving as training labels in the model. Next, for each low-quality counterpart, we generated an extended set of tract-density features, targeting a wide range of region-of-interests (ROIs), as the input features of the model. The richer set of connectivity features serves to compensate for the primary tract-density features (with M1 and dentate), when those are compromised by less sufficient spatial or angular resolution in low-quality diffusion MRI, thus making Vim identification less reliant on the primary tract-density features used in the connectivity-driven approach and more robust to variations in data quality. During training, the model learns to use the extended set of low-quality connectivity features to identify the Vim that is closest to the one that can be otherwise obtained from its HQ counterpart.</p><p>Specifically, assume X = [x 1 , x 2 , ...x V ] T is a V ×d connectivity feature matrix for a given subject, where x i is a d × 1 vector representing the connectivity features in voxel i, V is the total number of voxels of the thalamus (per hemisphere) for this subject; y = [y 1 , y 2 , ...y V ] T is a V × 1 vector containing the HQ-Vim labels for the V voxels, in which y i is the label of voxel i. Given the low-quality features X, we seek to maximise the probability of reproducing the exact same HQ-Vim label assignment y on its low-quality counterparts, across the training subjects</p><formula xml:id="formula_0">log P (y|X) = log[ 1 Z(X) exp(-E(y|X))]<label>(1)</label></formula><p>Here E(y|X) is the cost of the label assignment y given the features X, whilst Z(X) serves as an image-dependent normalising term. Maximising the posterior P (y|X) across subjects is equivalent to minimising the cost of the label assignment y given the features X. Suppose N i is the set of voxels neighbouring voxel i, the cost E(y|X) is modelled as</p><formula xml:id="formula_1">E(y|X) = i ψ u (y i |x i ) + i j∈Ni ψ p (y i , y j |x i , x j ) + λ 1 ||W|| 1 + λ 2 ||W|| 2 2 (2)</formula><p>The first component ψ u (y i ) measures the cost (or inverse likelihood) of voxel i taking label y i . Here ψ u (y i ) takes the form ψ u (y i ) = w T yi φ(x i ), where φ(•) maps a feature vector x i = [x 1 , x 2 , ...x d ] to a further expanded feature space in order to provide more flexibility for the parameterisation. W = [w 1 , w 2 ] is the coefficient matrix, each column containing the coefficients for the given class (i.e., belonging to the HQ-Vim or not). Here we chose a series of polynomials along with the group-average Vim probability (registered into native space) to expand the feature space, i.e.,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>φ(x</head><formula xml:id="formula_2">i ) = [x 1 , x 2 , ...x d , x p1 1 , x p1 2 , ...x p1 d , x p2 1 , x p2 2 , ...x p2 d , x p3 1 , x p3 2 , ...x p3 d , g i ]</formula><p>where p 1 = 2, p 2 = 0.5, p 3 = 0.2 are the power of the polynomials, and g i is the group-average probability of voxel i classified as Vim. The second pairwise cost encourages assigning similar labels to neighbouring voxels, particularly for those sharing similar connectivity features. We modelled this component as</p><formula xml:id="formula_3">ψ p (x i , x j ) = μ(y i , y j )ρ m k m (φ(x i ), φ(x j )). Here k m (φ(x i ), φ(x j )) = exp(-γ m ||φ(x i ) -φ(x j )|| 2</formula><p>) is a kernel function modelling the similarity between voxel i and j in the extended feature space, with length scale γ m , chosen via cross-validation. μ(•) is a label compatibility function where μ(y i , y j ) = 0 if</p><formula xml:id="formula_4">y i = y j or μ(y i , y j ) = 1 if y i = y j .</formula><p>Therefore, in a local neighbourhood, the kernel function penalises inconsistent label assignment of voxels that have similar features, thus allowing modelling local smoothness. ρ m controls the relative strength of this pairwise cost weighted by k m (•). Lastly, the L1 and L2 penalty terms serve to prevent overfitting of the model. We used a mean-field algorithm to iteratively approximate the maximum posterior P (y|X) <ref type="bibr" target="#b28">[29]</ref> summed across the subjects. The approximated posterior is maximised via gradient descent in a mini-batch form, where the connectivity feature matrix of each subject serves as a mini-batch, demeaned and normalised, and sequentially fed into the optimisation problem.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Discussions</head><p>Accuracy of the HQ-Augmentation Model on the HCP Surrogate Low-Quality Datasets. The HQ-augmentation model was trained using HQ-Vim as labels and the LQ connectivity profiles as features, and then tested on left-out subjects from the same LQ dataset. Its accuracy was evaluated against the HQ-Vim counterpart obtained from the HQ HCP data of these left-out subjects, which served as ground truth. The accuracies of the HQ-augmentation Vim were also compared with those of the atlas-defined Vim and the connectivity-driven Vim, the latter obtained using the low-quality M1 and dentate tract-density features. We considered two accuracy metrics: Dice coefficient, which measures the overlap with the ground truth, and centroid displacement, which calculates the Euclidean distance between the predicted and ground truth centers-of-mass. As the connectivity-driven approach may even fail on HQ data, resulting in unreliable HQ-Vim, the training and evaluation of HQ-augmentation model were conducted only on a subset of "good subjects", whose HQ-Vim's center-of-mass was within 4 mm from the atlas's center-of-mass in native space. For the subjects which HQ-Vim regarded as unreliable (i.e., deviating too much from the atlas), the accuracy of HQ-augmentation model was evaluated against the atlas-defined Vim. The HQ-augmentation model produced Vim predictions that are closest to the HQ-Vim (i.e., higher Dice coefficient and smaller centroid displacement) than the LQ connectivity-driven approach and the atlas-defined Vim, evaluated on the reliable subset (see Fig. <ref type="figure">2A</ref> for the results on LQ-LowSpatial-LowAngular data; see supplementary materials for results on the other low-quality datasets). When the HQ-vim failed to serve as approximate ground truth, the HQ-augmentation model on low-quality data yielded Vim predictions that were closer to the atlasdefined Vim than the HQ-Vim derived from HQ data (Fig. <ref type="figure">2B</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Generalisability of the HQ-Augmentation</head><p>Model to UK Biobank. We also tested whether the HQ-augmentation models trained on HCP were generalisable to other datasets collected under different protocols. It is crucial for a model to be generalisable to unseen protocols, as collecting large datasets for training purposes in clinical contexts can often be impractical. We therefore applied the HQ-augmentation models trained on different HCP LQ datasets to UK Biobank surrogate low-quality data (LQ-UKB) and averaged the outputs to give a single Fig. <ref type="figure">2</ref>. Accuracy of HQ-augmentation on LQ-HCP-LowSpatial-LowAngular data. (A) When using the HQ-Vim as ground truth, the HQ-augmentation approach using low-quality features (here LQ-LowAngular-LowSpatial features) gives higher Dice coefficient and smaller centroid displacement with the HQ-Vim, than the atlas-defined Vim (green) and the low-quality connectivity-driven Vim (orange). (B) When using the atlas-defined Vim as ground truth (because, in these "unreliable" subjects, the HQconnectivity method was considered to have failed), the HQ-augmentation model using low-quality features even gives more reliable results than the HQ-Vim (red). ensembled Vim prediction per UKB subject in the LQ-UKB dataset. (Note that this step did not involve retraining or fine-tuning for LQ-UKB.) To evaluate its performance, similarly, we derived the HQ-Vim from the original (HQ) UK Biobank data via the connectivity-driven approach, and split it into a reliable subset, in which the UKB HQ-Vim served as the ground truth, and an unreliable subset, in which the atlas-defined Vim (warped into the UKB individual native space) served as the ground truth. On the reliable subset, the evaluations were conducted against the UKB HQ-Vim (Fig. <ref type="figure">3A</ref>), whilst on the unreliable subset, the evaluations were conducted against the atlas-defined Vim (Fig. <ref type="figure">3B</ref>). Despite being trained on HCP, the HQ-augmentation model produced Vim predictions that were closer to the corresponding HQ-Vim on the UKB subjects, outperforming the connectivity-driven approach on the UKB surrogate low-quality data and the atlas-defined approach. Even when using the atlas-defined Vim as the ground truth, the HQ-augmentation Vim on the UKB low-quality data showed higher accuracy than the HQ-Vim derived from the HQ data.</p><p>Reliability Analysis of the HQ-Augmentation Model. We also conducted a reliability analysis for the HQ-augmentation model and the connectivity-driven approach to assess their consistency in providing results despite variations in data quality (across-quality reliability) and across scanning sessions (test-retest reliability). To evaluate the HQ-augmentation model's across-quality reliability, we trained it using HQ tract-density maps to produce an "HQ version" of HQaugmented Vim. The similarity between HQ-augmentation outputs using high-or low-quality features was assessed using the Dice coefficient and centroid displacement measures. Test-retest reliability was determined by comparing the outputs of the HQ-augmentation model on first-visit and repeat scanning sessions. Similarly, we assessed the across-quality reliability and test-retest reliability for the connectivity-driven approach, applied to high-and low-quality data accordingly. The HQ-augmentation model consistently provided more reliable results than the connectivity-driven approach, not only across datasets of different quality but also across different scanning sessions (Fig. <ref type="figure">4</ref>).</p><p>Discussion. Our study presents the HQ-augmentation technique as a robust method to improve the accuracy of Vim targeting, particularly in scenarios where data quality is less than optimal. Compared to existing alternatives, our approach exhibits superior performance, indicating its potential to evolve into a reliable tool for clinical applications. The enhanced accuracy of this technique has significant clinical implications. During typical DBS procedures, one or two electrodes are strategically placed near predetermined targets, with multiple contact points to maximise the likelihood of beneficial outcomes and minimise severe side effects. Greater accuracy translates into improved overlap with the target area, which consequently increases the chances of successful surgical outcomes. Importantly, the utility of our method extends beyond Vim targeting. It can be adapted to target any area in the brain that might benefit from DBS, thus expanding its clinical relevance. As part of our ongoing efforts, we are developing a preoperative tool based on the HQ-augmentation technique. This tool aims to optimise DBS targeting tailored to individual patients' conditions, thereby enhancing therapeutic outcomes and reducing patient discomfort associated with suboptimal electrode placement.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 3 .Fig. 4 .</head><label>34</label><figDesc>Fig.2. Accuracy of HQ-augmentation on LQ-HCP-LowSpatial-LowAngular data. (A) When using the HQ-Vim as ground truth, the HQ-augmentation approach using low-quality features (here LQ-LowAngular-LowSpatial features) gives higher Dice coefficient and smaller centroid displacement with the HQ-Vim, than the atlas-defined Vim (green) and the low-quality connectivity-driven Vim (orange). (B) When using the atlas-defined Vim as ground truth (because, in these "unreliable" subjects, the HQconnectivity method was considered to have failed), the HQ-augmentation model using low-quality features even gives more reliable results than the HQ-Vim (red). (C) and (D). Example contours of Vim identified by each approach. (Color figure online)</figDesc><graphic coords="7,42,81,62,69,338,32,144,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="3,43,80,54,47,336,28,202,24" type="bitmap" /></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Thalamic deep brain stimulation for tremor in Parkinson disease, essential tremor, and dystonia</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">G</forename><surname>Cury</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurology</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<biblScope unit="page" from="1416" to="1423" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Oscillating central motor networks in pathological tremors and voluntary movements. What makes the difference?</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Muthuraman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1331" to="1339" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deep brain stimulation of the lateral cerebellar nucleus produces frequency-specific alterations in motor evoked potentials in the rat in vivo</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">B</forename><surname>Baker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Exp. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">226</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="259" to="264" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">An unfolded map of the cerebellar dentate nucleus and its projections to the cerebral cortex</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">P</forename><surname>Dum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">L</forename><surname>Strick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Neurophysiol</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="634" to="639" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Human pallidothalamic and cerebellothalamic tracts: anatomical basis for functional stereotactic neurosurgery</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Gallay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Struct. Funct</title>
+		<imprint>
+			<biblScope unit="volume">212</biblScope>
+			<biblScope unit="page" from="443" to="463" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Thalamic projections to sensorimotor cortex in the macaque monkey: use of multiple retrograde fluorescent tracers</title>
+		<author>
+			<persName><forename type="first">Darian-Smith</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Darian-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Cheema</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comparat. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">299</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="17" to="46" />
+			<date type="published" when="1990">1990</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Neurochemical characterization of the cerebellar-recipient motor thalamic territory in the macaque monkey</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Calzavara</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. J. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1869" to="1894" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Network perspectives on the mechanisms of deep brain stimulation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Mcintyre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Hahn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurobiol. Dis</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="329" to="337" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Cerebral causes and consequences of parkinsonian resting tremor: a tale of two circuits?</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Helmich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">135</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3206" to="3226" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A new parcellation of the human thalamus on the basis of histochemical staining</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hirai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">G</forename><surname>Jones</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Res. Rev</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="34" />
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Connectivity derived thalamic segmentation in deep brain stimulation for tremor</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Akram</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage: Clin</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="130" to="142" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Improved Vim targeting for focused ultrasound ablation treatment of essential tremor: a probabilistic and patient-specific approach</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">17</biblScope>
+			<biblScope unit="page" from="4769" to="4788" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Probabilistic mapping of deep brain stimulation: insights from 15 years of therapy</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J B</forename><surname>Elias</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="426" to="443" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Multiarchitectonic and stereotactic atlas of the human thalamus</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Morel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Magnin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jeanmonod</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comparat. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">387</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="588" to="630" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ferreira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Ventralis intermedius nucleus anatomical variability assessment by MRI structural connectivity</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">238</biblScope>
+			<biblScope unit="page">118231</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Ventral intermediate nucleus structural connectivity-derived segmentation: anatomical reliability and variability</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bertino</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">243</biblScope>
+			<biblScope unit="page">118519</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Advances in diffusion MRI acquisition and processing in the Human Connectome Project</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">N</forename><surname>Sotiropoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="125" to="143" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The WU-Minn human connectome project: an overview</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Van Essen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="62" to="79" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The minimal preprocessing pipelines for the human connectome project</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">F</forename><surname>Glasser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="105" to="124" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">How to correct susceptibility distortions in spin-echo echo-planar images: application to diffusion tensor imaging</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L R</forename><surname>Andersson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Skare</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ashburner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="870" to="888" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">An integrated approach to correction for off-resonance effects and subject movement in diffusion MR imaging</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L R</forename><surname>Andersson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">N</forename><surname>Sotiropoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">125</biblScope>
+			<biblScope unit="page" from="1063" to="1078" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Improved optimization for the robust and accurate linear registration and motion correction of brain images</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jenkinson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="825" to="841" />
+			<date type="published" when="2002">2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title/>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jenkinson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="782" to="790" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note>FSL</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multimodal population brain imaging in the UK Biobank prospective epidemiological study</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Miller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1523" to="1536" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Image processing and quality control for the first 10,000 brain imaging datasets from UK Biobank</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Alfaro-Almagro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">166</biblScope>
+			<biblScope unit="page" from="400" to="424" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Automatic parcellation of human cortical gyri and sulci using standard anatomical nomenclature</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Destrieux</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="15" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">XTRACT-standardised protocols for automated tractography in the human and macaque brain</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Warrington</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">217</biblScope>
+			<biblScope unit="page">116923</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">A probabilistic atlas of human brainstem pathways based on connectome imaging data</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">169</biblScope>
+			<biblScope unit="page" from="227" to="239" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zheng</surname></persName>
+		</author>
+		<title level="m">Conditional random fields as recurrent neural networks. In: Proceedings of the IEEE International Conference on Computer Vision</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Lncs Homepage</surname></persName>
+		</author>
+		<ptr target="http://www.springer.com/lncs" />
+		<imprint>
+			<date type="published" when="2017-10-04">4 Oct 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

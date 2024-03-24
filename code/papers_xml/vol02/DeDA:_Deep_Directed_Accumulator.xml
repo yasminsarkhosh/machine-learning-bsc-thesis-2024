@@ -1,0 +1,720 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">DeDA: Deep Directed Accumulator</title>
+				<funder ref="#_eZ6mw4R">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Hang</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Rongguang</forename><surname>Wang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Pennsylvania</orgName>
+								<address>
+									<settlement>Philadelphia</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Renjiu</forename><surname>Hu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jinwei</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jiahao</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Cornell University</orgName>
+								<address>
+									<settlement>Ithaca</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">DeDA: Deep Directed Accumulator</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="765" to="775"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">464353250A4CA2A232AD003EC327F091</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_72</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Directed accumulator</term>
+					<term>Neural networks</term>
+					<term>Multiple sclerosis</term>
+					<term>Quantitative susceptibility mapping</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Chronic active multiple sclerosis lesions, also referred to as rim+ lesions, are characterized by a hyperintense rim observed at the lesion's edge on quantitative susceptibility maps. Despite their geometrically simple structure, characterized by radially oriented gradients at the lesion edge with a greater gradient magnitude compared to non-rim+ (rim-) lesions, recent studies indicate that the identification performance for these lesions is subpar due to limited data and significant class imbalance. In this paper, we propose a simple yet effective image processing operation, deep directed accumulator (DeDA), which provides a new perspective for injecting domain-specific inductive biases (priors) into neural networks for rim+ lesion identification. Given a feature map and a set of sampling grids, DeDA creates and quantizes an accumulator space into finite intervals and accumulates corresponding feature values. This DeDA operation can be regarded as a symmetric operation to the grid sampling within the forward-backward neural network framework, the process of which is order-agnostic, and can be efficiently implemented with the native CUDA programming. Experimental results on a dataset with 177 rim+ and 3986 rim-lesions show that 10.1% of improvement in a partial (false positive rate &lt; 0.1) area under the receiver operating characteristic curve (pROC AUC) and 10.2% of improvement in an area under the precision recall curve (PR AUC) can be achieved respectively comparing to other state-of-the-art methods. The source code is available online at https://github.com/tinymilky/DeDA.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Over the past decade, we have observed the substantial success of Convolutional Neural Networks (CNNs) in a multitude of grid-based medical imaging applications, such as magnetic resonance imaging (MRI) reconstruction <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b26">27]</ref> and lesion segmentation <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b24">25]</ref>. Despite the effectiveness of general inductive biases like translation equivariance <ref type="bibr" target="#b14">[15]</ref> and locality <ref type="bibr" target="#b15">[16]</ref>, the diverse nature of The gradient field map of the QSM images presents normalized gradient vectors (the darker the blue, the larger the gradient vector's magnitude). The two rightmost columns display gradient magnitude maps Vs and QSM value maps Vu processed by DA-TR (see Sect. diseases represented in medical images necessitates highly domain-specific knowledge. Consequently, the question of how to incorporate domain-specific inductive biases, or priors, beyond general ones into neural networks for medical image processing remains an open challenge.</p><p>In this study, we strive to answer this question by addressing the identification problem associated with a specific type of multiple sclerosis (MS) lesion, referred to as a chronic active lesion, or rim+ lesion. Histopathology studies characterize rim+ lesions by an iron-rich rim of activated macrophages and microglia <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14]</ref>. These lesions are visible with in-vivo quantitative susceptibility mapping (QSM) <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b21">22]</ref> and phase imaging techniques <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref>. Notably, they display a paramagnetic hyperintense rim at the edge (see Fig. <ref type="figure" target="#fig_0">1</ref>). Despite several efforts to tackle the issue <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b23">24]</ref>, a clinically reliable solution remains elusive.</p><p>Given the limited amount of data and high class imbalance, it's more advantageous to explicitly incorporate domain knowledge into the network as priors. As illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>, rim+ lesions distinguish themselves from rim-lesions in three primary aspects. Firstly, rim+ lesions exhibit a hyperintense ring-like structure at the lesion's edge on QSM. Secondly, a higher magnitude of gradients is observed near the edge of rim+ lesions, a feature not present in rim-lesions. Lastly, rim+ lesions are characterized by radially oriented gradients at the edge, whereas rim-lesions lack such structured orientations.</p><p>In this work, we introduce the Deep Directed Accumulator (DeDA), a novel image processing operation. DeDA, symmetric to grid sampling within a neural network's forward-backward framework, explicitly encodes the aforementioned prior information. Given a feature map and sampling grids, DeDA creates an accumulator space, quantizes it into finite intervals, and accumulates feature values. DeDA can also be viewed as a generalized discrete Radon transform, as it accumulates values between two discrete feature spaces. Our contributions are twofold: Firstly, we present DeDA, a simple yet powerful method that augments neural networks' representation capacity by explicitly incorporating domain-specific priors. Secondly, our experimental results on rim+ lesion identification demonstrate a notable improvement of 10.1% in partial area under the receiver operating characteristic curve (pROC AUC) and a 10.2% improvement in area under the precision recall curve (PR AUC), outperforming existing state-of-the-art methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Numerous signal processing techniques, including the Fourier transform, Radon transform, and Hough transform, map discrete signals from image space to another functional space. We call this new space accumulator space, where each cell's value in the new space constitutes a weighted sum of values from all cells in the original image space. For our purposes, an appealing feature of the accumulator space is that local convolutions within it, like those in Hough and sinogram spaces, result in global aggregation of structural features, such as lines, in the feature map space. This proves beneficial for incorporating geometric priors into neural networks. Differing from attention-based methods, this convolution in accumulator space explicitly captures long-range information through direct geometric prior parameterization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Differentiable Directed Accumulation</head><p>The process of transforming an image to an accumulator space involves a critical step, directed accumulation (DA), in which a cell from the accumulator space is pointed by multiple cells from the image space. Figure <ref type="figure" target="#fig_2">2</ref>, Eq. (1) and Eq. ( <ref type="formula" target="#formula_6">3</ref>) have shown that this DA operation is a symmetric operation to the grid sampling <ref type="bibr" target="#b11">[12]</ref> within the forward-backward learning framework, where the backward pass of DA possesses the same structure as the forward pass of grid sampling if only one sampling grid is given, and vice versa for the forward pass. In addition, DA is further generalized to allow multiple sampling grids to accumulate values from the source feature map. Here we briefly review the grid sampling method and then derive the proposed DeDA.</p><p>Grid Sampling: Given a source feature map U ∈ R C×H×W , a sampling grid G ∈ R 2×H ×W = (G x , G y ) specifying pixel locations to read from U, and a kernel function K() defining the image interpolation, then the output value of a particular position (i, j) at the target feature map V ∈ R C×H ×W can be written as follows: where the kernel function K() can be replaced with any other specified kernels, e.g. integer sampling kernel δ(</p><formula xml:id="formula_0">V c ij = H n W m U c nm K(G x ij , n)K(G y ij , m),<label>(1)</label></formula><formula xml:id="formula_1">G x ij + 0.5 -n) • δ( G y ij + 0.5 -m).</formula><p>Here x + 0.5 rounds x to the nearest integer and δ() is the Kronecker delta function. The gradients with respect to U and G for back propagation can be defined accordingly <ref type="bibr" target="#b11">[12]</ref>.</p><formula xml:id="formula_2">DeDA: Given a source feature map U ∈ R C×H×W , a target feature map V ∈ R C×H ×W , a set of sampling grids G = {G[k] ∈ R 2×H×W = (G x [k], G y [k]) | k ∈ Z + , 1 ≤ k ≤ N } (N ≥ 1 denotes</formula><p>the number of grids), and a kernel function K(), the output value of a particular position (i, j) at the target feature map V can be written as follows:</p><formula xml:id="formula_3">V c ij = N k H n W m U c nm K(G x nm [k], i)K(G y nm [k], j). (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>It is worth noting that the spatial dimension of the grid G[k] should be the same as that of U, but the first dimension of G[k] can be an arbitrary number as long as it aligns with the number of spatial dimensions of V, e.g. if given</p><formula xml:id="formula_5">U ∈ R H×W and G[k] ∈ R 3×H×W , it is expected that V ∈ R H ×W ×D .</formula><p>Basically, the DeDA operation in Eq. ( <ref type="formula" target="#formula_3">2</ref>) performs a tensor mapping by D : (U, G; K) → V, where K is the sampling kernel. For simplicity, function D() will be used to denote the DeDA forward for the rest of the paper.</p><p>To allow back propagation for training networks with DeDA, the gradients with respect to U are derived using the chain rule as follows:</p><formula xml:id="formula_6">∂L ∂V c nm ∂V c nm ∂U c ij = N k H n W m A c nm K(G x ij [k], n)K(G y ij [k], m). (<label>3</label></formula><formula xml:id="formula_7">)</formula><p>The gradient tensor with respect to V is A. The structure of Eq. ( <ref type="formula" target="#formula_6">3</ref>) reduces to Eq. ( <ref type="formula" target="#formula_0">1</ref>) when N = 1, indicating DeDA's symmetry with grid sampling. Given identical transformations for each channel c in DeDA's forward and backward passes, we denote the feature map with spatial dimensions alone henceforth. , where is a small real value to avoid zero denominator. The mesh grids of U are denoted as M x (value range: (0, H -1)) and M y (value range: (0, W -1)). We can then generate a set of sampling grids as follows:</p><formula xml:id="formula_8">G = {G[k] = (G x [k], G y [k]) | k ∈ Z + , 1 ≤ k ≤ N }, (<label>4</label></formula><formula xml:id="formula_9">)</formula><p>where</p><formula xml:id="formula_10">G[k] ∈ R 2×H×W , G x [k] = k Ûx + M x , G y [k] = k Ûy + M y ,</formula><p>and N = max(H, W ). Now the DeDA-based transformation of Rim (DA-TR) can be formulated as V s = D(S, G; K) and V u = D(U, G; K), where the integer sampling kernel is used. It is worth noting that feature and gradient magnitude values are accumulated separately due to differences of image intensity and gradients between rim+ and rim-lesions (see Fig. <ref type="figure" target="#fig_0">1</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Network Layer for DA-TR:</head><p>To gain more representation ability and capture long-range contextual information, DA-TR is applied to both intermediate feature maps and original images. As can be seen from Fig. <ref type="figure" target="#fig_3">3</ref>, image patches of lesions are processed through a set of convolutional layers with each consisting of a 3 × 3 × 3 or 1 × 1 × 1 convolution, a batch normalization <ref type="bibr" target="#b10">[11]</ref> and a ReLU activation function, followed by a DA-TR layer and a 1 × 1 × 1 convolutional layer. The first 1×1×1 conv layer is used to fuse feature maps and original image patches for better feature embedding, and the second one is used to fuse DeDA transformed gradient magnitude maps V s and feature maps V u . It is worth noting that only in-plane rims are observed, and thus the DA-TR is performed on the 2D feature map slices along the axial direction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>For fair and consistent comparison, the dataset applied in the previous work <ref type="bibr" target="#b23">[24]</ref> was asked for and used to demonstrate the performance of the proposed DeDAbased rim parameterization DA-TR. A total of 172 subjects were included in the dataset, and 177 lesions were identified as rim+ lesions and 3986 lesions were identified as rim-lesions, please refer to <ref type="bibr" target="#b23">[24]</ref> for more details about the image acquisition and pre-processing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Comparator Methods and Implementation Details</head><p>Comparator Methods: Three methods have been developed so far for rim+ lesion identification, of which APRL <ref type="bibr" target="#b17">[18]</ref> and RimNet <ref type="bibr" target="#b3">[4]</ref> are on phase imaging and QSMRim-Net <ref type="bibr" target="#b23">[24]</ref> is on QSM. In comparison with these methods, we use QSM along with T2-FLAIR images as the network inputs for RimNet and QSMRimNet, and use the QSM image to extract first-order radiomic features for APRL. Furthermore, we applied residual networks (ResNet) <ref type="bibr" target="#b9">[10]</ref>, vision transformer (ViT) <ref type="bibr" target="#b7">[8]</ref>, Swin transformer <ref type="bibr" target="#b16">[17]</ref>, and Nested transformer <ref type="bibr" target="#b27">[28]</ref> as backbone architecture for our application, and determined that ResNet with 18 convolution layers works the best. Transformer-based networks with fewer inductive biases rely heavily on the use of a large training dataset or depends strongly on the feature reuse <ref type="bibr" target="#b18">[19]</ref>, as a result, these networks as well as CNNs with deeper structures are prone to overfit small datasets.</p><p>Implementation Details: A stratified five-fold cross-validation procedure was applied to train and validate the performance, and all experiments including ablation study were carried out within this setting. Each lesion was cropped into patches with a fixed size of 32 × 32 × 8 voxels. Random flipping, random affine transformation and random Gaussian blurring were used to augment our data. More details of the training procedure can be found out in the supplementary materials.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results and Ablation Study</head><p>Lesion-wise Results: To evaluate the performance of each method and produce clinically relevant results, pROC curves with false positive rates (FPRs) in the range of (0, 0.1) and PR curves of the different validation folds were interpolated using piece-wise constant interpolation and averaged to show the overall performance at the lesion level. For each curve, AUC was computed directly from the interpolated and averaged curves. The binary indicators of rim+/rimlesions were generated by thresholding the model probabilities to maximize the F 1 score, where F 1 = 2• precision • sensitivity precision + sensitivity . In addition, accuracy, F1 score, sensitivity, specificity, and precision were used to characterize the performance of each method. Table <ref type="table" target="#tab_0">1</ref> and Fig. <ref type="figure" target="#fig_4">4</ref> show the lesion-wise performance metrics of the proposed methods in comparison with the other methods. DA-TR-Net outperformed the other competitors in all evaluation metrics. With a slightly higher overall accuracy and specificity with other methods, DA-TR-Net resulted in a 5.5%, 15.4% and 39.4% improvement in F 1 score, 10.1%, 13.6% and 30.0% improvement in pROC (FPR &lt; 0.1) AUC, and 10.2%, 18.5% and 54.0% improvement in PR AUC compared to QSMRimNet, RimNet and APRL, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Subject-wise Results:</head><p>We also evaluated the performance at the subjectlevel. Pearson's correlation coefficient was used to measure the correlation model predicted count and human expert count. Mean Squared Error (MSE) was also used to measure the averaged accuracy for the model predicted count. Figure <ref type="figure" target="#fig_4">4a</ref> shows the scatter-plot for the predicted count v.s. the human expert count, along with the identity line, and the Pearson's correlation coefficient (ρ) for DA-TR-Net was ρ = 0.93(95%CI : 0.90, 0.95) As can be seen from Table <ref type="table" target="#tab_0">1</ref>, the Pearson's correlations and MSE for the proposed DA-TR-Net was found higher than other competitors. This demonstrates that the performance of DA-TR-Net at the subject-level is statistically significantly higher than that of APRL, Rim-Net, and QSMRim-Net (Table <ref type="table" target="#tab_1">2</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ablation Study:</head><p>We conducted an ablation study to investigate the effects of each component accompanied with DA-TR. First, we examined the effects of applying the proposed DA-TR to the latent feature maps and raw images. Second, we examined the effects of using V u and V s , because rim+ lesions differ from rim-lesions in both gradient magnitudes and values at the edge of the lesion. We then investigated how multi-radius rim parameterization can affect the results, as the size of rim+ lesions vary greatly with a radius from 5 to 15 among different subjects. Results from models #1, #2 and #4 show that the rim parametrization DA-TR is useful for rim+ identification, and DA-TR used in the latent feature map space performs even better. Comparing model #3 and #4, one can see that accumulating both gradient magnitudes and feature values is beneficial. The consistent performance improvement from model #4 to #5 and from model #5 to #6 has demonstrated the effectiveness of applying multi-radius rim parameterization. More results on backbone networks can be found in the appendix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Discussions</head><p>Medical images often require processing of a primary target or region of interest (ROI), such as rims, left ventricles, or tumors. These ROIs frequently exhibit distinct geometric structures <ref type="bibr" target="#b25">[26]</ref> or possess specific spatial relationships <ref type="bibr" target="#b24">[25]</ref> with their surroundings. Capturing these characteristics poses a challenge for modern neural networks, especially given limited and imbalanced training data. While differentiable grid sampling <ref type="bibr" target="#b11">[12]</ref> can tackle some of these issues within a certain scope, another major class involving transformations (e.g. Hough transform <ref type="bibr" target="#b2">[3]</ref>) that necessitate directed accumulation is overlooked. Our proposed DeDA bridges this gap, enabling the use of image transformations with directed accumulation within a neural network. This allows for the parametrization of geometric shapes and the modeling of spatial correlations in a differentiable manner.</p><p>While the study focuses on rim+ lesion identification, the proposed DeDA can be extended to other applications. These include the utilization of polar transformation for skin lesion recognition/segmentation, symmetric circular transformation for cardiac image registration <ref type="bibr" target="#b22">[23]</ref>, parabola transformation for curvilinear structure segmentation <ref type="bibr" target="#b20">[21]</ref>, and high-dimensional bilateral filtering <ref type="bibr" target="#b4">[5]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>We present DeDA, an image processing operation that helps parameterize rim and effectively incorporates prior information into networks through a value accumulation process. The experimental results demonstrate that DeDA surpasses existing state-of-the-art methods in all evaluation metrics by a significant margin. Furthermore, DeDA's versatility extends beyond lesion identification and can be applied in other image processing applications such as Hough transform, bilateral grid, and Polar transform. We are excited about the potential of DeDA to advance numerous medical applications and other image processing tasks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Visual illustration of the difference between a rim+ and a rim-lesion. QSM image patches represent the lesion magnetic susceptibility, while Fluid Attenuated Inversion Recovery (FLAIR) image patches pinpoint the exact location of the lesions. The gradient field map of the QSM images presents normalized gradient vectors (the darker the blue, the larger the gradient vector's magnitude). The two rightmost columns display gradient magnitude maps Vs and QSM value maps Vu processed by DA-TR (see Sect. 2.2). Notably, the rim+ lesion exhibits structured patterns in the accumulator space by aggregating feature values along gradients, a characteristic absent in the rimlesion. (Color figure online)</figDesc><graphic coords="2,42,81,53,69,338,32,124,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Fig. 1. Visual illustration of the difference between a rim+ and a rim-lesion. QSM image patches represent the lesion magnetic susceptibility, while Fluid Attenuated Inversion Recovery (FLAIR) image patches pinpoint the exact location of the lesions. The gradient field map of the QSM images presents normalized gradient vectors (the darker the blue, the larger the gradient vector's magnitude). The two rightmost columns display gradient magnitude maps Vs and QSM value maps Vu processed by DA-TR (see Sect. 2.2). Notably, the rim+ lesion exhibits structured patterns in the accumulator space by aggregating feature values along gradients, a characteristic absent in the rimlesion. (Color figure online)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visual illustration of the proposed method. The left panel shows differences between the grid sampling and the proposed DeDA using bilinear sampling kernel. The right panel shows the schematic for rim parameterization, where the knowledge of a triple (x, y, θ) is mapped to a straight line (marked in orange) in the accumulator space. (Color figure online)</figDesc><graphic coords="4,41,79,54,02,340,24,92,68" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Schematic of the network layer for DA-TR. Conv denotes a convolutional layer, and each of these layers consists a 3×3×3 or 1×1×1 convolution, a batch normalization, and a ReLU activation.2.2 DeDA-Based Transformation Layer for Rim ParameterizationIn this section, we derive DeDA-based transformation and its convolution layers for rim parameterization. As shown in Fig.1, a rim+ lesion can be characterized by a hyperintense rim at the lesion edge on QSM and differs from a rim-lesion in both image intensities and gradients at the edge. To account for both image intensities and gradients, the rim is parameterized as tan(θ) = y -b x -a , where (a, b) are parameters of coordinates for the rim center in the accumulator space and θ represents the gradient direction at (x, y) in the image space. As can be seen from the right panel of Fig.2, mapping a single (x, y, θ) to the accumulator space produces a straight line, and thus coordinates of the rim center can be identified by the intersection of many of these lines.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. The predicted count of rim + lesions from DA-TR-Net versus the expert human count is shown in (a), where points in the plot have been jittered for better visualization. The pROC and PR curves for the proposed and other comparator methods are shown in (b) and (c), where AUC denotes the area under the curve.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Results of the proposed and other methods using a stratified five-fold crossvalidation scheme. The best performing metric is bolded.</figDesc><table><row><cell>Method</cell><cell cols="2">Accuracy F1</cell><cell cols="7">Sensitivity Specificity Precision ROC AUC pROC AUC PR AUC ρ (95%CI)</cell><cell>MSE</cell></row><row><cell>APRL [18]</cell><cell>0.954</cell><cell cols="2">0.538 0.627</cell><cell>0.969</cell><cell>0.470</cell><cell>0.940</cell><cell>0.644</cell><cell>0.507</cell><cell>0.68 (0.59,0.75) 3.16</cell></row><row><cell>RimNet [4]</cell><cell>0.970</cell><cell cols="2">0.650 0.655</cell><cell>0.984</cell><cell>0.644</cell><cell>0.950</cell><cell>0.737</cell><cell>0.659</cell><cell>0.75 (0.67,0.81) 2.41</cell></row><row><cell>QSMRimNet [24]</cell><cell>0.977</cell><cell cols="2">0.711 0.667</cell><cell>0.991</cell><cell>0.761</cell><cell>0.939</cell><cell>0.760</cell><cell>0.709</cell><cell>0.89 (0.86,0.92) 1.00</cell></row><row><cell cols="2">DA-TR-Net (Ours) 0.980</cell><cell cols="2">0.750 0.712</cell><cell>0.992</cell><cell>0.792</cell><cell>0.975</cell><cell>0.837</cell><cell>0.781</cell><cell>0.93(0.90,0.95) 0.69</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation study on the effects for each component in DA-TR. Multiple check marks for sets of N denote the union of the checked sets. Pre-Convs denotes a convolution block with six 3 × 3 × 3 convolution layers.</figDesc><table><row><cell cols="5"># Pre-Convs Vu Vs N ∈ {5, 7, 9} N ∈ {11, 13} N ∈ {15} F1</cell><cell cols="3">ROC AUC pROC AUC (FPR&lt; 0.1) PR AUC</cell></row><row><cell>1 ×</cell><cell>× × ×</cell><cell>×</cell><cell>×</cell><cell cols="2">0.685 0.945</cell><cell>0.753</cell><cell>0.689</cell></row><row><cell>2 ×</cell><cell>×</cell><cell>×</cell><cell></cell><cell cols="2">0.701 0.971</cell><cell>0.790</cell><cell>0.720</cell></row><row><cell>3</cell><cell>× ×</cell><cell>×</cell><cell></cell><cell cols="2">0.703 0.967</cell><cell>0.795</cell><cell>0.714</cell></row><row><cell>4</cell><cell>×</cell><cell>×</cell><cell></cell><cell cols="2">0.702 0.976</cell><cell>0.817</cell><cell>0.736</cell></row><row><cell>5</cell><cell>×</cell><cell></cell><cell></cell><cell cols="2">0.727 0.975</cell><cell>0.825</cell><cell>0.743</cell></row><row><cell>6</cell><cell></cell><cell></cell><cell></cell><cell cols="2">0.750 0.975</cell><cell>0.837</cell><cell>0.781</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. The database was approved by the local <rs type="grantName">Institutional Review Board</rs> and written informed consent was obtained from all patients prior to their entry into the database. We would like to thank folks from <rs type="institution">Weill Cornell</rs> for sharing the data used in this paper.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_eZ6mw4R">
+					<orgName type="grant-name">Institutional Review Board</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 72.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Seven-tesla phase imaging of acute multiple sclerosis lesions: a new window into the inflammatory process</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Absinta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="669" to="678" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Persistent 7-tesla phase rim predicts poor outcome in new multiple sclerosis patient lesions</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Absinta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin. Investig</title>
+		<imprint>
+			<biblScope unit="volume">126</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="2597" to="2609" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Generalizing the Hough transform to detect arbitrary shapes</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Ballard</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1981">1981</date>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page" from="111" to="122" />
+		</imprint>
+	</monogr>
+	<note type="report_type">Pattern Recogn</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">RimNet: a deep 3D multimodal MRI architecture for paramagnetic rim lesion assessment in multiple sclerosis</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Barquero</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage Clinical</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page">102412</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Real-time edge-aware image processing with the bilateral grid</title>
+		<author>
+			<persName><forename type="first">Jiawen</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Paris</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Sylvain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Frédo</forename><surname>Durand</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/1276377.1276506</idno>
+		<ptr target="https://doi.org/10.1145/1276377.1276506" />
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Graph</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">103</biblScope>
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Slow expansion of multiple sclerosis iron rim lesions: pathology and 7 t magnetic resonance imaging</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dal-Bianco</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acta Neuropathol</title>
+		<imprint>
+			<biblScope unit="volume">133</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="25" to="42" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Quantitative susceptibility map reconstruction from MR phase data using Bayesian regularization: validation and application to brain imaging</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>De Rochefort</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med. Official J. Int. Soc. Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="194" to="206" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">An image is worth 16 × 16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">QSM is an imaging biomarker for chronic glial activation in multiple sclerosis lesions</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Gillen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Clin. Transl. Neurol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="877" to="886" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Batch normalization: accelerating deep network training by reducing internal covariate shift</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="448" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Spatial transformer networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jaderberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">28</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Efficient multi-scale 3D CNN with fully connected CRF for accurate brain lesion segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kamnitsas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="61" to="78" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Quantitative susceptibility mapping identifies inflammation in a subset of chronic multiple sclerosis lesions</title>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">W</forename><surname>Kaunzner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">142</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="133" to="145" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">On translation invariance in CNNs: convolutional layers can exploit absolute spatial location</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">S</forename><surname>Kayhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C V</forename><surname>Gemert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="14274" to="14285" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Understanding image representations by measuring their equivariance and equivalence</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lenc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference On Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference On Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="991" to="999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Fully automated detection of paramagnetic rims in multiple sclerosis lesions on 3t susceptibility-based MR imaging</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage Clin</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page">102796</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">What makes transfer learning work for medical images: feature reuse and other factors</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Matsoukas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Haslum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sorkhei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Söderberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="9225" to="9234" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Results of the 2020 fastMRI challenge for machine learning MR image reconstruction</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Muckley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2306" to="2317" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Local intensity order transformation for robust curvilinear object segmentation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Boutry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Géraud</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="2557" to="2569" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Quantitative susceptibility mapping (QSM): decoding MRI data for a tissue magnetic biomarker</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="82" to="101" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2306.02589</idno>
+		<title level="m">DAGrid: directed accumulator grid</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">QSMRim-Net: imbalance-aware learning for identification of chronic active multiple sclerosis lesions on quantitative susceptibility maps</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neu-roImage Clin</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page">102979</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">ALL-Net: anatomical information lesion-wise loss function integrated into neural network for multiple sclerosis lesion segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage Clin</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page">102854</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Geometric loss for deep multiple sclerosis lesion segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="24" to="28" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Efficient folded attention for medical image reconstruction and segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="10868" to="10876" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Nested hierarchical transformer: towards accurate, data-efficient and interpretable visual understanding</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Ö</forename><surname>Arik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Pfister</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="3417" to="3425" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">ECL: Class-Enhancement Contrastive Learning for Long-Tailed Skin Lesion Classification</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yilan</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Image Processing Center</orgName>
+								<orgName type="department" key="dep2">School of Astronautics</orgName>
+								<orgName type="institution">Beihang University</orgName>
+								<address>
+									<postCode>100191</postCode>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jianqi</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Image Processing Center</orgName>
+								<orgName type="department" key="dep2">School of Astronautics</orgName>
+								<orgName type="institution">Beihang University</orgName>
+								<address>
+									<postCode>100191</postCode>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ke</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Image Processing Center</orgName>
+								<orgName type="department" key="dep2">School of Astronautics</orgName>
+								<orgName type="institution">Beihang University</orgName>
+								<address>
+									<postCode>100191</postCode>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fengying</forename><surname>Xie</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Image Processing Center</orgName>
+								<orgName type="department" key="dep2">School of Astronautics</orgName>
+								<orgName type="institution">Beihang University</orgName>
+								<address>
+									<postCode>100191</postCode>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">ECL: Class-Enhancement Contrastive Learning for Long-Tailed Skin Lesion Classification</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="244" to="254"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">1B00A12AEEC01B4D0FCFF7C251EC89BF</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_23</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Contrastive learning</term>
+					<term>Dermoscopic image</term>
+					<term>Long-tailed classification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Skin image datasets often suffer from imbalanced data distribution, exacerbating the difficulty of computer-aided skin disease diagnosis. Some recent works exploit supervised contrastive learning (SCL) for this long-tailed challenge. Despite achieving significant performance, these SCL-based methods focus more on head classes, yet ignoring the utilization of information in tail classes. In this paper, we propose class-Enhancement Contrastive Learning (ECL), which enriches the information of minority classes and treats different classes equally. For information enhancement, we design a hybrid-proxy model to generate classdependent proxies and propose a cycle update strategy for parameters optimization. A balanced-hybrid-proxy loss is designed to exploit relations between samples and proxies with different classes treated equally. Taking both "imbalanced data" and "imbalanced diagnosis difficulty" into account, we further present a balanced-weighted cross-entropy loss following curriculum learning schedule. Experimental results on the classification of imbalanced skin lesion data have demonstrated the superiority and effectiveness of our method. The codes can be publicly available from https://github.com/zylbuaa/ECL.git.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Skin cancer is one of the most common cancers all over the world. Serious skin diseases such as melanoma can be life-threatening, making early detection and treatment essential <ref type="bibr" target="#b2">[3]</ref>. As computer-aided diagnosis matures, recent advances with deep learning techniques such as CNNs have significantly improved the performance of skin lesion classification <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8]</ref>. However, as data-hungry approaches, deep learning models require large balanced and high-quality datasets to meet the In SCL, head classes are overtreated leading to optimization concentrating on head classes. By contrast, ECL utilizes the proxies to enhance the learning of tail classes and treats all classes equally according to balanced contrastive theory <ref type="bibr" target="#b23">[24]</ref>. Moreover, the enriched relations in samples and proxies are helped for better representations.</p><p>accuracy and robustness requirements in applications, which is hard to suffice due to the long-tailed occurrence of diseases in the real-world. Long-tailed problem is usually caused by differences in incidence rate and difficulties in data collection. Some diseases are common while others are rare, making it difficult to collect balanced data <ref type="bibr" target="#b12">[13]</ref>. This will cause the head classes to account for the majority of the samples and the tail classes only have small portions. Thus, existing public skin datasets usually suffer from imbalanced problems which then results in class bias of classifier, for example, poor model performance especially on tail lesion types.</p><p>To tackle the challenge of learning unbiased classifiers with imbalanced data, many previous works focus on three main ideas, including re-sampling data <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b17">18]</ref>, re-weighting loss <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b21">22]</ref> and re-balancing training strategies <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b22">23]</ref>. Resampling methods over-sample tail classes or under-sample head classes, reweighting methods adjust the weights of losses on class-level or instance-level, and re-balancing methods decouple the representation learning and classifier learning into two stages or assign the weights between features from different sampling branches <ref type="bibr" target="#b20">[21]</ref>. Despite the great results achieved, these methods either manually interfere with the original data distribution or improve the accuracy of minority classes at the cost of reducing that of majority classes <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref>.</p><p>Recently, contrastive learning (CL) methods pose great potential for representation learning when trained on imbalanced data <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b13">14]</ref>. Among them, supervised contrastive learning (SCL) <ref type="bibr" target="#b10">[11]</ref> aggregates semantically similar samples and separates different classes by training in pairs, leading to impressive success in long-tailed classification of both natural and medical images <ref type="bibr" target="#b15">[16]</ref>. However, there still remain some defects: (1) Current SCL-based methods utilize the information of minority classes insufficiently. Since tail classes are sampled with low probability, each training mini-batch inherits the long-tail distribution, making parameter updates less dependent on tail classes. (2) SCL loss focuses more on optimizing the head classes with much larger gradients than tail classes, which means tail classes are all pushed farther away from heads <ref type="bibr" target="#b23">[24]</ref>. (3) Most methods only consider the impact of sample size ("imbalanced data") on the classification accuracy of skin diseases, while ignoring the diagnostic difficulty of the diseases themselves ("imbalanced diagnosis difficulty").</p><p>To address the above issues, we propose a class-Enhancement Contrastive Learning (ECL) method for skin lesion classification, differences between SCL and ECL are illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. For sufficiently utilizing the tail data information, we attempt to address the solution from a proxy-based perspective. A proxy can be regarded as the representative of a specific class set as learnable parameters. We propose a novel hybrid-proxy model to generate proxies for enhancing different classes with a reversed imbalanced strategy, i.e., the fewer samples in a class, the more proxies the class has. These learnable proxies are optimized with a cycle update strategy that captures original data distribution to mitigate the quality degradation caused by the lack of minority samples in a mini-batch. Furthermore, we propose a balanced-hybrid-proxy loss, besides introducing balanced contrastive learning (BCL) <ref type="bibr" target="#b23">[24]</ref>. The new loss treats all classes equally and utilizes sample-to-sample, proxy-to-sample and proxy-to-proxy relations to improve representation learning. Moreover, we design a balanced-weighted crossentropy loss which follows a curriculum learning schedule by considering both imbalanced data and diagnosis difficulty.</p><p>Our contributions can be summarized as follows: <ref type="bibr" target="#b0">(1)</ref> We propose an ECL framework for long-tailed skin lesion classification. Information of classes are enhanced by the designed hybrid-proxy model with a cycle update strategy. <ref type="bibr" target="#b1">(2)</ref> We present a balanced-hybrid-proxy loss to balance the optimization of each class and leverage relations among samples and proxies. (3) A new balancedweighted cross-entropy loss is designed for an unbiased classifier, which considers both "imbalanced data" and "imbalanced diagnosis difficulty". (4) Experimental results demonstrate that the proposed framework outperforms other state-of-theart methods on two imbalanced dermoscopic image datasets and the ablation study shows the effectiveness of each element.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>The overall end-to-end framework of ECL is presented in Fig. <ref type="figure" target="#fig_1">2</ref>. The network consists of two parallel branches: a contrastive learning (CL) branch for representative learning and a classifier learning branch. The two branches take in different augmentations T i , i ∈ {1, 2} from input images X and the backbone is shared between branches to learn the features Xi , i ∈ {1, 2}. We use a fully connected layer as a logistic projection for classification g(•) : X → Ỹ and a one-hidden layer MLP h(•) : X → Z ∈ R d as a sample embedding head where d denotes the dimension. L 2 -normalization is applied to Z by using inner product as distance measurement in CL. Both the class-dependent proxies generated by hybrid-proxy model and the embeddings of samples are used to calculate balanced-weighted cross-entropy loss, thus capturing the rich relations of samples and proxies. For better representation, we design a cycle update strategy to optimize the proxies' parameters in hybrid-proxy model, together with a curriculum learning schedule for achieving unbiased classifiers. The details are introduced as follows.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Hybrid-Proxy Model</head><p>The proposed hybrid-proxy model consists of a set of class-dependent proxies <ref type="figure"></ref>and<ref type="figure">N p</ref> c is the proxy number in this class. Since samples in a mini-batch follow imbalanced data distribution, these proxies are designed to be generated in a reversed imbalanced way by giving more representative proxies of tail classes for enhancing the information of minority samples. Let us denote the sample number of class c as N c and the maximum in all classes as N max . The proxy number N p c can be obtained by calculating the imbalanced factor Nmax Nc of each class:</p><formula xml:id="formula_0">P = {p c k |k ∈ {1, 2, ..., N p c } , c ∈ {1, 2, ..., C}}, C is the class number, p c k ∈ R d is the k-th proxy vector of class c,</formula><formula xml:id="formula_1">N p c = 1 N c = N max Nmax 10Nc + 2 N c = N max (1)</formula><p>In this way, the tail classes have more proxies while head classes have less, thus alleviating the imbalanced problem in a mini-batch.</p><p>As we know, a gradient descent algorithm will generally be executed to update the parameters after training a mini-batch of samples. However, when dealing with an imbalanced dataset, tail samples in a batch contribute little to the update of their corresponding proxies due to the low probability of being sampled. So how to get better representative proxies? Here we propose a cycle update strategy for the optimization of the parameters. Specifically, we introduce the gradient accumulation method into the training process to update proxies asynchronously. The proxies are updated only after a finished epoch that all data has been processed by the framework with the gradients accumulated. With such a strategy, tail proxies can be optimized in a view of whole data distribution, thus playing better roles in class information enhancement. Algorithm 1 presents the details of the training process.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Balanced-Hybrid-Proxy Loss</head><p>To tackle the problem that SCL loss pays more attention on head classes, we introduce BCL and propose balanced-hybrid-proxy loss to treat classes equally. Given a batch of samples B = (x</p><formula xml:id="formula_2">(1,2) i , y i ) B , let Z = z (1,2) i B = z 1 1 , z 2 2 , ..., z 1 B , z 2 B</formula><p>be the feature embeddings in a batch and B denotes the batch size. For an anchor sample z i ∈ Z in class c, we unify the positive image set as z + = {z j |y j = y i = c, j = i}. Also for an anchor proxy p c i , we unify all positive proxies as p + . The proposed balanced-hybrid-proxy loss pulls points (both samples and proxies) in the same class together, while pushes apart samples from different classes in embedding space by using dot product as a similarity measure, which can be formulated as follows:</p><formula xml:id="formula_3">L BHP = - 1 2B + c∈C N p c si∈{Z∪P} 1 2B c + N p c -1 sj ∈{z + ∪p + } log exp(s i • s j /τ ) E (2) E = c∈C 1 2B c + N p c -1 s k ∈{Zc∪Pc} exp(s i • s k /τ )<label>(3)</label></formula><p>where B c means the sample number of class c in a batch, τ is the temperature parameter. In addition, we further define Z c and P c as a subset with the label c of Z and P respectively. The average operation in the denominator of balancedhybrid-proxy loss can effectively reduce the gradients of the head classes, making an equal contribution to optimizing each class. Note that our loss differs from BCL as we enrich the learning of relations between samples and proxies. Sampleto-sample, proxy-to-sample and proxy-to-proxy relations in the proposed loss have the potential to promote network's representation learning. Moreover, as the skin datasets are often small, richer relations can effectively help form a high-quality distribution in the embedding space and improve the separation of features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Balanced-Weighted Cross-Entropy Loss</head><p>Taking both "imbalanced data" and "imbalanced diagnosis difficulty" into consideration, we design a curriculum schedule and propose balanced-weighted cross-entropy loss to train an unbiased classifier. The training phase are divided into three stages. We first train a general classifier, then in the second stage we assign larger weight to tail classes for "imbalanced data". In the last stage, we utilize the results on the validation set as the diagnosis difficulty indicator of skin disease types to update the weights for "imbalanced diagnosis difficulty". The loss is given by:</p><formula xml:id="formula_4">L BW CE = - 1 B B i=1 w i CE( ỹi , y i ) (<label>4</label></formula><formula xml:id="formula_5">)</formula><formula xml:id="formula_6">w i = ⎧ ⎪ ⎪ ⎨ ⎪ ⎪ ⎩ 1 e &lt; E 1 ( C/Nc c∈C 1/Nc ) e-E 1 E 2 -E 1 E 1 &lt; e &lt; E 2 ( C/f e c c∈C 1/f e c ) e-E 2 E-E 2 E 2 &lt; e &lt; E (<label>5</label></formula><formula xml:id="formula_7">)</formula><p>where w denotes the weight and ỹ denotes the network prediction. We assume f e c is the evaluation result of class c on validation set after epoch e and we use f1-score in our experiments. The network is trained for E epochs, E 1 and E 2 are hyperparameters for stages. The final loss is given by Loss = λL BHP +μL BW CE where λ and μ are the hyperparameters which control the impact of losses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset and Implementation Details</head><p>Dataset and Evaluation Metrics. We evaluate the ECL on two publicly available dermoscopic datasets ISIC2018 <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b18">19]</ref> and ISIC2019 <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b18">19]</ref>. The 2018 We adopt five metrics for evaluation: accuracy (Acc), average precision (Pre), average sensitivity (Sen), macro f1-score (F1) and macro area under curve (AUC). Acc and F1 are considered as the most important metrics in this task.</p><p>Implementation Details. The proposed algorithm is implemented in Python with Pytorch library and runs on a PC equipped with an NVIDIA A100 GPU. We use ResNet50 <ref type="bibr" target="#b8">[9]</ref> as backbone and the embedding dimension d is set to 128. We use SGD as the optimizer with the weight decay 1e-4. The initial learning rate is set to 0.002 and decayed by cosine schedule. We train the network for 100 epochs with a batch size of 64. The hyperparameters E 1 , E 2 , τ , λ, and μ are set to 20, 50, 0.01, 1, and 2 respectively. We use the default data augmentation strategy on ImageNet in <ref type="bibr" target="#b8">[9]</ref> as T 1 for classification branch. And for CL branch, we add random grayscale, rotation, and vertical flip in T 1 as T 2 to enrich the data representations. Meanwhile, we only conduct the resize operation to ensure input size 224 × 224 × 3 during testing process. The models with the highest Acc on validation set are chosen for testing. We conduct experiments in 3 independent runs and report the standard deviations in the supplementary material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experimental Results</head><p>Quantitative Results. To evaluate the performance of our ECL, we compare our method with 10 advanced methods. Among them, focal loss <ref type="bibr" target="#b14">[15]</ref>, LDAM-DRW <ref type="bibr" target="#b1">[2]</ref>, logit adjust <ref type="bibr" target="#b16">[17]</ref>, and MWNL <ref type="bibr" target="#b21">[22]</ref> are the re-weighting loss methods. BBN <ref type="bibr" target="#b22">[23]</ref> is the methods based on re-balancing training strategy while Hybrid-SC <ref type="bibr" target="#b19">[20]</ref>, SCL <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b15">16]</ref>, BCL <ref type="bibr" target="#b23">[24]</ref>, TSC <ref type="bibr" target="#b13">[14]</ref> and ours are the CL-based methods. Moreover, MWNL and SCL have been verified to perform well in the skin disease classification task. To ensure fairness, we re-train all methods by rerun their released codes on our divided datasets with the same experimental settings. We also confirmed that all models have converged and choose the best eval checkpoints. The results are shown in Table <ref type="table" target="#tab_0">1</ref>. It can be seen that ECL has a significant advantage with the highest level in most metrics on two datasets. Noticeably, our ECL outperforms other imbalanced methods by great gains, e.g., 2.56% in Pre on ISIC2018 compared with SCL and 4.33% in F1 on ISIC2019 dataset compared with TSC. Furthermore, we draw the confusion matrixes after normalization in Fig. <ref type="figure" target="#fig_3">3</ref>, which illustrate that ECL has significantly improved most of the categories, from minority to majority.  <ref type="table" target="#tab_3">S2</ref>). First, we directly move the contrastive learning (CL) branch and replaced the balanced-weighted cross-entropy (BWCE) loss with cross-entropy (CE) loss. We can see from the results that adding CL branch can significantly improve the network's data representation ability with better performance than only adopting a classifier branch. And our BWCE loss can help in learning a more unbiased classifier with an improvement of 2.7% in F1 compared to CE in dual branch setting. Then we train the ECL w/o cycle update strategy. The overall performance of the network has declined compared with training w/ the strategy, indicating that this strategy can better enhance proxies learning through the whole data distribution. In the end, we also set the proxies' number of different classes equal to explore whether the classification ability of the network is improved due to the increase in the number of proxies. With more proxies, metrics fluctuate and do not increase significantly. However, the result of using proxies generated by reversed balanced way in hybrid-proxy model (HPM) outperforms equal proxies in nearly all metrics, which proves that giving more proxies to tail classes can effectively enhance and enrich the information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work, we present a class-enhancement contrastive learning framework, named ECL, for long-tailed skin lesion classification. Hybrid-proxy model and balanced-hybrid-proxy loss are proposed to tackle the problem that SCL-based methods pay less attention to the learning of tail classes. Class-dependent proxies are generated in hybrid-proxy model to enhance information of tail classes, where rich relations between samples and proxies are utilized to improve representation learning of the network. Furthermore, balanced-weighted cross-entropy loss is designed to help train an unbiased classifier by considering both "imbalanced data" and "imbalanced diagnosis difficulty". Extensive experiments on ISIC2018 and ISIC2019 datasets have demonstrated the effectiveness and superiority of ECL over other compared methods.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Comparison between SCL (a) and ECL (b).In SCL, head classes are overtreated leading to optimization concentrating on head classes. By contrast, ECL utilizes the proxies to enhance the learning of tail classes and treats all classes equally according to balanced contrastive theory<ref type="bibr" target="#b23">[24]</ref>. Moreover, the enriched relations in samples and proxies are helped for better representations.</figDesc><graphic coords="2,56,97,54,62,338,74,99,40" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overall framework of the proposed ECL. ECL has two branches for classifier learning (guided by balanced-weighted cross-entropy loss LBW CE ) and contrastive learning (guided by balanced-hybrid-proxy loss LBHP ). Proxies in hybrid-proxy model are generated by a reserve imbalanced way (see Sect.2.1) to strengthen the information of minority classes in a mini-batch.</figDesc><graphic coords="4,55,98,54,44,340,30,156,25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Fig. 2. Overall framework of the proposed ECL. ECL has two branches for classifier learning (guided by balanced-weighted cross-entropy loss LBW CE ) and contrastive learning (guided by balanced-hybrid-proxy loss LBHP ). Proxies in hybrid-proxy model are generated by a reserve imbalanced way (see Sect.2.1) to strengthen the information of minority classes in a mini-batch.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The results of confusion matrix illustrate that ECL obtains great performance on most classes especially for minority classes.</figDesc><graphic coords="7,41,79,54,65,340,33,87,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Algorithm 1 :</head><label>1</label><figDesc>Training process of ECL. Training set X, validation set X val , training epochs E, iterations T , batch size B, learning rate lr, stages in balanced-weighted cross-entropy loss E2 1 Initialize model parameters θ and hybrid-proxy model P parameters φ 2 for e in E do + μLBW CE ({yi, ỹi} B , f e )</figDesc><table><row><cell>3</cell><cell cols="3">for t in T do</cell><cell></cell></row><row><cell>4</cell><cell cols="4">Getting a batch of samples x (1,2) i</cell><cell>, yi</cell><cell>B</cell></row><row><cell></cell><cell>z i (1,2)</cell><cell>B</cell><cell cols="2">, { ỹi} B = model( x (1,2) i</cell><cell>B</cell><cell>)</cell></row><row><cell></cell><cell cols="3">// curriculum learning</cell><cell></cell></row><row><cell>5</cell><cell cols="3">if e &gt; E2 then</cell><cell></cell></row><row><cell>6</cell><cell cols="5">Loss(θ, φ) = λLBHP ( z i (1,2) , P) (1,2) B</cell></row><row><cell></cell><cell></cell><cell></cell><cell>i</cell><cell cols="2">B</cell></row></table><note><p>Input: 7 else 8 Loss(θ, φ) = λLBHP ( z , P) + μLBW CE ({yi, ỹi} B ) 9 grad t θ = ∇ θ Loss(θ), grad t φ = ∇ φ Loss(φ) // calculate gradients 10 θ ← θlr * grad t θ // update parameters θ of model 11 φ ← φ -T t lr * grad t φ // update parameters φ of P 12 if e &gt; E2 then 13 f e = V alidate(model, X val )</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Comparison results on ISIC2018 and ISIC2019 datasets.</figDesc><table><row><cell>Methods</cell><cell cols="2">ISIC2018</cell><cell></cell><cell></cell><cell cols="2">ISIC2019</cell><cell></cell><cell></cell></row><row><cell></cell><cell>Acc</cell><cell>Sen</cell><cell>Pre</cell><cell>F1</cell><cell>AUC Acc</cell><cell>Sen</cell><cell>Pre</cell><cell>F1</cell><cell>AUC</cell></row><row><cell>CE</cell><cell cols="9">83.89 69.56 73.62 70.34 94.81 82.41 67.02 77.32 70.90 95.37</cell></row><row><cell>Focal Loss</cell><cell cols="9">84.19 68.78 76.69 71.38 94.76 82.05 64.55 75.93 68.84 94.82</cell></row><row><cell cols="10">LDAM-DRW 84.20 71.74 74.65 71.98 95.22 82.29 68.08 74.61 70.84 95.65</cell></row><row><cell cols="10">Logit Adjust 84.15 71.54 71.78 70.77 95.55 81.93 68.94 69.12 68.64 95.17</cell></row><row><cell>MWNL</cell><cell cols="9">84.90 73.90 76.94 74.92 96.79 84.10 74.83 75.81 75.08 96.61</cell></row><row><cell>BBN</cell><cell cols="9">85.57 74.96 72.40 72.79 93.72 83.43 71.78 78.37 74.42 95.10</cell></row><row><cell>Hybrid-SC</cell><cell cols="9">86.30 73.93 75.84 74.34 96.33 84.69 70.90 76.87 73.27 96.67</cell></row><row><cell>SCL</cell><cell cols="9">86.13 70.40 80.88 74.27 96.56 84.60 70.90 81.66 75.07 96.21</cell></row><row><cell>BCL</cell><cell cols="9">84.92 72.87 71.15 71.57 95.61 83.47 73.52 74.17 73.50 95.95</cell></row><row><cell>TSC</cell><cell cols="9">85.94 73.35 77.77 74.94 95.83 84.75 71.89 79.81 75.13 95.84</cell></row><row><cell>Ours</cell><cell cols="5">87.20 73.01 83.44 76.76 96.55 86</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>.11 76.57 83.22 79.46 96.78</head><label></label><figDesc></figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 .</head><label>2</label><figDesc>Ablation study on ISIC2019 dataset.</figDesc><table><row><cell>Methods(ISIC2019)</cell><cell>Proxies</cell><cell>Acc</cell><cell>Sen</cell><cell>Pre</cell><cell>F1</cell><cell>AUC</cell></row><row><cell>Classifier branch-CE</cell><cell>HPM</cell><cell cols="5">82.41 67.02 77.32 70.90 95.37</cell></row><row><cell>Classifier branch-BWCE</cell><cell>HPM</cell><cell cols="5">82.69 67.95 77.32 71.65 95.37</cell></row><row><cell>Dual branch-CE+BHP</cell><cell>HPM</cell><cell cols="5">85.49 73.35 81.61 76.76 96.52</cell></row><row><cell cols="7">Dual branch-BWCE+BHP 2 proxies per-class 85.52 74.03 81.46 77.22 96.53</cell></row><row><cell cols="7">Dual branch-BWCE+BHP 3 proxies per-class 85.36 73.49 83.00 77.53 96.74</cell></row><row><cell cols="7">Dual branch-BWCE+BHP 4 proxies per-class 85.79 74.09 82.03 77.42 96.53</cell></row><row><cell cols="7">Dual branch-BWCE+BHP w/o cycle stategy 85.65 73.48 83.00 77.40 96.65</cell></row><row><cell></cell><cell>HPM</cell><cell cols="5">86.11 76.57 83.22 79.46 96.78</cell></row></table><note><p><p><p>Ablation Study. To further verify the effectiveness of the designs in ECL, we conduct a detailed ablation study shown in Table</p>2</p>(the results on ISIC2018 are shown in supplementary material Table</p></note></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 23.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deep over-sampling framework for classifying imbalanced data</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ando</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-71249-9_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-71249-946" />
+	</analytic>
+	<monogr>
+		<title level="m">ECML PKDD 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Ceci</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hollmén</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Todorovski</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Vens</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Džeroski</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10534</biblScope>
+			<biblScope unit="page" from="770" to="785" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Learning imbalanced datasets with label-distribution-aware margin loss</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gaidon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Arechiga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Analysis of the ISIC image datasets: usage, benchmarks and recommendations</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cassidy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kendrick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Brodzicki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jaworek-Korjakowska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yap</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">75</biblScope>
+			<biblScope unit="page">102305</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Contrastive learning for finegrained ship classification in remote sensing images</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Geosci. Remote Sens</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="1" to="16" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Skin lesion analysis toward melanoma detection: a challenge at the 2017 international symposium on biomedical imaging (ISBI), hosted by the international skin imaging collaboration (ISIC)</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Codella</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Combalia</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.02288</idno>
+		<title level="m">Bcn20000: dermoscopic lesions in the wild</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Dermatologist-level classification of skin cancer with deep neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Esteva</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">542</biblScope>
+			<biblScope unit="issue">7639</biblScope>
+			<biblScope unit="page" from="115" to="118" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A survey, review, and future trends of skin lesion segmentation and classification</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Ahamad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Yap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">155</biblScope>
+			<biblScope unit="page">106624</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Decoupling representation and classifier for long-tailed recognition</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Supervised contrastive learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Khosla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="18661" to="18673" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">What makes multi-class imbalanced problems difficult? An experimental study</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lango</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Stefanowski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Syst. Appl</title>
+		<imprint>
+			<biblScope unit="volume">199</biblScope>
+			<biblScope unit="page">116962</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Flat-aware cross-stage distilled framework for imbalanced medical image classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-821" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022, Part III</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="217" to="226" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Targeted supervised contrastive learning for long-tailed recognition</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="6918" to="6928" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Focal loss for dense object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Fighting class imbalance with contrastive learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Marrakchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Makansi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_44</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021, Part III</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page">44</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Long-tail learning via logit adjustment</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Menon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jayasumana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Rawat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Veit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kumar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Dynamic sampling in convolutional neural networks for imbalanced data classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pouyanfar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2018 IEEE Conference on Multimedia Information Processing and Retrieval</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="112" to="117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The ham10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tschandl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosendahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kittler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Contrastive learning based hybrid networks for long-tailed image classification</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">S</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="943" to="952" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A survey on long-tailed visual recognition</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Vision</title>
+		<imprint>
+			<biblScope unit="volume">130</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1837" to="1872" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Single model deep learning on imbalanced small datasets for skin lesion classification</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Yao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1242" to="1254" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">BBN: bilateral-branch network with cumulative learning for long-tailed visual recognition</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">S</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">M</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9719" to="9728" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Balanced contrastive learning for long-tailed visual recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">P P</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">G</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="6908" to="6917" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,830 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Source-Free Domain Adaptation for Medical Image Segmentation via Prototype-Anchored Feature Alignment and Contrastive Learning</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Qinji</forename><surname>Yu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nan</forename><surname>Xi</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">State University of New York at Buffalo</orgName>
+								<address>
+									<region>New York</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Junsong</forename><surname>Yuan</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">State University of New York at Buffalo</orgName>
+								<address>
+									<region>New York</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ziyu</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kang</forename><surname>Dang</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">VoxelCloud, Inc</orgName>
+								<address>
+									<settlement>Los Angeles</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Xiaowei</forename><surname>Ding</surname></persName>
+							<email>dingxiaowei@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">VoxelCloud, Inc</orgName>
+								<address>
+									<settlement>Los Angeles</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Source-Free Domain Adaptation for Medical Image Segmentation via Prototype-Anchored Feature Alignment and Contrastive Learning</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="3" to="12"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">016538CF695CB92845AC6AA32DF46ADA</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_1</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:40+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Domain adaptation</term>
+					<term>Source-free</term>
+					<term>Contrastive learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Unsupervised domain adaptation (UDA) has increasingly gained interests for its capacity to transfer the knowledge learned from a labeled source domain to an unlabeled target domain. However, typical UDA methods require concurrent access to both the source and target domain data, which largely limits its application in medical scenarios where source data is often unavailable due to privacy concern. To tackle the source data-absent problem, we present a novel two-stage sourcefree domain adaptation (SFDA) framework for medical image segmentation, where only a well-trained source segmentation model and unlabeled target data are available during domain adaptation. Specifically, in the prototype-anchored feature alignment stage, we first utilize the weights of the pre-trained pixel-wise classifier as source prototypes, which preserve the information of source features. Then, we introduce the bi-directional transport to align the target features with class prototypes by minimizing its expected cost. On top of that, a contrastive learning stage is further devised to utilize those pixels with unreliable predictions for a more compact target feature distribution. Extensive experiments on a cross-modality medical segmentation task demonstrate the superiority of our method in large domain discrepancy settings compared with the state-of-the-art SFDA approaches and even some UDA methods. Code is available at: https://github.com/CSCYQJ/MICCAI23-ProtoContra-SFDA.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The inception of deep neural networks has revolutionized the landscape of medical image segmentation <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b23">24]</ref>. This tremendous success, however, is conditioned on the assumption that the training and testing data are drawn from the same distribution. Unfortunately, in real-world clinical scenarios, due to different acquisition protocols or various imaging modalities, domain shift is widespread between training (i.e., source domain) and testing (i.e., target domain) datasets <ref type="bibr" target="#b14">[15]</ref>. This distribution gap usually degenerates the model performance on the target domain. To achieve reliable performance across different domains, a straightforward way is manually labeling some target data and fine-tuning the pretrained model on them <ref type="bibr" target="#b12">[13]</ref>. However, obtaining expert-level annotation data in the medical imaging domain incurs significant time and expense <ref type="bibr" target="#b21">[22]</ref>. Recently, unsupervised domain adaptation (UDA) has been widely investigated to reduce domain gap through transferring the knowledge learned from a rich-labeled source domain to an unlabeled target domain <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b18">19]</ref>. Existing UDA methods typically require sharing source data during adaptation, and enforce distribution alignment to diminish the domain discrepancy between source and target domains. This requirement limits the application of UDA methods when source domain data are not accessible. Hence, some very recent works have started to explore a more practical setting, source-free domain adaptation (SFDA), that adapts a pre-trained source model to unlabeled target domains without accessing any source data <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b20">21]</ref>. Among these methods, <ref type="bibr" target="#b4">[5]</ref> and <ref type="bibr" target="#b19">[20]</ref> focus on generating reliable pseudo labels for target domain data by developing various denoising strategies. Unavoidably, these self-training methods depends heavily on initial probability maps produced by the source model, which are considerably unreliable when the domain discrepancy is large (e.g., CT and MRI). To relieve the issues caused by noisy pseudo labels, Bateson et al. <ref type="bibr" target="#b0">[1]</ref> proposed a prior-aware entropy minimization method to minimize the label-free entropy loss for target predictions. Furthermore, unlike the above self-adaption methods, Yang et al. <ref type="bibr" target="#b20">[21]</ref> utilized the statistic information stored in the batch normalization layer of the source model and mutual Fourier Transform to synthesize the source-like image. However, the quality of the generated image is still influenced by the domain discrepancy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Background</head><p>In this work, we propose a novel SFDA framework for cross-modality medical image segmentation. Our framework contains two sequentially conducted stages, i.e., Prototype-anchored Feature Alignment (PFA) stage and Contrastive Learning (CL) stage. As previous works <ref type="bibr" target="#b11">[12]</ref> noted, the weights of the pre-trained classifier (i.e., projection head) can be employed as the source prototypes during domain adaptation. That means we can characterize the features of each class with a source prototype and align the target features with them instead of the inaccessible source features. To that end, during the PFA stage, we first provide a target-to-prototype transport to ensure the target features get close to the corresponding prototypes. Then, considering the trivial solution that all target features are assigned to the dominant class prototype (e.g., background), we add a reverse prototype-to-target transport to encourage diversity. However, although most target features have been assigned to the correct class prototype after PFA, some hard samples with high prediction uncertainty still exist in the decision boundary (see Fig. <ref type="figure" target="#fig_0">1</ref>(a→b)). Moreover, we observe that those unreliable predictions usually get confused among only a few classes instead of all classes <ref type="bibr" target="#b17">[18]</ref>. Taking the unreliable pixel in Fig. <ref type="figure" target="#fig_0">1(b,</ref><ref type="figure">c</ref>) for example, though it achieves similar high probabilities on the spleen and left kidney, the model is pretty sure about this pixel not belonging to the liver and right kidney. Inspired by this, we use confusing pixels as the negative samples for those unlikely classes, and then introduce the CL stage to pursue a more compact target feature distribution. Finally, we conduct experiments on a cross-modality abdominal multi-organ segmentation task. With only a source model and unlabeled target data, our method outperforms the state-of-the-art SFDA and even achieves comparable results with some classical UDA approaches.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>We are first provided a segmentation model M s trained on N s labeled samples {(x s n , y s n )} Ns n=1 from the source domain D s , and an unlabeled dataset with N t samples {x t m } Nt m=1 from the target domain D t , where x s , x t ∈ R H×W ×D , y s n ∈ R H×W , H and W are the height and width of the samples. The goal of SFDA is to adapt the source model M s with only unlabeled x t to predict pixel-wise label y t for the target domain data. In general, the segmentation model consists of two parts: 1) a feature extractor F θ :</p><formula xml:id="formula_0">x i → f i ∈ R D f , parameterized by θ, mapping each pixel i ∈ {1, • • • , H × W } in image x to the feature f i in the embedding space; 2) a one-layer pixel-wise classifier φ : f i → p i ∈ R C ,</formula><p>that projects pixel feature into the semantic label space with C classes.</p><p>In the SFDA task, the source classifier φ s encounters a domain shift problem when classifying the target domain feature. To tackle this challenge, we propose a novel SFDA framework mainly including two stages, shown in Fig. <ref type="figure" target="#fig_1">2</ref>. We will elaborate on the details in the following. Given a target image, we first use M t 0 to make a prediction, and separate the pixels into query one and negative ones for each class based on their reliability (entropy). Then, features of query pixels come from F t θ (query samples), while features of negative pixels are from F t 0 θ (negative samples), when minimizing LCL.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Prototype-Anchored Feature Alignment</head><p>Since source data is not available, explicit feature alignment that directly minimizes the domain gap between the source and target data like many UDA methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b7">8]</ref> is inoperative. As shown by previous methods <ref type="bibr" target="#b11">[12]</ref>, the weights</p><formula xml:id="formula_1">[µ 1 , µ 2 , • • • , µ C ] ∈ R D f ×C</formula><p>of the source domain classifier φ s can be interpreted as the source prototypes, which characterize the features of each class. Thus, we introduce a bi-directional transport cost to align the target features with these prototypes instead of the unaccessible source features.</p><p>Following <ref type="bibr" target="#b22">[23]</ref>, given a mini-batch {x t m } M m=1 with M images, we first adopt the cosine distance d(µ c , f t m,i ) = 1 -µ c , f t m,i to define a point-to-point transport cost between f t m,i and µ c , where •, • is the cosine similarity. Then, a conditional distribution π θ µ c | f t m,i specifying the probability of transporting from f t m,i to µ c can be constructed as,</p><formula xml:id="formula_2">π θ µ c | f t m,i = p (µ c ) exp µ T c f t m,i /τ C c =1 p (µ c ) exp µ T c f t m,i /τ (<label>1</label></formula><formula xml:id="formula_3">)</formula><p>where τ is the temperature parameter, and p (µ c ) is the prior distribution (i.e., class proportion) over the C classes for the target domain. As the true class distribution is unavailable in the target domain, we use the EM algorithm to infer p (µ c ) instead of using a uniform prior distribution (see more details in <ref type="bibr" target="#b15">[16]</ref>). Note that in Eq. 1, a target point is more likely to be transported to the class prototypes closer to it or those with higher class propotion.</p><p>With the conditional distribution and point-to-point transport cost, we can derive the target-to-prototype (T2P) expected cost of moving the target features in this mini-batch to source prototypes,</p><formula xml:id="formula_4">L T2P = 1 M × H × W M m=1 H×W i=1 C c=1 d(µ c , f t m,i )π θ µ c | f t m,i<label>(2)</label></formula><p>In this target-to-prototype direction, we assign each target pixel to the prototypes according to their similarities and the class distribution. However, like many entropy minimization methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref>, optimizing target-to-prototype cost alone may result in degenerate trivial solutions, biasing the prediction towards a single dominant class <ref type="bibr" target="#b15">[16]</ref>. To avoid mapping most of the target features to only a few prototypes, we add a prototype-to-target (P2T) transport cost in the opposite direction, which ensures that each prototype can be assigned to some target features. Similarly, we have:</p><formula xml:id="formula_5">L P2T = C c=1 p (µ c ) M m=1 H×W i=1 d(µ c , f t m,i ) exp µ T c f t m,i /τ M m =1 H×W i =1 exp µ T c f t m ,i /τ (3)</formula><p>Then, combining the conditional transport cost in these two directions, we define the total prototype-anchored feature alignment (PFA) loss:</p><formula xml:id="formula_6">L PFA = L T2P + L P2T<label>(4)</label></formula><p>Similar to <ref type="bibr" target="#b5">[6]</ref>, we initialize the adaptation model M t0 with the pre-trained source model M s and fix the weights of the classifier during adaptation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Contrastive Learning Using Unreliable Predictions</head><p>After the PFA stage, the clusters of target features are shifted towards their corresponding source prototypes, which brings remarkable improvements for the initial noisy prediction (see Fig. <ref type="figure" target="#fig_2">3(b)</ref>). To further improve the compactness of the target feature distribution, previous self-training methods mainly focus on strengthening the reliability of pseudo labels by developing denoising strategies <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b19">20]</ref>, but discard those low-confidence predictions. However, such contempt for unreliable predictions may result in information loss. For example, in Fig. <ref type="figure" target="#fig_0">1(c)</ref>, the probability of the unreliable pixel hovers between spleen and left kidney, yet is confident enough to indicate the categories it does not belong to.</p><p>With this intuition, we denote p t m,i as the softmax probabilities generated by model M t0 for the target data x t m,i . Then, for each class c, we construct three components, named query samples, positive prototypes, and negative samples, to explore those unreliable predictions as <ref type="bibr" target="#b17">[18]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Query Samples.</head><p>During training, we employ the per-pixel entropy as uncertainty metric <ref type="bibr" target="#b17">[18]</ref>, and sample the pixels with low entropy (reliable pixel) in the current mini-batch as query candidates. We denote the set of features of all query pixels for class c as P c ,</p><formula xml:id="formula_7">P c = {f t m,i | H(p t m,i ) ≤ γ c , arg max c p t m,i = c} (5)</formula><p>where H(•) is the entropy of the input probabilities and γ c is the entropy threshold for class c. Here we set γ c as the α c -th percentile of all the entropy values of pixels assigned a pseudo label c.</p><p>Positive Prototypes. The positive prototype is the same for all query pixels from the same class. Instead of using the center of query samples like <ref type="bibr" target="#b17">[18]</ref>, we set them the same as the previous source prototype, which is denoted as z + c = µ c . Negative Samples. For a query sample from class c, its qualified negative samples should satisfy: 1) unreliable; 2) highly probable not belong to class c. Therefore, we introduce the pixel-level category order O t m,i = argsort(p t m,i ). For example, we have O t m,i (arg max p t m,i ) = 1 and O t m,i (arg min p t m,i ) = C. Thus, we can use O t m,i (c) to define the set of all negative samples:</p><formula xml:id="formula_8">N c = {f t m,i | H(p t m,i ) &gt; γ c , O t m,i (c) ≥ r l } (6)</formula><p>where r l is the low rank threshold and is set to 3 in our task.</p><p>With the above definition, we have the pixel-level contrastive loss as:</p><formula xml:id="formula_9">L CL = - 1 C × K C c=1 K k=1 log ⎡ ⎣ e z c,k ,z + c /τ e z c,k ,z + c /τ + N j=1 e z c,k ,z - c,k,j /τ ⎤ ⎦ (<label>7</label></formula><formula xml:id="formula_10">)</formula><p>where K is the number of query samples, and z c,k ∈ P c denotes the k-th query sample from class c. Each query sample is paired with a positive prototype z + c and N negative samples z - c,k,j ∈ N c .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Setup</head><p>Datasets and Evaluation Metrics. We evaluate our SFDA approach on a cross-modality abdominal multi-organ segmentation task. For the abdominal datasets, we obtain 20 MRI volumes from the 2019 CHAOS Challenge <ref type="bibr" target="#b9">[10]</ref> and 30 CT volumes from MICCAI 2015 <ref type="bibr" target="#b10">[11]</ref>, respectively. Both datasets are under the Creative Commons Attribution 4.0 International license and involve segmentation masks for the following abdominal organs: liver, right kidney, left kidney and spleen. We complete adaptation experiments both in the "MRI to CT" direction and in the "CT to MRI" direction. For the "MRI to CT" direction, we take the MRI modality to train the source model and vice verse. Both modalities are randomly divided into 80% for domain adaptation training and 20% for evaluation. For both datasets, we discard the axial slices that do not contain foreground and crop out the non-body region <ref type="bibr" target="#b2">[3]</ref>. The value range in CT volumes is first clipped to <ref type="bibr">[-125, 275]</ref>. Then min-max normalization has been performed on both datasets to normalize the intensity value to [0, 1]. After that, all the MRI and CT volumes are uniformly resized to 256 × 256 in axial plane. Due to the large variance in the slice thickness of CT and MRI modality, we split the volume into slices for the model training.</p><p>For the evaluation, two main metrics, dice similarity coefficient (Dice) and average symmetric surface distance (ASSD) are used to quantitatively evaluate the segmentation results <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b14">15]</ref>. Implementation Details. We adopt classic U-Net structure for the segmentation model as the previous work <ref type="bibr" target="#b0">[1]</ref>. The source segmentation model is trained in a fully-supervised manner for 10k iterations. During adaptation, we use Adam optimizer with the learning rate 1 × 10 -4 and a weight decay of 5 × 10 -4 . The temperature τ and batch size is set as 0.1 and 16, respectively. In PFA stage, we freeze the classifier and optimize F t0 θ for 200 iterations. In CL stage, we empirically set hyper-parameters α c = 80, K = 64, and N = 256 for all classes. All experiments are conducted with PyTorch on a single NVIDIA RTX 3090 GPU of 24 GB memory. Data augmentation such as random cropping, rotation, and brightness are adopted for source domain training and target domain adaptation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results of Source-Free Domain Adaptation</head><p>Comparision with Other Methods. In our experiments, "no adaptation" lower bound denotes learning a model on the source domain and directly test on the target domain without adaptation. And "supervised" upper bound means training and testing in the same target domain. We compared our methods with recent SFDA methods all designed for medical image segmentation scenarios, including a denoised pseudo-labeling approach (DPL) <ref type="bibr" target="#b4">[5]</ref>, a prior-aware entropy minimization approach (AdaMI) <ref type="bibr" target="#b0">[1]</ref>, a fourier style mining approach (FSM) <ref type="bibr" target="#b20">[21]</ref>, and a feature map statistics-guided approach <ref type="bibr" target="#b8">[9]</ref>. We also considered top-performing UDA methods (i.e., SIFA <ref type="bibr" target="#b3">[4]</ref>, DAG-Net <ref type="bibr" target="#b18">[19]</ref>). For a fair comparison, we utilized the same backbone for these methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b20">21]</ref> and reimplemented them according to their official codes. Note that we reported the results of methods <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b18">19]</ref> from papers, since their official codes were not released.</p><p>The quantitative evaluation results are presented in Table <ref type="table">1</ref>. Compared to the upper and lower bounds in both directions, a huge performance gap can be observed due to the severe domain shifts between MRI and CT modalities. In "MRI to CT" direction, our method remarkably outperforms all other SFDA approaches on the right kidney and spleen, achieving the highest average Dice because, without PFA, the source model prediction is too noisy to sample the qualified query and negative pixels for contrastative learning. We also study the impact of different uncertainty percentile α c in Fig. <ref type="figure">4(b)</ref>. This parameter has a certain impact on performance, and we find α c = 80% achieves the best performance for most organs. Large α c may introduce low-confidence query samples for supervision, and small α c will drop some informative negative samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a novel two-stage framework to address the source-free domain adaptation problem in medical image segmentation. We first introduce a bi-directional transport cost to encourage the alignment between target features and source class prototypes in the prototype-anchored feature alignment stage. Also, a contrastive learning stage using unreliable predictions is further devised to learn a more compact target feature distribution. Sufficient experiments on the cross-modality abdominal multi-organ segmentation task validate the effectiveness and superiority of our method against other strong SFDA baselines, even some classical UDA approaches.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a→b) t-SNE visualization of target feature distributions in embedding space before and after Prototype-anchored Feature Alignment (PFA). (c) Category-wise probability of the unreliable pixel in (b).</figDesc><graphic coords="2,45,30,357,32,181,03,94,87" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. An overview of the proposed two-stage SFDA framework. (a) is the first PFA stage.We freeze the classifier φ s and use its weights for prototype-anchored feature alignment. (b) is the following CL stage. Given a target image, we first use M t 0 to make a prediction, and separate the pixels into query one and negative ones for each class based on their reliability (entropy). Then, features of query pixels come from F t θ (query samples), while features of negative pixels are from F t 0 θ (negative samples), when minimizing LCL.</figDesc><graphic coords="4,41,79,53,90,340,27,94,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. (a) Qualitative segmentation results of different methods for abdominal images. (b) Visualized evolution of the model uncertainty and predictions in different stages.</figDesc><graphic coords="7,55,98,479,33,340,27,73,72" type="bitmap" /></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43990-2 1.</p><p>Q. Yu et al. ✔ 70.1 ± 6.9 52.9 ± 14.2 65.7 ± 12.5 70.9 ± 13.2 64.9 ± 8. of 86.1% and the lowest average ASSD of 1.4. Moreover, compared with recent UDA methods, our method obtains competitive results on average Dice and ASSD, which may be due to the use of unreliable predictions. As for "CT to MRI" direction, our method similarly shows great superiority on most organs as well, achieving the best performance in terms of both the average Dice (89.2%) and ASSD (1.3) among all SFDA methods. Figure <ref type="figure">3</ref>(a) shows the segmentation results obtained by existing and our methods in both modalities. As observed, DPL is prone to amplify the initial noisy regions since it directly discards the unreliable pixels in self-training. For comparison, our method substantially rectificate the uncertain regions from the initial prediction, and details are shown in Fig. <ref type="figure">3(b)</ref>.</p><p>Ablation Study. In Fig. <ref type="figure">4</ref>(a), we verify the effectiveness of the proposed two SFDA stages by removing each stage while keeping the other. The consecutive two stage adaptation leads to the best performance, while the drop in Dice is more significant if we remove the PFA stage. This result is not surprising</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptation for image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102617</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Test-time adaptation with shape moments for image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_70</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-870" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page" from="736" to="745" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Domain adaptation meets zero-shot learning: an annotation-efficient approach to multi-modality medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1043" to="1056" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Unsupervised bidirectional crossmodality adaptation via deeply synergistic image and feature alignment for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="2494" to="2505" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptive fundus image segmentation with denoised pseudo-labeling</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-322" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="225" to="235" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptation via distribution estimation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="7212" to="7222" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Unsupervised cross-modality domain adaptation of convnets for biomedical image segmentations with adversarial loss</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 27th International Joint Conference on Artificial Intelligence</title>
+		<meeting>the 27th International Joint Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="691" to="697" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep symmetric adaptation network for cross-modality medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="121" to="132" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Source-free unsupervised domain adaptation for cross-modality abdominal multi-organ segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">D</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl.-Based Syst</title>
+		<imprint>
+			<biblScope unit="page">109155</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Chaos challenge-combined (CT-MR) healthy abdominal organ segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Kavur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">101950</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">MICCAI multi-atlas labeling beyond the cranial vault-workshop and challenge</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</title>
+		<meeting>MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">12</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptation with contrastive domain alignment and self-supervised exploration for face anti-spoofing</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">T</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Xiong</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19775-8_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19775-830" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13672</biblScope>
+			<biblScope unit="page" from="511" to="528" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Few-shot adversarial domain adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Motiian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Iranmanesh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Doretto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Privacy preserving domain adaptation for semantic segmentation of medical images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Stan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rostami</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2101.00522</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A prototype-oriented framework for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tanwisuth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="17194" to="17208" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Adversarial discriminative domain adaptation</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tzeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Saenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="7167" to="7176" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation using unreliable pseudolabels</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="4248" to="4257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Unsupervised cross-modality adaptation via dual structuraloriented guidance for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Denoising for relaxing: unsupervised domain adaptive fundus image segmentation without source data</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-921" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="214" to="224" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Source free domain adaptation for medical image segmentation with fourier style mining</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="page">102457</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A location-sensitive local prototype network for few-shot medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Dang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Terzopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="262" to="266" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Exploiting chain rule and Bayes&apos; theorem to compare probability distributions</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="14993" to="15006" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">UNet++: a nested U-net architecture for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Rahman Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<editor>Stoyanov, D., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-030-00889-5_1</idno>
+		<idno>DLMIA/ML-CDS -2018</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-51" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="3" to="11" />
+			<date type="published" when="2018">2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

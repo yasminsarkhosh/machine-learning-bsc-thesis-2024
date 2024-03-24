@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Accurate and Robust Patient Height and Weight Estimation in Clinical Imaging Using a Depth Camera</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Birgi</forename><surname>Tamersoy</surname></persName>
+							<email>birgi.tamersoy@siemens-healthineers.com</email>
+							<affiliation key="aff0">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Erlangen</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Felix</forename><forename type="middle">Alexandru</forename><surname>Pîrvan</surname></persName>
+							<email>felix.pirvan@siemens.com</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Siemens S.R.L. Romania</orgName>
+								<address>
+									<settlement>Bucuresti</settlement>
+									<country key="RO">Romania</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Santosh</forename><surname>Pai</surname></persName>
+							<email>santosh.pai@siemens-healthineers.com</email>
+							<affiliation key="aff2">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ankur</forename><surname>Kapoor</surname></persName>
+							<email>ankur.kapoor@siemens-healthineers.com</email>
+							<affiliation key="aff2">
+								<orgName type="department">Digital Technology and Innovation</orgName>
+								<orgName type="institution">Siemens Healthineers</orgName>
+								<address>
+									<settlement>Princeton</settlement>
+									<region>NJ</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Accurate and Robust Patient Height and Weight Estimation in Clinical Imaging Using a Depth Camera</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="337" to="346"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D935D5D7C503FC7A937EA7E6E72F54A5</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_33</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Height Estimation</term>
+					<term>Weight Estimation</term>
+					<term>Clinical Workflow Optimization</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate and robust estimation of the patient's height and weight is essential for many clinical imaging workflows. Patient's safety, as well as a number of scan optimizations, rely on this information. In this paper we present a deep-learning based method for estimating the patient's height and weight in unrestricted clinical environments using depth images from a 3-dimensional camera. We train and validate our method on a very large dataset of more than 1850 volunteers and/or patients captured in more than 7500 clinical workflows. Our method achieves a PH5 of 98.4% and a PH15 of 99.9% for height estimation, and a PW10 of 95.6% and a PW20 of 99.8% for weight estimation, making the proposed method state-of-the-art in clinical setting.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Many clinical imaging workflows require the patient's height and weight to be estimated in the beginning of the workflow. This information is essential for patient's safety and scan optimizations across modalities and workflows. It is used for accurate prediction of the Specific Absorption Rate (SAR) in Magnetic Resonance Imaging (MRI), contrast dose calculations in Computed Tomography (CT), and drug dose computations in Emergency Room (ER) workflows.</p><p>Contrary to its importance, there are no widely established methods for estimating the patient's height and weight. Measuring these values using an actual scale is not a common clinical practice since: 1) a measurement scale is not available in every scan room, 2) manual measurements add an overhead to the clinical workflow, and 3) manual measurements may not be feasibly for some patients with limited mobility. Alternative methods such as the Lorenz formulae <ref type="bibr" target="#b0">[1]</ref> or the Crandall formulae <ref type="bibr" target="#b1">[2]</ref> need additional body measurements (e.g. mid-arm circumference, waist circumference and/or hip circumference) and are neither very accurate nor simple. Consequently, clinical staff usually relies either on previously recorded patient information or their own experience in estimating the patient's height and weight, where the estimated values may significantly deviate from the actual values in both cases.</p><p>In this paper we present a deep-learning based method for accurately and robustly estimating the patient's height and weight in challenging and unrestricted clinical environments using depth images from a 3-dimensional (3D) camera. We aim to cover the patient demographics in common diagnostic imaging workflows. Our method is trained and validated on a very large dataset of more than 1850 volunteers and/or patients, captured in more than 7500 clinical scenarios, and consists of nearly 170k depth images. We achieve a PH5 (percentage of the height estimates within 5% error) of 98.4% and a PH15 of 99.9% for height estimation, and a PW10 (percentage of the weight estimates withing 10% error) of 95.6% and a PW20 of 99.8% for weight estimation, making the proposed method state-of-the-art in clinical setting.</p><p>In addition to the clinical significance, our method has the following primary technical novelties: 1) we formulate the problem as an end-to-end single-value regression problem given only depth images as input (i.e. no error-prone intermediate stages such as volume computations), 2) we present a multi-stage training approach to ensure robustness in training (i.e. no need for hyper-parameter tunings at any stage), and 3) we evaluate our method on a very large dataset of both volunteers and patients, using 23-fold cross validation to ensure field generalization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>A large number of previous methods have been proposed and independently evaluated for patient height and weight estimation. Since patient height estimation is considered to be an easier problem, the primary focus of the previous work has been on patient weight estimation.</p><p>Most of the existing work in patient weight estimation are formulae-based approaches where one or more anthropometric measurements are used for estimating the patient's weight. The Mercy method uses the humeral length and the mid-arm circumference (MAC) for estimating the paediatric body weight <ref type="bibr" target="#b3">[4]</ref>. PAWPER XL-MAC is another height-based (in combination with MAC) method for estimating the body weight in paediatric patients <ref type="bibr" target="#b2">[3]</ref>. Broca index <ref type="bibr" target="#b5">[6]</ref> and Kokong formula <ref type="bibr" target="#b7">[8]</ref> do not take into account a person's body habitus and estimates the "ideal weight" using only the body height information. Buckley method <ref type="bibr" target="#b6">[7]</ref>, Lorenz formulae <ref type="bibr" target="#b0">[1]</ref>, Crandall formulae <ref type="bibr" target="#b1">[2]</ref> provide gender-specific weight estimation formulae given some anthropometric measurements such as the abdominal circumference, tight circumference, and MAC.</p><p>Formulae-based approaches are independently evaluated in numerous studies, both for paediatric patients <ref type="bibr" target="#b2">[3]</ref> and adult patients <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b9">10]</ref>. A common conclusion of these studies is that the formulae-based methods usually perform poorly in the clinical setting with PW10 values below 70%.</p><p>More recently several methods have been proposed that leverage 3D camera input for estimating the patient's weight. In <ref type="bibr" target="#b10">[11]</ref> an RGB-D camera and a thermal camera are used for precisely segmenting the patients and then extracting volume based features. These features are then fed into an artificial neural network (ANN) for patient weight estimation. In <ref type="bibr" target="#b11">[12]</ref>, first a 3D patient avatar is fitted to the acquired depth images, which is then used for part-volume based weight estimation. Both of these approaches require a number of additional algorithmic steps and the challenges of the clinical setup (such as heavy occlusions due to covers and/or additional devices like coils during an MRI examination) may affect the accuracy of the results.</p><p>Estimation of the patient weight by the clinical staff remains to be the most common approach in the clinical workflow. In <ref type="bibr" target="#b14">[15]</ref>, the performance of clinical staff is determined as PW10 of 78% for nurses and PW10 of 59% for physicians. In <ref type="bibr" target="#b15">[16]</ref> the performance of the clinical staff is determined as PW10 of 66% for both nurses and physicians.</p><p>As a clinical acceptance criteria, Wells et al. <ref type="bibr" target="#b2">[3]</ref> proposes a minimum accuracy for patient weight estimation as PW10 greater than 70% and PW20 greater than 95%. Overview of the proposed method is illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. Our method takes in "normalized" depth images as input. This normalization covers two aspects: 1) normalization with respect to the view-point of the depth camera, and 2) normalization with respect to the variations in the patient tables. Input normalized depth images are then fed into a common feature extraction encoder network. This encoder network is trained using landmark localization as an auxiliary task. In the last stage we train and utilize two separate single-value regression decoder networks for estimating the patient's height and weight. These steps are explained in-detail in the following sub-sections.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Approach</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Obtaining "Normalized" Depth Images</head><p>When training deep neural networks it is more data efficient to eliminate as much of the foreseen variances in the problem as possible in the preprocessing steps. Conceptually this can be thought as reducing the "dimensionality" of the problem before the model training even starts.</p><p>Camera view-point is a good example when model inputs are images. With a known system calibration, a "virtual camera" may be placed in a consistent place in the scene (e.g. with respect to the patient table) and the "re-projected" depth images from this virtual camera may be used instead of the original depth images. This way the network training does not need to learn an invariance to the camera view-point, since this variance will be eliminated in the preprocessing. This process forms the first step in our depth image normalization. Figure <ref type="figure" target="#fig_1">2</ref> presents some examples. In the second step, we consider the back-surface of a patient which is not visible to the camera. In a lying down pose, the soft-tissue deforms and the backsurface of the patient takes the form of the table surface. Since there are a variety of patient tables (curved or flat) we eliminate this variance by performing a "table subtraction" from the view-point normalized depth images. This is especially important for accurate patient weight estimation across different systems.</p><p>For table subtraction, top surfaces extracted from 3D models of the corresponding patient tables are used. For a given input image, it is assumed that the corresponding patient table is known since this information is readily available in an integrated system. Even though we leveraged the actual 3D models of the patient tables, since the proposed approach only requires the top surface, this information may also be obtained during calibration by taking a depth image of the empty patient table. Figure <ref type="figure" target="#fig_2">3</ref> presents some examples of the table subtraction process. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Learning Accurate Low-Level Features</head><p>Single-value regression problems require more attention during the training since the limited feedback provided through the loss function may result in the collapse of some of the features in the lower levels of the network, especially if a larger model is being trained.</p><p>In order to ensure that the learned low-level features are high-quality, we start with the training of a standard image-in image-out encoder-decoder network using the landmark localization as an auxiliary task. With this task, the network is expected to both capture local features (for getting precise landmark locations) and holistic features (for getting globally consistent landmark locations) better than the case where the network was to asked only to regress a single-value such as the height or the weight of the patient.</p><p>Once the encoder-decoder network is trained, we disregard the decoder part and use the encoder part as the pre-trained feature-extractor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Task-Specific Decoders for Height and Weight Estimation</head><p>The final stage of our approach is the training of two separate single-value regression networks, one for the estimation of the patient's height and the other for the weight.</p><p>In this stage, we attach untrained decoder heads to the pre-trained encoder bases. During the training we allow all parameters of the model, including the pre-trained encoder, to be fine-tuned. The motivation for a complete fine-tuning comes from two primary reasons: 1) pre-training of the encoder part allows the network to start with already good low-level features, so it is less-likely to turn these good low-level features to degenerate features during the fine-tuning, and 2) by still allowing changes in the low-level features we have the potential to squeeze further performance from the networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Dataset</head><p>For training and validation of our method we have collected a very large dataset of 1899 volunteers and/or patients captured in 7620 clinical workflows, corresponding to nearly 170k depth images. Within this large dataset, we did not have the patient table information for 909 patients and the corresponding 909 workflows, so this subset was used only for the training of the height estimation network. Some example depth snapshots of this extensive dataset is provided in Fig. <ref type="figure" target="#fig_1">2</ref>.</p><p>This dataset is collected from multiple sites in multiple countries, over a span of several years. The target clinical workflows such as a variety of coils, a variety of positioning equipment, unrestricted covers (light and heavy blankets), and occlusions by technicians, are covered in this dataset. Due to volunteer and patient consents, this dataset cannot be made publicly available.</p><p>We consider the following inclusion criteria for the training and validation: patient weight between 45 kg to 120 kg, patient height between 140 cm to 200 cm, and patient body mass index (BMI) between 18.5 to 34.9. The distribution of the samples in our dataset, together with the above inclusion criteria, is illustrated in Fig. <ref type="figure" target="#fig_3">4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Training</head><p>Training of the feature extraction network is performed using a subset of nearly 2000 workflows. For these workflows, we also acquired the corresponding fullbody 3D medical volumes (MRI acquisitions). A set of 10 anatomical landmarks corresponding to major joints (i.e. knees, elbows, shoulders, ankles, and wrists) are manually annotated by a group of experts in these 3D medical volumes. These 3D annotations are transferred to depth image coordinates for training using the known calibration information.</p><p>We use a modified version of ResNet <ref type="bibr" target="#b12">[13]</ref> as our base feature extraction network. This is a smaller version compared to the originally proposed ResNet18, where the number of features in each block is kept constant at 32. We use only bottleneck blocks instead of the basic blocks used for the original ResNet18.</p><p>Training of the feature extraction network is done using the ADAM optimizer <ref type="bibr" target="#b13">[14]</ref> with default parameters. Landmark locations are represented as 2D Once the feature extraction network is trained, we retain the encoder part and attach task-specific heads to form two separate networks, one for patient height estimation and the other one for patient weight estimation. Similar to the feature extraction network, we also train these networks using the ADAM optimizer with default parameters. As the loss function we use the symmetric mean absolute percentage error (SMAPE):</p><formula xml:id="formula_0">SMAPE = 100 n n t=1 |P t -A t | (|P t | + |P t |)/2 (1)</formula><p>where A t is the actual value and P t is the predicted value. We train for 250 epochs with a relatively large patience of 50 epochs.</p><p>For height estimation we omitted the second step of depth normalization through table subtraction since the patient back-surface does not affect the height estimation significantly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Results</head><p>We evaluate our model using 23-fold cross-validation. Since we have multiple workflows and depth images corresponding to the same volunteer or patient (e.g. same volunteer captured both in a "knee-scan" acquisition and a "hip-scan"  Table <ref type="table" target="#tab_0">1</ref> provides our quantitative results. Our method achieved a PH5 of 98.4% and a PH15 of 99.9% for height estimation, and a PW10 of 95.6% and a PW20 of 99.8% for weight estimation, making the proposed method state-of-theart in clinical setting. Figures <ref type="figure" target="#fig_4">5</ref> and<ref type="figure" target="#fig_5">6</ref> show the estimation scatter plots and the corresponding error histograms for height and weight estimation, respectively.</p><p>We also investigated the performance of our method for weight estimation for patient BMI groups outside our inclusion criteria. For patients with BMI &lt; 18.5, our method achieved a PW10 of 89.2% and a PW20 of 98.9%. For patients with BMI &gt; 34.9, our method achieved a PW10 of 96.2% and a PW20 of 99.8%. Even though the performance drops a little bit for underweight population, the main reason for keeping these populations outside the inclusion criteria is not the performance, but rather the limited support in the training dataset. Accurate and rapid estimation of the patient's height and weight in clinical imaging workflows is essential for both the patient's safety and the possible patient-specific optimizations of the acquisition. In this paper, we present a deeplearning based method trained on a very large dataset of volunteer and patient depth images captured in unrestricted clinical workflows. Our method achieves a PH5 of 98.4% and a PH15 of 99.9% for height estimation, and a PW10 of 95.6% and a PW20 of 99.8% for weight estimation. These results out-perform all alternative methods to the best of our knowledge, including family estimates and clinical staff estimates.</p><p>Disclaimer. The concepts and information presented in this paper are based on research results that are not commercially available. Future availability cannot be guaranteed.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed method.</figDesc><graphic coords="3,89,46,383,72,273,46,107,86" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Example re-projected depth images. View-point normalization simplifies the problem for the deep neural networks.</figDesc><graphic coords="4,44,79,303,44,334,48,112,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. "Table subtraction" for patient back-surface consistency. Left -original inputs. Center -original inputs overlayed with automatically aligned patient tables. Righttable subtracted depth images.</figDesc><graphic coords="5,58,98,112,91,334,48,147,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Dataset distribution. Inclusion criteria is illustrated by the yellow region. (Color figure online)</figDesc><graphic coords="7,90,48,53,96,271,39,218,74" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Scatter plot and the error histogram for height estimation</figDesc><graphic coords="8,44,79,152,09,334,57,156,43" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. Scatter plot and the error histogram for weight estimation</figDesc><graphic coords="9,58,98,54,35,334,54,156,34" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Patient height and weight estimation quantitative results.</figDesc><table><row><cell>PH5</cell><cell>PH15 95-Percentile Height Error</cell></row><row><cell cols="2">98.4% 99.9% 3.4%</cell></row><row><cell cols="2">PW10 PW20 95-Percentile Weight Error</cell></row><row><cell cols="2">95.6% 99.8% 9.6%</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Anthropometric approximation of body weight in unresponsive stroke patients</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Lorenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Graf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Henke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Neurol. Neurosurg. Psychiatry</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page" from="1331" to="1336" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Estimation of total body weight in obese patients</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Crandall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gardner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Braude</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Air Med. J</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="139" to="145" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The accuracy of emergency weight estimation systems in children -a systematic review and meta-analysis</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wells</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">N</forename><surname>Goldstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bentley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int J. Emerg. Med</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="1" to="43" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">An improved pediatric weight estimation strategy</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Abdel-Rahman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Ridge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Open Medical Devices J</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="87" to="97" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A validation of the PAWPER XL-MAC tape for total body weight estimation in preschool children from low-and middle-income countries</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wells</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS One</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page">210332</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Validation of the Broca index as the most practical method to calculate the ideal body weight</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Weber-Sanchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ortega Sofia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Weber-Alvarez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin. Invest. Stud</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1" to="4" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Bedside method to estimate actual body weight in the emergency department</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">G</forename><surname>Buckley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Stehman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">L</forename><surname>Dos Santos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Emerg. Med</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="100" to="104" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Estimation of weight in adults from height: a novel option for a quick bedside technique</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">D</forename><surname>Kokong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">C</forename><surname>Pam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">I</forename><surname>Zoakah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Danbauchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Mador</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Mandong</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s12245-018-0212-9</idno>
+		<idno>12245- 018-0212-9</idno>
+		<ptr target="https://doi.org/10.1186/s" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Emerg. Med</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Are adults just big kids? Can the newer paediatric weight estimation systems be used in adults? S</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Akinola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wells</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Parris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">N</forename><surname>Goldstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Afr. Med. J</title>
+		<imprint>
+			<biblScope unit="volume">111</biblScope>
+			<biblScope unit="page" from="166" to="170" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Comparison of adult weight estimation methods for use during emergency medical care</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">N</forename><surname>Cattermole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wells</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Coll. Emerg. Physicians Open</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">12515</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Body weight estimation for dose-finding and health monitoring of lying, standing and walking patients based on RGB-D data</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pfitzner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>May</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nüchter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sensors</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page">1311</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Prediction of patient height and weight with a 3-dimensional camera</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Dane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nazarian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>O'donnell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kapoor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Megibow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Assist. Tomogr</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="427" to="430" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations (ICLR</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">How accurate is weight estimation in the emergency department?</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Menon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Kelly</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Emerg. Med. Australas</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="113" to="116" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">How accurately do we estimate patients&apos; weight in emergency departments?</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Fernandes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Innes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Can. Fam. Physician Medecin Famille Can</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page">2373</biblScope>
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

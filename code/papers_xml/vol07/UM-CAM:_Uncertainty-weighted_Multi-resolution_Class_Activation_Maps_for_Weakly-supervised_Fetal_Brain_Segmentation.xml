@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">UM-CAM: Uncertainty-weighted Multi-resolution Class Activation Maps for Weakly-supervised Fetal Brain Segmentation</title>
+				<funder ref="#_kMGEm82">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jia</forename><surname>Fu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Electronic Science and Technology of China</orgName>
+								<address>
+									<postCode>611731</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tao</forename><surname>Lu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Sichuan Provincial People&apos;s Hospital</orgName>
+								<address>
+									<postCode>610072</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shaoting</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Electronic Science and Technology of China</orgName>
+								<address>
+									<postCode>611731</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="laboratory">Shanghai Artificial Intelligence Laboratory</orgName>
+								<address>
+									<postCode>200030</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Guotai</forename><surname>Wang</surname></persName>
+							<email>guotai.wang@uestc.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Electronic Science and Technology of China</orgName>
+								<address>
+									<postCode>611731</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="laboratory">Shanghai Artificial Intelligence Laboratory</orgName>
+								<address>
+									<postCode>200030</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">UM-CAM: Uncertainty-weighted Multi-resolution Class Activation Maps for Weakly-supervised Fetal Brain Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="315" to="324"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">7E93F75A2B04766ADF9F95B5B83B9037</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_30</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:40+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Weakly-supervised segmentation</term>
+					<term>Class activation map</term>
+					<term>Geodesic distance</term>
+					<term>Fetal MRI</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate segmentation of the fetal brain from Magnetic Resonance Image (MRI) is important for prenatal assessment of fetal development. Although deep learning has shown the potential to achieve this task, it requires a large fine annotated dataset that is difficult to collect. To address this issue, weakly-supervised segmentation methods with image-level labels have gained attention, which are commonly based on class activation maps from a classification network trained with imagelevel labels. However, most of these methods suffer from incomplete activation regions, due to the low-resolution localization without detailed boundary cues. To this end, we propose a novel weakly-supervised method with image-level labels based on semantic features and context information exploration. We first propose an Uncertainty-weighted Multi-resolution Class Activation Map (UM-CAM) to generate high-quality pixel-level supervision. Then, we design a Geodesic distance-based Seed Expansion (GSE) method to provide context information for rectifying the ambiguous boundaries of UM-CAM. Extensive experiments on a fetal brain dataset show that our UM-CAM can provide more accurate activation regions with fewer false positive regions than existing CAM variants, and our proposed method outperforms state-of-the-art weakly-supervised segmentation methods learning from image-level labels.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Brain extraction is the first step in fetal Magnetic Resonance Image (MRI) analysis in advanced applications such as brain tissue segmentation <ref type="bibr" target="#b14">[15]</ref> and quantitative measurement <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b23">24]</ref>, which is essential for assessing fetal brain development and investigate the neuroanatomical correlation of cognitive impairments <ref type="bibr" target="#b13">[14]</ref>. Current research based on Convolutional Neural Network (CNN) <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b18">19]</ref> has achieved promising performance for automatic fetal brain extraction from pixelwise annotated fetal MRI. However, it is labor-intensive, time-consuming, and expensive to collect a large-scale pixel-wise annotated dataset, especially for images with poor quality and large variations. To address these issues, weaklysupervised segmentation methods with image-level supervision <ref type="bibr" target="#b20">[21]</ref> are introduced due to their minimal annotation demand. However, learning from imagelevel supervision is extremely challenging since the image-level label only provides the existence of object class, but cannot indicate the information about location and shape that are essential for the segmentation task <ref type="bibr" target="#b0">[1]</ref>.</p><p>Prevailing methods learning from image-level labels for segmentation commonly produce a coarse localization of the objects based on Class Activation Maps (CAM) <ref type="bibr" target="#b26">[27]</ref>. Due to the weak annotation, the CAMs from the classification network can only provide rough localization and coarse boundaries of objects. To alleviate the problem, a lot of approaches have been proposed, which can be categorized as one-stage and two-stage methods. One-stage methods aim to generate pixel-level segmentation by training a segmentation branch simultaneously with a classification network. For example, Reliable Region Mining (RRM) <ref type="bibr" target="#b25">[26]</ref> comprises two parallel branches, in which pixel-level pseudo masks are produced from the classification branch and refined by Conditional Random Field (CRF) to supervise the segmentation branch. Despite their efficiency, one-stage methods commonly achieve inferior segmentation accuracy and incomplete activation of targets, owing to the failure to capture detailed contextual information from image-level labels <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b6">7]</ref>.</p><p>In contrast to one-stage methods, two-stage methods can perform favourably, as they leverage dense labels generated by the classification network to train a segmentation network <ref type="bibr" target="#b11">[12]</ref>. For instance, Discriminative Region Suppression (DRS) <ref type="bibr" target="#b8">[9]</ref> suppresses the attention on discriminative regions and expands it to adjacent less activated regions. However, these methods leverage the CAMs from the deep layer of the classification network and raise the inherent drawback, i.e., low resolution, leading to limited localization and smooth boundaries of objects. Han et al. <ref type="bibr" target="#b7">[8]</ref> proposed multi-layer pseudo supervision to reduce the false positive rate in segmentation results, while the weights for pseudo masks from different layers are constants that cannot be adaptive. Besides, though the quality of CAMs improves, they are still insufficient to provide accurate object boundaries for segmentation. Numerous methods <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b10">11]</ref> have been proposed to explore boundary information. For example, Kolesnikov et al. <ref type="bibr" target="#b9">[10]</ref> proposed a joint loss function that constrains the global weighted rank pooling and low-level object boundary to expand activation regions. AffinityNet <ref type="bibr" target="#b0">[1]</ref> trains another network to learn the semantic similarity between pixels and then propagates the semantics to adjacent pixels via random walk. Nevertheless, these methods use the initial seeds generated from the CAM method, resulting in limited performance when the object-related seeds from CAM are small and sparse. Thus, improving the initial prediction and exploring boundary information are both important for accurate object segmentation.</p><p>In this work, we propose a novel weakly-supervised method for accurate fetal brain segmentation using image-level labels. Our contribution can be summarized as follows: 1) We design an Uncertainty-weighted Multi-resolution CAM  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>An overview of our method is presented in Fig. <ref type="figure" target="#fig_0">1</ref>. First, to obtain high-quality pseudo masks, Uncertainty-weighted Multi-resolution CAM (UM-CAM) is produced by fusing low-and high-resolution CAMs from different layers of the classification network. Second, seed points are obtained from the UM-CAM automatically, and used to generate Seed-derived Pseudo Labels (SPL) via Geodesic distance-based Seed Expansion (GSE). The SPL provides more detailed context information in addition to UM-CAM for training the final segmentation model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Psuedo Mask Generation Based on UM-CAM Initial Response via Grad-CAM.</head><p>A typical classification network consists of convolutional layers as a feature extractor, followed by global average pooling and a fully connected layer as the output classifier <ref type="bibr" target="#b2">[3]</ref>. Given a set of training images, the classification network is trained with class labels. After training, the Grad-CAM method is utilized to compute the weights α k for the k-th channel of a feature map f at a certain layer via gradient backpropagation from the output node for the foreground class. The foreground activation map A can be obtained from a weighted combination of feature maps and followed by a ReLU activation <ref type="bibr" target="#b19">[20]</ref>, which is formulated as:</p><formula xml:id="formula_0">α k = 1 N N i=1 ∂y ∂f k (i) , (<label>1</label></formula><formula xml:id="formula_1">)</formula><formula xml:id="formula_2">A(i) = ReLU ( k α k f k (i)), (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where y is classification prediction score for the foreground. i is pixel index, and N is the pixel number in the image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Multi-resolution Exploration and Integration.</head><p>The localization map for each image typically provides discriminative object parts, which is insufficient to provide supervision for the segmentation task. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>(a), the activation maps generated from the shallow layers of the classification network contain high-resolution semantic features but suffer from noisy and dispersive localization. In contrast, activation maps generated from the deeper layers perform smoother localization but lack high-resolution information. To take advantage of activation maps from shallow and deep layers, we proposed UM-CAM to integrate the multi-resolution CAMs by uncertainty weighting. Let us denote a set of activation maps from M convolutional blocks as A = {A m } M m=0 . Each activation map is interpolated to the input size and normalized by its maximum to the range of [0,1], and the normalized activation maps are Â = { Âm } M m=0 . To minimize the uncertainty of pseudo mask, UM-CAM integrates the confident region of multi-resolution CAMs adaptively, which can be presented as the entropy-weighted combination of CAMs:</p><formula xml:id="formula_4">w m (i) = 1 -(- j=(b,f ) Âj m (i)log Âj m (i)),<label>(3)</label></formula><formula xml:id="formula_5">P UM (i) = m w m (i) Âm (i) m w m (i) , (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where Âb m and Âf m represent the background and foreground probability of Âm , respectively. w m is the weight map for Âm , and P UM is the UM-CAM for the target.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Robust Segmentation with UM-CAM and SPL</head><p>Though UM-CAM is better than the CAM from the deep layer of the classification network, it is still insufficient to provide accurate object boundaries that are important for segmentation. Motivated by <ref type="bibr" target="#b12">[13]</ref>, we propose a Geodesic distancebased Seed Expansion (GSE) method to generate Seed-derived Pseudo Label (SPL) that contains more detailed context information. The SPL is combined with UM-CAM to supervise the segmentation model, as shown in Fig. <ref type="figure" target="#fig_0">1 (b)</ref>.</p><p>Concretely, we adopt the centroid and the corner points of the bounding box obtained from UM-CAM as the foreground seeds S f and background seeds S b , respectively. To efficiently leverage these seed points, SPL is generated via Exponential Geodesic Distance (EGD) transform of the seeds, leading to a foreground cue map P f SP L and a background cue map P b SP L . The values of P b SP L and P f SP L represent the similarity between each pixel and background/foreground seed points, which can be computed as:</p><formula xml:id="formula_7">P b SP L (i) = e -α•D b (i) , P f SP L (i) = e -α•D f (i) , (<label>5</label></formula><formula xml:id="formula_8">)</formula><formula xml:id="formula_9">D b (i) = min j∈S b D geo (i, j, I), D f (i) = min j∈S f D geo (i, j, I), (<label>6</label></formula><formula xml:id="formula_10">)</formula><formula xml:id="formula_11">D geo (i, j, I) = min p∈Pi,j 1 0 I (p (n)) • u (n) dn<label>(7)</label></formula><p>where P i,j is the set of all paths between pixels i and j. D b (i) and D f (i) represent the minimal geodesic distance between target pixel i and background/foreground seed points, respectively. p is one feasible path and it is parameterized by n ∈ [0, 1]. u (n) = p (n) / p (n) is a unit vector that is tangent to the direction of the path.</p><p>Based on the supervision from UM-CAM and SPL, the segmentation network can be trained by minimizing the following joint object function:</p><formula xml:id="formula_12">L seg = λL CE (P p , P UM ) + (1 -λ)L CE (P p , P SP L ). (<label>8</label></formula><formula xml:id="formula_13">)</formula><p>where P p is the prediction of the segmentation network, and λ is a weight factor to balance the supervision of UM-CAM and SPL. L CE is the Cross-Entropy (CE) loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Details</head><p>Dataset. We collected clinical T2-weighted MRI data of 115 pregnant women in the second trimester with Single-shot Fast Spin-echo (SSFSE). The data were acquired in axial view with pixel size between 0.5547 mm × 0.5547 mm and 0.6719 mm × 0.6719 mm and slice thickness between 6.50 mm and 7.15 mm. Each slice was resampled to a uniform pixel size of 1 mm × 1 mm. In all experiments, Implementation Details. To boost the generalizability, we applied spatial and intensity-based data augmentation during the training stage, including gamma correction, random rotation, random flipping, and random cropping. For 2D classification, we employed VGG-16 <ref type="bibr" target="#b22">[23]</ref> as backbone architecture, in which an additional convolutional layer is used to substitute the last three fully connected layers. The classification network was trained with 200 epochs using CE loss. Stochastic Gradient Descent (SGD) optimizer was used for training with batch size 32, momentum 0.99, and weight decay 5 × 10 -4 . The learning rate was initialized to 1 × 10 -3 . We used UNet <ref type="bibr" target="#b17">[18]</ref> as the segmentation network. The learning rate was set as 0.01, and the SGD optimizer was used for training with 200 epochs, batch size 12, momentum 0.9, and weight decay 5 × 10 -4 . The hyper-parameter M and λ were set as 4 and 0.1 based on the best results on the validation set, respectively. We used Dice Similarity Coefficient (DSC) and 95% Hausdorff Distance (HD 95 ) to evaluate the quality of 2D pseudo masks and the final segmentation results in 3D space.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Ablation Studies</head><p>Stage1: Quality of Pseudo Masks Obtained by UM-CAM. To evaluate the effectiveness of UM-CAM, we compared different pseudo mask generation strategies: 1) Grad-CAM (baseline): only using CAMs from the last layer of the classification network generated by using Grad-CAM method <ref type="bibr" target="#b19">[20]</ref>, 2) Average-CAM: fusing multi-resolution CAMs via averaging, 3) UM-CAM: fusing multi-resolution CAMs via uncertainty weighting.  evaluation results of these methods, in which the segmentation is converted from CAMs using the optimal threshold found by grid search method. It can be seen that when fusing the information from multiple convolutional layers, the quality of pseudo masks improves. The proposed UM-CAM improves the average DSC by 4.52% and 1.60% compared with the baseline and Average-CAM, respectively. Figure <ref type="figure" target="#fig_2">2</ref> shows a visual comparison between CAMs obtained by the different methods. It can be observed that there are fewer false positive activation regions of UM-CAM compared with the other methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Stage2: Training Segmentation Model with UM-CAM and SPL.</head><p>To investigate the effectiveness of SPL, we compared it with several segmentation models: 1) Grad-CAM (baseline): only using the pseudo mask generated from Grad-CAM to train the segmentation model, 2) UM-CAM: only using UM-CAM as supervision for the segmentation model, 3) SPL: only using SPL as supervision, 4) UM-CAM+SPL: our proposed method using UM-CAM and SPL supervision for the segmentation model. Quantitative evaluation results in the second section of Table <ref type="table" target="#tab_0">1</ref> show that the network trained with UM-CAM and SPL supervision achieves an average DSC score of 89.76%, improving the DSC by 11.07% compared to the baseline model. Figure <ref type="figure" target="#fig_3">3</ref> depicts a visual comparison between these models. It shows that SPL supervision with context information can better discriminate the fetal brain from the background, leading to more accurate boundaries for segmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison with State-of-the-art Methods</head><p>We compared three CAM invariants with our UM-CAM in pseudo mask generation stage, including Grad-CAM++ <ref type="bibr" target="#b3">[4]</ref>, Score-CAM <ref type="bibr" target="#b24">[25]</ref>, and Ablation-CAM <ref type="bibr" target="#b16">[17]</ref>. Table <ref type="table" target="#tab_1">2</ref> shows the quantitative results of these CAM variants. It can be seen that GradCAM++, Score-CAM, and Ablation-CAM achieve similar performance, which is consistent with the visualization results shown in Fig. <ref type="figure" target="#fig_2">2</ref>. The proposed UM-CAM achieves higher accuracy than existing CAM variants, which generates more accurate boundaries that are closer to the ground truth. We further compared the proposed method with fully supervised method (FullySup) and two state-of-the-art weakly-supervised methods, including DRS <ref type="bibr" target="#b8">[9]</ref> that spreads the attention to adjacent non-discriminative regions by suppressing the attention on discriminative regions, and AMR <ref type="bibr" target="#b15">[16]</ref> that incorporates a spotlight branch and a compensation branch to dig out more complete object regions. Table <ref type="table" target="#tab_1">2</ref> lists the segmentation results of these methods. Our proposed method achieves an average DSC of 90.22% and an average HD 95 of 4.04 pixels, which is at least 3.02 pixels lower than the other weakly-supervised methods on the testing set. It indicates that the proposed method can generate segmentation results with more accurate boundaries. Figure <ref type="figure" target="#fig_3">3</ref> shows some qualitative visualization results. The DRS and AMR predictions appear to be coarse and inaccurate in the boundary regions, while our proposed method generates more accurate segmentation results, even similar to those generated from the fully supervised model for some easy samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we presented an uncertainty and context-based method for fetal brain segmentation using image-level supervision. An Uncertainty-weighted Multi-resolution CAM (UM-CAM) was proposed to integrate multi-resolution activation maps via uncertainty weighting to generate high-quality pixel-wise supervision. We proposed a Geodesic distance-based Seed Expansion (GSE) method to produce Seed-derived Pseudo Labels (SPL) containing detailed context information. The SPL is combined with UM-CAM for training the segmentation network. The proposed method was evaluated on the fetal brain segmentation task, and experimental results demonstrated the effectiveness of the proposed method and suggested the potential of our proposed method for obtaining accurate fetal brain segmentation with low annotation cost. In the future, it is of interest to validate our method with other segmentation tasks and apply it to other backbone networks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed method. (a) Uncertainty-weighted Multi-resolution CAM (UM-CAM) obtained by a classification network, (b) Segmentation model trained with UM-CAM and auxiliary supervision from Seed-derived Pseudo Label (SPL).</figDesc><graphic coords="3,55,98,54,56,340,18,231,13" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>(</head><label></label><figDesc>UM-CAM) to integrate low-and high-resolution CAMs via entropy weighting, which can leverage the semantic features extracted from the classification network adaptively and eliminate the noise effectively. 2) We propose a Geodesic distance-based Seed Expansion (GSE) method to generate Seed-derived Pseudo Labels (SPLs) that can provide boundary cues for training a better segmentation model. 3) Extensive experiments conducted on a fetal brain dataset demonstrate the effectiveness of the proposed method, which outperforms several state-of-theart approaches for learning from image-level labels.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visual comparison between CAMs obtained by different methods.</figDesc><graphic coords="6,44,31,54,26,335,11,124,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Visual comparison of our method and other weakly-supervised segmentation methods. The green and red contours indicate the boundaries of ground truths and segmentation results, respectively. (Color figure online)</figDesc><graphic coords="7,58,98,210,92,334,69,169,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Table 1 lists the quantitative Ablation study on the validation set to validate the effectiveness of UM-CAM and SPL. * denotes p-value &lt; 0.05 when comparing with the second place method.</figDesc><table><row><cell>Method</cell><cell></cell><cell>DSC (%)</cell><cell>HD 95 (pixels)</cell></row><row><cell cols="3">Pseudo mask generation Grad-CAM (baseline) 74.48 ± 13.26</cell><cell>39.88 ± 14.66</cell></row><row><cell></cell><cell>Average-CAM</cell><cell>77.40 ± 13.28</cell><cell>38.70 ± 19.75</cell></row><row><cell></cell><cell>UM-CAM</cell><cell cols="2">79.00 ± 12.83* 35.33 ± 16.98</cell></row><row><cell>Segmentation</cell><cell cols="2">Grad-CAM (baseline) 78.69 ± 10.02</cell><cell>22.17 ± 16.60</cell></row><row><cell></cell><cell>UM-CAM</cell><cell>85.22 ± 6.62</cell><cell>5.26 ± 4.23</cell></row><row><cell></cell><cell>SPL</cell><cell>89.05 ± 4.30</cell><cell>3.84 ± 4.07</cell></row><row><cell></cell><cell>UM-CAM+SPL</cell><cell>89.76 ± 5.09*</cell><cell>3.10 ± 2.61</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison between ours and existing weakly-supervised segmentation methods. * denotes p-value &lt; 0.05 when comparing with the second place weakly supervised method.</figDesc><table><row><cell>Method</cell><cell>Validation set</cell><cell></cell><cell>Test set</cell><cell></cell></row><row><cell></cell><cell>DSC (%)</cell><cell cols="2">HD95 (pixels) DSC (%)</cell><cell>HD95 (pixels)</cell></row><row><cell>Grad-CAM++ [4]</cell><cell cols="4">74.52 ± 13.29 39.87 ± 14.69 76.60 ± 10.58 37.49 ± 11.72</cell></row><row><cell>Score-CAM [25]</cell><cell cols="4">74.49 ± 13.35 39.88 ± 14.83 76.58 ± 10.60 37.54 ± 11.73</cell></row><row><cell>Ablation-CAM [17]</cell><cell cols="4">74.56 ± 13.29 39.76 ± 14.64 76.55 ± 10.61 37.57 ± 11.82</cell></row><row><cell>AMR [16]</cell><cell>78.77 ± 8.83</cell><cell>11.53 ± 9.82</cell><cell>79.79 ± 6.86</cell><cell>11.35 ± 8.02</cell></row><row><cell>DRS [9]</cell><cell>84.98 ± 5.62</cell><cell>7.17 ± 8.01</cell><cell>83.79 ± 7.81</cell><cell>7.06 ± 5.13</cell></row><row><cell cols="5">UM-CAM+SPL (ours) 89.76 ± 5.09* 3.10 ± 2.61* 90.22 ± 3.75* 4.04 ± 4.26*</cell></row><row><cell>FullySup</cell><cell>95.98 ± 3.17</cell><cell>1.22 ± 0.65</cell><cell>96.51 ± 2.67</cell><cell>1.10 ± 0.40</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (<rs type="grantNumber">62271115</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_kMGEm82">
+					<idno type="grant-number">62271115</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Learning pixel-level semantic affinity with image-level supervision for weakly supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kwak</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4981" to="4990" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Single-stage semantic segmentation from image labels</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Araslanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Roth</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4253" to="4262" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Weakly-supervised semantic segmentation via sub-category exploration</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">T</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">C</forename><surname>Hung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Piramuthu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Tsai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="8991" to="9000" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Grad-CAM++: generalized gradient-based visual explanations for deep convolutional networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chattopadhay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Howlader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">N</forename><surname>Balasubramanian</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>WACV</publisher>
+			<biblScope unit="page" from="839" to="847" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">An automated framework for localization, segmentation and superresolution reconstruction of fetal brain MRI</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ebner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">206</biblScope>
+			<biblScope unit="page">116324</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Learning integral objects with intra-class discriminator for weakly-supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4283" to="4292" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">TS-CAM: Token semantic coupled attention map for weakly supervised object localization</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Gao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2886" to="2895" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Multi-layer pseudo-supervision for histopathology tissue semantic segmentation using patch-level classification labels</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page">102487</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Discriminative region suppression for weakly-supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAAI</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="1754" to="1761" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Seed, expand and constrain: Three principles for weakly-supervised image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kolesnikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Lampert</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="695" to="711" />
+		</imprint>
+		<respStmt>
+			<orgName>ECCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Railroad is not a train: Saliency as pseudo-pixel supervision for weakly supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shim</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="5495" to="5505" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Pseudo-mask matters in weaklysupervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Kuang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6964" to="6973" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">MIDeepSeg: minimally interactive segmentation of unseen objects from medical images using deep learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">102102</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A review on automatic fetal and neonatal brain MRI segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makropoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Counsell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="page" from="231" to="248" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Automatic whole brain MRI segmentation of the developing neonatal brain</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makropoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1818" to="1831" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Activation modulation and recalibration scheme for weakly supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAAI</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="2117" to="2125" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Ablation-CAM: visual explanations for deep convolutional network via gradient-free localization</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">G</forename><surname>Ramaswamy</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="983" to="991" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Real-time automatic fetal brain extraction in fetal MRI by deep learning</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S M</forename><surname>Salehi</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="720" to="724" />
+		</imprint>
+		<respStmt>
+			<orgName>ISBI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Grad-CAM: visual explanations from deep networks via gradient-based localization</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cogswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vedantam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Batra</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="618" to="626" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A survey on label-efficient deep image segmentation: bridging the gap between weak supervision and dense prediction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="9284" to="9305" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Fetal brain age estimation and anomaly detection using attentionbased deep ensembles with uncertainty</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">223</biblScope>
+			<biblScope unit="page">117316</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Very deep convolutional networks for large-scale image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1" to="14" />
+		</imprint>
+		<respStmt>
+			<orgName>ICLR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Automatic measurement of thalamic diameter in 2-D fetal ultrasound brain images using shape prior constrained regularized level sets</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sridar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1069" to="1078" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Score-CAM: Score-weighted visual explanations for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR workshops</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="24" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Reliability does matter: An endto-end weakly supervised semantic segmentation approach</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAAI</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="12765" to="12772" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Learning deep features for discriminative localization</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lapedriza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oliva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2921" to="2929" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

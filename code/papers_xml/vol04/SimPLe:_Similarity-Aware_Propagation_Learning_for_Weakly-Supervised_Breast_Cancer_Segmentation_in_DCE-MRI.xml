@@ -1,0 +1,899 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SimPLe: Similarity-Aware Propagation Learning for Weakly-Supervised Breast Cancer Segmentation in DCE-MRI</title>
+				<funder ref="#_spepCJ2">
+					<orgName type="full">Guangdong Basic and Applied Basic Research Foundation</orgName>
+				</funder>
+				<funder ref="#_Z382bTV #_QKErNJc #_V25whyd">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yuming</forename><surname>Zhong</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="laboratory">Smart Medical Imaging, Learning and Engineering (SMILE) Lab, Medical UltraSound Image Computing (MUSIC) Lab</orgName>
+								<orgName type="institution" key="instit1">Shenzhen University Medical School</orgName>
+								<orgName type="institution" key="instit2">Shenzhen University</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yi</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="laboratory">Smart Medical Imaging, Learning and Engineering (SMILE) Lab, Medical UltraSound Image Computing (MUSIC) Lab</orgName>
+								<orgName type="institution" key="instit1">Shenzhen University Medical School</orgName>
+								<orgName type="institution" key="instit2">Shenzhen University</orgName>
+								<address>
+									<settlement>Shenzhen</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SimPLe: Similarity-Aware Propagation Learning for Weakly-Supervised Breast Cancer Segmentation in DCE-MRI</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="567" to="577"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">41F99312BACC4E7AE6A2808E6300FEAF</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_54</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:23+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Breast cancer</term>
+					<term>Weakly-supervised learning</term>
+					<term>Medical image segmentation</term>
+					<term>Contrastive learning</term>
+					<term>DCE-MRI</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Breast dynamic contrast-enhanced magnetic resonance imaging (DCE-MRI) plays an important role in the screening and prognosis assessment of high-risk breast cancer. The segmentation of cancerous regions is essential useful for the subsequent analysis of breast MRI. To alleviate the annotation effort to train the segmentation networks, we propose a weakly-supervised strategy using extreme points as annotations for breast cancer segmentation. Without using any bells and whistles, our strategy focuses on fully exploiting the learning capability of the routine training procedure, i.e., the train -fine-tune -retrain process. The network first utilizes the pseudo-masks generated using the extreme points to train itself, by minimizing a contrastive loss, which encourages the network to learn more representative features for cancerous voxels. Then the trained network fine-tunes itself by using a similarity-aware propagation learning (SimPLe) strategy, which leverages feature similarity between unlabeled and positive voxels to propagate labels. Finally the network retrains itself by employing the pseudo-masks generated using previous fine-tuned network. The proposed method is evaluated on our collected DCE-MRI dataset containing 206 patients with biopsy-proven breast cancers. Experimental results demonstrate our method effectively fine-tunes the network by using the SimPLe strategy, and achieves a mean Dice value of 81%. Our code is publicly available at https://github. com/Abner228/SmileCode.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Breast cancer is the most common cause of cancer-related deaths among women all around the world <ref type="bibr" target="#b7">[8]</ref>. Early diagnosis and treatment is beneficial to improve the survival rate and prognosis of breast cancer patients. Mammography, ultrasonography, and magnetic resonance imaging (MRI) are routine imaging modalities for breast examinations <ref type="bibr" target="#b14">[15]</ref>. Recent clinical studies have proven that dynamic contrast-enhanced (DCE)-MRI has the capability to reflect tumor morphology, texture, and kinetic heterogeneity <ref type="bibr" target="#b13">[14]</ref>, and is with the highest sensitivity for breast cancer screening and diagnosis among current clinical imaging modalities <ref type="bibr" target="#b16">[17]</ref>. The basis for DCE-MRI is a dynamic T1-weighted contrast enhanced sequence (Fig. <ref type="figure" target="#fig_0">1</ref>). T1-weighted acquisition depicts enhancing abnormalities after contrast material administration, that is, the cancer screening is performed by using the post-contrast images. Radiologists will analyze features such as texture, morphology, and then make the treatment plan or prognosis assessment. Computer-aided feature quantification and diagnosis algorithms have recently been exploited to facilitate radiologists analyze breast DCE-MRI <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b21">22]</ref>, in which automatic cancer segmentation is the very first and important step.</p><p>To better support the radiologists with breast cancer diagnosis, various segmentation algorithms have been developed <ref type="bibr" target="#b19">[20]</ref>. Early studies focused on image processing based approaches by conducting graph-cut segmentation <ref type="bibr" target="#b28">[29]</ref> or analyzing low-level hand-crafted features <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b18">19]</ref>. These methods may encounter the issue of high computational complexity when analyzing volumetric data, and most of them require manual interactions. Recently, deep-learning-based methods have been applied to analyze breast MRI. Zhang et al. <ref type="bibr" target="#b27">[28]</ref> proposed a mask-guided hierarchical learning framework for breast tumor segmentation via convolutional neural networks (CNNs), in which breast masks were also required to train one of CNNs. This framework achieved a mean Dice value of 72% on 48 testing T1-weighted scans. Li et al. <ref type="bibr" target="#b15">[16]</ref> developed a multi-stream fusion mechanism to analyze T1/T2-weighted scans, and obtained a Dice result of 77% on 313 subjects. Gao et al. <ref type="bibr" target="#b6">[7]</ref> proposed a 2D CNN architecture with designed attention modules, and got a Dice result of 81% on 87 testing samples. Zhou et al. <ref type="bibr" target="#b29">[30]</ref> employed a 3D affinity learning based multi-branch ensemble network for the segmentation refinement and generated 78% Dice on 90 testing subjects. Wang et al. <ref type="bibr" target="#b23">[24]</ref> integrated a combined 2D and 3D CNN and a contextual pyramid into U-net to obtain a Dice result of 76% on 90 subjects. Wang et al. <ref type="bibr" target="#b24">[25]</ref> proposed a tumor-sensitive synthesis module to reduce false segmentation and obtained 78% Dice value. To reduce the huge annotation burden for the segmentation task, Zeng et al. <ref type="bibr" target="#b26">[27]</ref> presented a semi-supervised strategy to segment the manually cropped DCE-MRI scans, and attained a Dice value of 78%.</p><p>Although <ref type="bibr" target="#b26">[27]</ref> has been proposed to alleviate the annotation effort, to acquire the voxel-level segmentation masks is still time-consuming and laborious, see Fig. <ref type="figure" target="#fig_0">1(c</ref>). Weakly-supervised learning strategies such as extreme points <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b20">21]</ref>, bounding box <ref type="bibr" target="#b5">[6]</ref> and scribbles <ref type="bibr" target="#b3">[4]</ref> can be promising solutions. Roth et al. <ref type="bibr" target="#b20">[21]</ref> utilized extreme points to generate scribbles to supervise the training of the segmentation network. Based on <ref type="bibr" target="#b20">[21]</ref>, Dorent et al. <ref type="bibr" target="#b4">[5]</ref> introduced a regularized loss <ref type="bibr" target="#b3">[4]</ref> derived from a Conditional Random Field (CRF) formulation to encourage the prediction consistency over homogeneous regions. Du et al. <ref type="bibr" target="#b5">[6]</ref> employed bounding boxes to train the segmentation network for organs. However, the geometric prior used in <ref type="bibr" target="#b5">[6]</ref> can not be an appropriate strategy for the segmentation of lesions with various shapes. To our knowledge, currently only one weakly-supervised work <ref type="bibr" target="#b17">[18]</ref> has been proposed for breast mass segmentation in DCE-MRI. This method employed three partial annotation methods including single-slice, orthogonal-slice (i.e., 3 slices) and interval-slice (∼6 slices) to alleviate the annotation cost, and then constrained segmentation by estimated volume using the partial annotation. The method obtained a Dice value of 83% using the interval-slice annotation, on a testing dataset containing only 28 patients.</p><p>In this study, we propose a simple yet effective weakly-supervised strategy, by using extreme points as annotations (see Fig. <ref type="figure" target="#fig_0">1(d)</ref>) to segment breast cancer. Specifically, we attempt to optimize the segmentation network via the conventional trainfine-tuneretrain process. The initial training is supervised by a contrastive loss to pull close positive voxels in feature space. The fine-tune is conducted by using a similarity-aware propagation learning (SimPLe) strategy to update the pseudo-masks for the subsequent retrain. We evaluate our method on a collected DCE-MRI dataset containing 206 subjects. Experimental results show our method achieves competitive performance compared with fully supervision, demonstrating the efficacy of the proposed SimPLe strategy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>The proposed SimPLe strategy and the trainfine-tuneretrain procedure is illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>. The extreme points are defined as the left-, right-, anterior-, posterior-, inferior-, and superior-most points of the cancerous region in 3D. The initial pseudo-masks are generated according to the extreme points by using the random walker algorithm. The segmentation network is firstly trained based on the initial pseudo-masks. Then SimPLe is employed to fine-tune the network and update the pseudo-masks. At last, the network is retrained from random initialization using the updated pseudo-masks. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Generate Initial Pseudo-masks</head><p>We use the extreme points to generate pseudo-masks based on random walker algorithm <ref type="bibr" target="#b8">[9]</ref>. To improve the performance of random walker, according to <ref type="bibr" target="#b20">[21]</ref>, we first generate scribbles by searching the shortest path on gradient magnitude map between each extreme point pair via the Dijkstra algorithm <ref type="bibr" target="#b2">[3]</ref>. After generating the scribbles, we propose to dilate them to increase foreground seeds for random walker. Voxels outside the bounding box (note that once we have the six extreme points, we have the 3D bounding box of the cancer) are expected to be the background seeds. Next, the random walker algorithm is used to produce a foreground probability map Y :</p><formula xml:id="formula_0">Ω ⊂ R 3 → [0, 1],</formula><p>where Ω is the spatial domain. To further increase the area of foreground, the voxel at location k is considered as new foreground seed if Y (k) is greater than 0.8 and new background seed if Y (k) is less than 0.1. Then we run the random walker algorithm repeatedly. After seven times iterations, we set foreground in the same way via the last output probability map. Voxels outside the bounding box are considered as background. The rest of voxels remain unlabeled. This is the way initial pseudo-masks Y init : Ω ⊂ R 3 → {0, 1, 2} generated, where 0, 1 and 2 represent negative, positive and unlabeled.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Train Network with Initial Pseudo-masks</head><p>Let X : Ω ⊂ R 3 → R denotes a training volume. Let f and θ be network and its parameters, respectively. A simple training approach is to minimize the partial cross entropy loss L pce , which is formulated as:</p><formula xml:id="formula_1">L pce = - Yinit(k)=0 log(1 -f (X; θ)(k)) - Yinit(k)=1 log(f (X; θ)(k)).</formula><p>(</p><p>Moreover, supervised contrastive learning is employed to encourage voxels of the same label to gather around in feature space. It ensures the network to learn discriminative features for each category. Specifically, features corresponding to N negative voxels and N positive voxels are randomly sampled, then the contrastive loss L ctr is minimized:</p><formula xml:id="formula_3">L ctr = - 1 2N -1 kn ∈N (k) log(1 -σ(sim(Z(k), Z(k n ))/τ )) - 1 2N -1 kp ∈P(k) log(σ(sim(Z(k), Z(k p ))/τ )),<label>(2)</label></formula><p>where P(k) denotes the set of points with the same label as the voxel k and N (k) denotes the set of points with the different label. Z(k) denotes the feature vector of the voxel at location k. sim(•, •) is the cosine similarity function. σ denotes sigmoid function. τ is a temperature parameter.</p><p>To summarize, we employ the sum of the partial cross entropy loss L pce and the contrastive loss L ctr to train the network with initial pseudo-masks:</p><formula xml:id="formula_4">L train = L pce + L ctr .</formula><p>(3)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">SimPLe-Based Fine-Tune and Retrain</head><p>The performance of the network trained by the incomplete initial pseudo-masks is still limited. We propose to fine-tune the entire network using the pre-trained weights as initialization. The fine-tune follows the SimPLe strategy which evaluates the similarity between unlabeled voxels and positive voxels to propagate labels to unlabeled voxels. Specifically, N positive voxels are randomly sampled as the referring voxel. For each unlabeled voxel k, we evaluate its similarity with all referring voxels:</p><formula xml:id="formula_5">S(k) = N i=1 I{sim(Z k , Z i ) &gt; λ}, (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where I(•) is the indicator function, which is equal to 1 if the cosine similarity is greater than λ and 0 if less. If S(k) is greater than αN , the voxel at location k is considered as positive. Then the network is fine-tuned using the partial cross entropy loss same as in the initial train stage. The loss function L f inetune is formulated as:</p><formula xml:id="formula_7">L f inetune = L pce -w • S(k)&gt;αN log(f (X; θ)(k)), (<label>5</label></formula><formula xml:id="formula_8">)</formula><p>where w is the weighting coefficient that controls the influence of the pseudo labels. To reduce the influence of possible incorrect label propagation, pseudo labels for unlabeled voxels are valid only for the current iteration when they are generated.</p><p>After the fine-tune completed, the network generates binary pseudo-masks for every training data, which are expected to be similar to the ground-truths provided by radiologists. Finally the network is retrained from random initialization by minimizing the cross entropy loss with the binary pseudo-masks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset. We evaluated our method on an in-house breast DCE-MRI dataset collected from the Cancer Center of Sun Yat-Sen University. In total, we collected 206 DCE-MRI scans with biopsy-proven breast cancers. All MRI scans were examined with 1.5T MRI scanner. The DCE-MRI sequences (TR/TE = 4.43 ms/1.50 ms, and flip angle = 10 • ) using gadolinium-based contrast agent were performed with the T1-weighted gradient echo technique, and injected 0.2 ml/kg intravenously at 2.0 ml/s followed by 20 ml saline. The DCE-MRI volumes have two kinds of resolution, 0.379×0.379×1.700 mm 3 and 0.511×0.511×1.000 mm 3 .</p><p>All cancerous regions and extreme points were manually annotated by an experienced radiologist via ITK-SNAP <ref type="bibr" target="#b25">[26]</ref> and further confirmed by another radiologist. We randomly divided the dataset into 21 scans for training and the remaining scans for testing <ref type="foot" target="#foot_0">1</ref> . Before training, we resampled all volumes into the same target spacing 0.600×0.600×1.000 mm 3 and normalized all volumes as zero mean and unit variance.</p><p>Implementation Details. The framework was implemented in PyTorch, using a NVIDIA GeForce GTX 1080 Ti with 11GB of memory. We employed 3D Unet <ref type="bibr" target="#b1">[2]</ref> as our network backbone.</p><p>• Train: The network was trained by stochastic gradient descent (SGD) for 200 epochs, with an initial learning rate η = 0.01. The ploy learning policy was used to adjust the learning rate, (1epoch/200) 0.9 . The batch size was 2, consisting of a random foreground patch and a random background patch located via initial segmentation Y init . Such setting can help alleviate class imbalance issue. The patch size was 128 × 128 × 96. For the contrastive loss, we set N = 100, temperature parameter τ = 0.1. • Fine-tune: We initialized the network with the trained weights. We trained it by SGD for 100 iterations, with η = 0.0001. The ploy learning policy was also used. For the SimPLe strategy, we set N = 100, λ = 0.96, α = 0.96, w = 0.1. Quantitative and Qualitative Analysis. We first verified the efficacy of our SimPLe in the training stage. Figure <ref type="figure">3</ref> illustrates the pseudo-masks at different training stages. It is obvious that our SimPLe effectively updated the pseudomasks to make them approaching the ground-truths. Therefore, such fune-tuned pseudo-masks could be used to retrain the network for better performance.   <ref type="table" target="#tab_0">1</ref> reports the quantitative Dice, Jaccard, average surface distance (ASD), and Hausdorff distance (95HD) results of different methods. We compared our method with an end-to-end approach <ref type="bibr" target="#b3">[4]</ref> that proposed to optimize network via CRF-regularized loss L crf . Although our L ctr supervised method outcompeted L crf <ref type="bibr" target="#b3">[4]</ref>, the networks trained only using the initial pseudo-masks could not achieve enough high accuracy (Dice values&lt;70%). In contrast, the proposed SimPLe largely boosted the performance of the basically trained networks, by +14.74% Dice and +15.16% Jaccard (v.s. L crf ), +11.81% Dice and +12.65% Jaccard (v.s. L ctr ). Table <ref type="table" target="#tab_0">1</ref> also shows the comparison results of three general weakly-supervised strategies, including entropy minimization <ref type="bibr" target="#b9">[10]</ref>, mean teacher <ref type="bibr" target="#b22">[23]</ref>, and bounding box <ref type="bibr" target="#b12">[13]</ref>. Our method consistently outperformed these strategies with respect to all evaluation metrics. Furthermore, our method achieved competitive Dice results compared with fully supervision, which again proves the efficacy of the proposed SimPLe strategy. Note that the average annotation time for extreme points and full masks were 31 s and 95 s per scan, respectively. Figure <ref type="figure" target="#fig_3">5</ref> visualizes the 3D distance map between the segmented surface and ground-truth. It can be observed that our SimPLe consistently enhanced the segmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We introduce a simple yet effective weakly-supervised learning method for breast cancer segmentation in DCE-MRI. The primary attribute is to fully exploit the simple trainfine-tuneretrain process to optimize the segmentation network via only extreme point annotations. This is achieved by employing a similarityaware propagation learning (SimPLe) strategy to update the pseudo-masks. Experimental results demonstrate the efficacy of the proposed SimPLe strategy for weakly-supervised segmentation.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Breast MRI and different annotations: (a) T1-weighted images, (b) corresponding contrast-enhanced images, (c) the cancer annotation with full segmentation masks, and (d) the cancer annotation using extreme points (note that to facilitate the visualization, here we show the extreme points in 2D images, our method is based on 3D).</figDesc><graphic coords="2,73,80,54,08,276,67,137,62" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The schematic illustration of the proposed similarity-aware propagation learning (SimPLe) and the train -fine-tune -retrain procedure for the breast cancer segmentation in DCE-MRI.</figDesc><graphic coords="4,56,31,53,96,311,26,204,73" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .Fig. 4 .</head><label>34</label><figDesc>Fig. 3. The pseudo-masks (shown as boundaries) at different training stages, including the initial pseudo-mask generated by the random walker (purple), the trained network's output (green), the fine-tuned pseudo-mask using SimPLe (blue) and the ground-truth (red). Note that all images here are the training images. (Color figure online)</figDesc><graphic coords="7,55,98,307,40,340,18,74,29" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Three cases of 3D visualization of the surface distance between segmented surface and ground-truth. Each case shows the Lpce + Lctr result and the SimPLe fine-tuned result. The proposed SimPLe consistently enhances the segmentation.</figDesc><graphic coords="8,41,79,54,26,340,21,52,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>The numerical results of different methods for breast cancer segmentation L pce + L crf<ref type="bibr" target="#b3">[4]</ref> 64.97 ± 28.66 53.83 ± 27.26 1.01 ± 0.81 3.90 ± 3.91 L pce + L ctr 69.39 ± 24.09 57.36 ± 23.31 0.95 ± 0.66 3.60 ± 3.49 Entropy Min [10] 71.94 ± 17.86 58.74 ± 18.69 0.88 ± 0.58 3.16 ± 3.77 Mean Teacher [23] 65.92 ± 25.59 53.82 ± 24.74 1.02 ± 0.64 3.74 ± 3.29 Bounding Box [13] 77.02 ± 17.15 65.08 ± 17.92 0.89 ± 0.57 2.54 ± 5.20 L pce + L crf + SimPLe 79.71 ± 17.72 68.99 ± 18.84 0.74 ± 0.55 2.48 ± 1.93 L pce + L ctr + SimPLe 81.20 ± 13.28 70.01 ± 15.02 0.69 ± 0.44 2.40 ± 1.69 Fully Supervision 81.52 ± 19.40 72.10 ± 20.45 0.68 ± 0.63 2.40 ± 2.76 Figure 4 visualizes our cancer segmentation results on the testing data. Table</figDesc><table><row><cell>Methods</cell><cell>Dice [%]</cell><cell>Jaccard [%] ASD [mm] 95HD [mm]</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>We have tried different amount of training data to investigate the segmentation performance of the fully-supervised network. The results showed that when using</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_1"><p><ref type="bibr" target="#b20">21,</ref>  42, 63 scans for training, the Dice results changed very little, within 0.3%. Therefore, to include more testing data, we chose to use 21 (10%) out of 206 scans for training.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported in part by the <rs type="funder">National Natural Science Foundation of China</rs> under Grants <rs type="grantNumber">62071305</rs>, <rs type="grantNumber">61701312</rs> and <rs type="grantNumber">81971631</rs>, and in part by the <rs type="funder">Guangdong Basic and Applied Basic Research Foundation</rs> under Grant <rs type="grantNumber">2022A1515011241</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Z382bTV">
+					<idno type="grant-number">62071305</idno>
+				</org>
+				<org type="funding" xml:id="_QKErNJc">
+					<idno type="grant-number">61701312</idno>
+				</org>
+				<org type="funding" xml:id="_V25whyd">
+					<idno type="grant-number">81971631</idno>
+				</org>
+				<org type="funding" xml:id="_spepCJ2">
+					<idno type="grant-number">2022A1515011241</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A multichannel markov random field framework for tumor segmentation with an application to classification of gene expression-based breast cancer recurrence risk</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Ashraf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Gavenonis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Daye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Rosen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kontos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="637" to="648" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">3D U-Net: learning dense volumetric segmentation from sparse annotation</title>
+		<author>
+			<persName><forename type="first">Ö</forename><surname>Çiçek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abdulkadir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Lienkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_49</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-8_49" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="424" to="432" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A note on two problems in connexion with graphs</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dijkstra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Numerische Mathematik</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="269" to="271" />
+			<date type="published" when="1959">1959</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Scribble-based domain adaptation via co-segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Dorent</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8_47" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="479" to="489" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Inter extreme points geodesics for end-to-end weakly supervised image segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Dorent</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_57" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="615" to="624" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Weakly-supervised 3D medical image segmentation using geometric prior and contrastive similarity</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.02125</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Dense encoder-decoder network based on two-level context enhanced residual attention mechanism for segmentation of breast tumors in magnetic resonance imaging</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2019 IEEE International Conference on Bioinformatics and Biomedicine</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="1123" to="1129" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Breast cancer statistics, 2022</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Giaquinto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CA Cancer J. Clin</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="524" to="541" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Random walks for image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Grady</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1768" to="1783" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning by entropy minimization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Grandvalet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Automated localization of breast cancer in DCE-MRI</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gubern-Mérida</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="265" to="274" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Artificial intelligence applied to breast MRI for improved diagnosis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Edwards</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Newstead</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">298</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="38" to="46" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Bounding boxes for weakly supervised segmentation: global constraints get close to full supervision</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Granger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="365" to="381" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Kinetic heterogeneity of breast cancer determined using computer-aided diagnosis of preoperative MRI scans: relationship to distant metastasis-free survival</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">295</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="517" to="526" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Breast cancer screening with imaging: recommendations from the society of breast imaging and the ACR on the use of mammography, breast MRI, breast ultrasound, and other technologies for the detection of clinically occult breast cancer</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Coll. Radiol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="18" to="27" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Learning cross-modal deep representations for multi-modal MR image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_7" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="57" to="65" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Breast MRI: state of the art</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Mann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Moy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">292</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="520" to="536" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Volume-awareness and outlier-suppression co-training for weaklysupervised MRI breast mass segmentation with partial annotations</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Meng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl.-Based Syst</title>
+		<imprint>
+			<biblScope unit="volume">258</biblScope>
+			<biblScope unit="page">109988</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Semi-automated and interactive segmentation of contrastenhancing masses on breast DCE-MRI using spatial fuzzy clustering</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Militello</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biomed. Signal Process. Control</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page">103113</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A review on image-based approaches for breast cancer detection, segmentation, and classification</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Rezaei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Syst. Appl</title>
+		<imprint>
+			<biblScope unit="volume">182</biblScope>
+			<biblScope unit="page">115204</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Going to extremes: weakly supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn. Knowl. Extract</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="507" to="524" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Artificial intelligence in the interpretation of breast cancer on MRI</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sheth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Giger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1310" to="1324" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Mixed 2D and 3D convolutional network with multi-scale context for lesion segmentation in breast DCE-MRI</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biomed. Signal Process. Control</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page">102607</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Breast tumor segmentation in DCE-MRI with tumor sensitive synthesis</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="4990" to="5001" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">User-guided 3D active contour segmentation of anatomical structures: significantly improved efficiency and reliability</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Yushkevich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Piven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cody Hazlett</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Gimpel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gerig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1116" to="1128" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A reciprocal learning strategy for semisupervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="163" to="177" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Hierarchical convolutional neural networks for segmentation of breast tumors in MRI with application to radiogenomics</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Saha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Mazurowski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="435" to="447" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Segmentation and classification of breast tumor using dynamic contrast-enhanced MR images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Baloch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Englander</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Schnall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-540-75759-7_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-540-75759-7_48" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2007</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Ayache</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Maeder</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="volume">4792</biblScope>
+			<biblScope unit="page" from="393" to="401" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Three-dimensional affinity learning based multi-branch ensemble network for breast tumor segmentation in MRI. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">129</biblScope>
+			<biblScope unit="page">108723</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

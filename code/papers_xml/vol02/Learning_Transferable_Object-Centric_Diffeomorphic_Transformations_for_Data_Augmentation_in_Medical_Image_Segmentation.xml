@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learning Transferable Object-Centric Diffeomorphic Transformations for Data Augmentation in Medical Image Segmentation</title>
+				<funder ref="#_MW7RmDk">
+					<orgName type="full">National Institutes of Health</orgName>
+					<orgName type="abbreviated">NIH</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">National Institute of Nursing Research</orgName>
+					<orgName type="abbreviated">NINR</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Nilesh</forename><surname>Kumar</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Rochester Institute of Technology</orgName>
+								<address>
+									<settlement>Rochester</settlement>
+									<region>NY</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Prashnna</forename><forename type="middle">K</forename><surname>Gyawali</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">West Virginia University</orgName>
+								<address>
+									<settlement>Morgantown</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Sandesh</forename><surname>Ghimire</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Qualcomm Inc</orgName>
+								<address>
+									<settlement>San Diego</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Linwei</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Rochester Institute of Technology</orgName>
+								<address>
+									<settlement>Rochester</settlement>
+									<region>NY</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learning Transferable Object-Centric Diffeomorphic Transformations for Data Augmentation in Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="255" to="265"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">6066B639FB990D1BD96A770F4DB4B83F</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_24</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Data Augmentation</term>
+					<term>Diffeomorphic transformations</term>
+					<term>Image Segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Obtaining labelled data in medical image segmentation is challenging due to the need for pixel-level annotations by experts. Recent works have shown that augmenting the object of interest with deformable transformations can help mitigate this challenge. However, these transformations have been learned globally for the image, limiting their transferability across datasets or applicability in problems where image alignment is difficult. While object-centric augmentations provide a great opportunity to overcome these issues, existing works are only focused on position and random transformations without considering shape variations of the objects. To this end, we propose a novel object-centric data augmentation model that is able to learn the shape variations for the objects of interest and augment the object in place without modifying the rest of the image. We demonstrated its effectiveness in improving kidney tumour segmentation when leveraging shape variations learned both from within the same dataset and transferred from external datasets.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>A must-have ingredient for training a deep neural network (DNN) is a large number of labelled data that is not always available in real-world applications. This challenge of data annotation becomes even worse for medical image segmentation tasks that require pixel-level annotation by experts. Data augmentation (DA) is a recognized approach to tackle this challenge. Common DA strategies create new samples by using predefined transformations such as rotation, translation, and colour jitter to existing data, where the performance gains heavily relies on the choice of augmentation operations and parameters <ref type="bibr" target="#b0">[1]</ref>.</p><p>To mitigate this reliance, recent efforts have focused on learning optimal augmentation operations for a given task and dataset <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b14">15]</ref>. However, transformations learned from these methods are typically still limited to a predefined set of simple operations such as rotation, translation, and scaling. In the meantime, another direction of research has emerged that provides an alternative way of learning more expressive augmentations based on deformation-based transformations commonly used in image registration <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b15">16]</ref>. Instead of pre-specifying a list of operations such as rotation and scaling <ref type="bibr" target="#b2">[3]</ref>, these deformation-based transformations can describe more general spatial transformations. Moreover, they are perfectly suited for modelling an object's shape changes <ref type="bibr" target="#b15">[16]</ref> that are crucial for image segmentation tasks. It thus provides an excellent candidate for learning shape variations of an object from the data, and via which to enable shape-based augmentations for medical image segmentation tasks. <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b15">16]</ref>.</p><p>However, to date, all existing approaches to learning deformable registrationbased DA assume a perfect alignment of image pairs to learn the transformations. In other words, the deformation-based transformations are learned globally for the image. This assumption is restrictive and associated with several challenges. First, the learning of a global image-level transformation requires image alignment that may be non-trivial in many scenarios, such as the alignment of tumours that can appear at different locations of an image, or alignment of images from different modalities. The learning of transformations itself is also complicated by the presence of other objects in the image and is best suited when the object of interest is always in the same (and often centre) location in all the images, i.e., images are globally aligned a priori <ref type="bibr" target="#b15">[16]</ref>. Second, the application of the learned global transformations for DA is also restricted to images similar (and aligned) to those in training. It thus will be challenging to transfer the learned shape variations to even the same objects across different locations, orientations, or sizes in the image, let alone transferring across dataset (e.g., to transfer the learned shape variations of an organ from one image modality to another).</p><p>Intuitively, object-centric transformations and augmentations have the potential to overcome the challenges associated with global image-level transformations. Recently, an object-centric augmentation method termed as TumorCP <ref type="bibr" target="#b12">[13]</ref> showed that a simple object-level augmentation, via copy-pasting a tumour from one location to another, can yield impressive performance gains. However, the diversity of samples generated by TumorCP is limited to pasting tumours on different backgrounds with random distortions without further learned shapebased augmentation.</p><p>Similarly, other existing works on object-level augmentation of lesions have mostly focused on position, orientation, and random transformations of the lesion on different backgrounds <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b16">17]</ref>. To date, no existing works have considered shape-based object-centric augmentations. Enriching object-centric DA with learned shape variations -a factor critical to object segmentation -can result in more diverse samples and thereby improve DNN training for medical image segmentation.</p><p>In this paper, we present a novel approach for learning and transferring object-centric deformations for DA in medical image segmentation tasks. As illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>, this is achieved with two key elements:</p><p>-A generative model of object-centric deformations -constrained to C1 diffeomorphism for better DNN training -to describe shape variability learned from paired patches of objects of interest. This allows the learning to focus on the shape variations of an object regardless of its positions and sizes in the image, thus bypassing the requirement for image alignment. -An online augmentation strategy to sample transformations from the generative model and to augment the objects of interest in place without distorting the surrounding content in the image. This allows us to add shape diversity to the objects of interest in an image regardless of their positions or sizes, eventually facilitating transferring the learned variations across datasets. We demonstrated the effectiveness of the presented object-centric diffeomorphic augmentation in kidney tumour segmentation, including using shape variations of kidney tumours learned from the same dataset (KiTS <ref type="bibr" target="#b6">[7]</ref>), as well as transferring those learned from a larger liver tumour dataset (LiTS <ref type="bibr" target="#b1">[2]</ref>). Experimental results showed that it can enrich the augmentation diversity of other techniques such as TumorCP <ref type="bibr" target="#b12">[13]</ref>, and improve kidney tumour segmentation <ref type="bibr" target="#b6">[7]</ref> using shape variations learned either within or outside the same training data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>We focus on DA for tumour segmentation because tumours can occur at different locations of an organ with substantially different orientations and sizes. It thus presents a challenging scenario where global image-level deformable transformations cannot apply. mentation approach comprises as outlined in Below we describe the two key methodological elements.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Object-Centric Diffeomorphism as a Generative Model</head><p>The goal of this element is to learn to generate diffeomorphic transformation parameters θ that describe shape variations -in the form of deformable transformations T θ -that are present within training instances of tumour x. To realize this, we train a generative model G(.) for θ such that, when given two instances of tumours (x src , x tgt ), it is asked to generate θ from the encoded latent representations z in order to deform x src through T θ (x src ) to x tgt .</p><p>Transformations: In order to model shape deformations between x src and x tgt , we need highly expressive transformations to capture rich shape variations in tumour pairs. We assume a spatial transformation T θ in the form of pixel-wise displacement field u as T θ (x) = x + u. Inspired from <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b5">6]</ref>, we turn to C 1 diffeomorphisms to model our transformations. C 1 diffeomorphisms are smooth and invertible transformations that preserve differentiability up to the first derivative, making them a suitable choice to be embedded in a neural network for gradient-based optimization <ref type="bibr" target="#b3">[4]</ref>. However, the set of all diffeomorphisms is an infinitely large Lie group. To overcome this issue, we focus on a specific finitedimensional subset of the Lie group that is large enough to capture the relevant variations in the tumours. For this, we make use of continuous piecewise-affinebased (CPAB) transformation based on the integration of CPA velocity field v θ proposed in <ref type="bibr" target="#b4">[5]</ref>. Let Ω ⊂ R 2 denote the tumour domain and let P be triangular tesselation of Ω <ref type="bibr" target="#b5">[6]</ref>. A velocity field that maps points from Ω to R 2 is said to be piecewise affine (PA) if it is affine when restricted to each triangle of P . The set V of v θ which are zero on the boundary of Ω can be shown to be finitedimensional linear space <ref type="bibr" target="#b4">[5]</ref>. The dimensionality d of V is a result of how fine P is tessellated. It can be shown that V is parameterized by θ, i.e., any instance of V is a linear combination of d orthonormal CPA fields with weights θ <ref type="bibr" target="#b4">[5]</ref>. A spatial transformation T θ can be derived by integrating a velocity field v θ <ref type="bibr" target="#b4">[5]</ref> as:</p><formula xml:id="formula_0">u θ (x, t) = x + t 0 v θ (u θ (x, t))dt (1)</formula><p>where the integration can be done via a specialized solver <ref type="bibr" target="#b4">[5]</ref>. The solver chosen produces faster and more accurate results than a generic ODE solver. Specifically, the cost for this solver is O(C1)+O(C2 x Number of integration steps), where C1 is matrix exponential for the number of cells an image is divided into and C2 is the dimensionality of an image. The transformations T θ thus can be described by a generative model of θ. We also experimented with squaring and scaling layers for integration but that resulted in texture loss when learning transformations.</p><p>Generative Modeling: The data generation process can be described as:</p><formula xml:id="formula_1">p(z) ∼ N (0, I), θ ∼ p φ (θ|z), x tgt ∼ p(x tgt |θ, x src ) (2) p(x tgt , z|x src ) = p(z) θ p(x tgt |θ, x src )p φ (θ|z)dθ = p(z)p φ (x tgt |z, x src ) (3)</formula><p>where z is the latent variable assumed to follow an isotropic Gaussian prior, p φ (θ|z) is modeled by a neural network parameterized by φ, and p(x tgt |θ, x src ) follows the deformable transformation as described in Equation ( <ref type="formula">1</ref>).</p><p>We define variational approximations of the posterior density as q ψ (z|x src , x tgt ), modeled by a convolutional neural network that expects two inputs x src and x tgt . Passing a tuple of x src and x tgt as the input helps the latent representations to learn the spatial difference between two tumour samples. Alternatively, the generative model as described can be considered as a conditional model where both the generative and inference model is conditioned on the source tumour sample x src .</p><p>Variational Inference: The parameters ψ and φ are optimized by the modified evidence lower bound (ELBO) of the log-likelihood log p(x tgt |x src ):</p><formula xml:id="formula_2">log p(x tgt |x src ) ≥ L ELBO = E q ψ (z|xsrc,xtgt) p φ (x tgt |z, x src ) -βD KL (q ψ (z|x src , x tgt )||p(z))<label>(4)</label></formula><p>where the first term in the ELBO takes the form of similarity loss: L 2 norm on the difference between x tgt and xsrc = T θ (x src ) synthesized using the θ from G(z).</p><p>The second KL term constrains our approximated posterior q ψ (z|x src , x tgt ) to be closer to the isotropic Gaussian prior p(z), and its contribution to the overall loss is scaled by the hyperparameter β. To further ensure that xsrc looks realistic, we discourage G(z) from generating overly-expressive transformations by adding a regularization term over the L 2 norm of the displacement field u with a tunable hyperparameter λ reg . The final objective function becomes:</p><formula xml:id="formula_3">L = L ELBO + λ reg * u 2<label>(5)</label></formula><p>Object-Centric Learning: To learn object-centric spatial transformations, x src and x tgt are in the forms of image patches that solely contain tumours. Given an image and its corresponding tumour segmentation mask (X, Y ), we first extract a bounding box around the tumour by applying skimage.measure.regionprops from the scikit-image package to Y . We then use this bounding box to carve out the tumour x from the image X, masking out all the regions within the bounding box that do not belong to the tumour. All the tumour patches are then resized to the same scale, such that tumours of different sizes can be described by the same tesselation resolution. When pairing tumour patches, we pair each tumour with its K nearest neighbour tumours based on their Euclidean distance -this again avoids learning overly expressive transformation when attempting to deform between significantly different tumour shapes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Online Augmentations with Generative Models</head><p>The goal of this element is to sample random object-centric transformations of T θ from G(z), to generate diverse augmentations of different instances of tumours in place. However, if we only transform the tumour and keep the rest of the image identical, the transformed tumour may appear unrealistic and out of place.</p><p>To ensure that the entire transformed image appears smooth, we use a hybrid strategy to construct a deformation field for the entire image X that combines tumour-specific deformations with an identity transform for the rest of the image. Specifically, we fill a small region around the tumour with displacements of diminishing magnitudes, achieved by propagating the deformations from the boundaries of the deformation fields from G(z) to their neighbours with reduced magnitudes. Repeating this process ensures that the change at the boundaries is smooth and that the transformed region appears naturally as part of the image. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>We used two publicly available datasets, LiTS <ref type="bibr" target="#b1">[2]</ref> and KiTS <ref type="bibr" target="#b6">[7]</ref>, for our experiments. LiTS <ref type="bibr" target="#b6">[7]</ref>   <ref type="table" target="#tab_1">1</ref>, ranging from using 11000 pairs from LiTS to only 3000 pairs when using only 25% samples from KiTS.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Model:</head><p>The encoder of G(z) consisted of five convolutional layers and three fully connected layers, with a latent dimension of 12 for z. The decoder consisted of five fully connected layers to output the parameters θ for T θ . We trained the G(z) for a total of 400 epochs and a batch size of 16. We also implemented early stopping if the validation loss does not improve for 20 epochs. We used Adam optimizer <ref type="bibr" target="#b9">[10]</ref> with a learning rate of 1e-4. We trained separate G(z)'s from KiTS and LiTS, respectively. We set β = 0.001 for both models but needed a high λ reg of 0.009 for the LiTS model compared to 0.004 for KiTS model. The tumours in the LiTS have higher intensity differences, which may explain why a higher value of λ reg was needed to ensure that transformed tumours did not become unrealistic.</p><p>Results: We evaluated G(z) with two criteria. First, the model needs to be able to reconstruct x tgt by generating θ to transform x src . Second, the model needs to be able to generate diverse transformed tumour samples for a given tumour sample. Figure <ref type="figure" target="#fig_1">2</ref> presents visual examples of the reconstruction and generation results achieved by G(z). It can be observed that the reconstruction is successful in most cases, except when x src and x tgt were too different. This was necessary to ensure that T θ (x src ) did not produce unrealistic examples. The averaged L2-loss of transformed xsrc was 1.23 on the validation pairs. We also visually inspected validation samples after training to make sure that the deformed tumours were similar to the original tumours in appearance. The generated examples of tumours from a single source, as shown in Fig. <ref type="figure" target="#fig_1">2</ref>(b), demonstrated that the generations were diverse yet realistic. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Deformation-Based da for Kidney Tumour Segmentation</head><p>Data: We then used G(z) to generate deformation-based augmentations to increase the size and diversity of training samples for kidney tumour segmentation on KiTS. To assess the effect of augmentations on different sizes of labelled data, we considered training using 25%, 50%, 75%, and 100% of the KiTS training set. We considered two DA scenarios: augment with transformations learned from KiTS (within-data augmentation) versus from LiTS (cross-data augmentation).</p><p>Models: For the base segmentation network, we adopted nnU-net <ref type="bibr" target="#b8">[9]</ref> as it contains state of the art (SOTA) pipeline for medical image segmentation on most datasets. To make the segmentation pipeline compatible with G(z), we used the 2D segmentation module of nnU-net. For baselines, we considered 1) default augmentations such as rotation, scaling, and random crop in nnU-net as well as 2) TumorCP, all modified for 2D segmentation. Note that our goal is not to achieve SOTA results on KiTS, but to test the relative efficacy of the presented DA strategies in comparison with existing object-centric DA methods.</p><p>Results: We use Sørensen-Dice Coefficient (Dice) to measure segmentation network performance. Dice measures the overlap between prediction and ground truth. As summarized in Table <ref type="table" target="#tab_1">1</ref>, when combined with TumorCP, the presented augmentations were able to generate statistically significant (paired t-test, p ≤ 0.05) improvements in all cases compared to TumorCP alone. This demonstrated the benefit of enriching simple copy-and-paste DA with shape variations. Interestingly, cross-data transferring of the learned augmentations (from LiTS) outperformed the within-data augmentation in the majority of the cases. Which we believe is because of two factors. Firstly, learning of the within-data augmentations is limited to the percentage of the training set used for segmentation. The number of objects to learn transformations from is thus greater in crossdata augmentation settings. Secondly, the transformations present in cross-data are completely unseen in the segmentation training network which helps in generating more diverse samples. Note that, as the transformations are learned as variations in object shapes, they can be transferred easily across datasets Surprisingly, the improvements achieved by the presented augmentation strategy were the most prominent when the segmentation was trained on 50% and 75% of the KiTS training set. This is contrary to the expectation that DA would be most beneficial when the labelled training set is small. This may be because smaller sample sizes do not provide sufficient initial tumor samples for shape transformations. This may also explain why the combination of TumorCP boosted the performance of our augmentation strategy, as the oversampling nature of TumorCP provided more tumour samples for the presented strategy to transform to further enrich the training set. It is also worth noting that in contrast to prior literature, random wrapping of objects does not come close to the learned augmentations. We speculate that while unrealistic transformations work for whole images, they may be problematic when only augmenting specific local objects in an image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion and Conclusions</head><p>In this work, we presented a novel diffeomorphism-based object-centric augmentation that can be learned and used to augment the objects of interest regardless of their position and size in an image. As demonstrated by the experimental results, this allows us to not only introduce new variations to unfixed objects like tumours in an image but also transfer the knowledge of shape variations across datasets. An immediate next step will be to extend the presented approach to learn and transfer 3D transformations for 3D segmentation tasks, and to enrich the shape-based transformation with appearance-based transformations. In the long term, it would be interesting to explore ways to transfer knowledge about more general forms of variations across datasets.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the presented approach. a) Learning a generative model describing object-centric shape variations as diffeomorphic transformations. b) Sampling transformations from the learned generative model and deforming an object in place (highlighted with a red square) without distorting the surrounding content in the image. (Color figure online)</figDesc><graphic coords="3,122,49,247,94,207,58,176,74" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visual examples of the generative model in (a) reconstructing xtgt given pairs of xscr and xtgt, and (b) generating deformed samples given a single xsrc.</figDesc><graphic coords="6,107,79,300,89,208,39,183,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>contains liver and liver tumour segmentation masks for 200 scans in total, 130 train and 70 test. Similarly, KiTS<ref type="bibr" target="#b1">[2]</ref> has kidney and kidney tumour segmentation masks for 300 scans, 168 train, 42 validation, and 90 test. We trained our generative model G(z) on KiTS and LiTS separately to learn spatial variations in tumour shapes. We then used either of the learned transformation to augment kidney tumor segmentation tasks on subsets of KiTS data with varying sizes. Code link: https://github.com/nileshkumar0726/Learning_ Transformations 3.1 Generative Model Implementation, Training, and Evaluation Data: We prepared data for the generative model G(z) training by first carving out tumour regions from individual slices of 3D scans using tumour segmentation masks. All tumour patches were resized to 30×30, and each was paired with eight of its closest neighbours. We trained G(z) with different sizes of data for individual experiments presented in Table</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>KiTS segmentation results in terms of DICE score. The baseline model already includes standard data augmentations. Within-data augmentations used transformations learned from KiTS using the same % of training data for segmentation tasks. Cross-data augmentations used transformations learned from LiTS. TumorCP was also always performed within data.</figDesc><table><row><cell cols="2">% data for training Augmentations</cell><cell>Mean Dice (std)* ↑</cell></row><row><cell>25%</cell><cell>Baseline</cell><cell>0.467 (0.014)</cell></row><row><cell></cell><cell>Random Wrapping</cell><cell>0.535 (0.003)</cell></row><row><cell></cell><cell>TumorCP</cell><cell>0.568 (0.014)</cell></row><row><cell></cell><cell>Diffeo (within-data | cross-data)</cell><cell>0.497 (0.006) | 0.505 (0.002)</cell></row><row><cell></cell><cell cols="2">TumorCP + Diffeo (within-data | cross-data) 0.581 (0.012) | 0.576 (0.015)</cell></row><row><cell>50%</cell><cell>Baseline</cell><cell>0.608 (0.017)</cell></row><row><cell></cell><cell>Random Wrapping</cell><cell>0.6675 (0.0091)</cell></row><row><cell></cell><cell>TumorCP</cell><cell>0.669 (0.011)</cell></row><row><cell></cell><cell>Diffeo (within-data | cross-data)</cell><cell>0.640 (0.002) | 0.639 (0.014)</cell></row><row><cell></cell><cell cols="2">TumorCP + Diffeo (within-data | cross-data) 0.689 (0.013) | 0.702 (0.016)</cell></row><row><cell>75%</cell><cell>Baseline</cell><cell>0.656 (0.027)</cell></row><row><cell></cell><cell>Random Wrapping</cell><cell>0.6774 (0.0036)</cell></row><row><cell></cell><cell>TumorCP</cell><cell>0.690 (0.003</cell></row><row><cell></cell><cell>Diffeo (within-data | cross-data)</cell><cell>0.662 (0.006) | 0.655 (0.001)</cell></row><row><cell></cell><cell cols="2">TumorCP + Diffeo (within-data | cross-data) 0.707 (0.001) | 0.718 (0.007)</cell></row><row><cell>100%</cell><cell>Baseline</cell><cell>0.680 (0.025)</cell></row><row><cell></cell><cell>Random Wrapping</cell><cell>0.6698 (0.016)</cell></row><row><cell></cell><cell>TumorCP</cell><cell>0.702 (0.005)</cell></row><row><cell></cell><cell>Diffeo (within-data | cross-data)</cell><cell>0.687 (0.014) | 0.688 (0.028)</cell></row><row><cell></cell><cell cols="2">TumorCP + Diffeo (within-data | cross-data) 0.709 (0.004) | 0.713 (0.019)</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This work is supported by the <rs type="funder">National Institute of Nursing Research (NINR)</rs> of the <rs type="funder">National Institutes of Health (NIH)</rs> under Award Number <rs type="grantNumber">R01NR018301</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_MW7RmDk">
+					<idno type="grant-number">R01NR018301</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Discriminative unsupervised feature learning with exemplar convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Alexey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tobias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Springenberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The liver tumor segmentation benchmark (LITS)</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bilic</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2022.102680</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1361841522003085" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page">102680</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Autoaugment: learning augmentation strategies from data</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Cubuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zoph</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vasudevan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="113" to="123" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Deep diffeomorphic transformer networks</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">S</forename><surname>Detlefsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Freifeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hauberg</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2018.00463</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2018.00463" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="4403" to="4412" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Highly-expressive spaces of well-behaved transformations: Keeping it simple</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Freifeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hauberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Batmanghelich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Fisher</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV.2015.333</idno>
+		<ptr target="https://doi.org/10.1109/ICCV.2015.333" />
+	</analytic>
+	<monogr>
+		<title level="m">2015 IEEE International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2911" to="2919" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Dreaming more data: class-dependent distributions over diffeomorphisms for learned data augmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hauberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Freifeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B L</forename><surname>Larsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fisher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hansen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence and Statistics</title>
+		<imprint>
+			<biblScope unit="page" from="342" to="350" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">The kits19 challenge data: 300 kidney tumor cases with clinical context, CT semantic segmentations, and surgical outcomes</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Heller</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.1904.00445</idno>
+		<idno>ARXIV.1904.00445</idno>
+		<ptr target="https://arxiv.org/abs/1904.00445" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Population based augmentation: efficient learning of augmentation policy schedules</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Stoica</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1905.05393</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.1412.6980</idno>
+		<ptr target="https://arxiv.org/abs/1412.6980" />
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Fast autoaugment</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6662" to="6672" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Anatomical data augmentation via fluid-based image registration</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Olut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_31" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="318" to="328" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">TumorCP: a simple but effective object-level data augmentation for tumor segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_55</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_55" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="579" to="588" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">CarveMix: a simple data augmentation method for brain lesion segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_19</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_19" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="196" to="205" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Adversarial autoaugment</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhong</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=ByxdUySKvS" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Data augmentation using learned transformations for one-shot medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Durand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2019-06">June 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Selfmix: a self-adaptive data augmentation method for lesion segmentation</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_65</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8_65" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer Nature Switzerland</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="683" to="692" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

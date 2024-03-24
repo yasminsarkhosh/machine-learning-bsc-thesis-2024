@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Distilling BlackBox to Interpretable Models for Efficient Transfer Learning</title>
+				<funder ref="#_bn4ePnZ">
+					<orgName type="full">National Institutes of Health</orgName>
+					<orgName type="abbreviated">NIH</orgName>
+				</funder>
+				<funder ref="#_KRSBdf7">
+					<orgName type="full">Pennsylvania Department of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Shantanu</forename><surname>Ghosh</surname></persName>
+							<idno type="ORCID">0000-0003-4085-541X</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">Boston University</orgName>
+								<address>
+									<settlement>Boston</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ke</forename><surname>Yu</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Kayhan</forename><surname>Batmanghelich</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">Boston University</orgName>
+								<address>
+									<settlement>Boston</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Distilling BlackBox to Interpretable Models for Efficient Transfer Learning</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="628" to="638"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">099C8ABD4E23FD77E7D6437E685DD366</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_59</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Explainable-AI</term>
+					<term>Interpretable models</term>
+					<term>Transfer learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Building generalizable AI models is one of the primary challenges in the healthcare domain. While radiologists rely on generalizable descriptive rules of abnormality, Neural Network (NN) models suffer even with a slight shift in input distribution (e.g., scanner type). Fine-tuning a model to transfer knowledge from one domain to another requires a significant amount of labeled data in the target domain. In this paper, we develop an interpretable model that can be efficiently fine-tuned to an unseen target domain with minimal computational cost. We assume the interpretable component of NN to be approximately domain-invariant. However, interpretable models typically underperform compared to their Blackbox (BB) variants. We start with a BB in the source domain and distill it into a mixture of shallow interpretable models using humanunderstandable concepts. As each interpretable model covers a subset of data, a mixture of interpretable models achieves comparable performance as BB. Further, we use the pseudo-labeling technique from semisupervised learning (SSL) to learn the concept classifier in the target domain, followed by fine-tuning the interpretable models in the target domain. We evaluate our model using a real-life large-scale chest-X-ray (CXR) classification dataset. The code is available at: https://github. com/batmanlab/MICCAI-2023-Route-interpret-repeat-CXRs.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Model generalizability is one of the main challenges of AI, especially in high stake applications such as healthcare. While NN models achieve state-of-the-art (SOTA) performance in disease classification <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b15">17,</ref><ref type="bibr" target="#b22">24]</ref>, they are brittle to small shifts in the data distribution <ref type="bibr" target="#b6">[7]</ref> caused by a change in acquisition protocol or scanner type <ref type="bibr" target="#b20">[22]</ref>. Fine-tuning all or some layers of a NN model on the target domain can alleviate this problem <ref type="bibr" target="#b1">[2]</ref>, but it requires a substantial amount of labeled data and be computationally expensive <ref type="bibr">[12,</ref><ref type="bibr" target="#b19">21]</ref>. In contrast, radiologists follow fairly generalizable and comprehensible rules. Specifically, they search for patterns of changes in anatomy to read abnormality from an image and apply logical rules for specific diagnoses. This approach is transparent and closer to an interpretable-by-design approach in AI. We develop a method to extract a mixture of interpretable models based on clinical concepts, similar to radiologists' rules, from a pre-trained NN. Such a model is more data-and computationefficient than the original NN for fine-tuning to a new distribution.</p><p>Standard interpretable by design method <ref type="bibr" target="#b16">[18]</ref> finds an interpretable function (e.g., linear regression or rule-based) between human-interpretable concepts and final output <ref type="bibr" target="#b12">[14]</ref>. A concept classifier <ref type="bibr" target="#b17">[19,</ref><ref type="bibr" target="#b24">26]</ref> detects the presence or absence of concepts in an image. In medical images, previous research uses TCAV scores <ref type="bibr" target="#b11">[13]</ref> to quantify the role of a concept on the final prediction <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b21">23]</ref>, but the conceptbased interpretable models have been mostly unexplored. Recently Posthoc Concept Bottleneck models (PCBMs) <ref type="bibr" target="#b23">[25]</ref> identify concepts from the embeddings of BB. However, the common design choice amongst those methods relies on a single interpretable classifier to explain the entire dataset, cannot capture the diverse sample-specific explanations, and performs poorly than their BB variants.</p><p>Our Contributions. This paper proposes a novel data-efficient interpretable method that can be transferred to an unseen domain. Our interpretable model is built upon human-interpretable concepts and can provide sample-specific explanations for diverse disease subtypes and pathological patterns. Beginning with a BB in the source domain, we progressively extract a mixture of interpretable models from BB. Our method includes a set of selectors routing the explainable samples through the interpretable models. The interpretable models provide First-order-logic (FOL) explanations for the samples they cover. The remaining unexplained samples are routed through the residuals until they are covered by a successive interpretable model. We repeat the process until we cover a desired fraction of data. Due to class imbalance in large CXR datasets, early interpretable models tend to cover all samples with disease present while ignoring disease subgroups and pathological heterogeneity. We address this problem by estimating the class-stratified coverage from the total data coverage. We then finetune the interpretable models in the target domain. The target domain lacks concept-level annotation since they are expensive. Hence, we learn a concept detector in the target domain with a pseudo labeling approach <ref type="bibr" target="#b13">[15]</ref> and finetune the interpretable models. Our work is the first to apply concept-based methods to CXRs and transfer them between domains.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Notation. Assume f 0 : X → Y is a BB, trained on a dataset X ×Y ×C, with X , Y, and C being the images, classes, and concepts, respectively; f 0 = h 0 •Φ, where Φ and h 0 is the feature extractor and the classifier respectively. Also, m is the number of class labels. This paper focuses on binary classification (having or not having a disease), so m = 2 and Y ∈ {0, 1}. Yet, it can be extended to multiclass problems easily. Given a learnable projection <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5]</ref>, t : Φ → C, our method learns Fig. <ref type="figure">1</ref>. Schematic view of our method. Note that f k (.) = h k (Φ(.)). At iteration k, the selector routes each sample either towards the expert g k with probability π k (.) or the residual r k = f k-1 -g k with probability 1-π k (.). g k generates FOL-based explanations for the samples it covers. Note Φ is fixed across iterations.</p><p>three functions: (1) a set of selectors (π : C → {0, 1}) routing samples to an interpretable model or residual, (2) a set of interpretable models (g : C → Y), and (3) the residuals. The interpretable models are called "experts" since they specialize in a distinct subset of data defined by that iteration's coverage τ as shown in SelectiveNet <ref type="bibr" target="#b14">[16]</ref>. Figure <ref type="figure">1</ref> illustrates our method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Distilling BB to the Mixture of Interpretable Models</head><p>Handling Class Imbalance. For an iteration k, we first split the given coverage τ k to stratified coverages per class as</p><formula xml:id="formula_0">{τ k m = w m • τ k ; w m = N m /N, ∀m}</formula><p>, where w m denotes the fraction of samples belonging to the m th class; N m and N are the samples of m th class and total samples, respectively. Learning the Selectors. At iteration k, the selector π k routes i th sample to the expert (g k ) or residual (r k ) with probability π k (c i ) and 1 -π k (c i ) respectively. For coverages {τ k m , ∀m}, we learn g k and π k jointly by solving the loss:</p><formula xml:id="formula_1">θ * s k , θ * g k = arg min θ s k ,θ g k R k π k (.; θ s k ), g k (.; θ g k ) s.t. ζ m π k (.; θ s k ) ≥ τ k m ∀m, (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>where θ * s k , θ * g k are the optimal parameters for π k and g k , respectively. R k is the</p><formula xml:id="formula_3">overall selective risk, defined as, R k (π k , g k ) = m 1 Nm Nm i=1 L k (g k ,π k ) x i , c i ζ m (π k ) , where ζ m (π k ) = 1 Nm Nm i=1 π k (c i )</formula><p>is the empirical mean of samples of m th class selected by the selector for the associated expert g k . We define L k (g k ,π k ) in the next section. The selectors are neural networks with sigmoid activation. At inference time, π k routes a sample to g k if and only if π k (.) ≥ 0.5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Learning the Experts.</head><p>For iteration k, the loss L k (g k ,π k ) distills the expert g k from f k-1 , BB of the previous iteration by solving the following loss:</p><formula xml:id="formula_4">L k (g k ,π k ) x i , c i = f k-1 (x i ), g k (c i ) π k (c i ) trainable component for current iteration k k-1 j=1 1 -π j (c i ) fixed component trained in the previous iterations , (<label>2</label></formula><formula xml:id="formula_5">)</formula><formula xml:id="formula_6">where π k (c i ) k-1 j=1 1 -π j (c i )</formula><p>is the cumulative probability of the sample covered by the residuals for all the previous iterations from 1, • • • , k -1 (i.e., k-1 j=1 1 -π j (c i ) ) and the expert g k at iteration k (i.e., π k (c i )).</p><p>Learning the Residuals. After learning g k , we calculate the residual as,</p><formula xml:id="formula_7">r k (x i , c i ) = f k-1 (x i ) -g k (c i ) (difference</formula><p>of logits). We fix Φ and optimize the following loss to update h k to specialize on those samples not covered by g k , effectively creating a new BB f k for the next iteration (k + 1):</p><formula xml:id="formula_8">L k f (x j , c j ) = r k (x j , c j ), f k (x j ) trainable component for iteration k k i=1 1 -π i (c j ) non-trainable component for iteration k (3)</formula><p>We refer to all the experts as the Mixture of Interpretable Experts (MoIE-CXR). We denote the models, including the final residual, as MoIE-CXR+R. Each expert in MoIE-CXR constructs sample-specific FOLs using the optimization strategy and algorithm discussed in <ref type="bibr" target="#b3">[4]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Finetuning to an Unseen Domain</head><p>We assume the MoIE-CXR-identified concepts to be generalizable to an unseen domain. So, we learn the projection t t for the target domain and compute the pseudo concepts using SSL <ref type="bibr" target="#b13">[15]</ref>. Next, we transfer the selectors, experts, and final residual ({π k s , g k s } K k=1 and f K s ) from the source to a target domain with limited labeled data and computational cost. Algorithm 1 details the procedure. Algorithm 1. Finetuning to an unseen domain. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>We perform experiments to show that MoIE-CXR 1) captures a diverse set of concepts, 2) does not compromise BB's performance, 3) covers "harder" instances with the residuals in later iterations resulting in their drop in performance, 4) is finetuned well to an unseen domain with minimal computation. Experimental Details. We evaluate our method using 220,763 frontal images from the MIMIC-CXR dataset <ref type="bibr" target="#b10">[11]</ref>. We use Densenet121 <ref type="bibr" target="#b7">[8]</ref> as BB (f 0 ) to classify cardiomegaly, effusion, edema, pneumonia, and pneumothorax, considering each to be a separate binary classification problem. We obtain 107 anatomical and observation concepts from the RadGraph's inference dataset <ref type="bibr" target="#b9">[10]</ref>, automatically generated by DYGIE++ <ref type="bibr" target="#b18">[20]</ref>. We train BB following <ref type="bibr" target="#b22">[24]</ref>. To retrieve the concepts, we utilize until the 4 th Densenet block as feature extractor Φ and flatten the features to learn t. We use an 80%-10%-10% train-validation-test split with no patient shared across splits. We use 4, 4, 5, 5, and 5 experts for cardiomegaly, pneumonia, effusion, pneumothorax, and edema. We employ ELL <ref type="bibr" target="#b0">[1]</ref> as g. Further, we only include concepts as input to g if their validation auroc exceeds 0.7. Refer to Table <ref type="table">1</ref> in the supplementary material for the hyperparameters. We stop until all the experts cover at least 90% of the data cumulatively.</p><p>Baseline. We compare our method with 1) end-to-end CEM <ref type="bibr" target="#b24">[26]</ref>, 2) sequential CBM <ref type="bibr" target="#b12">[14]</ref>, and 3) PCBM <ref type="bibr" target="#b23">[25]</ref> baselines, comprising of two parts: a) concept predictor Φ : X → C, predicting concepts from images, with all the convolution blocks; and b) label predictor, g : C → Y, predicting labels from the concepts. We create CBM + ELL and PCBM + ELL by replacing the standard classifier with the identical g of MOIE-CXR to generate FOLs <ref type="bibr" target="#b0">[1]</ref> for the baseline.</p><p>MoIE-CXR Captures Diverse Explanations. Figure <ref type="figure" target="#fig_0">2</ref> illustrates the FOL explanations. Recall that the experts (g) in MoIE-CXR and the baselines are ELLs <ref type="bibr" target="#b0">[1]</ref>, attributing attention weights to each concept. A concept with high attention weight indicates its high predictive significance. With a single g, the baselines rank the concepts in accordance with the identical order of attention weights for all the samples in a class, yielding a generic FOL for that class. In Fig. <ref type="figure" target="#fig_0">2</ref>, the baseline PCBM + ELL uses left pleural and pleural unspec to identify effusion for all four samples. MoIE-CXR deploys multiple experts, learning to specialize in distinct subsets of a class. So different interpretable models in MoIE assign different attention weights to capture instance-specific concepts unique to each subset. In Fig. <ref type="figure" target="#fig_0">2</ref> expert2 relies on right pleural and pleural unspec, but expert4 relies only on pleural unspec to classify effusion. The results show that the learned experts can provide more precise explanations at the subject level using the concepts, increasing confidence and trust in clinical use.</p><p>Table <ref type="table">1</ref>. MoIE-CXR does not compromize the performance of BB. We provide the mean and standard errors of AUROC over five random seeds. For MoIE-CXR, we also report the percentage of test set samples covered by all experts as "Coverage". We boldfaced our results and BB.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Model</head><p>Effusion  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>MoIE-CXR does not Compromise BB's Performance. Analysing MoIE-CXR:</head><p>Table <ref type="table">1</ref> shows that MoIE-CXR outperforms other models, including BB. Recall that MoIE-CXR refers to the mixture of all interpretable experts, excluding any residuals. As MoIE-CXR specializes in various subsets of data, it effectively discovers sample-specific classifying concepts and achieves superior performance. In general, MoIE-CXR exceeds the interpretable-by-design baselines (CEM, CBM, and CBM + ELL) by a fair margin (on average, at least ∼ 10% ↑), especially for pneumonia and pneumothorax where the number of samples with the disease is significantly less (∼ 750/24000 in the testset).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Analysing MoIE-CXR+R:</head><p>To compare the performance on the entire dataset, we additionally report MoIE-CXR+R, the mixture of interpretable experts with the final residual in Table <ref type="table">1</ref>. MoIE-CXR+R outperforms the interpretable-by-design models and yields comparable performance as BB. The residualized PCBM baseline, i.e., PCBM-h, performs similarly to MoIE-CXR+R. PCBM-h rectifies the interpretable PCBM's mistakes by learning the residual with the complete dataset to resemble BB's performance. However, the experts and the final residual approximate the interpretable and uninterpretable fractions of BB, respectively. In each iteration, the residual focuses on the samples not covered by the respective expert to create BB for the next iteration and likewise. As a result, the final residual in MoIE-CXR+R covers the "hardest" examples, reducing its overall performance relative to MoIE-CXR.</p><p>Identification of Harder Samples by Successive Residuals. Figure <ref type="figure" target="#fig_1">3 (a-c</ref>) reports the proportional AUROC of the experts and the residuals per iteration. The proportional AUROC is the AUROC of that model times the empirical coverage, ζ k , the mean of the samples routed to the model by the respective selector (π k ). According to Fig. <ref type="figure" target="#fig_1">3a</ref> in iteration 1, the residual (black bar) contributes more to the proportional AUROC than the expert1 (blue bar) for effusion with both achieving a cumulative proportional AUROC ∼ 0.92. All the final experts collectively extract the entire interpretable component from BB f 0 in the final iteration, resulting in their more significant contribution to the cumulative performance. In subsequent iterations, the proportional AUROC decreases as the experts are distilled from the BB of the previous iteration. The BB is derived from the residual that performs progressively worse with each iteration. The residual of the final iteration covers the "hardest" samples. Tracing these samples back to the original BB f 0 , f 0 underperforms on these samples (Fig. <ref type="figure" target="#fig_1">3 (d-f</ref>)) as the residual.</p><p>Applying MoIE-CXR to the Unseen Domain. In this experiment, we utilize Algorithm 1 to transfer MoIE-CXR trained on MIMIC-CXR dataset to Stanford Chexpert <ref type="bibr" target="#b8">[9]</ref> dataset for the diseases -effusion, cardiomegaly and edema. Using 2.5%, 5%, 7.5%, 10%, and 15 % of training data from the Stanford Chexpert dataset, we employ two variants of MoIE-CXR where we (1) train only the selectors (π) without finetuning the experts (g) ("No finetuned" variant of MoIE-CXR in Fig. <ref type="figure" target="#fig_2">4</ref>), and (2) finetune π and g jointly for only 5 epochs ("Finetuned" variant of MoIE-CXR and MoIE-CXR + R in Fig. <ref type="figure" target="#fig_2">4</ref>). Finetuning π is essential to route the samples of the target domain to the appropriate expert. As later experts cover the "harder" samples of MIMIC-CXR, we only transfer the experts of the first three iterations (refer to Fig. <ref type="figure" target="#fig_1">3</ref>). To ensure a fair comparison, we finetune (both the feature extractor Φ and classifier h 0 ) BB: f 0 = h 0 • Φ of MIMIC-CXR with the same training data of Stanford Chexpert for 5 epochs. Throughout this experiment, we fix Φ while finetuning the final residual in MoIE+R as stated in Eq. 3. Figure <ref type="figure" target="#fig_2">4</ref> displays the performances of different models and the computation costs in terms of Flops. The Flops are calculated as, Flop of (forward propagation + backward propagation) × (total no. of batches) × (no of training epochs). The finetuned MoIE-CXR outperforms the finetuned BB (on average ∼ 5% ↑ for effusion and cardiomegaly). As experts are simple models <ref type="bibr" target="#b0">[1]</ref> and accept only low dimensional concept vectors compared to BB, the computational cost to train MoIE-CXR is significantly lower than that of BB (Fig. <ref type="figure" target="#fig_2">4 (d-f</ref>)). Specifically, BB requires ∼ 776T flops to be finetuned on 2.5% of the training data of Stanford CheXpert, whereas MoIE-CXR requires ∼ 0.0065T flops. As MoIE-CXR discovers the sample-specific domain-invariant concepts, it achieves such high performance with low computational cost than BB.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This paper proposes a novel iterative interpretable method that identifies instance-specific concepts without losing the performance of the BB and is effectively fine-tuned in an unseen target domain with no concept annotation, limited labeled data, and minimal computation cost. Also, as in the prior work, MoIEcaptured concepts may not showcase a causal effect that can be explored in the future.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative comparison of MoIE-CXR discovered concepts with the baselines.</figDesc><graphic coords="5,46,77,149,09,334,12,190,51" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Performance of experts and residuals across iterations. (a-c): Coverage and proportional AUROC of the experts and residuals. (d-f ): Routing the samples covered by MoIE-CXR to the initial f 0 , we compare the performance of the residuals with f 0 .</figDesc><graphic coords="7,41,79,54,20,340,21,166,51" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Transferring the first 3 experts of MoIE-CXR trained on MIMIC-CXR to Stanford-CXR. With varying % of training samples of Stanford CXR, (a-c): reports AUROC of the test sets, (d-g) reports computation costs in terms of log (Flops) (T). We report the coverages in Stanford-CXR on top of the "finetuned" and "No finetuned" variants of MoIE-CXR (red and blue bars) in (d-g). (Color figure online)</figDesc><graphic coords="8,55,98,53,90,340,18,156,82" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Learned selectors, experts, and final residual from source domain: Target data: Dt = {Xt, Yt}. Target coverages {τ k }</figDesc><table><row><cell cols="2">{π k s , g k s } K k=1 and f K s respectively, with K as the number of experts to transfer. BB of the source domain: f 0 s = h 0</cell></row><row><cell cols="2">K k=1 . k=1 and final residual f K t } K t , g k 2: Output: Experts {π k t of the target domain.</cell></row><row><cell>3: Randomly select nt</cell><cell>Nt samples out of Nt = |Dt|.</cell></row><row><cell cols="2">4: Compute the pseudo concepts for the correctly classified samples in the target</cell></row><row><cell cols="2">domain using f 0 s , as, c i t = ts Φs(x i s ) s.t., y i t = f 0 s (x i t ), i = 1 • • • nt</cell></row><row><cell cols="2">5: Learn the projection function tt for target domain semi-supervisedly [15] using the</cell></row><row><cell cols="2">pseudo labeled samples {x i t , c i t } n t i=1 and unlabeled samples {x i t } N t -n t i=1 6: Complete the triplet for the target domain {Xt, Ct, Yt}, where c i t = tt(Φs(x i . t )),</cell></row><row><cell>i = 1 • • • Nt.</cell><cell></cell></row><row><cell cols="2">7: Finetune {π k s , g k s } K k=1 and f K s to obtain {π k t , g k t } K k=1 and f K t using equations 1, 2 and 3 respectively for 5 epochs. {π k t , g k t } K k=1 and {π k t , g k t } K k=1 , f K</cell></row></table><note><p>1: Input: s (Φs). Source data: Ds = {Xs, Cs, Ys}. t represents MoIE-CXR and MoIE-CXR + R for the target domain.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was partially supported by <rs type="funder">NIH</rs> Award Number <rs type="grantNumber">1R01HL141813-01</rs> and the <rs type="funder">Pennsylvania Department of Health</rs>. We are grateful for the computational resources from <rs type="person">Pittsburgh Super Computing</rs> grant number <rs type="grantNumber">TG-ASC170024</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_bn4ePnZ">
+					<idno type="grant-number">1R01HL141813-01</idno>
+				</org>
+				<org type="funding" xml:id="_KRSBdf7">
+					<idno type="grant-number">TG-ASC170024</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 59.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Entropybased logic explanations of neural networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Barbiero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ciravegna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Giannini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lió</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Melacci</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="6046" to="6054" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Best practices for fine-tuning visual classifiers to new domains</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Madhavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Beijbom</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-49409-8_34</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-49409-834" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Hua</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Jégou</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9915</biblScope>
+			<biblScope unit="page" from="435" to="442" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Global and local interpretability for cardiac MRI classification</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Clough</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Oksuz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Puyol-Antón</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ruijsink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32251-9_72</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32251-972" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11767</biblScope>
+			<biblScope unit="page" from="656" to="664" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Dividing and conquering a BlackBox to a mixture of interpretable models: route, interpret, repeat</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Arabshahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Batmanghelich</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<ptr target="https://proceedings.mlr.press/v202/ghosh23c.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 40th International Conference on Machine Learning. Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Krause</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Brunskill</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Cho</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Engelhardt</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Sabato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Scarlett</surname></persName>
+		</editor>
+		<meeting>the 40th International Conference on Machine Learning. Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">202</biblScope>
+			<biblScope unit="page" from="11360" to="11397" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Tackling shortcut learning in deep neural networks: An iterative approach with interpretable models</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Arabshahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Batmanghelich</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Concept attribution: explaining CNN decisions to physicians</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Graziani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Andrearczyk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Marchand-Maillet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Müller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">123</biblScope>
+			<biblScope unit="page">103865</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Domain adaptation for medical image analysis: a survey</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Guan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1173" to="1185" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Densely connected convolutional networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="4700" to="4708" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">CheXpert: a large chest radiograph dataset with uncertainty labels and expert comparison</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Irvin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="590" to="597" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jain</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2106.14463</idno>
+		<title level="m">RadGraph: Extracting clinical entities and relations from radiology reports</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">How deeply to fine-tune a convolutional neural network: a case study using a histopathology dataset</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Johnson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page">3359</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>MIMIC-CXR-JPG-chest radiographs with structured labels 12</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Interpretability beyond feature attribution: Quantitative testing with concept activation vectors (tcav</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.11279</idno>
+		<imprint>
+			<date type="published" when="2017">2017. 2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Concept bottleneck models</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">W</forename><surname>Koh</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="5338" to="5348" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Pseudo-label: the simple and efficient semi-supervised learning method for deep neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Challenges in Representation Learning, ICML</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">896</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rabanser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Thudi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hamidieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dziedzic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Papernot</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2205.13532</idno>
+		<title level="m">Selective classification via neural network training dynamics</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">CheXNet: Radiologist-level pneumonia detection on chest X-rays with deep learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rajpurkar</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.05225</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Interpretable machine learning: fundamental principles and 10 grand challenges</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rudin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Semenova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Stat. Surv</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1" to="85" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Inducing semantic grouping of latent concepts for explanations: An ante-hoc approach</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Vijaykeerthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">N</forename><surname>Balasubramanian</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2108.11761</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Entity, relation, and event extraction with contextualized span representations</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wadden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Wennberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Luan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hajishirzi</surname></persName>
+		</author>
+		<idno type="DOI">10.18653/v1/D19-1585</idno>
+		<ptr target="https://aclanthology.org/D19-1585" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)</title>
+		<meeting>the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)<address><addrLine>Hong Kong; China</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="5784" to="5789" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Growing a brain: fine-tuning by increasing model capacity</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ramanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2471" to="2480" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">MRI manufacturer shift and adaptation: increasing the generalizability of deep learning segmentation for MR images acquired with different scanners</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">190195</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">UBS: a dimension-agnostic metric for concept vector interpretability applied to radiomics</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yeche</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Harrison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Berthier</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-33850-3_2</idno>
+		<idno>978-3-030-33850-3 2</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">ML-CDS/IMIMIC -2019</title>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Suzuki</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11797</biblScope>
+			<biblScope unit="page" from="12" to="20" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Anatomy-Guided Weakly-Supervised Abnormality Localization in Chest X-rays</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Deible</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Batmanghelich</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_63</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-963" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022. MICCAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yuksekgonul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2205.15480</idno>
+		<title level="m">Post-hoc concept bottleneck models</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Zarlenga</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.09056</idno>
+		<title level="m">Concept embedding models</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

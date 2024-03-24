@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Deep Mutual Distillation for Semi-supervised Medical Image Segmentation</title>
+				<funder ref="#_wYakVZ4">
+					<orgName type="full">Shanghai Natural Science Foundation</orgName>
+				</funder>
+				<funder ref="#_uZj4Z6Z">
+					<orgName type="full">Science and Technology Commission of Shanghai Municipality</orgName>
+				</funder>
+				<funder ref="#_Ka3bu4X">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yushan</forename><surname>Xie</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Shanghai Key Laboratory of Multidimensional Information Processing</orgName>
+								<orgName type="institution">East China Normal University</orgName>
+								<address>
+									<postCode>200241</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yuejia</forename><surname>Yin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Shanghai Key Laboratory of Multidimensional Information Processing</orgName>
+								<orgName type="institution">East China Normal University</orgName>
+								<address>
+									<postCode>200241</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Qingli</forename><surname>Li</surname></persName>
+							<email>qlli@cs.ecnu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Shanghai Key Laboratory of Multidimensional Information Processing</orgName>
+								<orgName type="institution">East China Normal University</orgName>
+								<address>
+									<postCode>200241</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yan</forename><surname>Wang</surname></persName>
+							<email>ywang@cee.ecnu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Shanghai Key Laboratory of Multidimensional Information Processing</orgName>
+								<orgName type="institution">East China Normal University</orgName>
+								<address>
+									<postCode>200241</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Deep Mutual Distillation for Semi-supervised Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="540" to="550"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8A65E9B4DD40A53178E36C9C8987B0CC</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_52</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Semi-supervised learning</term>
+					<term>Segmentation</term>
+					<term>Knowledge distillation</term>
+					<term>Consistency regularization</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In this paper, we focus on semi-supervised medical image segmentation. Consistency regularization methods such as initialization perturbation on two networks combined with entropy minimization are widely used to deal with the task. However, entropy minimization-based methods force networks to agree on all parts of the training data. For extremely ambiguous regions, which are common in medical images, such agreement may be meaningless and unreliable. To this end, we present a conceptually simple yet effective method, termed Deep Mutual Distillation (DMD), a high-entropy online mutual distillation process, which is more informative than a low-entropy sharpened process, leading to more accurate segmentation results on ambiguous regions, especially the outer branches. Furthermore, to handle the class imbalance and background noise problem, and learn a more reliable consistency between the two networks, we exploit the Dice loss to supervise the mutual distillation. Extensive comparisons with all state-of-the-art on LA and ACDC datasets show the superiority of our proposed DMD, reporting a significant improvement of up to 1.15% in terms of Dice score when only 10% of training data are labelled in LA. We compare DMD with other consistency-based methods with different entropy guidance to support our assumption. Extensive ablation studies on the chosen temperature and loss function further verify the effectiveness of our design. The code is publicly available at https://github.com/SilenceMonk/Dual-Mutual-Distillation.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Supervised learning for medical image segmentation requires a large amount of per-voxel annotated data <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b18">19]</ref>. Since both expertise and time are needed to produce accurate contouring annotations, the labelled data are very expensive to acquire, especially in 3D volumetric images <ref type="bibr" target="#b17">[18]</ref> such as MRI. Semi-supervised medical image segmentation becomes an important topic in recent years, where costly per-voxel annotations are available for a subset of training data. In this study, we focus on semi-supervised LA segmentation by exploring both labelled and unlabelled data.</p><p>Consistency regularization methods are widely studied in semi-supervised segmentation models. Consistent predictions are enforced by perturbing input images <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b23">23]</ref>, learned features <ref type="bibr" target="#b13">[14]</ref>, and networks <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b24">24]</ref>. Other consistency-based methods adopt adversarial losses to learn consistent geometric representations in the dataset <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">26]</ref>, enforcing local and global structural consistency <ref type="bibr" target="#b5">[6]</ref>, and building task-level regularization <ref type="bibr" target="#b11">[12]</ref>. Among these methods, initialization perturbation <ref type="bibr" target="#b2">[3]</ref> combined with entropy minimization <ref type="bibr" target="#b4">[5]</ref> demonstrates outstanding performances. These methods <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b22">22]</ref> require two segmentation networks/streams with different initialization to be consistent between the two predictions by pseudo labeling/sharpening from the other network/stream. However, entropy minimization <ref type="bibr" target="#b4">[5]</ref> based methods <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b22">22]</ref> give up a great amount of information contained in network predictions, forcing networks to agree with each other even in ambiguous regions. But such cross guidance on ambiguous regions may be meaningless and unreliable <ref type="bibr" target="#b24">[24]</ref>. More concretely, many parts of the target in medical images can be extremely confusing. E.g., some boundaries like the outer branches, can even confuse radiologists. In this case, it may be difficult to train two reliable classifiers to simultaneously distinguish the confusing foreground from the background by entropy minimizationbased methods. This is because the penalties for misclassifications on the confusing region and the confident region are equal. Meanwhile, it also makes networks inevitably plagued with confirmation bias <ref type="bibr" target="#b1">[2]</ref>. In the early optimization stage, the pseudo labels are not stable. Thus, as the training process goes on, the two segmentation networks are prone to overfit the erroneous pseudo labels.</p><p>Motivated by Knowledge Distillation (KD) <ref type="bibr" target="#b6">[7]</ref>, we propose Deep Mutual Distillation (DMD), advocating to generalize the original Deep Mutual Learning (DML) <ref type="bibr" target="#b25">[25]</ref> by introducing temperature scaling, and reformulate a symmetric online mutual distillation process to combat the clear drawback in entropy minimization <ref type="bibr" target="#b4">[5]</ref> under medical image tasks. With the temperature scaling, the highentropy distilled probabilities are more informative than low-entropy sharpened probabilities, therefore offering more meaningful mutual guidance, especially on ambiguous regions. Furthermore, due to the class imbalance problem in medical images, i.e., targets are usually very small compared with the whole volume, we exploit the Dice loss <ref type="bibr" target="#b0">[1]</ref> as the consistency regularization to supervise the mutual distillation of two networks. To the best of our knowledge, KD <ref type="bibr" target="#b6">[7]</ref> is overlooked in the semi-supervised medical image segmentation field. Our DMD is conceptually simple yet computationally efficient. Experiments on MICCAI 2018 Atrial Segmentation Challenge and ACDC datasets show that DMD works favorably especially when annotated data is very small. Without bells and whistles, DMD achieves 89.70% in terms of Dice score on LA when only 10% training data are labelled, with a significant 1.15% improvement compared with state-of-the-arts. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Overview</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, we illustrate some consistency-based methods with different entropy guidance. From Fig. <ref type="figure" target="#fig_0">1</ref> (a) to (c), the entropy used as guidance for network learning is increasing. In Cross Pseudo Supervision (CPS) <ref type="bibr" target="#b2">[3]</ref>, the hard pseudo segmentation map is used as guidance to supervise the other segmentation network. In DML <ref type="bibr" target="#b25">[25]</ref>, a two-way KL mimicry loss is applied directly to the probability distribution learned by the softmax layer. In our proposed DMD, we generalize DML <ref type="bibr" target="#b25">[25]</ref> by introducing a temperature scaling strategy and further increasing the entropy of the probability distribution. Considering the class imbalance between foreground and background pixels under medical image segmentation tasks <ref type="bibr" target="#b15">[16]</ref>, we design a Dice <ref type="bibr" target="#b0">[1]</ref>-based distillation loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Deep Mutual Learning</head><p>The original DML <ref type="bibr" target="#b25">[25]</ref> deals with the standard M-class classification problem. Given two initialization perturbed networks f θj , j ∈ {1, 2}, we obtain their raw logit predictions on the same sample point x i ∈ X in parallel as z m j = f θj (x i ) for class m. The probability of class m from f θj is given by standard softmax function:</p><formula xml:id="formula_0">p m j = exp(z m j ) M m=1 exp(z m j )<label>(1)</label></formula><p>The critical part of mutual learning contains a 2-way KL mimicry loss:</p><formula xml:id="formula_1">L ml = D KL (p 2 ||p 1 ) + D KL (p 1 ||p 2 ) (2)</formula><p>where L ml is obtained on both labelled and unlabelled sample points, p 1 , p 2 being posterior probability predictions of corresponding networks. Together with standard supervised loss obtained on labelled sample points, and the trade-off weight λ, we get the final DML <ref type="bibr" target="#b25">[25]</ref> objective:</p><formula xml:id="formula_2">L DM L = L sup + λ • L ml (3)</formula><p>where λ is set to 1 in DML <ref type="bibr" target="#b25">[25]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Deep Mutual Distillation</head><p>The original p m j of DML <ref type="bibr" target="#b25">[25]</ref> can be considered as a special case of online knowledge distillation <ref type="bibr" target="#b6">[7]</ref> with temperature T set to 1, where each network serves as both teacher and student symmetrically. However, T = 1 makes a great amount of information from both networks still masked within p m j . Therefore, we generalize DML <ref type="bibr" target="#b25">[25]</ref> to Deep Mutual Distillation(DMD) by setting T greater than 1 as in KD <ref type="bibr" target="#b6">[7]</ref>. In DMD, the distilled probability p m j,T is obtained by:</p><formula xml:id="formula_3">p m j,T = exp(z m j /T ) M m=1 exp(z m j /T )<label>(4)</label></formula><p>In the case of the binary segmentation task, we replace softmax with sigmoid to get the distilled per-pixel probability mask p j,T from f θj :</p><formula xml:id="formula_4">p j,T = 1 1 + exp(-z j /T )<label>(5)</label></formula><p>However, using KL-divergence-based loss in KD <ref type="bibr" target="#b6">[7]</ref> cannot handle class imbalance between foreground and background pixels <ref type="bibr" target="#b15">[16]</ref>. Hence, we replace the original 2-way KL-divergence mimicry loss with Dice loss <ref type="bibr" target="#b0">[1]</ref> to alleviate this problem, obtaining our new distillation loss:</p><formula xml:id="formula_5">L distill = Dice(p 1,T , p 2,T )<label>(6)</label></formula><p>Together with standard supervised loss obtained on labelled sample points, and the trade-off weight λ, we get our final DMD objective:</p><formula xml:id="formula_6">L DM D = L sup + λ • L distill (7)</formula><p>where L distill is obtained on both labelled and unlabelled sample points. Here, we also adopt Dice loss <ref type="bibr" target="#b0">[1]</ref> for L sup , under the context of highly class imbalanced medical image segmentation tasks <ref type="bibr" target="#b0">[1]</ref>.</p><p>With the temperature scaling, each network under DMD learns from each other through the distilled high-entropy probabilities, which are more informative, especially on ambiguous regions. The distillation <ref type="bibr" target="#b6">[7]</ref> also makes p j,T become soft labels <ref type="bibr" target="#b6">[7]</ref>, which reduces the influence of confirmation bias <ref type="bibr" target="#b1">[2]</ref> throughout the training process. Both advantages make DMD outperforms current state-of-theart methods. We also carry out comprehensive ablation studies to demonstrate the effectiveness of DMD design in Sect. 3.3. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Setup</head><p>Dataset: We evaluated our proposed DMD on the 2018 Atria Segmentation Challenge (LA) <ref type="foot" target="#foot_0">1</ref> , which provides a 80/20 split for training/validation on 3D MR imaging scans and corresponding LA segmentation mask, with an isotropic resolution of 0.625×0.625×0.625mm 3 . We also extended our experiments on the Automated Cardiac Diagnosis Challenge (ACDC) <ref type="foot" target="#foot_1">2</ref> . We report the performance on the validation set, following the same settings from previous methods <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b21">[21]</ref><ref type="bibr" target="#b22">[22]</ref><ref type="bibr" target="#b24">24,</ref><ref type="bibr" target="#b26">26]</ref> for fair comparisons.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evaluation Metric:</head><p>The performance of our method is quantitatively evaluated in terms of Dice, Jaccard, the average surface distance (ASD), and the 95% Hausdorff Distance (95HD) as previous methods <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b21">[21]</ref><ref type="bibr" target="#b22">[22]</ref><ref type="bibr" target="#b24">24,</ref><ref type="bibr" target="#b26">26]</ref>.</p><p>Implementation Details: We implement DMD using PyTorch <ref type="bibr" target="#b14">[15]</ref>. We adopt VNet <ref type="bibr" target="#b0">[1]</ref> as the backbone for both of the segmentation networks. We first randomly initialize two networks, then we train both networks under the scheme of DMD using SGD optimizer for 6k iterations simultaneously, with an initial learning rate (LR) 0.01 decayed by 0.1 every 2.5k iterations following <ref type="bibr" target="#b22">[22]</ref>. Other data pre-processing and augmentation details are kept the same as <ref type="bibr" target="#b22">[22]</ref>. For other hyper-parameters in DMD, we set the trade-off weight λ to 4, and the temperature T to 2/1.93 for the 8/16 label scenario for the best performance. It is interesting to observe that with less labelled data, T is prone to be set to a bigger value since less labelled training data will usually lead to more ambiguous regions. After training, we only use one network for generating results for evaluation, without using any ensembling methods. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Quantitative Evaluation</head><p>We compare DMD with previous state-of-the-arts <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b21">[21]</ref><ref type="bibr" target="#b22">[22]</ref><ref type="bibr" target="#b24">24,</ref><ref type="bibr" target="#b26">26]</ref>, following the measurements from MC-Net <ref type="bibr" target="#b22">[22]</ref>. Table <ref type="table" target="#tab_0">1</ref> shows that our method outperforms state-of-the-art methods with a significant improvement over 8 label scenarios under all 4 metrics, and achieves state-of-the-art on the 16 label scenario under almost all metrics on LA dataset. We do not compare the performance of SS-Net <ref type="bibr" target="#b21">[21]</ref> on 16 labels as SS-Net <ref type="bibr" target="#b21">[21]</ref> does not report this. We can see that even with an extremely small amount of labelled samples, networks in DMD are still able to formulate a certain representation of the unlabelled data and transfer such meaningful knowledge via high-entropy probabilities with each other by the efficient distilling process. Distillation is more informative and greatly benefits training on complex medical images with confusing regions. We further extended our experiments on the ACDC dataset shown in Table <ref type="table" target="#tab_1">2</ref>.</p><p>To study how consistency-based methods with different entropy guidance affect performances, we implement CPS <ref type="bibr" target="#b2">[3]</ref> and DML <ref type="bibr" target="#b25">[25]</ref> for LA segmentation. From Table <ref type="table" target="#tab_2">3</ref>, we can see general improvements from low-entropy methods to high-entropy methods from CPS <ref type="bibr" target="#b2">[3]</ref> to our proposed DMD (from top to bottom in the first column in Table <ref type="table" target="#tab_2">3</ref>). In these entropy minimization methods, i.e., CPS <ref type="bibr" target="#b2">[3]</ref> and MC-Net <ref type="bibr" target="#b22">[22]</ref>, networks are forced to assign sharpened labels on all parts of unlabelled samples, including ambiguous areas. Thus, networks are forced to be exposed to the risk of confirmation bias <ref type="bibr" target="#b1">[2]</ref> of each other, which limits their performances. In Sect. 3.3, we further study how the temperature T affects DMD performances, where T controls the entropy in DMD guidance. Furthermore, we show in Fig. <ref type="figure">2</ref> our method can lead to better pseudo-labels when the training process is going on, compared with entropy-minimization methods like CPS. Besides, we provide the gradient visualization for L distill on an unlabelled sample point in Fig. <ref type="figure" target="#fig_1">3(a)</ref>. We can see that when using Dice <ref type="bibr" target="#b0">[1]</ref> for distillation, the gradient is enhanced more on the foreground, especially on the boundary of the object predicted by the segmentation network than 2-way KL-divergence. We can also see that using Dice <ref type="bibr" target="#b0">[1]</ref>, the segmentation network better captures the shape of the object, thus providing better guidance for the other network than using 2-way KL-divergence.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Parameter Analysis</head><p>Here, we first demonstrate the effectiveness of temperature scaling T and the choice of KL-divergence-based and Dice <ref type="bibr" target="#b0">[1]</ref>-based L distill on LA with 8 labelled data. In order to do so, we conduct independent experiments to study the influence of T for each choice of L distill . For a fair comparison, we choose different trade-off weights λ in Eq. 7 for each choice to get the corresponding best performance, denoted as λ dice and λ KL , where we set λ dice = 1 and λ KL = 4. Figure <ref type="figure" target="#fig_2">4</ref> shows how T affects DMD performances on the validation set, with corresponding fixed λ dice and λ KL . Experiments show that slightly higher T improves over the performance, and we can also see that Dice loss <ref type="bibr" target="#b0">[1]</ref> outperforms 2-way KL-divergence loss under various T . It is interesting to observe that when T increases, the performance decreases by using the KL-divergence loss. We suspect that due to the complex background context and class imbalance problem, the learning of two networks is heavily influenced by the background noise. We also provide an ablation study on the influence of trade-off weight λ in Fig. <ref type="figure" target="#fig_1">3(b)</ref>, where we set T = 2, and choose Dice for L distill . Then, to see how the performance changes w.r.t. λ, we vary λ and fix T = 2. As shown in Fig. <ref type="figure" target="#fig_1">3(a)</ref>, the performance is not sensitive within the range of λ ∈ [3.5, 5].  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>We revisit Knowledge Distillation and have presented a novel and simple semisupervised medical segmentation method through Deep Mutual Distillation. We rethink and analyze consistency regularization-based methods with the entropy minimization, and point out that cross guidance with low entropy on extremely ambiguous regions may be unreliable. We hereby propose to introduce a temperature scaling strategy into the network training and propose a Dice-based distillation loss to alleviate the influence of the background noise when the temperature T &gt; 1. Our DMD works favorably for semi-supervised medical image segmentation, especially when the number of training data is small (e.g., 10% training data are labelled in LA). Compared with all prior arts, a significant improvement up to 1.15% in the Dice score is achieved in LA dataset. Ablation studies with the consistency-based methods of different entropy guidance further verify our assumption and design.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Visualizations of some consistency-based methods with different entropy guidance. From (a) to (c), the entropy of network guidance increases, enabling the networks to learn an increasing amount of information from the data x. σ means sigmoid.</figDesc><graphic coords="3,45,30,54,59,333,64,100,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. (a) Gradient visualization (highlighted in outer branch) shows the difference between the choice of KL-divergence-based and Dice [1]-based L distill on an unlabelled sample point during training. (b) Ablation study of all evaluation metrics on trade-off weight λ. Here, we set T = 2, and choose Dice loss [1] for L distill .</figDesc><graphic coords="8,63,48,300,62,325,12,98,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Ablation study of all evaluation metrics on temperature T and the choice of L distill . The solid/dotted line denotes L distill using Dice [1]/2-way KL-divergence. Here, we set λ dice = 4 for all Dice loss [1] experiments, and λKL = 1 for all KL-divergence loss experiments. Experiments are conducted under 8 available labels for demonstration. Note that when λKL = 1 and T = 1, DMD degenerates to DML [25].</figDesc><graphic coords="8,56,46,467,09,339,52,55,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparisons with previous state-of-the-art methods on the LA dataset. "↑" and "↓" indicate the larger and the smaller the better, respectively. Bold denotes the best results.</figDesc><table><row><cell>Method</cell><cell cols="2">#Scans used</cell><cell>Metrics</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="6">labelled Unlabelled Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓</cell></row><row><cell>V-Net</cell><cell>8(10%)</cell><cell>0</cell><cell>79.99</cell><cell>68.12</cell><cell>21.11</cell><cell>5.48</cell></row><row><cell>V-Net</cell><cell cols="2">16(20%) 0</cell><cell>86.03</cell><cell>76.06</cell><cell>14.26</cell><cell>3.51</cell></row><row><cell>V-Net</cell><cell>80(All)</cell><cell>0</cell><cell>91.14</cell><cell>83.82</cell><cell>5.75</cell><cell>1.52</cell></row><row><cell>DAP [26]</cell><cell cols="2">8(10%) 72</cell><cell>81.89</cell><cell>71.23</cell><cell>15.81</cell><cell>3.80</cell></row><row><cell>UA-MT [24]</cell><cell cols="2">8(10%) 72</cell><cell>84.25</cell><cell>73.48</cell><cell>13.84</cell><cell>3.36</cell></row><row><cell cols="3">SASSNet [10] 8(10%) 72</cell><cell>87.32</cell><cell>77.72</cell><cell>9.62</cell><cell>2.55</cell></row><row><cell cols="3">LG-ER-MT [6] 8(10%) 72</cell><cell>85.54</cell><cell>75.12</cell><cell>13.29</cell><cell>3.77</cell></row><row><cell>DUWM [20]</cell><cell cols="2">8(10%) 72</cell><cell>85.91</cell><cell>75.75</cell><cell>12.67</cell><cell>3.31</cell></row><row><cell>DTC [12]</cell><cell cols="2">8(10%) 72</cell><cell>86.57</cell><cell>76.55</cell><cell>14.47</cell><cell>3.74</cell></row><row><cell>MC-Net [22]</cell><cell cols="2">8(10%) 72</cell><cell>87.71</cell><cell>78.31</cell><cell>9.36</cell><cell>2.18</cell></row><row><cell>SS-Net [21]</cell><cell cols="2">8(10%) 72</cell><cell>88.55</cell><cell>79.62</cell><cell>7.49</cell><cell>1.90</cell></row><row><cell>DMD (Ours)</cell><cell cols="2">8(10%) 72</cell><cell>89.70</cell><cell>81.42</cell><cell>6.88</cell><cell>1.78</cell></row><row><cell>DAP [26]</cell><cell cols="2">16(20%) 64</cell><cell>87.89</cell><cell>78.72</cell><cell>9.29</cell><cell>2.74</cell></row><row><cell>UA-MT [24]</cell><cell cols="2">16(20%) 64</cell><cell>88.88</cell><cell>80.21</cell><cell>7.32</cell><cell>2.26</cell></row><row><cell cols="3">SASSNet [10] 16(20%) 64</cell><cell>89.54</cell><cell>81.24</cell><cell>8.24</cell><cell>2.20</cell></row><row><cell cols="3">LG-ER-MT [6] 16(20%) 64</cell><cell>89.62</cell><cell>81.31</cell><cell>7.16</cell><cell>2.06</cell></row><row><cell>DUWM [20]</cell><cell cols="2">16(20%) 64</cell><cell>89.65</cell><cell>81.35</cell><cell>7.04</cell><cell>2.03</cell></row><row><cell>DTC [12]</cell><cell cols="2">16(20%) 64</cell><cell>89.42</cell><cell>80.98</cell><cell>7.32</cell><cell>2.10</cell></row><row><cell>MC-Net [22]</cell><cell cols="2">16(20%) 64</cell><cell>90.34</cell><cell>82.48</cell><cell>6.00</cell><cell>1.77</cell></row><row><cell>DMD (Ours)</cell><cell cols="2">16(20%) 64</cell><cell>90.46</cell><cell>82.66</cell><cell>6.39</cell><cell>1.62</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparisons on the ACDC dataset under the settings of<ref type="bibr" target="#b21">[21]</ref>. "↑" and "↓" indicate the larger and the smaller the better, respectively.</figDesc><table><row><cell>Method</cell><cell cols="2">#Scans used</cell><cell>Metrics</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="6">labelled Unlabelled Dice(%)↑ Jaccard(%)↑ 95HD(voxel)↓ ASD(voxel)↓</cell></row><row><cell>U-Net</cell><cell>3(5%)</cell><cell>0</cell><cell>47.83</cell><cell>37.01</cell><cell>31.16</cell><cell>12.62</cell></row><row><cell>U-Net</cell><cell cols="2">7(10%) 0</cell><cell>79.41</cell><cell>68.11</cell><cell>9.35</cell><cell>2.70</cell></row><row><cell>U-Net</cell><cell>70(All)</cell><cell>0</cell><cell>91.44</cell><cell>84.59</cell><cell>4.30</cell><cell>0.99</cell></row><row><cell cols="3">UA-MT [24] 3(5%) 67</cell><cell>46.04</cell><cell>35.97</cell><cell>20.08</cell><cell>7.75</cell></row><row><cell cols="3">SASSNet [10] 3(5%) 67</cell><cell>57.77</cell><cell>46.14</cell><cell>20.05</cell><cell>6.06</cell></row><row><cell>DTC [12]</cell><cell cols="2">3(5%) 67</cell><cell>56.90</cell><cell>45.67</cell><cell>23.36</cell><cell>7.39</cell></row><row><cell>URPC [13]</cell><cell cols="2">3(5%) 67</cell><cell>55.87</cell><cell>44.64</cell><cell>13.60</cell><cell>3.74</cell></row><row><cell cols="3">MC-Net [22] 3(5%) 67</cell><cell>62.85</cell><cell>52.29</cell><cell>7.62</cell><cell>2.33</cell></row><row><cell>SS-Net [21]</cell><cell cols="2">3(5%) 67</cell><cell>65.82</cell><cell>55.38</cell><cell>6.67</cell><cell>2.28</cell></row><row><cell cols="3">DMD (Ours) 3(5%) 67</cell><cell>66.23</cell><cell>55.84</cell><cell>8.66</cell><cell>2.40</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Comparisons with consistency-based methods with different entropy guidance on the LA dataset. "↑" and "↓" indicate the larger and the smaller the better, respectively.</figDesc><table><row><cell>Method</cell><cell cols="2">Entropy control #Scans used</cell><cell>Metrics</cell><cell></cell></row><row><cell></cell><cell></cell><cell cols="3">labelled Unlabelled Dice(%)↑ Jaccard(%)↑</cell></row><row><cell>CPS [3]</cell><cell cols="2">pseudo-labeling 8(10%) 72</cell><cell>87.49</cell><cell>78.06</cell></row><row><cell cols="2">MC-Net [22] sharpening</cell><cell>8(10%) 72</cell><cell>87.71</cell><cell>78.31</cell></row><row><cell>DML [25]</cell><cell>N/A</cell><cell>8(10%) 72</cell><cell>88.19</cell><cell>78.92</cell></row><row><cell cols="2">DMD (Ours) distillation [7]</cell><cell>8(10%) 72</cell><cell>89.70</cell><cell>81.42</cell></row></table><note><p><p><p>Fig. 2. Entropy-minimization methods like CPS</p><ref type="bibr" target="#b2">[3]</ref> </p>do worse in refining pseudo labels throughout the training process compared to our method. Red mask: pseudo label; White background: ground truth.</p></note></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://www.cardiacatlas.org/atriaseg2018-challenge/.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>https://www.creatis.insa-lyon.fr/Challenge/acdc/#phase/ 5966175c6a3c770dff4cc4fb.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_2"><p>Y. Xie et al.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (Grant No. <rs type="grantNumber">62101191</rs>), <rs type="funder">Shanghai Natural Science Foundation</rs> (Grant No. <rs type="grantNumber">21ZR1420800</rs>), and the <rs type="funder">Science and Technology Commission of Shanghai Municipality</rs> (Grant No. <rs type="grantNumber">22DZ2229004</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Ka3bu4X">
+					<idno type="grant-number">62101191</idno>
+				</org>
+				<org type="funding" xml:id="_wYakVZ4">
+					<idno type="grant-number">21ZR1420800</idno>
+				</org>
+				<org type="funding" xml:id="_uZj4Z6Z">
+					<idno type="grant-number">22DZ2229004</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1 52.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Vnet: an end-to-end fully convolutional neural network for road extraction from high-resolution remote sensing data</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abdollahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Pradhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Alamri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="179424" to="179436" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Pseudolabeling and confirmation bias in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arazo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ortego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>O'connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcguinness</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of IJCNN</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross pseudo supervision</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of CVPR</title>
+		<meeting>CVPR</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">deeply supervised network for automatic liver segmentation from CT volumes</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_18</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-818" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="149" to="157" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning by entropy minimization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Grandvalet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Local and global structure-aware entropy regularized mean teacher model for 3D left atrium segmentation</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_55</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-855" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="562" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Distilling the knowledge in a neural network</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Vinyals</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1503.02531</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Fast and automatic segmentation of pulmonary lobes from chest ct using a progressive dense v-network</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A Z</forename><surname>Imran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Ananth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Terzopoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Biomech. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="509" to="518" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">nnu-net: Self-adapting framework for u-net-based medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Shape-aware semi-supervised 3D semantic segmentation for medical images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_54</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page">54</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Transformation consistent self-ensembling model for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="523" to="534" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation through dual-task consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAAI</title>
+		<meeting>AAAI</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Efficient semi-supervised gross target volume of nasopharyngeal carcinoma segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-330" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="318" to="329" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross-consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ouali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hudelot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tami</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of CVPR</title>
+		<meeting>CVPR</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Pytorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Robustness of different loss functions and their impact on networks learning capability</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Rajput</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2110.08322</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">DeepOrgan: multi-level deep convolutional networks for automated pancreas segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24553-9_68</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24553-968" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9349</biblScope>
+			<biblScope unit="page" from="556" to="564" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learning inductive attention guidance for partially supervised pancreatic ductal adenocarcinoma prediction</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Fishman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Yuille</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2723" to="2735" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Deep distance transform for tubular structure segmentation in CT scans</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of CVPR</title>
+		<meeting>CVPR</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Double-uncertainty weighted method for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="542" to="551" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_53</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-853" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Exploring smoothness and class-separation for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-94" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="34" to="43" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Semi-supervised left atrium segmentation with mutual consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-328" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="297" to="306" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Uncertainty-aware multi-view co-training for semi-supervised medical image segmentation and domain adaptation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="page">101766</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Uncertainty-aware self-ensembling model for semi-supervised 3D left atrium segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-867" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="605" to="613" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Deep mutual learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Hospedales</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4320" to="4328" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Semi-supervised segmentation of liver using adversarial learning with deep atlas prior</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32226-7_17</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32226-717" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11769</biblScope>
+			<biblScope unit="page" from="148" to="156" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

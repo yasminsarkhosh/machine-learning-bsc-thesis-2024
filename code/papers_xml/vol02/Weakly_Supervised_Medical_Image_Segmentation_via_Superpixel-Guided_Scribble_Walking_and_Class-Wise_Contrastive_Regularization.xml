@@ -1,0 +1,1000 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Weakly Supervised Medical Image Segmentation via Superpixel-Guided Scribble Walking and Class-Wise Contrastive Regularization</title>
+				<funder ref="#_wc339ES">
+					<orgName type="full">General Research Fund from Research Grant Council of Hong Kong</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Meng</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Zhe</forename><surname>Xu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kang</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Raymond Kai-Yu</forename><surname>Tong</surname></persName>
+						</author>
+						<title level="a" type="main">Weakly Supervised Medical Image Segmentation via Superpixel-Guided Scribble Walking and Class-Wise Contrastive Regularization</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="137" to="147"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">48B9BC8EB81E91164BA5DBA452A57A21</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_13</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Weakly-supervised Learning</term>
+					<term>Segmentation</term>
+					<term>Superpixel M. Zhou and Z. Xu-Equal contribution</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deep learning-based segmentation typically requires a large amount of data with dense manual delineation, which is both timeconsuming and expensive to obtain for medical images. Consequently, weakly supervised learning, which attempts to utilize sparse annotations such as scribbles for effective training, has garnered considerable attention. However, such scribble-supervision inherently lacks sufficient structural information, leading to two critical challenges: (i) while achieving good performance in overall overlap metrics such as Dice score, the existing methods struggle to perform satisfactory local prediction because no desired structural priors are accessible during training; (ii) the class feature distributions are inevitably less-compact due to sparse and extremely incomplete supervision, leading to poor generalizability. To address these, in this paper, we propose the SC-Net, a new scribblesupervised approach that combines Superpixel-guided scribble walking with Class-wise contrastive regularization. Specifically, the framework is built upon the recent dual-decoder backbone design, where predictions from two slightly different decoders are randomly mixed to provide auxiliary pseudo-label supervision. Besides the sparse and pseudo supervision, the scribbles walk towards unlabeled pixels guided by superpixel connectivity and image content to offer as much dense supervision as possible. Then, the class-wise contrastive regularization disconnects the feature manifolds of different classes to encourage the compactness of class feature distributions. We evaluate our approach on the public cardiac dataset ACDC and demonstrate the superiority of our method compared to recent scribble-supervised and semi-supervised learning methods with similar labeling efforts.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Accurately segmenting cardiac images is crucial for diagnosing and treating cardiovascular diseases. Recently, deep learning methods have greatly advanced cardiac image segmentation. However, most state-of-the-art segmentation models require a large scale of training samples with pixel-wise dense annotations, which are expensive and time-consuming to obtain. Thus, researchers are active in exploring other labour-efficient forms of annotations for effective training. For example, semi-supervised learning (SSL) <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b20">20,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b26">[26]</ref><ref type="bibr" target="#b27">[27]</ref><ref type="bibr" target="#b28">[28]</ref><ref type="bibr" target="#b29">[29]</ref><ref type="bibr" target="#b31">31</ref>] is one such approach that attempts to propagate labels from the limited labeled data to the abundant unlabeled data, typically via pseudo-labeling. However, due to limited diversity in the restricted labeled set, accurately propagating labels is very challenging <ref type="bibr" target="#b14">[15]</ref>. As another form, weakly supervised learning (WSL), i.e., our focused scenario, utilizes sparse labels such as scribbles, bounding boxes, and points for effective training, wherein scribbles have gained significant attention due to their ease of annotation and flexibility in labeling irregular objects. Yet, an intuitive challenge is that the incomplete shape of cardiac in scribble annotations inherently lacks sufficient structural information, as illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>, which easily leads to (i) poor local prediction (e.g., poor boundary prediction with high 95% Hausdorff Distance) because no structural priors are provided during training; (ii) poor generalizability due to less-compact class feature distributions learned from extremely sparse supervision. Effectively training a cardiac segmentation model using scribble annotations remains an open challenge. Related Work. A few efforts, not limited to medical images, have been made in scribble-supervised segmentation <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b32">32]</ref>. For example, Tang et al. <ref type="bibr" target="#b18">[19]</ref> introduced a probabilistic graphical model, conditional random field (CRF), to regularize the spatial relationship between neighboring pixels in an image. Kim et al. <ref type="bibr" target="#b8">[9]</ref> proposed another regularization loss based on level-set <ref type="bibr" target="#b16">[17]</ref> to leverage the weak supervision. S2L <ref type="bibr" target="#b10">[11]</ref> leverages label filtering to improve the pseudo labels generated by the scribble-trained model. USTM <ref type="bibr" target="#b12">[13]</ref> adapts an uncertainty-aware mean-teacher <ref type="bibr" target="#b31">[31]</ref> model in semi-supervised learning to leverage the unlabeled pixels. Zhang et al. <ref type="bibr" target="#b32">[32]</ref> adapted a positive-unlabeled learning framework into this problem assisted by a global consistency term. Luo et al. <ref type="bibr" target="#b14">[15]</ref> proposed a dual-decoder design where predictions from two slightly different decoders are randomly mixed to provide more reliable auxiliary pseudolabel supervision. Despite its effectiveness to some extent, the aforementioned two challenges still have not received adequate attention.</p><p>In this paper, we propose SC-Net, a new scribble-supervised approach that combines Superpixel-guided scribble walking with Class-wise contrastive regularization. The basic framework is built upon the recent dual-decoder backbone design <ref type="bibr" target="#b14">[15]</ref>. Besides the sparse supervision (using partial cross-entropy loss) from scribbles, predictions from two slightly different decoders are randomly mixed to provide auxiliary pseudo-label supervision. This design helps to prevent the model from memorizing its own predictions and falling into a trivial solution during optimization. Then, we tackle the aforementioned inherent challenges with two schemes. Firstly, we propose a specialized mechanism to guide the scribbles to walk towards unlabeled pixels based on superpixel connectivity and image content, in order to augment the structural priors into the labels themselves. As such, better local predictions are achieved. Secondly, we propose a class-wise contrastive regularization term that leverages prototype contrastive learning to disconnect the feature manifolds of different classes, which addresses the issue of less-compact class feature distributions due to sparse supervision. We evaluate our approach on the public cardiac dataset ACDC and show that it achieves promising results, especially better boundary predictions, compared to recent scribble-supervised and semi-supervised methods with similar labeling efforts.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Preliminaries and Basic Framework</head><p>In the scribble-supervised setting, the dataset includes images and their corresponding scribble annotations. We denote an image as X with the scribble annotation S = {(s r , y r )}, where s r is the pixel of scribble r, and y r ∈ {0, 1, ..., C -1} denotes the corresponding label with C possible classes at pixel s r . As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, our framework is built upon a one-encoder-dual-decoder design <ref type="bibr" target="#b14">[15]</ref>, where the encoder (θ enc ) is shared and two decoders are independent and slightly different. Here, we denote the decoder 1 as θ Dec1 and the auxiliary decoder 2 as θ Dec2 . Compared to θ Dec1 , θ Dec2 introduces the dropout layer (ratio = 0.5) before each convolutional block to impose perturbations. In this framework, the supervised signals consist of a scribble-supervised loss and a pseudo-supervised self-training loss. For the former one, we adopt the commonly used partial crossentropy loss for those scribble-containing pixels <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b18">19]</ref>, formulated as:</p><formula xml:id="formula_0">L pCE = -0.5 × ( c i∈S log p c 1(i) + c i∈S log p c 2(i) ),<label>(1)</label></formula><p>where p c 1(i) and p c 2(i) are the predicted probability of pixel i belonging to class c from the two decoders θ Dec1 and θ Dec2 , respectively. For the self-training loss, this dual-decoder framework randomly mix the predictions from the two different decoders to generate the ensemble pseudo label as: ŷML = argmax[α × p 1 + (1α) × p 2 , where α = random(0, 1). Such dynamically mixing scheme can increase the diversity of pseudo labels, which helps to prevent the model from memorizing its own single prediction and falling into a trivial solution during optimization <ref type="bibr" target="#b7">[8]</ref>. As such, the self-training loss can be formulated as:</p><formula xml:id="formula_1">L MLS = 0.5 × (L Dice (ŷ ML , p 1 ) + L Dice (ŷ ML , p 2 )).</formula><p>(</p><formula xml:id="formula_2">)<label>2</label></formula><p>Despite its effectiveness, this framework still overlooks the aforementioned fundamental limitations of sparse scribble supervision: (i) although the mixed pseudo labels provide dense supervision, they still stems from the initial sparse guidance, making it difficult to provide accurate local structural information. Thus, we propose superpixel-guided scribble walking strategy (Sect. 2.2) to enrich structural priors for the initial supervision itself. (ii) Extremely sparse supervision inevitably leads to less-compact class feature distributions, resulting in poor generalizability to unseen test data. Thus, we further propose class-wise contrastive regularization (Sect. 2.3) to enhance the compactness of class embeddings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Superpixel-Guided Scribble Walking</head><p>In order to enhance the structural information in our initial supervision, we utilize the superpixel of the image as a guide for propagating scribble annotations to unlabeled pixels, considering that it effectively groups pixels with similar characteristics within the uniform regions of an image and helps capture the class boundaries <ref type="bibr" target="#b30">[30]</ref>. Specifically, we employ the simple linear iterative clustering (SLIC) algorithm <ref type="bibr" target="#b0">[1]</ref> to generate the superpixels. The algorithm works by first dividing the image into a grid of equally-sized squares, then selecting a number of seed points within each square based on the desired number K of superpixels.</p><p>Next, it iteratively assigns each pixel to the nearest seed point based on its color similarity and spatial proximity (distance). This process is repeated until the clustering converges or reaches a predefined number of iterations. Finally, the algorithm updates the location of the seed points to the centroid of the corresponding superpixel, and repeats until convergence. As such, the image is coarsely segmented into K clusters. To balance accuracy and computational efficiency, the number of iterations is empirically set to 10. K is set to 150. An example of superpixel is depicted in Fig. <ref type="figure" target="#fig_0">1</ref>. Then, guided by the obtained superpixel, the scribbles walk towards unlabeled pixels with the following mechanisms: (i) if the superpixel cluster overlaps with a scribble s r , the label y r of s r walks towards to the pixels contained in this cluster; (ii) yet, if the superpixel cluster does not overlap any scribble or overlaps more than one scribble, the pixels within this cluster are not assigned any labels. As such, we denote the set of the superpixel-guided expanded label as {(x sp , ŷsp )}, where x sp represents the pixel with the corresponding label ŷsp ∈ {0, 1, ..., C -1}. An expansion example can be also found in Fig. <ref type="figure" target="#fig_0">1</ref>. Although we use strict walking constraints to expand the labels, superpixels are primarily based on color similarity and spatial proximity to seed points. However, magnetic resonance imaging has less color information compared to natural images, and different organs often share similar intensity, leading to some inevitable label noises. Therefore, to alleviate the negative impact of the label noises, we adopt the noise-robust Dice loss <ref type="bibr" target="#b24">[24]</ref> to supervise the models, formulated as:</p><formula xml:id="formula_3">L sN R = 0.5 × ( N i |p 1(i) -ŷsp(i) | γ N i p 2 1(i) + N i ŷ2 sp(i) + + N i |p 2(i) -ŷsp(i) | γ N i p 2 2(i) + N i ŷ2 sp(i) + ), (<label>3</label></formula><formula xml:id="formula_4">)</formula><p>where N is the number of label-containing pixels. ŷsp is converted to one-hot representation. p 1(i) and p 2(i) are the predicted probabilities of pixel i from θ Dec1 and θ Dec2 , respectively. Following <ref type="bibr" target="#b24">[24]</ref>, = 10 -5 and γ = 1.5. Note that when γ = 2, this loss will degrade into the typical Dice loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Class-Wise Contrastive Regularization</head><p>When using extremely sparse supervision, it is difficult for the model to learn compact class feature distributions, leading to poor generalizability. To address this, we propose a class-wise contrastive regularization term that leverages prototype contrastive learning to disconnect the feature manifolds of different classes, as illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. Specifically, using the additional non-linear projection head, we derive two sets of projected features, namely F 1 and F 2 , from decoder 1 and decoder 2, respectively. Then, we filter the projected features by comparing their respective categories with that of the mixed pseudo label ŷML and the current predictions from the two decoders. Only features that have matching categories are retained and denoted as Ḟ c 1 and Ḟ c 2 , where superscript c indicates that such feature vectors correspond to class c. Then, we use C attention modules <ref type="bibr" target="#b1">[2]</ref> to obtain ranking scores to sort the retained features and then the top-k features are selected as the class prototypes, where the class-c prototypes are denoted as Z c 1 = {z c 1 } and Z c 2 = {z c 2 }. Note that we extract feature prototypes in an online fashion instead of retaining cross-epoch memories as in <ref type="bibr" target="#b1">[2]</ref>, since the latter can be computationally inefficient and memory-intensive. Then, we extract the features of each category f c 1 ∈ F 1 and f c 2 ∈ F 2 using the current predictions and encourage their proximity to the corresponding prototypes z c 1 and z c 2 . We adopt the cosine similarity to measure the proximity between the class features and the class prototypes. Taking decoder 1 as example, we define its class-wise contrastive regularization loss L Dec1 CR as:</p><formula xml:id="formula_5">L Dec1 CR (f c 1 , Z c 1 ) = 1 C 1 N z c 1 1 N f c 1 C c=1 N z c 1 i=1 N f c 1 j=1 w ij (1 - &lt; z c(i) 1 , f c(j) 1 &gt; ||z c(i) 1 || 2 • ||f c(j) 1 || 2 ),<label>(4)</label></formula><p>where w ij is obtained by normalizing the learnable attention weights (detailed in <ref type="bibr" target="#b1">[2]</ref>). N z c 1 or N f c 1 is the number of prototypes or projected features of c-th class, respectively. Similarly, we obtain such regularization loss for decoder 2, denoted as L Dec2 CR . As such, the overall class-wise contrastive regularization loss is formulated as:</p><formula xml:id="formula_6">L CR = 0.5 × (L Dec1 CR + L Dec2 CR ).<label>(5)</label></formula><p>Overall, the final loss of our SC-Net is summarized as:</p><formula xml:id="formula_7">L = L pCE + λ MLS L MLS + λ sN R L sN R + λ CR L CR ,<label>(6)</label></formula><p>where λ MLS , λ sN R and λ CR are the trade-off weights. λ MLS is set to 0.5, following <ref type="bibr" target="#b14">[15]</ref>. λ sN R is set to 0.005. λ CR is scheduled with an iteration-dependent ramp-up function <ref type="bibr" target="#b9">[10]</ref> with the maximal value of 0.01 suggested by <ref type="bibr" target="#b25">[25]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Dataset. We evaluate our method on the public ACDC dataset <ref type="bibr" target="#b2">[3]</ref>, which consists of 200 short-axis cine-MRI scans from 100 patients. Each patient has two annotated scans from end-diastolic (ED) and end-systolic (ES) phases, where each scan has three structure labels, including right ventricle (RV), myocardium (Myo) and left ventericle (LV). The scribbles used in this work are manually annotated by Valvano et al. <ref type="bibr" target="#b21">[21]</ref>. Considering the large thickness in this dataset, we perform 2D segmentation rather than 3D segmentation, following <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b21">21]</ref>.</p><p>Implementation and Evaluation Metrics. The framework is implemented with PyTorch using an NVIDIA RTX 3090 GPU. We adopt UNet <ref type="bibr" target="#b17">[18]</ref> as the backbone with extension to dual-branch design <ref type="bibr" target="#b14">[15]</ref>. All the 2D slices are normalized to [0, 1] and resized to 256×256 pixels. Data augmentations, including random rotation, flipping and noise injection, are applied. The SGD optimizer is utilized with the momentum of 0.9 and weight decay is 10 -4 , the poly learning rate strategy is employed <ref type="bibr" target="#b15">[16]</ref>. We train the segmentation model for 60,000 iterations in total with a batch size of 12. During inference, the encoder in combination with the primary decoder (Dec 1) is utilized to segment each scan slice-by-slice and stack the resulting 2D slice predictions into a 3D volume. We adopt the commonly used Dice Coefficient (DSC) and 95% Hausdorff Distance (95HD) as the evaluation metrics. Five-fold cross-validation is employed. The code will be available at https://github.com/Lemonzhoumeng/SC-Net.</p><p>Comparison Study. We compare our proposed SC-Net with recent state-ofthe-art alternative methods for annotation-efficient learning. Table <ref type="table" target="#tab_0">1</ref> presents the quantitative results of different methods. All methods are implemented with the same backbone to ensure fairness. According to <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b21">21]</ref>, the cost of scribble annotation for the entire ACDC training set is similar to that of dense pixel-level annotation for 10% of the training samples. Thus, we use 10% of the training samples (8 patients) as labeled data and the remaining 90% as unlabeled data to perform semi-supervised learning (SSL). Here, we compare popular semisupervised approaches, including AdvEnt <ref type="bibr" target="#b23">[23]</ref>, DAN <ref type="bibr" target="#b34">[34]</ref>, MT <ref type="bibr" target="#b20">[20]</ref> and UAMT <ref type="bibr" target="#b31">[31]</ref>, as well as the supervised-only (Sup) baseline (using 10% densely labeled data only). As observed, SC-Net achieves significantly better performance than  the competing SSL methods, showing that when the annotation budget is similar, using scribble annotations can lead to better outcomes than pixel-wise annotations. Furthermore, we compare SC-Net with weakly-supervised learning (WSL) approaches on scribble annotated data, including pCE only <ref type="bibr" target="#b11">[12]</ref> (lower bound), RW <ref type="bibr" target="#b5">[6]</ref> (using random walker to produce additional label), USTM <ref type="bibr" target="#b12">[13]</ref> (uncertainty-aware self-ensembling and transformation-consistent model), S2L <ref type="bibr" target="#b10">[11]</ref> (Scribble2Label), MLoss <ref type="bibr" target="#b8">[9]</ref> (Mumford-shah loss), EM <ref type="bibr" target="#b6">[7]</ref> (entropy minimization) and DBMS <ref type="bibr" target="#b14">[15]</ref> (dual-branch mixed supervision). Besides, the upper bound, i.e., supervised training with full dense annotations, is also presented. It can be observed that SC-Net achieves more promising results compared to existing methods. In comparison to DBMS, SC-Net exhibits a slight improvement in DSC, but a significant decrease in the 95HD metric (p&lt;0.05). Furthermore, our method achieves slightly lower performance in DSC compared to the upper bound, but even slightly better results in 95HD. This indicates that our approach effectively addresses the inherent limitations of sparse supervision. Figure <ref type="figure" target="#fig_1">2</ref> presents exemplar qualitative results of our SC-Net and other methods. It can be seen that the prediction of our SC-Net fit more accurately with the ground truth, especially in local details. Thanks to the more compact feature distributions, our method reduces false-positive predictions, as indicated in the red box.</p><p>Ablation Study. We perform an ablation study to investigate the effects of the two key components of our SC-Net. The results are also shown in Table <ref type="table" target="#tab_0">1</ref>.</p><p>We found that the two components need to work together. When we remove L sN R , the performance degrades to some extent. This may be because it is difficult for the model to generate high-quality local pseudo-labels with only sparse supervision provided by scribbles, and class-wise contrastive regularization relies heavily on pseudo labels to separate class features. When we remove L CR , the performance also drops slightly. This is mainly because the generated superpixels inevitably contain errors, which can misguide the scribble walking. Yet, using L CR can regularize the feature distribution between classes, reducing the impact of these errors. Meanwhile, the structure prior strengthened by superpixel guidance helps to provide higher-quality local pseudo labels to assist class-wise contrastive regularization. The two components complement each other, resulting in the best performance of our complete SC-Net.</p><p>Sensitivity Analysis. The superpixel-guided scribble walking plays an important role in our SC-Net. Thus, we conduct further assessments on the sensitivity of λ sN R , which is used to weight L sN R , and the cluster number K used for superpixel generation. The results obtained by five-fold cross validation are presented in Fig. <ref type="figure" target="#fig_2">3</ref>. As observed, increasing λ sN R from 0.001 to 0.005 leads to better results in terms of both metrics. When λ sN R is set to 0.01, the result exhibits only a slight decrease compared to 0.005 (0.872 vs. 0.867 in term of DSC). These observations show that our method is not so sensitive to λ sN R within the empirical range. In practice, the optimal value of K depends on the characteristics of the input image, such as object complexity and texture. We find that our method is also not highly sensitive to K, but the optimal results are achieved when K = 150 for the cardiac MR images in our study.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work, we proposed the SC-Net towards effective weakly supervised medical image segmentation using scribble annotations. By combining superpixelguided scribble walking with class-wise contrastive regularization, our approach alleviates two inherent challenges caused by sparse supervision, i.e., the lack of structural priors during training and less-compact class feature distributions.</p><p>Comprehensive experiments on the public cardiac dataset ACDC demonstrated the superior performance of our method compared to recent scribble-supervised and semi-supervised methods with similar labeling efforts.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of SC-Net for scribble-supervised cardiac segmentation. (a) The framework consists of a shared encoder (Enc) and two independent and different decoders (Dec 1 and Dec 2). Structural priors are enriched by (b) superpixel-guided scribble walking strategy (Sect. 2.2). The class-wise contrastive regularization LCR (Sect. 2.3) encourages the compactness of feature manifolds of different classes.</figDesc><graphic coords="3,58,98,53,96,334,57,107,74" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative comparison of different methods.</figDesc><graphic coords="7,70,47,238,73,311,95,116,23" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Sensitivity analysis of λsNR and the cluster number K in superpixel generation.</figDesc><graphic coords="8,44,79,54,17,334,60,95,53" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results of different methods via five-fold cross-validation. Standard deviations are shown in parentheses. The best mean results are marked in bold.</figDesc><table><row><cell cols="2">Setting Method</cell><cell>RV</cell><cell></cell><cell>Myo</cell><cell></cell><cell>LV</cell><cell></cell><cell>Mean</cell></row><row><cell></cell><cell></cell><cell>DSC</cell><cell>95HD</cell><cell>DSC</cell><cell>95HD</cell><cell>DSC</cell><cell>95HD</cell><cell>DSC</cell><cell>95HD</cell></row><row><cell>SSL</cell><cell cols="2">AdvEnt [23] (10% label) 0.614(0.256)</cell><cell cols="2">21.3(19.8) 0.758(0.149)</cell><cell>8.4(8.6)</cell><cell>0.843(0.134)</cell><cell>12.4(19.3)</cell><cell>0.737(0.179)</cell><cell>14.0(15.9)</cell></row><row><cell></cell><cell>DAN [34] (10% label)</cell><cell>0.655(0.260)</cell><cell cols="2">21.2(20.4) 0.768(0.171)</cell><cell>9.5(11.7)</cell><cell>0.833(0.178)</cell><cell>14.9(19.5)</cell><cell>0.752(0.203)</cell><cell>15.2(17.2)</cell></row><row><cell></cell><cell>MT [20] (10% label)</cell><cell>0.653(0.271)</cell><cell cols="2">18.6(22.0) 0.785(0.118)</cell><cell cols="2">11.4(17.0) 0.846(0.153)</cell><cell>19.0(26.7)</cell><cell>0.761(0.180)</cell><cell>16.3(21.9)</cell></row><row><cell></cell><cell cols="2">UAMT [33] (10% label) 0.660(0.267)</cell><cell cols="2">22.3(22.9) 0.773(0.129)</cell><cell cols="2">10.3(14.8) 0.847(0.157)</cell><cell>17.1(23.9)</cell><cell>0.760(0.185)</cell><cell>16.6(20.5)</cell></row><row><cell>WSL</cell><cell>pCE [12] (lower bound)</cell><cell>0.628(0.110)</cell><cell cols="2">178.5(27.1) 0.602 (0.090)</cell><cell cols="2">176.0(21.8) 0.710(0.142)</cell><cell cols="2">168.1(45.7) 0.647(0.114)</cell><cell>174.2(31.5)</cell></row><row><cell></cell><cell>RW [6]</cell><cell>0.829(0.094)</cell><cell cols="2">12.4(19.5) 0.708(0.093)</cell><cell>12.9(8.6)</cell><cell>0.747(0.130)</cell><cell>12.0(14.8)</cell><cell>0.759(0.106)</cell><cell>12.5(14.3)</cell></row><row><cell></cell><cell>USTM [13]</cell><cell>0.824(0.103)</cell><cell cols="2">40.4(47.8) 0.739 (0.075)</cell><cell cols="2">133.4(42.9) 0.782(0.178)</cell><cell cols="2">140.4(54.6) 0.782(0.121)</cell><cell>104.7(48.4)</cell></row><row><cell></cell><cell>S2L [11]</cell><cell>0.821(0.097)</cell><cell cols="2">16.8(24.4) 0.786(0.067)</cell><cell cols="2">65.6(45.6) 0.845(0.127)</cell><cell>66.5(56.5)</cell><cell>0.817(0.097)</cell><cell>49.6(42.2)</cell></row><row><cell></cell><cell>MLoss [9]</cell><cell>0.807(0.089)</cell><cell cols="2">13.4(21.1) 0.828(0.057)</cell><cell cols="2">29.8(41.5) 0.868(0.074)</cell><cell>55.1(61.6)</cell><cell>0.834(0.073)</cell><cell>32.8(41.4)</cell></row><row><cell></cell><cell>EM [7]</cell><cell>0.815(0.119)</cell><cell cols="2">37.9(54.5) 0.803(0.059)</cell><cell cols="2">56.9(53.2) 0.887(0.071)</cell><cell cols="2">50.4(57.9) 0.834(0.083)</cell><cell>48.5(55.2)</cell></row><row><cell></cell><cell>DBMS [15]</cell><cell>0.861(0.087)</cell><cell>8.3(13.0)</cell><cell>0.835(0.057)</cell><cell cols="2">10.3(19.7) 0.899(0.062)</cell><cell>11.0(20.9)</cell><cell>0.865(0.078)</cell><cell>9.9(17.8)</cell></row><row><cell></cell><cell>Ours (w/o LsNR)</cell><cell>0.847(0.086)</cell><cell>7.8(13.8)</cell><cell>0.823(0.091)</cell><cell>8.9(18.5)</cell><cell>0.902(0.077)</cell><cell cols="2">10.4(18.4) 0.858(0.093)</cell><cell>8.9(16.9)</cell></row><row><cell></cell><cell>Ours (w/o LCR)</cell><cell>0.850(0.079)</cell><cell>8.3(14.3)</cell><cell>0.819(0.078)</cell><cell>9.2(17.3)</cell><cell>0.889(0.058)</cell><cell cols="2">10.7(15.7) 0.853(0.076)</cell><cell>9.3(16.3)</cell></row><row><cell></cell><cell>Ours (SC-Net)</cell><cell cols="2">0.862(0.071) 4.6(3.8)</cell><cell>0.839(0</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>.088) 6.7(16.3) 0.915(0.083) 8.1(14.1) 0.872(0.063) 6.5(13.9)</head><label></label><figDesc></figDesc><table><row><cell>SL</cell><cell>Sup (10% label)</cell><cell>0.659(0.261)</cell><cell cols="2">26.8(30.4) 0.724(0.176)</cell><cell cols="2">16.0(21.6) 0.790(0.205)</cell><cell>24.5(30.4)</cell><cell>0.724(0.214)</cell><cell>22.5(27.5)</cell></row><row><cell></cell><cell>Sup (full) (upper bound)</cell><cell>0.881(0.093)</cell><cell>6.9(10.9)</cell><cell>0.879 (0.039)</cell><cell>5.8(15.4)</cell><cell>0.935(0.065)</cell><cell>8.0(19.9)</cell><cell>0.898(0.066)</cell><cell>6.9(15.4)</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This research was supported by <rs type="funder">General Research Fund from Research Grant Council of Hong Kong</rs> (No. <rs type="grantNumber">14205419</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_wc339ES">
+					<idno type="grant-number">14205419</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Slic superpixels compared to state-of-the-art superpixel methods</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Achanta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shaji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lucchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Süsstrunk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2274" to="2282" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with pixel-level contrastive learning from a class-wise memory bank</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Alonso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sabater</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ferstl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Montesano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Murillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8219" to="8228" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic mri cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Learning to segment medical images with scribble-supervision alone</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">B</forename><surname>Can</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00889-5_27</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-527" />
+	</analytic>
+	<monogr>
+		<title level="m">DLMIA/ML-CDS -2018</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="236" to="244" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Scribble2d5: Weakly-supervised volumetric image segmentation via scribble annotations</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hong</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-123" />
+	</analytic>
+	<monogr>
+		<title level="m">25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="234" to="243" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VIII</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Random walks for image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Grady</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1768" to="1783" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning by entropy minimization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Grandvalet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Atso: asynchronous teacher-student optimization for semisupervised image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1235" to="1244" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Mumford-shah loss functional for image segmentation with deep learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="1856" to="1866" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Temporal ensembling for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1610.02242</idno>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Scribble2Label: scribble-supervised cell segmentation via self-generating pseudo-labels with consistency</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W.-K</forename><surname>Jeong</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_2</idno>
+		<idno>978-3-030-59710-8 2</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MIC-CAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="14" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Scribblesup: scribble-supervised convolutional networks for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="3159" to="3167" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Weakly supervised segmentation of covid19 infection with scribble annotation on ct images. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">122</biblScope>
+			<biblScope unit="page">108341</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation through dual-task consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Conference on Artificial Intelligence</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Scribble-supervised medical image segmentation via dual-branch network and dynamically mixed pseudo labels supervision</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16431-6_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16431-650" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="528" to="538" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Efficient semi-supervised gross target volume of nasopharyngeal carcinoma segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-330" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="318" to="329" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Optimal approximations by piecewise smooth functions and associated variational problems</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Mumford</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications on Pure and Applied Mathematics</title>
+		<imprint>
+			<date type="published" when="1989">1989</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">On regularized losses for weakly-supervised CNN segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Perazzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Djelouah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Schroers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Boykov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11220</biblScope>
+			<biblScope unit="page" from="524" to="540" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01270-0_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01270-031" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1195" to="1204" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning to segment from scribbles using multi-scale adversarial attention gates</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Valvano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Leo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Tsaftaris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<date type="published" when="1990">1990-2001 (2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Interpolation consistency training for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Verma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">145</biblScope>
+			<biblScope unit="page" from="90" to="106" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">ADVENT: adversarial entropy minimization for domain adaptation in semantic segmentation</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">H</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bucher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pérez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="2517" to="2526" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A noise-robust framework for automatic segmentation of COVID-19 pneumonia lesions from CT images</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="2653" to="2663" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Exploring smoothness and class-separation for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-94" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Medical Image Computing and Computer Assisted Intervention</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Semi-supervised left atrium segmentation with mutual consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-328" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="297" to="306" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Anti-interference from noisy labels: mean-teacher-assisted confident learning for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Noisy labels are treasure: mean-teacher-assisted confident learning for hepatic vessel segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_1</idno>
+		<idno>978- 3-030-87193-2 1</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="3" to="13" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">All-around real label supervision: Cyclic prototype consistency learning for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Weakly-supervised semantic segmentation with superpixel guided local and global consistency. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">124</biblScope>
+			<biblScope unit="page">108504</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Uncertainty-aware self-ensembling model for semi-supervised 3d left atrium segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-867" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="605" to="613" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Shapepu: a new pu learning framework regularized by global consistency for scribble supervised cardiac segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhuang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_16</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-116" />
+	</analytic>
+	<monogr>
+		<title level="j">Medical Image Computing and Computer Assisted Intervention</title>
+		<imprint>
+			<biblScope unit="page" from="162" to="172" />
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Uncertainty-guided mutual consistency learning for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence in Medicine</title>
+		<imprint>
+			<biblScope unit="page">102476</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Deep adversarial networks for biomedical image segmentation utilizing unannotated images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fredericksen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Hughes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-66179-7_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-66179-747" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Descoteaux</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Franz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Collins</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Duchesne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10435</biblScope>
+			<biblScope unit="page" from="408" to="416" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

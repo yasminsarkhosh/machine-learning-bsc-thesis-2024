@@ -1,0 +1,824 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SFusion: Self-attention Based N-to-One Multimodal Fusion Block</title>
+				<funder ref="#_MrxjfPX #_FyBsRVB">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_gMgCmkw">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_geS75Xv">
+					<orgName type="full">Guangdong Provincial Natural Science Foundation</orgName>
+				</funder>
+				<funder ref="#_jY7e5j8">
+					<orgName type="full">Guangzhou Science and Technology Planning Project</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zecheng</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science and Engineering</orgName>
+								<orgName type="institution">South China University of Technology</orgName>
+								<address>
+									<settlement>Guangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jia</forename><surname>Wei</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science and Engineering</orgName>
+								<orgName type="institution">South China University of Technology</orgName>
+								<address>
+									<settlement>Guangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Rui</forename><surname>Li</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Golisano College of Computing and Information Sciences</orgName>
+								<orgName type="institution">Rochester Institute of Technology</orgName>
+								<address>
+									<settlement>Rochester</settlement>
+									<region>NY</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Jianlong</forename><surname>Zhou</surname></persName>
+							<email>jianlong.zhou@uts.edu.au</email>
+							<affiliation key="aff2">
+								<orgName type="department">Data Science Institute</orgName>
+								<orgName type="institution">University of Technology Sydney</orgName>
+								<address>
+									<postCode>2007</postCode>
+									<settlement>Ultimo</settlement>
+									<region>NSW</region>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SFusion: Self-attention Based N-to-One Multimodal Fusion Block</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="159" to="169"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">43E14CB48E12D688F67D9F2BBDAD70BD</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_15</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T10:09+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Multimodal fusion</term>
+					<term>Missing modalities</term>
+					<term>Brain tumor segmentation</term>
+					<term>Human activity recognition</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>People perceive the world with different senses, such as sight, hearing, smell, and touch. Processing and fusing information from multiple modalities enables Artificial Intelligence to understand the world around us more easily. However, when there are missing modalities, the number of available modalities is different in diverse situations, which leads to an N-to-One fusion problem. To solve this problem, we propose a self-attention based fusion block called SFusion. Different from preset formulations or convolution based methods, the proposed block automatically learns to fuse available modalities without synthesizing or zero-padding missing ones. Specifically, the feature representations extracted from upstream processing model are projected as tokens and fed into self-attention module to generate latent multimodal correlations. Then, a modal attention mechanism is introduced to build a shared representation, which can be applied by the downstream decision model. The proposed SFusion can be easily integrated into existing multimodal analysis networks. In this work, we apply SFusion to different backbone networks for human activity recognition and brain tumor segmentation tasks. Extensive experimental results show that the SFusion block achieves better performance than the competing fusion strategies. Our code is available at https://github.com/scut-cszcl/SFusion.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>People perceive the world with signals from different modalities, which often carry complementary information about varying aspects of an object or event of interest. Therefore, collecting and utilizing multimodal information is crucial for Artificial Intelligence to understand the world around us. Data collected from various sensors (e.g., microphones, cameras, motion controllers) are used to identify human activity <ref type="bibr" target="#b3">[4]</ref>. Moreover, multimodal medical images obtained from different scanning protocols (e.g., Computed Tomography, Magnetic Resonance Imaging) are employed for disease diagnosis <ref type="bibr" target="#b11">[12]</ref>. Satisfactory performances have been achieved with these multimodal data.</p><p>In practical application, however, modality missing is a common scenario. Wirelessly connected sensors may occasionally disconnect and temporarily be unable to send any data <ref type="bibr" target="#b2">[3]</ref>. Medical images may be missing due to artifacts and diverse patient conditions <ref type="bibr" target="#b10">[11]</ref>. In these unexpected situations, any combinatorial subset of available modalities can be given as input. To handle this, one intuitive solution is to train a dedicated model on all possible subsets of available modalities <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b22">23]</ref>. However, these methods are ineffective and timeconsuming. Another way is to predict missing modalities and perform with the completed modalities <ref type="bibr" target="#b19">[20]</ref>. But, these approaches also require additional prediction networks for each missing situation, and the quality of the recovered data directly affects the performance, especially when there are only a few available modalities. Recently, fusing the available modalities into a shared representation received wide attention. However, it is particularly challenging due to the varying number of input modalities, which results in the N-to-One fusion problem.</p><p>Currently, existing fusion strategies to tackle this challenge can be broadly grouped into three categories: the arithmetic strategy, the selection strategy and the convolution strategy. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>(a), in the arithmetic strategy, feature representations of available modalities are merged by an arithmetic function, such as averaging, computing the first and second moments or other designed formulas <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b16">17]</ref>. For the selection strategy, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>(b), each value of fused representation is selected from the values at the corresponding position of the inputs. The selection rule can be defined as max, min or probabilitybased <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b18">19]</ref>. Although the above two fusion strategies are easily scalable to various data missing situations, their fusion operation is hard-coded. All available modalities contribute equally and their latent correlations are neglected. Unlike hard-coding the fusion operation, in the convolution strategy, the convolutional fusion network automatically learns how to fuse these feature representations, which is beneficial to exploiting the correlation between multiple modalities. However, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>(c), this fusion strategy needs a constant number of data to meet the requirements of the input channels in the convolutional network. Therefore, it has to simulate missing data by crudely zero-padding or replacing it with similar modalities, which inevitably introduces a bias in computation and causes performance degradation <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b24">25]</ref>.</p><p>Transformer has achieved success in the field of computer vision, demonstrating that self-attention mechanism has the ability to capture the latent correlation of image tokens. However, no work has explored the effectiveness of self-attention mechanism on the N-to-One fusion, where N is variable during training, rather than fixed. Furthermore, the calculation of self-attention does not require a fixed number of tokens as input, which represents a potential for handling missing data. Therefore, we propose a self-attention based fusion block (SFusion) to tackle the problems of the above fusion strategies. As shown in Fig. <ref type="figure" target="#fig_0">1(d)</ref>, SFusion can handle any number of input data instead of fixing its number. In addition, SFusion is a learning-based fusion strategy that consists of two components: the correlation extraction (CE) module and the modal attention (MA) module. In the CE module, feature representations extracted from available modalities are projected as tokens and fed into the self-attention layers to learn multimodal correlations. Based on these correlations, a modal softmax function is proposed to generate weight maps in the MA module. Finally, it builds a shared feature representation by fusing the varying inputs with the weight maps.</p><p>The contributions of this work are:</p><p>-We propose SFusion, which is a data-dependent fusion strategy without impersonating missing modalities. It can learn the latent correlations between different modalities and builds a shared representation adaptively. -The SFusion is not limited to specific deep learning architectures. It takes inputs from any kind of upstream processing model and serves as the input of the downstream decision model, which enables applying the SFusion to various backbone networks for different tasks. -We provide qualitative and quantitative performance evaluations on activity recognition with the SHL <ref type="bibr" target="#b21">[22]</ref> dataset and brain tumor segmentation with the BraTS2020 <ref type="bibr" target="#b0">[1]</ref> dataset. The results show the superiority of SFusion over competing fusion strategies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Method Overview</head><p>For multiple modalities, let k ∈ K ⊆ {1, 2, . . . , S} index a specific modality, within the available modality set of K, where S is the number of all possible modalities. Given an input f k ∈ R B×C×R f , B and C denote the batch size and the number of channels, respectively. R f represents the shape of feature representation extracted from the k-th modality of a sample data, which can be 1D (L), 2D (H×W), 3D (D×H×W) or higher-dimensional. In addition, I = {f k |k ∈ K} denotes the input set of feature representations from all the available modalities. Our goal is to learn a fusion function F that can project I into a shared feature representation f s , denoted as F (I) → f s . To achieve the goal, we design an N-to-One fusion block, SFusion. The architecture is shown in Fig. <ref type="figure" target="#fig_1">2</ref>, which consists of two modules: correlation extraction (CE) module and modal attention (MA) module. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Correlation Extraction</head><p>Given the feature representation</p><formula xml:id="formula_0">f k ∈ R B×C×R f , we first flatten the R f dimen- sions of f k into one dimension and get a B × C × R feature representation, where R = L (1D), R = H × W (2D), R = D × H × W (3D), etc. It can be viewed as B × R C-dimensional tokens t k .</formula><p>Then, we obtain the concatenation of all the tokens z 0 ∈ R B×T ×C , where T = R × |K|, and |K| denotes the number of available modalities. Given z 0 , the stack of eight self-attention layers (SAL) are introduced to learn the latent multimodal correlations. Each layer includes a multi-head attention (MHA) block and a fully connected feed-forward network (FFN) <ref type="bibr" target="#b20">[21]</ref>. Layer normalization (LN) is applied before every block. The outputs of the x-th (x ∈ [1, 2, . . . , 8]) layer can be describe as:</p><formula xml:id="formula_1">z x = MHA(LN (z x-1 )) + z x-1</formula><p>(1)</p><formula xml:id="formula_2">z x = F F N(LN (z x )) + z x (2)</formula><p>Therefore, we get z l ∈ R B×T ×C , which is the last SAL output. By reverting z l to the size of |K| × B × C × R f , we obtain the output I = {f k |k ∈ K} of CE as:</p><formula xml:id="formula_3">I = split(r(z l ))<label>(3)</label></formula><p>where r(•) and split(•) are the reshape and split operations, and I is the set of calculated feature representations f k ∈ R B×C×R f which contains multimodal correlations and has the same size as the original input f k .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Modal Attention</head><p>Given the calculated feature representations set I , the weight map m k is generated with the modal attention mechanism. Feature representations extracted from different modalities are expected to have different weights for fusion at the voxel level. Therefore, we introduce a modal-wise and voxel-level softmax function to generate the weight maps from I , as shown in Fig. <ref type="figure" target="#fig_2">3</ref>. We denote the i-th voxel of f k and m k as v i k and m i k , respectively. e is the natural logarithm. The value of weight map m k can be defined as:</p><formula xml:id="formula_4">m i k = e v i k j∈K e v i j (<label>4</label></formula><formula xml:id="formula_5">)</formula><p>By element-wise multiplying input feature map f k with the corresponding weight map m k and summing all the modalities, we can obtain a fused feature map f s as:</p><formula xml:id="formula_6">f s = k∈K f k • m k (5)</formula><p>Since the sum of m i 1 , . . . m i |K| is 1, the value range of fused feature representation f s remains stable to improve the robustness for variable input modalities. Moreover, the relative sizes of v i 1 , . . . v i |K| (contain the latent multi-modal correlations learned from the CE module) are retained in the corresponding weights. In particular, when only one modality is available, all the values of the weight map are 1, which means f s = f k (k ∈ K, |K| = 1). In this case, the input feature representation remains unchanged. It enables the backbone network (the upstream processing model and the downstream decision model) to enhance its capability to encode and decode information from different modalities rather than relying on a particular one. It is crucial for variable multimodal data analysis.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>SHL2019. The SHL (Sussex-Huawei Locomotion) Challenge 2019 <ref type="bibr" target="#b21">[22]</ref> dataset provides data from seven sensors of a smartphone to recognize eight modes of locomotion and transportation (activities), including still, walking, run, bike, car, bus, train, and subway. The sensor data are collected from smartphones of a   person with four locations, including the bag, trousers front pocket, breast pocket and hand. Each location is called "Bag", "Hips", "Torso", and "Hand", respectively. Data acquired from the locations except the "Hand" are given in the train subset, while the validation subset provides the data of all four locations. In the test subset, only unlabeled "Hand" location data are available.</p><p>BraTS2020. The BraTS2020 <ref type="bibr" target="#b0">[1]</ref> dataset provide four modality scans: T1ce, T1, T2, FLAIR for brain tumor segmentation. It contains 369 subjects. To better represent the clinical application tasks, there are three mutually inclusive tumor regions: the enhancing tumor (ET), the tumor core (TC), and the whole tumor (WT) <ref type="bibr" target="#b0">[1]</ref>. We select 70% data as training data, while 10% and 20% as validation and test data respectively. To prevent overfitting, two data augmentation techniques (randomly flip the axes and rotate with a random angle in [-10 • , 10 • ]) are applied during training. We apply z-score normalization <ref type="bibr" target="#b14">[15]</ref> to the volumes individually and randomly crop 128×128×128 patches as inputs to the networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Baseline Methods</head><p>EmbraceNet. In the experiments on activity recognition, we compare SFusion with EmbraceNet <ref type="bibr" target="#b8">[9]</ref>, which employs a selection strategy (shown in Fig. <ref type="figure" target="#fig_0">1 (b)</ref>) by generating feature masks (r 1 , r 2 , . . . , r 7 ) with the rule of giving equal chances to all available modalities during each value selection. For a fair comparison, as shown in Fig. <ref type="figure" target="#fig_3">4</ref> (a), we adopt the same processing (P) and decision (D) model as used in <ref type="bibr" target="#b8">[9]</ref>. We obtain the performance of our fusion strategy by replacing EmbraceNet with SFusion. Following <ref type="bibr" target="#b8">[9]</ref> setting, the batch size is set to 8. A crossentropy loss and the Adam optimization method <ref type="bibr" target="#b15">[16]</ref> with β 1 = 0.9, β 2 = 0.999 are employed. The learning rate is initially set to 1 × 10 -4 and reduced by a factor of 2 at every 1 × 10 5 steps. A total of 5 × 10 5 training steps are executed.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>GFF.</head><p>In the experiments on brain tumor segmentation, we compare SFusion with a gated feature fusion block (GFF) <ref type="bibr" target="#b4">[5]</ref>, which belongs to the convolution strategy (shown in Fig. <ref type="figure" target="#fig_0">1(c)</ref>). As shown in Fig. <ref type="figure" target="#fig_3">4</ref> (b), a feature disentanglement architecture is employed. Multimodal medical images are decomposed into the modality-invariant content and the modality-specific appearance code by encoders E c and E a , respectively. The content codes (e.g., c 2 and c 3 , shown in Fig. <ref type="figure" target="#fig_3">4</ref> (b)) of missing modalities are simulated with zero values. Then, all content codes are fused into a shared representation c s by GFF. Given c s , the tumor segmentation results are generated by the decoder D s . For a fair comparison, we adopt the same encoders (E c i and E a i ) and decoders (D s and D r i ) as used in <ref type="bibr" target="#b4">[5]</ref>. We obtain the performance of our fusion strategy by replacing GFF with SFusion and removing the zero-padding operation. The training max_epoch is set to 200. Following <ref type="bibr" target="#b4">[5]</ref> setting, the batch size is set to 1. Adam <ref type="bibr" target="#b15">[16]</ref> is utilized with a learning rate of 1 × 10 -4 and progressively multiplies it by (1 -epoch / max_epoch) 0.9 . Losses of L KL , L rec and L seg are employed as <ref type="bibr" target="#b4">[5]</ref>. During training, to simulate real missing modalities scenarios, each training patient's data is fixed to one of 15 possible missing cases. For a comprehensive evaluation, we test the performance of all 15 cases for each test patient.</p><p>Our implementations are on an NVIDIA RTX 3090(24G) with PyTorch 1.8.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Activity recognition. We compare SFusion with the EmbraceNet <ref type="bibr" target="#b8">[9]</ref> on SHL2019. As shown in Table <ref type="table" target="#tab_0">1</ref>, we also compare the results of other fusion methods, which use the same processing (P) model and decision (D) model as <ref type="bibr" target="#b8">[9]</ref>. <ref type="bibr" target="#b0">(1)</ref> In the early fusion method, the data of seven sensors are concatenated along their  C dimension. The prediction results are obtained by inputting the concatenation into a network of P and D in series. (2) For the intermediate fusion approach, the EmbraceNet is replaced with the concatenation of feature representations along their R f dimension. (3) In the late fusion method, an independent network of P and D in series is trained for each sensor, and then the decision is made from the averaged softmax outputs. <ref type="bibr" target="#b3">(4)</ref> In the confidence fusion model, the EmbraceNet is replaced with the confidence calculation and fusion layers in <ref type="bibr" target="#b6">[7]</ref>. The results of different fusion methods on the validation data are presented in Table <ref type="table" target="#tab_0">1</ref>. Our proposed SFusion outperforms the EmbraceNet in all four smartphone locations and improves the overall accuracy from 65.22% to 67.47%.</p><p>Brain Tumor Segmentation. The quantitative segmentation results are shown in Table <ref type="table" target="#tab_1">2</ref>. Compared with GFF, the network integrated with SFusion achieves better average performance over the 15 possible combinations in all three tasks. In particular, SFusion outperforms GFF for all the possible combinations in TC segmentation. Overall, SFusion achieves better Dice scores in most situations (13,15,13 situations for WT, TC and ET segmentation, respectively). In addition, we conduct the statistical significance analysis. The number of situations with significant improvement are 6, 10 and 8 for WT, TC and ET, respectively. It is provided by a Wilcoxon test (p-values &lt; 0.05). Besides, we find no significant drop in performance caused by SFusion. In addition, we compare the SF_FDGF (where GFF is replaced by SFusion) with current state-of-the-art methods. Table <ref type="table" target="#tab_3">4</ref> presents the average dice of 15 situations. For a fair comparison, we conduct experiments on BraTS2018, adopt the same data partition as <ref type="bibr" target="#b23">[24]</ref>, and cite the results in <ref type="bibr" target="#b23">[24]</ref>. SF_FDGF achieves the best performance and verifies the effectiveness of the SFusion.</p><p>Ablation Experiments. The correlation extraction (CE) module and the modal attention (MA) module are two key components in SFusion. We evaluate the SFusion without CE and MA, respectively. SFusion without CE denotes that feature representations are directly fed into the MA module (Fig. <ref type="figure" target="#fig_1">2</ref>). SFusion without MA means that we directly add the calculated feature representations (I ) up to get the fusion result. As shown in Table <ref type="table" target="#tab_0">1</ref>, we can find that SFusion without CE performs worse than other methods. Compared with EmbraceNet, the improvement of SFusion without MA is inconspicuous. As shown in Table . 3, we present the averaged performance over the 15 possible combinations on BraTS2020. It shows that both the CE and MA module lead to performance improvement across all the tumor regions. Therefore, ablation experiments on two different tasks show that both CE and MA play an important role in SFusion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a self-attention based N-to-One fusion block SFusion to tackle the problem of multimodal missing modalities fusion. As a data-dependent fusion strategy, SFusion can automatically learn the latent correlations between different modalities and builds a shared feature representation. The entire fusion process is based on available data without simulating missing modalities. In addition, SFusion has compatibility with any kind of upstream processing model and downstream decision model, making it universally applicable to different tasks. We show that it can be integrated into existing backbone networks by replacing their fusion operation or block to improve activity recognition and achieve brain tumor segmentation performance. In particular, by integrating with SFusion, SF_FDGF achieves the state-of-the-art performance. In the future, we will explore other tasks related to variable multimodal fusion with SFusion.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Fusion strategies. * denotes the value is automatically learned.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The illustration of SFusion. R f : L or H×W or D×H×W (shape of feature representation); T = L•|K| or H•W•|K| or D•H•W•|K| (number of tokens).</figDesc><graphic coords="4,57,81,54,11,308,23,128,41" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The illustration of modal attention mechanism.</figDesc><graphic coords="5,59,55,493,94,153,49,57,40" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. (a) Activity recognition with EmbraceNet; (b) Bran tumor segmentation with GFF. (B × C × R f ) is given, where B, C and R f denotes the batch size, channels and data shape, respectively.</figDesc><graphic coords="6,67,29,53,78,289,96,149,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Evaluation on SHL2019. w/o means without. † denotes results from<ref type="bibr" target="#b8">[9]</ref>.</figDesc><table><row><cell>Accuracy(%)</cell><cell>Bag</cell><cell cols="4">Hips Torso Hand All</cell></row><row><cell>Early †</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>46.73</cell></row><row><cell>Intermediate †</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>63.87</cell></row><row><cell>Late †</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>63.85</cell></row><row><cell>Confidence †[7]</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell>63.60</cell></row></table><note><p><p><p>EmbraceNet †</p><ref type="bibr" target="#b8">[9]</ref> </p>63.68 67.98 81.58 47.63 65.22 SFusion 67.41 68.91 85.22 48.35 67.47 SFusion w/o CE 56.82 63.14 74.69 46.70 60.33 SFusion w/o MA 65.01 67.95 83.49 47.52 65.99</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Dice(%) performance for MRI modalities being either absent (•) or present (•). * denotes significant improvement provided by a Wilcoxon test (p-values &lt; 0.05).</figDesc><table><row><cell cols="2">Modalities</cell><cell></cell><cell></cell><cell>WT</cell><cell></cell><cell>TC</cell><cell>ET</cell></row><row><cell cols="5">T1ce T1 T2 Flair GFF</cell><cell cols="3">SFusion GFF SFusion GFF</cell><cell>SFusion</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="4">68.24 69.75* 73.27 75.63* 69.30 71.94*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="4">64.45 69.11* 46.93 53.86* 23.74 29.71*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">79.78 79.61</cell><cell cols="2">58.27 61.99* 36.13 35.87</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">81.82 83.97</cell><cell>50.53 52.84</cell><cell>29.50 34.40*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">74.99 75.30</cell><cell cols="2">75.89 80.35* 72.09 74.90*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="4">83.93 84.27* 79.55 81.48* 72.87 74.74*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">87.34 87.32</cell><cell>79.01 79.06</cell><cell>74.89 75.82</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">81.76 81.78</cell><cell cols="2">59.75 66.67* 36.50 40.38*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">85.86 86.39</cell><cell>61.92 62.31</cell><cell>37.52 38.22</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="4">86.99 87.50* 61.92 66.38* 38.94 41.46*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">84.48 84.59</cell><cell cols="2">79.83 82.32* 73.74 74.78</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">88.03 88.04</cell><cell cols="2">80.50 82.04* 74.53 75.44</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="3">88.75 89.11* 81.60 82.06</cell><cell>74.43 74.91</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="4">86.84 87.63* 65.38 68.76* 40.90 43.53*</cell></row><row><cell>•</cell><cell>•</cell><cell>•</cell><cell>•</cell><cell cols="2">88.65 88.93</cell><cell>81.29 82.18</cell><cell>74.55 73.76</cell></row><row><cell cols="2">Average</cell><cell></cell><cell></cell><cell cols="4">82.13 82.89* 69.04 71.86* 55.31 57.32*</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation experiments.</figDesc><table><row><cell cols="4">Dice(%) w/o CE w/o MA SFusion</cell></row><row><cell>WT</cell><cell>82.42</cell><cell>82.76</cell><cell>82.89</cell></row><row><cell>TC</cell><cell>70.39</cell><cell>70.93</cell><cell>71.86</cell></row><row><cell>ET</cell><cell>55.65</cell><cell>55.56</cell><cell>57.32</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>† denotes results from<ref type="bibr" target="#b23">[24]</ref>.</figDesc><table><row><cell>Dice(%)</cell><cell>WT TC</cell><cell>ET</cell><cell>Overall</cell></row><row><cell cols="4">U-HVED † [10] 75.8 63.2 40.7 59.9</cell></row><row><cell>ACNet † [23]</cell><cell cols="3">52.5 46.9 41.8 47.1</cell></row><row><cell>D 2 -Net † [24]</cell><cell cols="3">76.2 66.5 42.3 61.7</cell></row><row><cell>SF_FDGF</cell><cell cols="3">82.1 69.2 54.9 68.7</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work is supported in part by the <rs type="funder">Guangdong Provincial Natural Science Foundation</rs> (<rs type="grantNumber">2023A1515011431</rs>), the <rs type="funder">Guangzhou Science and Technology Planning Project</rs> (<rs type="grantNumber">202201010092</rs>), the <rs type="funder">National Natural Science Foundation of China</rs> (<rs type="grantNumber">72074105</rs>), <rs type="grantNumber">NSF-1850492</rs> and <rs type="grantNumber">NSF-2045804</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_geS75Xv">
+					<idno type="grant-number">2023A1515011431</idno>
+				</org>
+				<org type="funding" xml:id="_jY7e5j8">
+					<idno type="grant-number">202201010092</idno>
+				</org>
+				<org type="funding" xml:id="_gMgCmkw">
+					<idno type="grant-number">72074105</idno>
+				</org>
+				<org type="funding" xml:id="_MrxjfPX">
+					<idno type="grant-number">NSF-1850492</idno>
+				</org>
+				<org type="funding" xml:id="_FyBsRVB">
+					<idno type="grant-number">NSF-2045804</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">MICCAI Brain Tumor Segmentation (BraTS) 2020 Benchmark: Prediction of Survival and Pseudoprogression</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Menze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kalpathy-Cramer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Farahani</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.3718904</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.3718904" />
+		<imprint>
+			<date type="published" when="2020-03">Mar 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Multimodal mr synthesis via modality-invariant latent representation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chartsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Joyce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">V</forename><surname>Giuffrida</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Tsaftaris</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2017.2764326</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2017.2764326" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="803" to="814" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The opportunity challenge: a benchmark database for onbody sensor-based activity recognition</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chavarriaga</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn. Lett</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">15</biblScope>
+			<biblScope unit="page" from="2033" to="2042" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Utd-mhad: a multimodal dataset for human action recognition utilizing a depth camera and a wearable inertial sensor</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jafari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kehtarnavaz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2015 IEEE International conference on image processing (ICIP)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Robust multimodal brain tumor segmentation via feature disentanglement and gated fusion</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32248-9_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32248-9_50" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11766</biblScope>
+			<biblScope unit="page" from="447" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Learning with privileged multimodal knowledge for unimodal segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2021.3119385</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2021.3119385" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Medical Imaging</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Confidence-based deep multimodal fusion for activity recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2018 ACM International Joint Conference and 2018 International Symposium on Pervasive and Ubiquitous Computing and Wearable Computers</title>
+		<meeting>the 2018 ACM International Joint Conference and 2018 International Symposium on Pervasive and Ubiquitous Computing and Wearable Computers</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="1548" to="1556" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Embracenet: a robust deep learning architecture for multimodal classification</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Information Fusion</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="259" to="270" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Embracenet for activity: a deep multimodal fusion architecture for activity recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Adjunct Proceedings of the 2019 ACM International Joint Conference on Pervasive and Ubiquitous Computing and Proceedings of the 2019 ACM International Symposium on Wearable Computers</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="693" to="698" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Hetero-modal variational encoder-decoder for joint modality completion and segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Dorent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Joutard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Modat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_9" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="74" to="82" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Body mri artifacts in clinical practice: a physicist&apos;s and radiologist&apos;s perspective</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Graves</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Mitchell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="269" to="287" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Deep learning-based image segmentation on multimodal medical imaging</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Radiation Plasma Med. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="162" to="169" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">HeMIS: hetero-modal image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Havaei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Guizard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chapados</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_54</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-8_54" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="469" to="477" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Knowledge distillation from multi-modal to mono-modal segmentation networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_75</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8_75" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="772" to="781" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">nnu-net: self-adapting framework for u-net-based medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1809.10486</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">A unified representation network for segmentation with missing modalities</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sjölund</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.06683</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Multimodal deep learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ngiam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Representation disentanglement for multi-modal brain MRI analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Adeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Pohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zaharchuk</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-78191-0_25</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-78191-0_25" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2021</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Feragen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Sommer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Nielsen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12729</biblScope>
+			<biblScope unit="page" from="321" to="333" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Multi-domain image completion for random missing input data</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2020.3046444</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2020.3046444" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1113" to="1122" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Garnett</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Enabling reproducible research in sensor-based transportation mode recognition with the sussex-huawei dataset</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gjoreski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ciliberto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mekki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Valentin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Roggen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="10870" to="10891" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">ACN: adversarial co-training network for brain tumor segmentation with missing modalities</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87234-2_39</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87234-2_39" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12907</biblScope>
+			<biblScope unit="page" from="410" to="420" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">D2-net: dual disentanglement network for brain tumor segmentation with missing modalities</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">Y</forename><surname>Woo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Latent correlation representation learning for brain tumor segmentation with missing mri modalities</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Canu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ruan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="4263" to="4274" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

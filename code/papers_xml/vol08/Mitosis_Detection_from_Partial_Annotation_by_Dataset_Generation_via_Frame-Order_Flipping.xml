@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Mitosis Detection from Partial Annotation by Dataset Generation via Frame-Order Flipping</title>
+				<funder ref="#_XynAFjx">
+					<orgName type="full">JSPS KAKENHI</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Japan</orgName>
+				</funder>
+				<funder ref="#_RdrvVzj">
+					<orgName type="full">JST ACT-X</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Kazuya</forename><surname>Nishimura</surname></persName>
+							<email>kazuya.nishimura@humna.ait.kyushu-u.ac.jp</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Kyushu University</orgName>
+								<address>
+									<settlement>Fukuoka</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ami</forename><surname>Katanaya</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Kyoto University</orgName>
+								<address>
+									<settlement>Kyoto</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shinichiro</forename><surname>Chuma</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Kyoto University</orgName>
+								<address>
+									<settlement>Kyoto</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ryoma</forename><surname>Bise</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Kyushu University</orgName>
+								<address>
+									<settlement>Fukuoka</settlement>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Mitosis Detection from Partial Annotation by Dataset Generation via Frame-Order Flipping</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">2FB89B9758CFE9183844D14DF309F2D4</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_47</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T11:55+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Partial annotation</term>
+					<term>Mitosis detection</term>
+					<term>Fluorescent image</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Detection of mitosis events plays an important role in biomedical research. Deep-learning-based mitosis detection methods have achieved outstanding performance with a certain amount of labeled data. However, these methods require annotations for each imaging condition. Collecting labeled data involves time-consuming human labor. In this paper, we propose a mitosis detection method that can be trained with partially annotated sequences. The base idea is to generate a fully labeled dataset from the partial labels and train a mitosis detection model with the generated dataset. First, we generate an image pair not containing mitosis events by frame-order flipping. Then, we paste mitosis events to the image pair by alpha-blending pasting and generate a fully labeled dataset. We demonstrate the performance of our method on four datasets, and we confirm that our method outperforms other comparisons which use partially labeled sequences. Code is available at https:// github.com/naivete5656/MDPAFOF.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Fluorescent microscopy is widely used to capture cell nuclei behavior. Mitosis detection is the task of detecting the moment of cell division from time-lapse images (the dotted circles in Fig. <ref type="figure">1</ref>). Mitosis detection from fluorescent sequences is important in biological research, medical diagnosis, and drug development.</p><p>Conventionally tracking-based methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b20">21]</ref> and tracking-free methods <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref> have been proposed for mitosis detection. Recently, deep-learningbased mitosis-detection methods have achieved outstanding performance <ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b17">18]</ref>. However, training deep-learning methods require a certain amount of annotation for each imaging condition, such as types of cells and microscopy and the density of cells. Collecting a sufficient number of labeled data covering the variability of cell type and cell density is time-consuming and labor-intensive.</p><p>Unlike cell detection and segmentation, which aims to recognize objects from a single image, mitosis detection aims to identify events from time series of images. Thus, it is necessary to observe differences between multiple frames to make mitosis events annotation. Comprehensively annotating mitosis events is time-consuming, and annotators may be missed mitosis events. Thus, we must carefully review the annotations to ensure that they are comprehensive. Partial annotation has been used as a way to reduce the annotation costs of cell and object detection <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b21">22]</ref>. Figure <ref type="figure">1</ref> shows an example of partially annotated frames. Some mitosis events are annotated (a red-dotted circle), and others are not (light-blue-dotted circles). The annotation costs are low because the annotator only needs to plot a few mitotic positions. In addition, this style of annotation allows for missing annotations. Therefore, it would be effective for mitosis detection.</p><p>Unlike supervised annotation, partial annotation can not treat unannotated areas as regions not containing mitosis events since the regions may contain mitosis events (Fig. <ref type="figure">1</ref>). The regions naturally affect the training in the partial annotation setting. To avoid the effect of unlabeled objects in unlabeled regions, Qu et al. <ref type="bibr" target="#b14">[15]</ref> proposed to use a Gaussian masked mean squared loss, which calculates the loss around the annotated regions. The loss function works in tasks in which foreground and background features have clearly different appearances, such as in cell detection. However, it does not work on mitosis detection since the appearance of several non-mitotic cells appears similar to mitosis cells; it produces many false positives.</p><p>In this paper, we propose a cell-mitosis detection method for fluorescent time-lapse images by generating a fully labeled dataset from partially annotated sequences. We achieve mitosis detection training in a mitosis detection model with the generated dataset. To generate the fully labeled dataset, we should consider two problems: (1) no label indicating regions not containing mitosis cells and (2) few mitosis annotations. We can easily generate the regions not containing mitotic cells by using one image twice. However, such regions do not contribute to identifying mitotic cells and non-mitotic cells since the data do not show natural cell motions. For the training to be effective, the regions not containing mitotic cells should show the natural movements of cells. To generate such regions, we propose frame-order flipping which simply flips the frame order of a consecutive frame pair. As shown in the white rectangles in Fig. <ref type="figure">2</ref>, we can convert a mitosis event to a cell fusion by flipping operation. Hence, the flipped pair is the region not containing mitosis cells. Even though we flipped the frame order, the non-mitotic cells still have natural time-series motion, as shown in the yellow rectangles in Fig. <ref type="figure">2</ref>.</p><p>In addition, we can make the most of a few partial annotations by using copy-and-paste-based techniques. Unlike regular copy-and-paste augmentation <ref type="bibr" target="#b3">[4]</ref> for supervised augmentation of instance segmentations which have object mask annotations, we only have point-level annotations. Thus, we propose to use alpha-blending pasting techniques which naturally blend two images.</p><p>Experiments conducted on four types of fluorescent sequences demonstrate that the proposed method outperforms other methods which use partial labels. Related Work. Some methods used partially labeled data to train model <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b21">22]</ref>. Qu <ref type="bibr" target="#b14">[15]</ref> proposed a Gaussian masked mean squared loss, which calculates the loss around the annotated areas. To more accurately identify negative and positive samples, positive unlabeled learning has been used for object detection <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b21">22]</ref>. These methods have used positive unlabeled learning on candidates detected by using partial annotation to identify whether the candidates are labeled objects or backgrounds. However, since the candidates detected by partial annotation include many false positives, the positive unlabeled learning does not work on mitosis detection. the appearance of the mitosis event and backgrounds in the mitosis detection task, it is difficult to estimate positive prior. These methods could not work on mitosis detection. The positive unlabeled learning requires a positive prior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method: Mitosis Detection with Partial Labels</head><p>Our method aims to detect coordinates and timing (t, x, y) of mitosis events from fluorescent sequences. For training, we use time-lapse images I = {I t } T t=1 and partial labels (a set of annotated mitosis cells). Here, I t denotes an image at frame t, and T is the total number of frames. Our method generates a fully labeled dataset</p><formula xml:id="formula_0">D p = {(I t-1 , I t ), P t } T -1</formula><p>t=1 from time-lapse images I and partial labels and then trains a mitosis detection model f θ with the generated dataset. Here, I t is a generated image, and P t is a set of mitotic coordinates contained in (I t-1 , I t ). Since our method trains the network with partial labels, it can eliminate the costs of checking for missed annotations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Labeled Dataset Generation</head><p>Figure <ref type="figure" target="#fig_1">3</ref> shows an overview of our dataset generation. We randomly pick a pair of consecutive frames (I t-1 , I t ) from time-lapse images I. Since the pair may contain unannotated mitosis events, we forcibly convert the pair into a negative pair (i.e., a pair which does not contain mitosis events) by using frame-order flipping. Next, we paste mitosis events to a generated pair using alpha-blending pasting and obtain a generated pair (I t-1 , I t ). Since we know the pasted location, we can obtain the mitosis locations P t of the generated pair. Negative Pair Generation with Frame-Order Flipping: In this step, we generate a pair not containing mitotic cells by using a simple augmentation-based frame-order flipping. Figure <ref type="figure" target="#fig_1">3</ref> shows an example of the pair images (I t-1 , I t ). The pair may contain mitosis events. If we assume that the pair does not contain mitotic cells, it affects the training of the mitosis detection model f θ . To prevent the pair from containing mitosis events, we flip the frame order and treat the flipped pair (I t , I t-1 ) as a pair of negative.</p><p>Since mitosis is the event that a cell divides into two daughter cells, the mitosis event is transformed into an event in which two cells fuse into one by flipping the order (Fig. <ref type="figure">2</ref>). The flipped event can treat as a non-mitotic event. Note that the motivation behind using frame flipping is to be able to utilize pixels showing the motions of non-mitotic cells negatives by transforming mitosis into other events. Even if the order is flipped, the movements of the non-mitotic cell are still a non-mitotic cell feature, and we consider that these cells are effective for the training of the negative label.</p><p>Mitosis Label Utilization with Alpha-Blending Pasting: Next, we paste mitosis events to the flipped pair by using copy-and-paste techniques in order to utilize the positive labels effectively. Copy and paste augmentation has been used for supervised augmentation of instance segmentation <ref type="bibr" target="#b3">[4]</ref>. Unlike instance segmentation with object masks, we only have locations (t, x, y). A simple solution is to crop images around the mitosis position and copy and paste them to the target image, like in CutMix <ref type="bibr" target="#b22">[23]</ref>. However, the cropped image naturally contains surrounding objects, and the generated image appears unnatural. Unnatural images cause the detection network to make biased predictions and reduce generalization performance. To avoid this problem, we propose alpha-blending pasting with a Gaussian blending mask. We blend two images by leaving the pixel value in the center and blurring the vicinity of the edge of the image. First, we crop the image around the positive annotations and obtain a set of cropped pair</p><formula xml:id="formula_1">C = {(C i t-1 , C i t )} N i=0 and initialize (I t-1 , I t ) = (I t , I t-1</formula><p>) and P t = {}. Here, N is the total number of partial annotations, while C i t-1 and C i t are images before and after the mitosis of the i-th annotation (Fig. <ref type="figure" target="#fig_1">3</ref>). Define I t (l j ), I t-1 (l j ) as a cropped pair image at the j-th random spatial location l j . We crop each image centered at l j to a size that is the same as that of C i t . We update the randomly selected patch I t (l j ), I t-1 (l j ) by blending a randomly selected cropped pair (C i t-1 , C i t ) with the following formula: I t (l j ) = (1α) I t (l j ) + α C i t , where α is a Gaussian blending mask (Fig. <ref type="figure" target="#fig_2">4</ref>). We generate the blending mask by blurring a binary mask around the annotation with a Gaussian filter. We use a random sigma value for the Gaussian filter. Then, we add the paste location l j to the set P t . We repeat this process random k times.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Mitosis Detection with Generated Dataset</head><p>We modified a heatmap-based cell detection method <ref type="bibr" target="#b12">[13]</ref> to work as a mitosis detection method. Figure <ref type="figure">5</ref> is an illustration of our mitosis detection model. Given two consecutive frames (I t-1 , I t ), the network output heatmap Ĥt . We treat the channel axis as the time axis for the input. The first channel is I t-1 , and the second is I t .</p><p>First, we generate individual heatmaps H j t for each pasted coordinate l j = (l j x , l j y ). H j t is defined as H j t (p x , p y ) = exp -</p><formula xml:id="formula_2">(l j x -px) 2 +(l j y -py) 2 σ 2</formula><p>, where p x and p y are the coordinates of H j t and σ is a hyper parameter that controls the spread of the peak. The ground truth of the heatmap at t is generated by taking the maximum through the individual heatmaps, H t = max j (H j t ) (H t in Fig. <ref type="figure">5</ref>). The network is trained with the mean square error loss between the ground truth H t and the output of the network Ĥt . We can find the mitosis position by finding a local maximum of the heatmap. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset: We evaluated our method on four datasets. The first set is HeLa <ref type="bibr" target="#b19">[20]</ref>, in which live cell images of HeLa cells expressing H2B-GFP were captured with 1100 × 700 resolution <ref type="bibr" target="#b19">[20]</ref> <ref type="foot" target="#foot_0">1</ref> . Each sequence contains 92 fluorescent images with 141 mitosis events on average. The second set is ES, in which live cell images of mouse embryonic stem cells expressing H2B-mCherry were captured with 1024 × 1024 resolution. Each sequence contains 41 fluorescent images with 33 mitosis events on average. The third set is ES-D in which mouse embryonic stem cells expressing H2B-mCherry were induced to differentiate and used to capture live cell images. Each sequence contains 61 fluorescent images with 18 on average events on average. The fourth set is Fib, in which live cell images of mouse fibroblast cells expressing H2B-mCherry were captured with 1024 × 1024 resolution. Each sequence contains 42 fluorescent images with 11 mitosis events on average. Each dataset consists of four sequences of images. We performed four-fold cross-validation in which two sequences were used as training data, one as validation data, and one as test data. As shown in Fig. <ref type="figure">6</ref>, the appearance and density are different depending on the dataset.</p><p>Implementation Details: We implemented our method within the Pytorch framework <ref type="bibr" target="#b13">[14]</ref> and used a UNet-based architecture <ref type="bibr" target="#b15">[16]</ref> for the mitosis-detection network. The model was trained with the Adam optimizer with a learning rate of 1e-3. σ, which controls the spread of the heatmap, was 6. The cropping size of the positive annotations was 40 pixels. We randomly change the number of pasting operations k between 1 and 10. We used random flipping, random cropping, and brightness change for the augmentation. Evaluation Metrics: We evaluated our method using the F1 score <ref type="bibr" target="#b17">[18]</ref>, which is widely used in mitosis detection. Given ground-truth coordinates and detected coordinates, we performed one-by-one matching. If the distance of the matched pair was within spatially 15 pixels and temporally 6, we associated the closest coordinate pairs. We treated the matched pair as true positives (TP), unassociated coordinates as false positives (FP), and unassociated ground-truth coordinates as false negatives (FN).</p><p>Comparisons: We conducted four comparisons that involved training the model with partially labeled data. For the first method, we trained the model by treating unlabeled pixels as non-mitosis ones (Baseline <ref type="bibr" target="#b12">[13]</ref>). The second method used the Gaussian masked loss (GM <ref type="bibr" target="#b14">[15]</ref>). The masked loss was calculated on the masked pixels around the positive-label pixels. Thus, the method ignored unlabeled pixels. The third method used positive unlabeled learning to identify mitosis from candidates obtained by the detection model trained with the masked loss (PU <ref type="bibr" target="#b21">[22]</ref>). The fourth method generated pseudo-labels from the results of positive unlabeled learning and retrained the detection model with the pseudo-label (PU-I <ref type="bibr" target="#b1">[2]</ref>).</p><p>In Table <ref type="table" target="#tab_0">1</ref>, we compared our method with previous methods in one and fiveshot settings. We used N samples per sequence in the N-shot settings. For a robust comparison, we sampled one or five mitosis annotations under five seed conditions and took the average. Overall, our method outperformed all compared methods in F1 metric. GM <ref type="bibr" target="#b14">[15]</ref>, PU <ref type="bibr" target="#b21">[22]</ref>, and PU-I <ref type="bibr" target="#b1">[2]</ref> are designed for detecting objects against simple backgrounds. Therefore, these methods are not suited to a mitosis detection task and are inferior to the baseline.</p><p>The baseline <ref type="bibr" target="#b12">[13]</ref> treats unlabeled pixels as non-mitosis cell pixels. In the partially labeled setting, unlabeled pixels contain unannotated mitosis events, and unannotated mitosis affects performance. Unlike cell detection, mitosis detection requires identifying mitosis events from various non-mitotic cell motions, including motions that appear mitotic appearances. Although GM <ref type="bibr" target="#b14">[15]</ref> can ignore unlabeled mitosis pixels with the masked loss, it is difficult to identify such nonmitosis motions. Therefore, GM estimates produce many false positives. PU <ref type="bibr" target="#b21">[22]</ref> uses positive unlabeled learning to eliminate false positives from candidates obtained from the detection results with partial labels. However, positive unla- beled learning requires a positive prior in the candidates and a certain amount of randomly sampled positive samples. Since the candidates contain many false positives, the positive prior is difficult to estimate. In addition, there is no guarantee that positive unlabeled learning can work correctly with the selected Nshot annotations. Moreover, since positive unlabeled learning does not work in the mitosis detection task, PU-I <ref type="bibr" target="#b1">[2]</ref> can not select accurate pseudo labels. Unlike these methods, our method can estimate mitosis events accurately. Since our method generates a fully labeled dataset from a partial label, it effectively uses a few partial annotations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Effectiveness of Each Module:</head><p>We performed an ablation study on the HeLa dataset to investigate the effectiveness of the proposed module. We used random augmentation (i.e., random elastic transformation <ref type="bibr" target="#b16">[17]</ref>, brightness change, and gaussian noise) instead of using frame-order flipping (FOF). We generated I aug t by augmenting I t and input the pair (I t , I aug t ) to the network. In the w/o ABP setting, we directly pasted cropped images on the target image as in CutMix <ref type="bibr" target="#b22">[23]</ref>. Table <ref type="table" target="#tab_1">2</ref> demonstrates that the proposed modules improve mitosis detection performance. Figure <ref type="figure">8</ref> shows examples of the estimation results for each condition. Without the FOF setting, the detection model estimates a high value for all moving cells, leading to over-detection. Without the ABP setting, the detection model overfits the directly pasted image. The directly pasted image tends to include unnatural boundaries on the edge, leading to missed detections in real images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Robustness Against Missing Annotations:</head><p>We confirmed the robustness of the proposed method against missing annotations on the ES dataset. We changed the missing annotation rate from 0% to 30%. A comparison with the supervised method in terms of F1-score is shown in Fig. <ref type="figure">7</ref>. The performance of the supervised method deteriorates as the percentage of missing labels increases, whereas the performance of the proposed method remains steady. Since our method flips the frame order, we can avoid the effects of missing annotations.</p><p>Appearance of Generated Dataset: Fig. <ref type="figure">9</ref> shows an example of the generated image pair. The cropped mitosis image pairs were pasted on the red-dotted circle. It can be seen that the borders of the original image and the pasted image have been synthesized very naturally.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We proposed a mitosis detection method using partially labeled sequences with frame-order flipping and alpha-blending pasting. Our frame-order flipping transforms unlabeled data into non-mitosis labeled data through a simple flipping operation. Moreover, we generate various positive labels with a few positive labels by using alpha-blending pasting. Unlike directly using copy-and-paste, our method generates a natural image. Experiments demonstrated that our method outperforms other methods that use partially annotated sequences on four fluorescent microscopy images.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .Fig. 2 .</head><label>12</label><figDesc>Fig. 1. Example of partially labeled frames. The mitosis shown in the reddotted circle is annotated, and the mitoses shown in the light-blue-dotted circles are not annotated. (Color figure online)</figDesc><graphic coords="2,42,21,174,59,149,14,58,81" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Overview of dataset generation.</figDesc><graphic coords="3,72,48,63,08,302,68,94,15" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Illustration of alpha-blending pasting.</figDesc><graphic coords="4,65,31,100,25,293,80,54,10" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 5 .Fig. 6 .</head><label>56</label><figDesc>Fig. 5. Cell mitosis detection model. Fig. 6. Example of images in datasets. (a) HeLa, (b) ES, (c) ES-D, (d) Fib.</figDesc><graphic coords="5,238,65,54,38,151,36,81,34" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 8 .Fig. 9 .</head><label>89</label><figDesc>Fig. 8. Example of estimation results. Red dotted circles indicate mitosis events. (Color figure online)</figDesc><graphic coords="8,39,39,70,82,155,29,105,16" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative evaluation results (F1-score).</figDesc><table><row><cell>Method</cell><cell>1-shot</cell><cell></cell><cell></cell><cell>5-shot</cell><cell></cell></row><row><cell></cell><cell>HeLa ES</cell><cell>ES-D Fib</cell><cell>Ave</cell><cell>HeLa ES</cell><cell>ES-D Fib</cell><cell>Ave</cell></row><row><cell cols="7">Baseline [13] 0.356 0.581 0.06 0.235 0.308 0.591 0.756 0.277 0.210 0.459</cell></row><row><cell>GM [15]</cell><cell cols="6">0.315 0.303 0.057 0.119 0.199 0.501 0.523 0.123 0.230 0.344</cell></row><row><cell>PU [22]</cell><cell cols="6">0.030 0.095 0.012 0.053 0.048 0.463 0.538 0.375 0.224 0.400</cell></row><row><cell>PU-I [2]</cell><cell cols="6">0.499 0.177 0.035 0.115 0.207 0.474 0.420 0.037 0.141 0.268</cell></row><row><cell>Ours</cell><cell cols="6">0.593 0.740 0.439 0.440 0.553 0.795 0.843 0.628 0.451 0.610</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation study. FOF: frameorder flipping, ABP: alpha-blending pasting.</figDesc><table><row><cell>Method</cell><cell>F1</cell><cell></cell></row><row><cell>w/o FOF</cell><cell>0.570</cell><cell></cell></row><row><cell cols="2">w/o ABP [23] 0.670</cell><cell></cell></row><row><cell>Ours</cell><cell>0.795</cell><cell>Fig. 7. Robustness against missing</cell></row><row><cell></cell><cell></cell><cell>annotations.</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>We used the publicly available CTC data-set http://celltrackingchallenge.net/. We only use HeLa since the number of mitosis events in other cells is small.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by <rs type="funder">JSPS KAKENHI</rs> Grant Number <rs type="grantNumber">JP21J21810</rs> and <rs type="funder">JST ACT-X</rs> Grant Number <rs type="grantNumber">JPMJAX21AK</rs>, <rs type="funder">Japan</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_XynAFjx">
+					<idno type="grant-number">JP21J21810</idno>
+				</org>
+				<org type="funding" xml:id="_RdrvVzj">
+					<idno type="grant-number">JPMJAX21AK</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3 47.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Tracking of migrating cells under phase-contrast video microscopy with combined mean-shift processes</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Debeir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Van Ham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Decaestecker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="697" to="711" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Cell detection from imperfect annotation by pseudo label selection using p-classification</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Fujii</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Suehiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nishimura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bise</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="425" to="434" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Mitotic cell recognition with hidden markov models</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Gallardo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ianzini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mackey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sonka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Visualization, Image-Guided Procedures, and Display</title>
+		<imprint>
+			<publisher>SPIE</publisher>
+			<date type="published" when="2004">2004. 2004</date>
+			<biblScope unit="volume">5367</biblScope>
+			<biblScope unit="page" from="661" to="668" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Simple copy-paste is a strong data augmentation method for instance segmentation</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ghiasi</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2918" to="2928" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Fully unsupervised symmetry-based mitosis detection in time-lapse cell microscopy</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gilad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Reyes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lahav</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Riklin Raviv</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">15</biblScope>
+			<biblScope unit="page" from="2644" to="2653" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Automated mitosis detection of stem cell populations in phase-contrast microscopy images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Huh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bise</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kanade</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="586" to="596" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Multi-grained random fields for mitosis identification in time-lapse phase contrast microscopy image sequences</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1699" to="1710" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Sequential saliency guided deep neural network for joint mitosis identification and localization in time-lapse phase contrast microscopy images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">Z</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">T</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inf</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1367" to="1378" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">A hierarchical convolutional neural network for mitosis detection in phase-contrast microscopy images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="685" to="692" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Two-stream bidirectional long short-term memory for mitosis event detection and stage localization in phase-contrast microscopy images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="56" to="64" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">3d convolutional networks-based mitotic event detection in time-lapse phase contrast microscopy image sequences of stem cell populations</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">Z</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">T</forename><surname>Su</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page" from="55" to="62" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Spatial-temporal mitosis detection in phase-contrast microscopy via likelihood map estimation by 3dcnn</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nishimura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bise</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1811" to="1815" />
+		</imprint>
+		<respStmt>
+			<orgName>EMBC</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Weakly supervised cell instance segmentation under various conditions</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nishimura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Watanabe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bise</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">102182</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">PyTorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Weakly supervised deep nuclei segmentation using partial points annotation in histopathology images</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Qu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3655" to="3666" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Best practices for convolutional neural networks applied to visual document analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">Y</forename><surname>Simard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Steinkraus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Platt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICDAR</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Spatio-temporal mitosis detection in time-lapse phase-contrast microscopy image sequences: a benchmark</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">T</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1319" to="1328" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A novel framework for cellular tracking and mitosis detection in dense phase contrast microscopy images</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Thirusittampalam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Hossain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ghita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Whelan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inf</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="642" to="653" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">An objective comparison of cell-tracking algorithms</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ulman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maška</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E</forename><surname>Magnusson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Haubold</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Harder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Matula</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Matula</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Svoboda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Radojevic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1141" to="1152" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Cell segmentation, tracking, and mitosis detection using temporal context</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Mackey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ianzini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gallardo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sonka</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<biblScope unit="page" from="302" to="309" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Object detection as a positive-unlabeled problem</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Carin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>BMVC</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">CutMix: regularization strategy to train strong classifiers with localizable features</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Oh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Choe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yoo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6023" to="6032" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

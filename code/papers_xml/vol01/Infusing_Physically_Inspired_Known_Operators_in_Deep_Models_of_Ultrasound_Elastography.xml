@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Infusing Physically Inspired Known Operators in Deep Models of Ultrasound Elastography</title>
+				<funder ref="#_dvw9asR">
+					<orgName type="full">Natural Sciences and Engineering Research Council of Canada</orgName>
+					<orgName type="abbreviated">NSERC</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Dr. Louis G. Johnson Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ali</forename><surname>K. Z. Tehrani</surname></persName>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Hassan</forename><surname>Rivaz</surname></persName>
+							<email>hrivaz@ece.concordia.ca</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">Concordia University</orgName>
+								<address>
+									<settlement>Montreal</settlement>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Infusing Physically Inspired Known Operators in Deep Models of Ultrasound Elastography</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="467" to="476"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8DA5DDE6E237FBF28C545ECEC9D26CB5</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_45</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-24T12:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The displacement estimation step of Ultrasound Elastography (USE) can be done by optical flow Convolutional Neural Networks (CNN). Even though displacement estimation in USE and computer vision share some challenges, USE displacement estimation has two distinct characteristics that set it apart from the computer vision counterpart: high-frequency nature of RF data, and the physical rules that govern the motion pattern. The high-frequency nature of RF data has been well addressed in recent works by modifying the architecture of the available optical flow CNNs. However, insufficient attention has been placed on the integration of physical laws of deformation into the displacement estimation. In USE, lateral displacement estimation, which is highly required for elasticity and Poisson's ratio imaging, is a more challenging task compared to the axial one since the motion in the lateral direction is limited, and the sampling frequency is much lower than the axial one. Recently, Physically Inspired ConstrainT for Unsupervised Regularized Elastography (PICTURE) has been introduced which incorporates the physical laws of deformation by introducing a regularized loss function. PICTURE tries to limit the range of the lateral displacement by the feasible range of Poisson's ratio and the estimated high-quality axial displacement. Despite the improvement, the regularization was only applied during the training phase. Furthermore, only a feasible range for Poisson's ratio was enforced. We exploit the concept of known operators to incorporate iterative refinement optimization methods into the network architecture so that the network is forced to remain within the physically plausible displacement manifold. The refinement optimization methods are embedded into the different pyramid levels of the network architecture to improve the estimate. Our results on experimental phantom and in vivo data show that the proposed method substantially improves the estimated displacements.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Ultrasound Elastography (USE) provides information related to the stiffness of the tissue. Ultrasound (US) data before and after the tissue deformation (which can be caused by an external or internal force) are collected and compared to calculate the displacement map, indicating each individual sample's relative motion. The strain is computed by taking the derivative of the displacement fields. In free-hand palpation, the force is external and applied by the operator by the probe <ref type="bibr" target="#b9">[10]</ref>.</p><p>Convolutional Neural Networks (CNN) have been successfully employed for USE displacement estimation <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b14">15]</ref>. Unsupervised and semi-supervised training methods have been proposed, which enable the networks to use real US images for training <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b16">17]</ref>. The proposed networks have achieved high-quality axial strains. In contrast to axial strain, lateral strain, which is highly required in Poisson's ratio imaging and elasticity reconstruction, has a poor quality due to the low sampling frequency, limited motion and lack of carrier signal in the lateral direction.</p><p>Recently, physically inspired constraint in unsupervised regularized elastography (PICTURE) has been proposed <ref type="bibr" target="#b4">[5]</ref>. This method aims to improve lateral displacement by exploiting the high-quality axial displacement estimation and the relation between the lateral and axial strains defined by the physics of motion. Despite the substantial improvement, the regularization is only applied during the training phase. In addition, only a considerably large feasible range for Poisson's ratio was enforced, thereby providing further opportunities for the network to contravene the laws of physics.</p><p>Known operators, introduced by Maier et al. <ref type="bibr" target="#b6">[7]</ref>, have been widely utilized in deep neural networks. The core idea is that some known operations (for example inversion of a matrix) are embedded inside the networks to simplify the training and improving the generalization ability of the network. The known operator can be viewed as the prior knowledge related to the physics of the problem. Maier et al. investigated known operators in different applications such as computed tomography, magnetic resonance imaging, and vessel segmentation, and showed a substantial reduction in the maximum error bounds <ref type="bibr" target="#b6">[7]</ref>.</p><p>In this paper, we aim to embed two lateral displacement refinement algorithms in the CNNs to improve the lateral strains. The first algorithm limits the range of Effective Poisson's Ratio (EPR) inside the feasible range during the test time. It is important to note that in contrast to <ref type="bibr" target="#b4">[5]</ref>, the EPR range is enforced using the regularization during the training phase and the known operators framework during the test phase; therefore, it is enforced during both training and test phases. The second algorithm employs the refinement method proposed be Gou et al. <ref type="bibr" target="#b1">[2]</ref> which exploits incompressibility constraint to refine the lateral displacement. The network weight and a demo code are publicly available online at http://code.sonography.ai.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Materials and Methods</head><p>In this section, we first provide a brief overview of PICTURE and underlie some differences to this work. We then introduce our method for incorporating known operators into our deep model and outline our unsupervised training technique. We then present the training and test datasets and finish the section by demonstrating the network architecture.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">PICTURE</head><p>Let ε x denote axial (x = 1), lateral (x = 2), and out-of-plane (x = 3) strains. Assuming linear elastic, isotropic, and homogeneous material that can move freely in the lateral direction, the lateral strain can be obtained from the axial strain and the Poisson's ratio by ε 2 = -v × ε. Real tissues are inhomogeneous, and boundary conditions exist; therefore, the lateral strain cannot be directly obtained by the axial strain and the Poisson's ratio alone. In such conditions, EPR, which is defined as v e = -ε22 ε11 can be employed <ref type="bibr" target="#b5">[6]</ref>. EPR is spatially variant, and it is not equal to Poisson's ratio, particularly in the vicinity of inclusion boundaries or within inhomogeneous tissue. Its value tends to converge towards the Poisson's ratio in homogeneous regions, and it has a similar range of Poisson's ratio, i.e., between 0.2 and 0.5 <ref type="bibr" target="#b8">[9]</ref>. In PICTURE, a regularization was defined to exploit this range and the out-of-range EPRs were penalized <ref type="bibr" target="#b4">[5]</ref>. PICTURE loss can be obtained from the following procedure: 1-Detect out-of-range EPRs by:</p><formula xml:id="formula_0">M (i, j) = 0 v emin &lt; v e (i, j) &lt; v emax 1 otherwise (1)</formula><p>where v e is the EPR obtained from the estimated displacements. v emin and v emax are two hyperparameters that specify the minimum and maximum accepted EPR values, which are assumed to be 0.1 and 0.6, respectively.</p><p>2-Penalize the out-of-range lateral strains using:</p><formula xml:id="formula_1">L vd = |(ε 22 + &lt; v e &gt; × S(ε 11 ))| 2 Ve = i,j (1 -M (i,j) )V e (i, j) i,j (1 -M (i,j) )<label>(2)</label></formula><p>where &lt; v e &gt; is the average of EPR values within the feasible range. The operator S denotes stop gradient operation, which is employed to avoid the axial strain being affected by this regularization. It should be noted in contrast to <ref type="bibr" target="#b4">[5]</ref> in which only out-of-range samples were contributing to the loss, in this work, all samples contribute to L vd to reduce the estimation bias.</p><p>3-Smoothness of EPR is considered by:</p><formula xml:id="formula_2">L vs = | ∂v e ∂a | 1 + β × | ∂v e ∂l | 1<label>(3)</label></formula><p>4-PICTURE loss is defined as L V = L vd + λ vs × L vs , where λ vs is the weight of the smoothness loss. PICTURE loss is added to the data and smoothness losses of unsupervised training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Known Operators</head><p>The known operators are added to the network in the inference mode only due to the high computational complexity of unsupervised training (outlined in the next section). We employ two known operators to impose physically known constraints on the lateral displacement.</p><p>The first known operator (we refer to it as Poisson's ratio clipper) limits the EPR to the feasible range of v emin -v emax . Although PICTURE tries to move all EPR values to the feasible range, in <ref type="bibr" target="#b4">[5]</ref>, it was shown that some samples in test time were still outside of the feasible range. Poisson's ratio clipper is an iterative algorithm since the lateral strains are altered by clipping the EPR values and affecting the neighbor samples' strain values.</p><p>The second algorithm employs the incompressibility of the tissue which can be formulated by:</p><formula xml:id="formula_3">ε 1 + ε 2 + ε 3 = 0<label>(4)</label></formula><p>In free-hand palpation, the force is approximately uniaxial (ε 3 ε 2 ); therefore Eq. 4 can be written as:</p><formula xml:id="formula_4">ε 1 + 2 × ε 2 = 0<label>(5)</label></formula><p>Guo et al. enforced incompressibility in an iterative algorithm <ref type="bibr" target="#b1">[2]</ref>. We made a few changes to increase the method's robustness by adding Gaussian filtering and using a hyper-parameter weight in each iteration. It should be noted that the algorithm can be employed for compressible tissues as well, and the incompressibility constraint is employed for the refinement of the obtained displacement. The proposed algorithms are outlined in Algorithm 1 and 2. The network architecture with the known operators is illustrated in Fig. <ref type="figure" target="#fig_2">1</ref>. It is worth highlighting that known operators offer a compelling alternative to regularization. While the latter involves adjusting trained weights based on the training data and keeping them fixed during testing, the former relies on iterative refinement that is adaptable to the test data and does not require any learnable weights.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Unsupervised Training</head><p>We followed a similar unsupervised training approach presented in <ref type="bibr" target="#b4">[5]</ref> for both PICTURE and kPICTURE methods. The loss function can be written as:    where L D denotes photometric loss which is obtained by comparing the precompressed and warped compressed RF data, L S is smoothness loss in both axial and lateral directions. λ S and λ V specify the weights of the smoothness loss and PICTURE loss, respectively.</p><formula xml:id="formula_5">Loss = L D + λ S L S + λ V L V (6)</formula><formula xml:id="formula_6">δ = W l (i, j -1) -2W l (i, j) + W l (i, j + 1) + Wa(i + 1, j + 1) -Wa(i - 1, j) -Wa(i, j -1) + Wa(i -1, j -1) + λ1(W q-1 ref -W q-2 ref ) 5 w q ref = Gauss(w q-1 ref + λ2 × δ) //</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Dataset and Quantitative Metrics</head><p>We use publicly available data collected from a breast phantom (Model 059, CIRS: Tissue Simulation &amp; Phantom Technology, Norfolk, VA) using an Alpinion E-Cube R12 research US machine (Bothell, WA, USA). The center frequency was 8 MHz and the sampling frequency was 40 MHz. The Young's modulus of the experimental phantom was 20 kPa and contains several inclusions with Young's modulus of higher than 40 kPa. This data is available online at http://code.sonography.ai in <ref type="bibr" target="#b15">[16]</ref>.</p><p>In vivo data was collected at Johns Hopkins hospital from patients with liver cancer during open-surgical RF thermal ablation by a research Antares Siemens system using a VF 10-5 linear array with the sampling frequency of 40 MHz and the center frequency of 6.67 MHz. The institutional review board approved the study with the consent of the patients. We selected 600 RF frame pairs of this dataset for the training of the networks.</p><p>Two well-known metrics of Contrast to Noise Ratio (CNR) and Strain Ratio (SR) are utilized to evaluate the compared methods. Two Regions of Interest (ROI) are selected to compute these metrics and they can be defined as <ref type="bibr" target="#b9">[10]</ref>:</p><formula xml:id="formula_7">CN R = 2(s b -s t ) 2 σ b 2 + σ t 2 , SR= s t s b , (<label>7</label></formula><formula xml:id="formula_8">)</formula><p>where the subscript t and b denote the target and background ROIs. The SR is only sensitive to the mean (s X ), while CNR depends on both the mean and the standard deviation (σ X ) of ROIs. For stiff inclusions as the target, higher CNR correlates with better target visibility, and lower SR translates to a higher difference between the target and background strains.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Network Architecture and Training</head><p>We employed MPWC-Net++ <ref type="bibr" target="#b3">[4]</ref> which has been adapted from PWC-Net-irr <ref type="bibr" target="#b2">[3]</ref> for USE. The network architecture with the added known operators is shown in Fig. <ref type="figure" target="#fig_2">1</ref>. The training schedule is similar to <ref type="bibr" target="#b4">[5]</ref>, known operators are not present in the training and only employed during the test phase. The known operators are added in different pyramid levels. This has the advantage of correcting lateral displacements in different pyramid levels. The known operators are added to the last 3 pyramid levels (there are 5 pyramid levels in this network) since the estimate in the first 2 pyramid levels are not accurate enough and adding the known operators would propagate the error. The hyper-parameters' values of unsupervised training and the known operators are given in Supplementary Materials.</p><p>3 Results and Discussions</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Compared Methods</head><p>kPICTURE is compared to the following methods: -OVERWIND, an optimization-based USE method <ref type="bibr" target="#b7">[8]</ref>.</p><p>-The post-processing method of Guo et al. <ref type="bibr" target="#b1">[2]</ref>, which employs the output of OVERWIND as the initial displacement (OVERWIND+ Guo et al.). -PICTURE, which penalize EPR values outside of feasible range <ref type="bibr" target="#b4">[5]</ref>. We decided to compare with PICTURE instead of sPICTURE <ref type="bibr" target="#b12">[13]</ref> (PICTURE with self-supervision) since self-supervision is not related to the physics of motion. To focus on the effectiveness of the known operators, we, therefore, provide a comparison to its corresponding method PICTURE. The proposed known operators can be applied to the network trained with sPICTURE method as well. We made the network's weight trained using both PICTURE and sPIC-TURE methods publicly available online at http://code.sonography.ai. We also employed a similar hyper-parameters and training schedule for experimental phantom and in vivo data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results and Discussions</head><p>The lateral strains of ultrasound RF data collected from three different locations of the tissue-mimicking breast phantom are depicted in Fig. <ref type="figure" target="#fig_3">2</ref>, and the quantitative results are given in Table <ref type="table">1</ref>. Visual inspection of Fig. <ref type="figure" target="#fig_3">2</ref> denotes that the method proposed by Gou et al. <ref type="bibr" target="#b1">[2]</ref> improves the displacement obtained by OVERWIND. For example, the inclusion borders in sample 2 are much more clearly visible. The strain images obtained by kPICTURE have a much higher quality than those of PICTURE. Furthermore, kPICTURE has the highest quality strain images among the compared methods. For example, the inclusion on the bottom in sample 1 (highlighted by the arrows) is clearly visible in kPIC-TURE, a substantial improvement over all other methods that do not even show the inclusion.</p><p>Table <ref type="table">1</ref>. Quantitative results of lateral strains for experimental phantoms. Mean and standard deviation (±) of CNR (higher is better) and SR (lower is better) of lateral strains are reported. The pair marked by † is not statistically significant (p-value &gt; 0.05, using Friedman test). The differences between all other numbers are statistically significant (p-value &lt; 0.05).</p><p>sample <ref type="bibr" target="#b0">(1)</ref> sample ( <ref type="formula" target="#formula_1">2</ref> The histograms of EPR values of OVERWIND+Gou et al., PICTURE and kPICTURE are illustrated for the experimental phantom sample (1). To improve visualization, OVERWIND results are not included because the histogram was similar to that of OVERWIND+Gou et al.. Although PICTURE limits the range of EPR using a regularization (Eq. 2), some EPR values are outside the feasible range. kPICTURE further limits the EPR values; only a small number of samples are outside of the physically plausible range.</p><p>The lateral strain results of in vivo data are depicted in Fig. <ref type="figure" target="#fig_4">3</ref> (b), and axial strains are given in the Supplementary Materials (the quality of axial strains is high in all methods). While PICTURE may produce an adequate strain image, it still contains noisy regions. On the other hand, kPICTURE delivers exceptionally refined strain images and surpasses the other compared methods. The quantitative results given in Table <ref type="table">1</ref> also confirm the visual inspection. The applied known operators and PICTURE assume that the material is isotropic. Their performance on anisotropic materials can be investigated by experiments on anisotropic tissues such as muscles. Furthermore, 3D imaging data can be collected from 2D arrays to have information in out-of-plane direction to be able to formulate known operators and PICTURE loss for anisotropic tissues.</p><p>It should be noted that after incorporating the known operators, the inference time of the network increased from an average of 195 ms to 240 ms (having 10 iterations for algorithm 1 and 100 iterations for algorithm 2).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>In this paper, we proposed to incorporate two known operators inside a USE network. The network is trained by physically inspired constraints specifically designed to tackle the long-standing illusive problem of lateral strain imaging. The proposed operators provide a refinement in each pyramid level of the architecture and substantially improve the lateral strain image quality. Tissue mimicking phantom and in vivo results show that the method substantially outperforms previous displacement estimation method in the lateral direction.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>8 w</head><label>8</label><figDesc>&lt; vemin) ← vemin // Clip epr less than v emin 7 epr(epr &gt; vemax) ← vemax // Clip epr less than vemax ref (:, 2 to end) ← w ref (:, 1 to end -1) + epr × e11 // use the displacement of previous line and the clipped epr to find the displacement of the next line Algorithm 2: Guo et al. refinement [2] employed as known operator input : Lateral displacement w l , Axial displacement wa of size w × h, iteration, λ1, λ2 output: Refined lateral displacement w ref 1 w ref ← w l 2 for q ← 1 to iteration do 3 for i, j in w, h do</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>4</head><label>4</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. MPWC-Net++ architecture with known operators. The network is iterative with 5 pyramid levels. The known operators are added after optical flow estimation, and refine the estimated lateral displacement in each pyramid level (added from level 3) to provide improved lateral displacement to the next pyramid level.</figDesc><graphic coords="5,112,47,375,38,227,74,75,58" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Lateral strains in the experimental phantom obtained by different methods. The target and background windows for calculation of CNR and SR are marked in the B-mode images. The inclusion on the bottom of sample (1) is highlighted in PICTURE and kPICTURE strain images by purple and blue arrows. The samples 1, 2, and 3 are taken from different locations of the tissue-mimicking breast phantom. Axial strains are available in Supplementary Materials. (Color figure online)</figDesc><graphic coords="7,74,46,54,47,303,64,155,23" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The histogram of EPR values for experimental phantom sample 1 (a). The in vivo results of the compared methods (b).</figDesc><graphic coords="8,68,31,434,72,287,17,122,89" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Algorithm 1: Poisson's ratio clipper input : Lateral displacement w l , axial displacement wa, vemin,vemax, iteration output: Refined lateral displacement w ref 1 w ref ← w l 2 for q ← 1 to iteration do</figDesc><table><row><cell>3</cell><cell>e22 ← ∂w l ∂l</cell><cell>// gradient in lateral direction.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Gou et al. 13.26 ± 1.89 0.313 ± 0.029 4.28 ± 1.31 0.503 ± 0.083 4.08 ± 0.62 0.411 ± 0.049 2.39 ± 0.89 0.170 ± 0.233 PICTURE 9.037 ± 0.88 0.407 ± 0.022 5.37 ± 1.33 0.449±0.060 † 1.63 ± 0.95 0.840 ± 0.077 4.36 ± 1.81 0.334 ± 0.149 kPICTURE 24.40 ± 7.02 0.290 ± 0.038 7.81±1.68 0.446 ± 0.056 † 5.49 ± 2.20 0.598 ± 0.123 5.54 ± 2.54 0.504 ± 0.141</figDesc><table><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>)</cell><cell cols="2">sample (3)</cell><cell cols="2">in vivo data</cell></row><row><cell></cell><cell>CNR</cell><cell>SR</cell><cell>CNR</cell><cell>SR</cell><cell>CNR</cell><cell>SR</cell><cell>CNR</cell><cell>SR</cell></row><row><cell>OVERWIND</cell><cell cols="8">11.34 ± 1.32 0.318 ± 0.030 3.71 ± 1.07 0.505 ± 0.089 3.61 ±0.58 0.415±0.050 2.07 ± 0.94 0.196 ± 0.255</cell></row><row><cell>OVERWIND +</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This research was funded by <rs type="funder">Natural Sciences and Engineering Research Council of Canada (NSERC)</rs> <rs type="grantName">Discovery Grant</rs>. The Alpinion ultrasound machine was purchased using funds from the <rs type="funder">Dr. Louis G. Johnson Foundation</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_dvw9asR">
+					<orgName type="grant-name">Discovery Grant</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_45.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">An unsupervised approach to ultrasound elastography with end-to-end strain regularisation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Delaunay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_55</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_55" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2020: 23rd International Conference</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Lima, Peru; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">October 4-8, 2020. 2020</date>
+			<biblScope unit="page" from="573" to="582" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A PDE-based regularization algorithm toward reducing speckle tracking noise: A feasibility study for ultrasound breast elastography</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ultrason. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="277" to="293" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Iterative residual refinement for joint optical flow and occlusion estimation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Roth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="5754" to="5763" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">MPWC-Net++: evolution of optical flow pyramidal convolutional neural network for ultrasound elastography</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K Z</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ultrasonic Imaging and Tomography</title>
+		<imprint>
+			<biblScope unit="volume">11602</biblScope>
+			<biblScope unit="page">1160206</biblScope>
+			<date type="published" when="2021">2021. 2021</date>
+			<publisher>International Society for Optics and Photonics</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Physically inspired constraint for unsupervised regularized ultrasound elastography</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K Z</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8_21" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="218" to="227" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part IV</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The principle of equivalent eigenstrain for inhomogeneous inclusion problems</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Korsunsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Solids Struct</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="4477" to="4484" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Learning with known operators reduces maximum error bounds</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Maier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="373" to="380" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Combining Total Variation Regularization with Window-Based Time Delay Estimation in Ultrasound Elastography</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mirzaei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Asif</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2019.2913194</idno>
+		<ptr target="https://doi.org/10.1109/TMI" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2744" to="2754" />
+			<date type="published" when="2019">2019. 2019.2913194</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Limits to Poisson&apos;s ratio in isotropic materials-general result for arbitrary deformation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Roland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Scr</title>
+		<imprint>
+			<biblScope unit="volume">87</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">55404</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Elastography: ultrasonic estimation and imaging of the elastic properties of tissues</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ophir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Inst. Mech. Eng</title>
+		<imprint>
+			<biblScope unit="volume">213</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="203" to="233" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Neural-network-based motion tracking for breast ultrasound strain elastography: an initial assessment of performance and feasibility</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ultrason. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="74" to="91" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Real-time and high quality ultrasound elastography using convolutional neural network by incorporating analytic signal</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Amiri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 42nd Annual International Conference of the IEEE Engineering in Medicine &amp; Biology Society (EMBC)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2075" to="2078" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Lateral strain imaging using selfsupervised and physically inspired constraints in unsupervised regularized elastography</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K Z</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Md</forename><surname>Ashikuzzaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2022.3230635</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2022.3230635" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1462" to="1471" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Semi-supervised training of optical flow convolutional neural networks in ultrasound elastography</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Z</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mirzaei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rivaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_48" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="504" to="513" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Displacement estimation in ultrasound elastography using pyramidal convolutional neural network</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Ultrason. Ferroelectr. Freq. Control</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2629" to="2639" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Bi-directional semisupervised training of convolutional neural networks for ultrasound elastography displacement estimation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K Z</forename><surname>Tehrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sharifzadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Boctor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rivaz</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TUFFC.2022.3147097</idno>
+		<ptr target="https://doi.org/10.1109/TUFFC.2022.3147097" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Ultrason. Ferroelectr. Freq. Control</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1181" to="1190" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Unsupervised convolutional neural network for motion estimation in ultrasound elastography</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TUFFC.2022.3171676</idno>
+		<ptr target="https://doi.org/10.1109/TUFFC.2022.3171676" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Ultrason. Ferroelectr. Freq. Control</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="2236" to="2247" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
