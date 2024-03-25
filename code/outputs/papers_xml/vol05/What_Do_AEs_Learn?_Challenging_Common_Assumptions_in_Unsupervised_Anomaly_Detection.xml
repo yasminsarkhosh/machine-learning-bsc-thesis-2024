@@ -1,0 +1,1038 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">What Do AEs Learn? Challenging Common Assumptions in Unsupervised Anomaly Detection</title>
+				<funder ref="#_GtNPtbx">
+					<orgName type="full">Helmholtz Association</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Cosmin</forename><forename type="middle">I</forename><surname>Bercea</surname></persName>
+							<email>cosmin.bercea@tum.de</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Technical University of Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Helmholtz AI and Helmholtz Center Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Daniel</forename><surname>Rueckert</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Technical University of Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">Imperial College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Julia</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Technical University of Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Helmholtz AI and Helmholtz Center Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="institution">King&apos;s College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">What Do AEs Learn? Challenging Common Assumptions in Unsupervised Anomaly Detection</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="304" to="314"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">460AE044FFEF3A36DDE0C497C42A678C</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-9_30</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-03-25T18:36+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Representation Learning • Anomaly Detection</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Detecting abnormal findings in medical images is a critical task that enables timely diagnoses, effective screening, and urgent case prioritization. Autoencoders (AEs) have emerged as a popular choice for anomaly detection and have achieved state-of-the-art (SOTA) performance in detecting pathology. However, their effectiveness is often hindered by the assumption that the learned manifold only contains information that is important for describing samples within the training distribution. In this work, we challenge this assumption and investigate what AEs actually learn when they are posed to solve anomaly detection tasks. We have found that standard, variational, and recent adversarial AEs are generally not well-suited for pathology detection tasks where the distributions of normal and abnormal strongly overlap. In this work, we propose MorphAEus, novel deformable AEs to produce pseudo-healthy reconstructions refined by estimated dense deformation fields. Our approach improves the learned representations, leading to more accurate reconstructions, reduced false positives and precise localization of pathology. We extensively validate our method on two public datasets and demonstrate SOTA performance in detecting pneumonia and COVID-19. Code: https://github.com/ci-ber/MorphAEus.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Identifying unusual patterns in data is of great interest in many applications such as medical diagnosis, industrial defect inspection, or financial fraud detection. Finding anomalies in medical images is especially hard due to large inter-patient variance of normality, the irregular appearance-, and often rare occurrence of diseases. Therefore, it is difficult and expensive to collect large amounts of annotated samples that cover the full abnormality spectrum, with supervised <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b14">15]</ref> Fig. <ref type="figure">1</ref>. MorphAEus outperforms AEs by generating ID reconstructions even for far OoD cases (Fig. <ref type="figure">1a</ref>), enabling accurate pathology localization (Figure <ref type="figure">1b</ref>). and self-supervised <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b15">16]</ref> methods only capturing limited facets of the abnormal distribution <ref type="bibr" target="#b30">[31]</ref>. However, since it is more feasible to obtain large data sets with normal samples, it is common to detect outliers by detecting patterns that deviate from the expected normative distribution.</p><p>Reconstruction-based AEs have emerged as a very popular framework for unsupervised anomaly detection and are widely adopted in medical imaging <ref type="bibr" target="#b1">[2]</ref>. They provide straight-forward residual error maps, which are essential for safetycritical domains such as medical image analysis. However, recent work suggests that AEs might reconstruct out-of-distribution (OoD) samples even better than in-distribution (ID) samples <ref type="bibr" target="#b27">[28]</ref>, with the learned likelihood being dominated by common low-level features <ref type="bibr" target="#b31">[32]</ref>. While this can be useful for some tasks such as reconstruction <ref type="bibr" target="#b33">[34]</ref>, or restoration <ref type="bibr" target="#b20">[21]</ref>, it often fails for pathology detection as anomalies can be missed due to small residual errors. In Fig. <ref type="figure">1</ref> we show that AEs that have only been trained on healthy chest X-rays are also able to reconstruct OoD samples like pathologies or hands. Similarly, Perera et al. <ref type="bibr" target="#b23">[24]</ref> showed that AEs trained on the digit 8 can also reconstruct digits 1,5,6 and 9.</p><p>Much effort has been made in the medical imaging community to improve the limitations of traditional anomaly detection methods, particularly in the context of brain MRI. Apart from the reduced dimensionality of the bottleneck, several other techniques have been introduced to regularize AEs <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b28">29,</ref><ref type="bibr" target="#b37">38]</ref>. Recently, self-supervised denoising AEs <ref type="bibr" target="#b15">[16]</ref> achieved SOTA results on brain pathology segmentation. They explicitly feed noise-corrupted inputs x = x+ to the network with the aim at reconstructing the original input x. However, this is especially beneficial when the anomaly distribution is known a priori. Variational AEs (VAEs) <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b39">40]</ref> estimate the distribution over the latent space that is regularized to be similar to a prior distribution, usually a standard isotropic Gaussian. Generative adversarial networks have also been applied to anomaly detection <ref type="bibr" target="#b23">[24,</ref><ref type="bibr" target="#b32">33]</ref>. Pidhorskyi et al. <ref type="bibr" target="#b25">[26]</ref> trained AEs with an adversarial loss to detect OoD samples. More recently, introspective variational AEs <ref type="bibr" target="#b7">[8]</ref> use the VAE encoder to differentiate between real and reconstructed samples, achieving SOTA image generations and outlier detection performance. Recently, Zhou et al. <ref type="bibr" target="#b38">[39]</ref> investigated the limitations of AEs for OoD. Similarly, we believe that AEs should have two properties: i) minimality: the networks should be constrained to only reconstruct ID samples and ii) sufficiency: the decoder should have sufficient capacity to reconstruct ID samples with high accuracy. In contrast to <ref type="bibr" target="#b38">[39]</ref>, where the authors aim at reconstructing only low-dimensional features needed for the classification task, we are interested in reconstructing pseudo-healthy images to enable pixel-wise localization of anomalies.</p><p>In this work, we first investigate whether SOTA AEs can learn meaningful representations for anomaly detection. Specifically, we investigate whether AEs can learn the healthy anatomy, i.e., absence of pathology, and generate pseudohealthy reconstructions of abnormal samples on challenging medical anomaly detection tasks. Our findings are that SOTA AEs either do not efficiently constrain the latent space and allow the reconstruction of anomalous patterns, or that the decoder cannot accurately restore images from their latent representation. The imperfect reconstructions yield high residual errors on normal regions (false positives) that can easily overshadow residuals of interest, i.e., pathology <ref type="bibr" target="#b22">[23]</ref>. We then propose MorphAEus, novel deformable AEs to learn minimal and sufficient features for anomaly detection and drastically reduce false positives. Figure <ref type="figure">1a</ref> shows that MorphAEus learns the training distribution of healthy chest X-rays and yields pseudo-healthy ID reconstructions even for far OoD samples. This allows to localize pathologies, as seen in Fig. <ref type="figure">1b</ref>.</p><p>Our manuscript advances the understanding of anomaly detection by providing insights into what AEs learn. In summary, our contributions are:</p><p>• We broaden the understanding of AEs and highlight their limitations.</p><p>• We test whether SOTA AEs can learn the training distribution of the healthy population, accurately reconstruct inputs from their latent representation and reliably detect anomalies. • As a solution, we propose MorphAEus, novel deformable AEs that provide pseudo-healthy reconstructions of abnormal samples and drastically reduce false positives, achieving SOTA unsupervised pathology detection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Background</head><p>The widely held popular belief is that AEs can learn the distribution of the training data and identify outliers from inaccurate reconstructions of abnormal samples <ref type="bibr" target="#b30">[31]</ref>. This section aims to discuss the common assumptions of unsupervised anomaly detection, specifically for AEs, while also outlining the challenges and desired properties associated with these techniques.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Unsupervised Anomaly Detection: Assumptions</head><p>Let X ⊂ R N be the data space that describes normal instances for a given task.</p><p>The manifold hypothesis implies that there exists a low-dimensional manifold M ⊂ R D ⊂ X where all the points x ∈ X lie, with D N <ref type="bibr" target="#b8">[9]</ref>. For example, a set of images in pixel space X could have a compact representation describing features like structure, shape, or orientation in M.</p><p>Given a set of unlabeled data x 1 , .., x n ∈ X the objective of unsupervised representation learning is to find a function f : R N → R D and its inverse g : R D → R N , such that x ≈ g(f (x)), with the mapping f defining the lowdimensional manifold M. The core assumption of unsupervised anomaly detection is that once such functions f and g are found, the learned manifold M would best describe the normal data samples in X and results in high reconstruction errors for data-points x / ∈ X , that we call anomalous. An anomaly score is therefore usually derived directly from the pixel-wise difference:</p><formula xml:id="formula_0">s(x) = |x -g(f (x))|.</formula><p>The nominal and abnormal distributions are considerably separated from each other when x is from a different domain. However, anomalies are often defects in otherwise normal images. In medical imaging, the set X describes the healthy anatomy and the data set X usually contains images with both healthy and pathological regions. The two distributions usually come from the same domain and might overlap considerably. The core assumption is that only the normal structures can be reconstructed from their latent representation very well, with the pathological regions ideally replaced by healthy structures. Therefore x ≈ g(f (x)) ∈ X would represent the healthy synthesis of the abnormal sample x and the residual |x -g(f (x))| would highlight only the abnormal regions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Auto-Encoders: Challenges</head><p>AEs aim to extract meaningful representations from data, by learning to compress inputs to a lower-dimensional manifold and reconstruct them with minimal error. They use neural networks to learn the functions f and g, often denoted as encoder E θ with parameters θ and decoder D φ parameterized by a set of parameters φ. The embedding z = E(x|θ) is a projection of the input to a lower-dimensional manifold Z, also referred to as the bottleneck or latent representation of x. The standard objective of AEs is finding the set of parameters θ and φ that minimize the residual, with the mean squared error (MSE) being a popular choice for the reconstruction error:</p><formula xml:id="formula_1">min θ,φ N i=1 x i -D φ (E θ (x i )) 2 .</formula><p>In the introduction, we presented the desired properties of AEs for outlier detection, namely i) reconstructions should match the training distribution and ii) decoders have sufficient capacity to accurately restore inputs. Figure <ref type="figure" target="#fig_0">2</ref> shows reconstructions of spatial AEs <ref type="bibr" target="#b1">[2]</ref> for near OoD samples, i.e., containing pathologies, and far OoD samples using real images of celebrities <ref type="bibr" target="#b18">[19]</ref>. AEs with few encoding layers learn to copy and can reconstruct both near-and far OoD. Interestingly, with increasing layer depth, AEs can learn the prior over the training distribution, avoid the reconstruction of pathologies, and project OoD celebrities to the closest chest X-ray counterparts. However, this comes at the cost of losing spatial information and not reconstructing small details, e.g., ribs. The resulting high residual error on healthy tissues (false positives) overshadows the error on pathology <ref type="bibr" target="#b22">[23]</ref>, rendering standard AEs unsuitable for anomaly detection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">MorphAEus: Deformable Auto-encoders</head><p>We propose MorphAEus, deformable AEs that learn minimal and sufficient features for anomaly detection, see Fig. <ref type="figure" target="#fig_1">3</ref>. We use deep perceptual AE to provide pseudo-healthy ID reconstructions and leverage estimated deep deformation fields to drastically reduce the false positives.</p><p>Pseudo-healthy Reconstructions. Given a dataset X = {x 1 , .., x n } we optimize the encoder and decoder with parameters θ, φ to minimize the MSE loss between the input and its reconstruction. For minimality, we propose to use deep AEs constrained to reconstruct only ID samples (see Fig. <ref type="figure" target="#fig_0">2</ref>), but add a perceptual loss (PL) <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b36">37]</ref> to encourage reconstructions that are perceptually similar to the training distribution. The reconstruction loss is given by:</p><formula xml:id="formula_2">L Rec (x|θ; φ) = MSE(x, x rec ) + αP L(x, x rec ),<label>(1)</label></formula><p>with x rec = D φ (E θ (x)), P L(x, x rec ) = l (V GG l (x)-V GG l (x rec )) 2 with V GG l being the output of the l ∈ {1, 6, 11, 20}-th layer of a pre-trained VGG-19 encoder. We have empirically found α = 0.05 to be a good weight to predict perceptually similar reconstructions without compromising pixel-wise accuracy.</p><p>Local Deformation. Imperfect reconstructions yield high residuals on normal regions which might overshadow the residuals errors associated with anomalous regions. Skip connections <ref type="bibr" target="#b29">[30]</ref> would allow the network to bypass the learned manifold and copy anomalies at inference. Instead, we propose to align the reconstruction with the input using corresponding encoder and decoder features. We denote these shared parameters as θ S ⊂ θ and φ S ⊂ φ. Inspired by the advances in image registration <ref type="bibr" target="#b0">[1]</ref> and computer vision <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b35">36]</ref> we estimate dense deformation fields Φ to allow local morphometric adaptations:</p><formula xml:id="formula_3">L Morph (x|ψ; θ S ; φ S ) = 1 -LN CC(x morph , x) + β Φ 2 , (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>where x morph = x rec • Φ, ψ are the deformation parameters, LNCC is the local normalized cross correlation, • is a spatial transformer and β weights the smoothness constraint on the deformation fields. We opted for the LNCC instead of the MSE to emphasize shape registration and enhance robustness to intensity variations in the inputs and reconstructions. By sharing encoder/decoder parameters, the deformation maps are not only beneficial at inference time, but also guide the training process to learn more accurate features. The full objective is given by the two losses:</p><formula xml:id="formula_5">L(x|θ; φ; ψ) = L Rec (x|θ; φ) + L Morph (x|ψ; θ S ; φ S ).</formula><p>To ensure a good initialization for the deformation estimation, we introduce the deformation loss after 10 epochs. Deformable registration between normal and pathological samples is in itself an active area of research <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b24">25]</ref>. In particular, the deformation could mask structural abnormalities at inference if not constrained. In our experiments, we linearly increase β from 1e -3 to 3 to constrain the deformation more as the reconstruction improves (see Appendix for details). Nevertheless, recent advances allow the estimation of the optimal registration parameters automatically <ref type="bibr" target="#b12">[13]</ref>. If not specified otherwise, we employ x morph for inference.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Pathology Detection on Chest X-rays</head><p>In this section, we investigate whether AEs can learn the healthy anatomy, i.e., absence of pathology, and generate pseudo-healthy reconstructions of abnormal chest X-ray images. Pathology detection algorithms are often applied to finding hyper-intense lesions, such as tumors or multiple sclerosis on brain scans. However, it has been shown that thresholding techniques can outperform learningbased methods <ref type="bibr" target="#b21">[22]</ref>. In contrast, the detection of pathology on chest radiographs is much more difficult due to the high variability and complexity of nominal features and the diversity and irregularity of abnormalities.</p><p>Datasets. We use the Covid-19 radiography database on Kaggle <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b26">27]</ref>. We used the RSNA dataset <ref type="bibr" target="#b34">[35]</ref>, which contains 10K CXR images of normal subjects and 6K lung opacity cases. For the detection of Covid-19, we used the Padchest  dataset <ref type="bibr" target="#b2">[3]</ref> containing CXR images manually annotated by trained radiologists. We used 1.3K healthy control images and 2.5K cases of Covid-19.</p><p>Results. Of the baselines, only adversarially-trained AEs can reconstruct pseudo-healthy images from abnormal samples, as shown in Fig. <ref type="figure" target="#fig_2">4</ref>. However, their imperfect reconstructions overshadow the error on pathology leading to poor anomaly detection results, as reflected in the SSIM and AUROC in Table <ref type="table" target="#tab_0">1</ref>. Spatial AEs and DAEs have a tendency to reproduce the input and produce reconstructions of structures that are not included in the training distribution, such as medical devices and pathologies, despite not being trained on OoD data. This can lead to false negatives. DAEs can avoid the reconstruction of some pathologies and achieve good anomaly detection results. However, pathological regions that do not conform to the learned noise model are completely missed, as shown in Fig. <ref type="figure" target="#fig_2">4</ref>. The next three methods (AE-D, VAE, and β-VAE) produce blurry reconstructions, as it can be best seen in the LPIPS score. MorphAEus is the only method to yield accurate pseudo-healthy reconstructions and effectively remove anomalies, such as pathology or implanted medical devices. This enables to precisely localize pathologies, considerably outperforming the baselines.</p><p>Ablation Study: Importance of Morphological Adaptations. We evaluate the effectiveness of individual components of MorphAEus in Fig. <ref type="figure" target="#fig_3">5</ref>. AEs without perceptual loss tend to not reconstruct small but important features such as ribs and yield false positives on healthy tissue. Interestingly, AEs with perceptual loss achieve more visually appealing reconstructions, but fail at detecting anomalies because the pathological region is overshadowed by false positive residuals on edges and misaligned ribs. Morphometric adaptations guide the networks to learn better representations, reduce the number of false positives, and enable the localization of pathologies. This considerably improves the detection results to 84.8 and 82.1 for AEs with and without perceptual loss, respectively. It is important to note that the deformations are not only beneficial at the time of inference, but also drive the learning process towards better representations. Thereby, the average pathology detection increases from 66.8 to 80.2, even if no adaptations are made during inference, i.e., using x rec instead of x morph for inference (see Appendix for details).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion</head><p>In this work, we have investigated whether AEs learn meaningful representations to solve pathology detection tasks. We stipulate that AEs should have the desired property of learning the normative distribution (minimality) and producing highly accurate reconstructions of ID samples (sufficiency). We have shown that standard, variational, and recent adversarial AEs generally do not satisfy both conditions, nor are they very suitable for pathology detection tasks where the distribution of normal and abnormal instances highly overlap.</p><p>In this paper, we introduced MorphAEus, a novel deformable AE that demonstrated notable performance improvement in detecting pathology. We believe our method is adaptable to various anomaly types, and we are eager to extend our research to different anatomies and imaging modalities, building upon promising early experiments. However, it is important to address false positive detection, which could be influenced by unlabelled artifacts like medical devices. Our future work aims to conduct a thorough analysis of false positives and explore strategies to mitigate their impact, ultimately enhancing the accuracy.</p><p>Although there are obstacles to overcome, AEs remain a viable option for producing easily understandable and interpretable outcomes. Nevertheless, it is crucial to continue improving the quality of the representations to advance unsupervised anomaly detection. Our findings demonstrate that MorphAEus is capable of learning superior representations, and can leverage the predicted dense displacement fields to refine its predictions and minimize the occurrence of false positives. This allows for accurate identification and localization of diseases, resulting in SOTA unsupervised pathology detection on chest X-rays.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. What do AEs learn? Reconstruction of pathology (top row) and far OoD celebrities (bottom row) with AEs [2] (different depths) and MorphAEus. While shallow AEs learn to copy, deep AEs yield blurry reconstructions, rendering AEs unsuitable for anomaly detection. In contrast, MorphAEus generates pseudo-healthy ID reconstructions for near (pathology) and far (celebrity) OoD cases.</figDesc><graphic coords="4,58,98,54,08,334,48,99,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. MorphAEus. Deep perceptual AEs yield reconstructions matching the training distribution. We leverage the top encoding/decoding layers containing spatial information to estimate deep deformation fields. This allows the local morphometric adaptation of the predicted reconstruction to drastically reduce residual errors on normal regions (false positives), as shown on the right.</figDesc><graphic coords="5,44,79,54,23,334,48,94,48" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. The first row shows reconstructions of a healthy sample. The next rows show reconstructions of a pathological case and the corresponding anomaly maps. AE-S and DAE fully reconstruct the pathology and thereby fail the task, while the other baselines yield high residual errors on both healthy and pathological regions due to blurry (AE-D, VAE, and β-VAE) or inaccurate (AAE, SI-VAE) reconstructions. Only MorphAEus yields accurate pseudo-healthy reconstructions which allows to localize the pathology on the left lung.</figDesc><graphic coords="7,44,79,267,14,334,48,115,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Ablation study: Morphometric adaptations considerably improve the pathology detection accuracy with or without perceptual loss (PL).</figDesc><graphic coords="8,212,61,54,02,181,00,85,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>CXR Pathology Detection. Methods marked with ' * ' achieve improved reconstruction accuracy, but can also reconstruct pathologies which renders them not useful for detecting anomalies, as shown in Fig.4. In contrast, MorphAEus generates only ID reconstructions which enables the localization of pathologies.</figDesc><table><row><cell></cell><cell cols="2">Healthy</cell><cell>Pneumonia Covid-19</cell><cell>Avg.</cell></row><row><cell>Method</cell><cell cols="2">SSIM ↑ LPIPS ↓</cell><cell>AUROC ↑</cell></row><row><cell>AE-S [2]</cell><cell>95.9  *</cell><cell>1.3  *</cell><cell cols="2">58.9 ± 0.5 59.8 ± 1.6 59.3</cell></row><row><cell>AE-D [2]</cell><cell>75.6</cell><cell>38.3</cell><cell cols="2">45.4 ± 0.5 56.1 ± 1.1 50.7</cell></row><row><cell>VAE [40]</cell><cell>72.9</cell><cell>38.4</cell><cell cols="2">33.5 ± 0.7 43.7 ± 0.7 38.6</cell></row><row><cell>β-VAE [12]</cell><cell>63.1</cell><cell>43.9</cell><cell cols="2">70.8 ± 0.9 54.5 ± 0.8 62.6</cell></row><row><cell>AAE [26]</cell><cell>66.3</cell><cell>15.5</cell><cell cols="2">58.4 ± 0.6 59.8 ± 1.2 57.8</cell></row><row><cell>SI-VAE [8]</cell><cell>71.3</cell><cell>17.6</cell><cell cols="2">49.7 ± 0.7 52.0 ± 0.7 50.9</cell></row><row><cell>DAE [16]</cell><cell>95.8</cell><cell></cell><cell></cell></row></table><note><p>* 2.8 * 78.0 ± 0.5 76.1 ± 0.7 77.0 MorphAEus (ours) 85.7 9.5 83.6 ±</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>0.8 86.0 ± 0.7 84.8</head><label></label><figDesc></figDesc><table /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. C.I.B. is in part supported by the <rs type="funder">Helmholtz Association</rs> under the joint research school "<rs type="programName">Munich School for Data Science -MUDS</rs>".</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_GtNPtbx">
+					<orgName type="program" subtype="full">Munich School for Data Science -MUDS</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">VoxelMorph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Autoencoders for unsupervised anomaly segmentation in brain MR images: a comparative study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Baur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Denner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wiestler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Albarqouni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">101952</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Padchest: a large chest x-ray image dataset with multi-label annotated reports</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bustos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pertusa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Salinas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De La Iglesia-Vayá</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page">101797</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Unsupervised dense deformation embedding network for template-free shape correspondence</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dong</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8361" to="8370" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Unsupervised lesion detection via image restoration with a normative prior</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>You</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Tezcan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="page">101713</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Can AI help in screening viral and COVID-19 pneumonia?</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E H</forename><surname>Chowdhury</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="132665" to="132676" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep neural networks segment neuronal membranes in electron microscopy images</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ciresan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Giusti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Gambardella</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Soft-introvae: analyzing and improving the introspective variational autoencoder</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Daniel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tamar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4391" to="4400" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Testing the manifold hypothesis</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fefferman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mitter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Narayanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="983" to="1049" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Deep anomaly detection using geometric transformations</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Golan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>El-Yaniv</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Memorizing normality to detect anomaly: memory-augmented deep autoencoder for unsupervised anomaly detection</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gong</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="1705" to="1714" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">beta-VAE: learning basic visual concepts with a constrained variational framework</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Higgins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Hypermorph: amortized hyperparameter learning for image registration</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hoopes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IPMI</title>
+		<imprint>
+			<biblScope unit="page" from="3" to="17" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Perceptual losses for real-time style transfer and super-resolution</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Alahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>ECCV</publisher>
+			<biblScope unit="page" from="694" to="711" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Efficient multi-scale 3D CNN with fully connected CRF for accurate brain lesion segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kamnitsas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="61" to="78" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Denoising autoencoders for unsupervised anomaly detection in brain MRI</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kascenas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Pugeault</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>O'neil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MIDL</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1312.6114</idno>
+		<title level="m">Auto-encoding variational Bayes</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Registration with probabilistic correspondences-accurate and robust registration for pathological and inhomogeneous medical data</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Krüger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Schultz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Handels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ehrhardt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVIU</title>
+		<imprint>
+			<biblScope unit="volume">190</biblScope>
+			<biblScope unit="page">102839</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Deep learning face attributes in the wild</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICCV</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">k-sparse autoencoders</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makhzani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Frey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Image restoration using very deep convolutional encoder-decoder networks with symmetric skip connections</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">B</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Challenging current semi-supervised anomaly segmentation methods for brain MRI</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Meissen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaissis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI brainlesion workshop</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="63" to="74" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">On the pitfalls of using the residual as anomaly score</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Meissen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Wiestler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kaissis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MIDL</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Ocgan: one-class novelty detection using GANs with constrained latent representations</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Perera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nallapati</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xiang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="2898" to="2906" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Medical image registration with partial data</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Periaswamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Farid</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="452" to="464" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Generative probabilistic novelty detection with adversarial autoencoders</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pidhorskyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Almohsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Doretto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Exploring the effect of image enhancement techniques on COVID-19 detection using chest X-rays images</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Rahman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Likelihood ratios for out-of-distribution detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Contractive auto-encoders: explicit invariance during feature extraction</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rifai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vincent</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Muller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Glorot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="833" to="840" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">A unifying review of deep and shallow anomaly detection</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ruff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Kauffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of IEEE</title>
+		<meeting>eeding of IEEE</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Understanding anomaly detection with deep invertible networks through hierarchies of distributions and features</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Schirrmeister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ball</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="21038" to="21049" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">f-AnoGAN: fast unsupervised anomaly detection with generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Schlegl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Seeböck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Waldstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Langs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Schmidt-Erfurth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="30" to="44" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A deep cascade of convolutional neural networks for dynamic MR image reconstruction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schlemper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Caballero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Hajnal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="491" to="503" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Augmenting the national institutes of health chest radiograph dataset with expert annotations of possible pneumonia</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shih</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">180041</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">Deforming autoencoders: unsupervised disentangling of shape and appearance</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sahasrabudhe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Guler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Samaras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Paragios</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Kokkinos</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="650" to="665" />
+		</imprint>
+		<respStmt>
+			<orgName>ECCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<monogr>
+		<title level="m" type="main">Perceptual image anomaly detection</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tuluptceva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bakker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Fedulova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Konushin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<publisher>ASPR</publisher>
+			<biblScope unit="page" from="164" to="178" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title level="m" type="main">Autoencoding under normalization constraints</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yoon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">K</forename><surname>Noh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Park</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12087" to="12097" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<title level="m" type="main">Rethinking reconstruction autoencoder-based out-of-distribution detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.02194</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Unsupervised anomaly localization using variational auto-encoders</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zimmerer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
