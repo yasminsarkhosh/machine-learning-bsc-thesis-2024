@@ -412,10 +412,10 @@ Extracting papers:
 ![alt text](flowchart_1.png)
 
 Extracting data from papers:
-![alt text](flowchart_2.png)
+![alt text](flowchart_2_1.png)
 
 Selecting papers for further analysis:
-![alt text](flowchart_3_1.png)
+![alt text](flowchart_3.png)
 
 ### What did you struggle with?
 **Annotations: bias** 
