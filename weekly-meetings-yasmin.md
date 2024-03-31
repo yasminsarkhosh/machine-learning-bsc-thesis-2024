@@ -392,21 +392,22 @@ N/A
 ### What did you achieve?
 **Annotations: purpose**
 Examining the difference between discussing bias and actively reducing bias in medical AI research.
-* From annotating demographcs and bias in papers manually (from sentence extraction) I want to examine the different between mentioning bias vs actively reducing bias
+* From annotating demographcs and bias in papers manually (from sentence extraction) I want to examine the difference between mentioning bias vs actively reducing bias
 
-* Currently, I have data visualisations showing the occurences of demographic keywords, biases and more in the selected papers. Giving me an idea of how papers "prioritise" demographics in datasets and biases, but not giving me any insights of how they prioritise/not prioritise, the actual cause of their choices (actively excluding demographics from their datasets, or does their datasets simply not provide any demographic information?)
+* Currently, I have data visualisations showing the occurences of demographic keywords, biases and more in the selected papers. Giving me an idea of IF papers "prioritise" demographics in datasets and biases, but not giving me any insights of HOW they prioritise/not prioritise, the actual cause of their choices (actively excluding demographics from their datasets, or does their datasets simply not provide any demographic information?)
 * Annotation scheme
   * Annotated 263 papers by (and in separate csv files):
-  * Demographic information 1/2: age, gender/sex, race 
-  * Demographic information 2/2: geolocations (as hospital, country, city, area)
-  * Bias: 
-    * analysing/annotating types of bias in papers
-    * bias mentioned?	bias sentence,	algorithmic bias,	sub type of algorithmic bias, bias as a technical term, sentence for bias as technical term,	reasoning for technical bias, data bias,	sub type of data bias,	reasoning for data bias,	measurement bias	sentence for measurement bias,	reasoning for measurement bias	
+    * Demographic information 1/2: age, gender/sex, race 
+    * Demographic information 2/2: geolocations (as hospital, country, city, area)
+    * Bias: 
+      * analysing/annotating types of bias in papers
+      * bias mentioned?	bias sentence,	algorithmic bias,	sub type of algorithmic bias, bias as a technical term, sentence for bias as technical term,	reasoning for technical bias, data bias,	sub type of data bias,	reasoning for data bias,	measurement bias	sentence for measurement bias,	reasoning for measurement bias	
   * Still in progress: dataset information, diseases, fairness, 
 
 **Report**
-* Outlines and introduction
-* Flowchart of work processes (still in progress)
+* Outlines of sections for the report
+* Wrote the Introduction section
+* Flowchart of work processes and data extractions (still in progress)
 Extracting papers:
 ![alt text](flowchart_1.png)
 
@@ -414,7 +415,7 @@ Extracting data from papers:
 ![alt text](flowchart_2.png)
 
 Selecting papers for further analysis:
-![alt text](flowchart_3.png)
+![alt text](flowchart_3_1.png)
 
 ### What did you struggle with?
 **Annotations: bias** 
