@@ -9,6 +9,8 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [05 mar 2024](#date-05-mar-2024)
 * [12 mar 2024](#date-12-mar-2024)
 * [19 mar 2024](#date-19-mar-2024)
+* [22 mar 2024](#date-22-mar-2024)
+
 
 ***
 ***
@@ -373,6 +375,82 @@ Outputs can be find here:
 * The reflections/recommendations you have seem relevant for the discussion
 * Start putting some structure on the report already to see how it looks in the template
  
+***
+
+### Date: 22 mar 2024
+### Who helped you this week?
+Théo
+https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/60e1d14d3d03c3e9781dc40e1e4c9600b5c41f7c/meeting_w_theo.md
+
+***
+
+### Date: 02 april 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
+**Annotations: purpose**
+Examining the difference between discussing bias and actively reducing bias in medical AI research.
+* From annotating demographcs and bias in papers manually (from sentence extraction) I want to examine the different between mentioning bias vs actively reducing bias
+
+* Currently, I have data visualisations showing the occurences of demographic keywords, biases and more in the selected papers. Giving me an idea of how papers "prioritise" demographics in datasets and biases, but not giving me any insights of how they prioritise/not prioritise, the actual cause of their choices (actively excluding demographics from their datasets, or does their datasets simply not provide any demographic information?)
+* Annotation scheme
+  * Annotated 263 papers by (and in separate csv files):
+  * Demographic information 1/2: age, gender/sex, race 
+  * Demographic information 2/2: geolocations (as hospital, country, city, area)
+  * Bias: 
+    * analysing/annotating types of bias in papers
+    * bias mentioned?	bias sentence,	algorithmic bias,	sub type of algorithmic bias, bias as a technical term, sentence for bias as technical term,	reasoning for technical bias, data bias,	sub type of data bias,	reasoning for data bias,	measurement bias	sentence for measurement bias,	reasoning for measurement bias	
+  * Still in progress: dataset information, diseases, fairness, 
+
+**Report**
+* Outlines and introduction
+* Flowchart of work processes (still in progress)
+Extracting papers:
+![alt text](flowchart_1.png)
+
+Extracting data from papers:
+![alt text](flowchart_2.png)
+
+Selecting papers for further analysis:
+![alt text](flowchart_3.png)
+
+### What did you struggle with?
+**Annotations: bias** 
+* Definition and Criteria: How do I define "talking about bias" versus "actively reducing bias"? Establishing clear criteria for these categories is crucial. For example, mentioning bias could be categorized as simply acknowledging its existence, while actively reducing bias might involve specific methodologies or interventions implemented within the research design. Where do I set the boundary? 
+* Bias comes in many forms: bias related to algorithms and model performance vs bias related to examining the diversity and representativeness of the dataset used to train AI models. 
+
+### Forms of Bias
+1. **Data Bias**: This occurs when the dataset used to train the AI model is not representative of the population it's intended to serve. It can lead to the model performing poorly for certain groups.
+    - **Subtypes**:
+        - **Selection Bias**: Arises when the data collected are not representative of the target population.
+        - **Sampling Bias**: Occurs when the dataset does not accurately reflect the diversity of the population.
+        - **Label Bias**: Happens when the labels used for training the AI model do not accurately represent the true nature of the data points.
+2. **Algorithmic Bias**: Refers to biases that are introduced by the algorithm itself, often through the underlying assumptions made by the developers.
+    - **Subtypes**:
+        - **Inductive Bias**: The set of assumptions an algorithm makes to predict outputs for inputs it has not encountered.
+        - **Confirmation Bias**: Occurs when an algorithm is developed or tuned in a way that it inadvertently confirms the developers' pre-existing beliefs.
+3. **Measurement Bias**: Involves errors in the way data are measured or collected, leading to inaccurate representations of reality.
+    - **Example**: Using measurement tools or techniques that are not equally valid across different groups.
+4. **Reporting Bias**: Occurs when there is a selective revealing or suppression of information by researchers or participants.
+    - **Example**: Overemphasis on successful outcomes over negative or null results.
+5. **Sociocultural Bias**: Arises from societal stereotypes and cultural assumptions that can be encoded into AI models.
+    - **Example**: An AI system that reflects or amplifies societal stereotypes related to race, gender, or socioeconomic status.
+
+### What would you like to work on next week?
+
+
+
+### Where do you need help from Veronika?
+
+ 
+
+### Any other topics
+N/A
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
+#### Looking into MICCA 2023 ONLY
+#### Write instructions - Experiment 1
 
 
 
