@@ -10,6 +10,8 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [12 mar 2024](#date-12-mar-2024)
 * [19 mar 2024](#date-19-mar-2024)
 * [22 mar 2024](#date-22-mar-2024)
+* [02 apr 2024](#date-02-apr-2024)
+
 
 
 ***
