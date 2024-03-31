@@ -386,7 +386,7 @@ https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/60e1d14d
 
 ***
 
-### Date: 02 april 2024
+### Date: 02 apr 2024
 ### Who helped you this week?
 N/A
 ### What did you achieve?
