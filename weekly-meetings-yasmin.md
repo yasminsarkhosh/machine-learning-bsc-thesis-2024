@@ -403,10 +403,18 @@ Examining the difference between discussing bias and actively reducing bias in m
       * analysing/annotating types of bias in papers
       * bias mentioned?	bias sentence,	algorithmic bias,	sub type of algorithmic bias, bias as a technical term, sentence for bias as technical term,	reasoning for technical bias, data bias,	sub type of data bias,	reasoning for data bias,	measurement bias	sentence for measurement bias,	reasoning for measurement bias	
   * Still in progress: dataset information, diseases, fairness, 
+**Notebooks**
+* Tidying up notebooks
+[miccai23 metadata + database](miccai23_extraction_dataframe.ipynb)
+[splitting_pdfs_into_separate_articles](code/splitting_pdfs_into_separate_articles.ipynb)
+[data_processing_w_GROBID](code/data_processing_w_GROBID.ipynb)
+[data_sentence_extraction](data_sentence_extraction.ipynb)
+[data_analysis](code/data_analysis.ipynb)
 
 **Report**
 * Outlines of sections for the report
 * Wrote the Introduction section
+* Methodology in progress
 * Flowchart of work processes and data extractions (still in progress)
 Extracting papers:
 ![alt text](flowchart_1.png)
@@ -418,8 +426,10 @@ Selecting papers for further analysis:
 ![alt text](flowchart_3.png)
 
 ### What did you struggle with?
-**Annotations: bias** 
-* Definition and Criteria: How do I define "talking about bias" versus "actively reducing bias"? Establishing clear criteria for these categories is crucial. For example, mentioning bias could be categorized as simply acknowledging its existence, while actively reducing bias might involve specific methodologies or interventions implemented within the research design. Where do I set the boundary? 
+* Mental health
+
+#### Annotations: bias** 
+* Definition and Criteria: How do I define "talking about bias" versus "actively reducing bias"? For example, mentioning bias could be categorized as simply acknowledging its existence, while actively reducing bias might involve specific methodologies or interventions implemented within the research design. Where do I set the boundary? 
 * Bias comes in many forms: bias related to algorithms and model performance vs bias related to examining the diversity and representativeness of the dataset used to train AI models. 
 
 ### Forms of Bias
