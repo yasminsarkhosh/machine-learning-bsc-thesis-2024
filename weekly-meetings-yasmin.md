@@ -429,11 +429,11 @@ Selecting papers for further analysis:
 ### What did you struggle with?
 * Mental health
 
-#### Annotations: bias** 
+#### Annotations: bias
 * Definition and Criteria: How do I define "talking about bias" versus "actively reducing bias"? For example, mentioning bias could be categorized as simply acknowledging its existence, while actively reducing bias might involve specific methodologies or interventions implemented within the research design. Where do I set the boundary? 
 * Bias comes in many forms: bias related to algorithms and model performance vs bias related to examining the diversity and representativeness of the dataset used to train AI models. 
 
-### Forms of Bias
+#### Forms of Bias
 1. **Data Bias**: This occurs when the dataset used to train the AI model is not representative of the population it's intended to serve. It can lead to the model performing poorly for certain groups.
     - **Subtypes**:
         - **Selection Bias**: Arises when the data collected are not representative of the target population.
@@ -461,12 +461,11 @@ With all the above
 ### Any other topics
 **Imposter Syndrome**
 * I feel kinda scattered. Been working hard on extracting data, defining annotation guides and purposes, writing and rewriting code, experiments. I work on my BA non-stop, and I managed to create and gather a lot of stuff/information. However, is it enough? What am I missing, where should I put my focus now nearing the submission date. 
-Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my projects: am I living up to the expections of making/writing a BA-thesis? All though I feel a lot of the work processes and methods I have used for this projects are new to me (not really something that's been prioritised in the curriculum I can't quite figure out if that lives up to the academic requirements for a BA thesis in data science..) 
+Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my project: am I living up to the expections of making/writing a BA-thesis? All though I feel a lot of the work processes and methods I have used for this projects are new to me (not really something that's been prioritised in the curriculum I can't quite figure out if that lives up to the academic requirements for a BA thesis in data science..) 
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
-#### Looking into MICCA 2023 ONLY
-#### Write instructions - Experiment 1
+
 
 
 
