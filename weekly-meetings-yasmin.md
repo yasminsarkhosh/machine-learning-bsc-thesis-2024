@@ -390,7 +390,7 @@ https://github.com/yasminsarkhosh/machine-learning-bsc-thesis-2024/blob/60e1d14d
 ### Who helped you this week?
 N/A
 ### What did you achieve?
-**Annotations: purpose**
+**Annotations: goal**
 Examining the difference between discussing bias and actively reducing bias in medical AI research.
 * From annotating demographcs and bias in papers manually (from sentence extraction) I want to examine the difference between mentioning bias vs actively reducing bias
 
@@ -403,13 +403,14 @@ Examining the difference between discussing bias and actively reducing bias in m
       * analysing/annotating types of bias in papers
       * bias mentioned?	bias sentence,	algorithmic bias,	sub type of algorithmic bias, bias as a technical term, sentence for bias as technical term,	reasoning for technical bias, data bias,	sub type of data bias,	reasoning for data bias,	measurement bias	sentence for measurement bias,	reasoning for measurement bias	
   * Still in progress: dataset information, diseases, fairness, 
+
 **Notebooks**
 * Tidying up notebooks
-[miccai23 metadata + database](miccai23_extraction_dataframe.ipynb)
-[splitting_pdfs_into_separate_articles](code/splitting_pdfs_into_separate_articles.ipynb)
-[data_processing_w_GROBID](code/data_processing_w_GROBID.ipynb)
-[data_sentence_extraction](data_sentence_extraction.ipynb)
-[data_analysis](code/data_analysis.ipynb)
+[miccai23 metadata + database](notebooks/miccai2023_webscrapping_datamining.ipynb)
+[splitting_pdfs_into_separate_articles](notebooks/splitting_pdfs_into_separate_articles.ipynb)
+[data_processing_w_GROBID](notebooks/data_processing_w_GROBID.ipynb)
+[data_sentence_extraction](notebooks/data_sentence_extraction.ipynb)
+[data_analysis](notebooks/data_analysis.ipynb)
 
 **Report**
 * Outlines of sections for the report
@@ -417,13 +418,13 @@ Examining the difference between discussing bias and actively reducing bias in m
 * Methodology in progress
 * Flowchart of work processes and data extractions (still in progress)
 Extracting papers:
-![alt text](flowchart_1.png)
+![alt text](outputs/images/flowchart_1.png)
 
 Extracting data from papers:
-![alt text](flowchart_2_1.png)
+![alt text](outputs/images/flowchart_2_1.png)
 
 Selecting papers for further analysis:
-![alt text](flowchart_3.png)
+![alt text](outputs/images/flowchart_3.png)
 
 ### What did you struggle with?
 * Mental health
@@ -450,15 +451,17 @@ Selecting papers for further analysis:
     - **Example**: An AI system that reflects or amplifies societal stereotypes related to race, gender, or socioeconomic status.
 
 ### What would you like to work on next week?
-
-
+1. Annotations and gathering everything I have found together
+2. Data visualisations
+3. How I can use my current findings 
 
 ### Where do you need help from Veronika?
-
+With all the above
  
-
 ### Any other topics
-N/A
+**Imposter Syndrome**
+* I feel kinda scattered. Been working hard on extracting data, defining annotation guides and purposes, writing and rewriting code, experiments. I work on my BA non-stop, and I managed to create and gather a lot of stuff/information. However, is it enough? What am I missing, where should I put my focus now nearing the submission date. 
+Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my projects: am I living up to the expections of making/writing a BA-thesis? All though I feel a lot of the work processes and methods I have used for this projects are new to me (not really something that's been prioritised in the curriculum I can't quite figure out if that lives up to the academic requirements for a BA thesis in data science..) 
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
