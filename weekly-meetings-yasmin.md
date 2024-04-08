@@ -467,6 +467,7 @@ Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my pr
 * Models? Metrices? 
 * How much of the notebooks should I add to the report? Like the reasoning for how I created the different notebooks?
 * Annotation scheme
+***
 
 ### Date: 09 apr 2024
 ### Who helped you this week?
