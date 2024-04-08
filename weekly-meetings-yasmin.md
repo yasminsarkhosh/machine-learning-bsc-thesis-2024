@@ -483,8 +483,8 @@ N/A
   * Annotated 50 papers by sentence extractions 
 
 The list of organs from the annotations are divided into main categories of the body, based on anatomical regions and organ systems.
-**No Organ Mentioned:** 
-- Captures the explicit mention of "no organ mentioned".
+No Organ Mentioned: Captures the explicit mention of "no organ mentioned".
+
 | **Categories** | **Cranial/Head and Neck** | **Thoracic/Chest** | **Abdominal** | **Female Reproductive System** |
 |:---:|:---:|:---:|:---:|:---:|
 | Includes | organs located in the head and neck region | the heart, lungs, esophagus, and trachea | liver, spleen, stomach, pancreas, gallbladder, small and large bowel, and various sections of the intestine (duodenum) | organs related to female reproductive functions, including the cervix and uterus |
@@ -493,7 +493,7 @@ The list of organs from the annotations are divided into main categories of the 
 | **Categories** | **Endocrine System** | **Whole Body** | **Urinary System** | **Lymphatic/Immune System** |
 | Includes | glands like the thyroid | terms that refer to the entire body/not specific to one region, such as "whole body" and "cells" | kidneys and other urinary tract structures | lymph nodes |
 
-The list of image types from the annotations are divided into main categories of the body, based on the imaging technique, purpose, or the type of information they provide.
+The list of image types from the annotations are divided into main categories of the body, based on the imaging technique, purpose, or the type of information they provide
 | **Category** | **Subcategory** | **Examples** |
 |---|---|---|
 | **Radiology** | MRI (Magnetic Resonance Imaging) | 'mri', 'mr' |
