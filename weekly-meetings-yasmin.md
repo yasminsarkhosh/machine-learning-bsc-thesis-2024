@@ -472,7 +472,52 @@ Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my pr
 ### Who helped you this week?
 N/A
 ### What did you achieve?
+* Merged findings together in the report 
+* Finished a final annotation guide
+* Refined already-made annotations by merging values into categories 
+  * Annotated 50 papers by sentence extractions 
+
+| **Categories** | **Cranial/Head and Neck** | **Thoracic/Chest** | **Abdominal** | **Female Reproductive System** |
+|:---:|:---:|:---:|:---:|:---:|
+| Includes | organs located in the head and neck region | the heart, lungs, esophagus, and trachea | liver, spleen, stomach, pancreas, gallbladder, small and large bowel, and various sections of the intestine (duodenum) | organs related to female reproductive functions, including the cervix and uterus |
+| **Categories** | **Skeletal System** | **Skin and Breast** | **Pelvic** | **Male Reproductive System** |
+| Includes | the spinal cord, mandible | skin and breast, as these are specified separately from internal organ systems | colorectal | organs specific to the male reproductive function, such as the penis and prostate |
+| **Categories** | **Endocrine System** | **Whole Body** | **Urinary System** | **Lymphatic/Immune System** |
+| Includes | glands like the thyroid | terms that refer to the entire body/not specific to one region, such as "whole body" and "cells" | kidneys and other urinary tract structures | lymph nodes |
+
+The list of imange types from the annotations are divided into main categories of the body, based on the imaging technique, purpose, or the type of information they provide
+
+
+| **Category** | **Subcategory** | **Examples** |
+|---|---|---|
+| **Radiology** | MRI (Magnetic Resonance Imaging) | 'mri', 'mr' |
+|  | CT (Computed Tomography) | 'ct', 'ct volumes' |
+|  | X-rays | 'xrays' |
+|  | Ultrasound | 'us volumes', 'ius' |
+|  | PET (Positron Emission Tomography) | 'pet' |
+|  | fMRI (Functional MRI) | 'fmri' |
+| **Endoscopy** | General Endoscopy | 'endoscopy' |
+|  | Gastroscopy | 'gastroscopy' |
+|  | Colonoscopies | 'colonoscopies' |
+| **Pathology** | Pathology Images | 'pathology images' |
+|  | Histology Images | 'histology images', 'h&e', 'stained image tiles' |
+|  | WSI (Whole Slide Imaging) | 'wsi', 'wsis' |
+| **Imaging Processing and Analysis** | Segmentations | 'segmentations' |
+|  | ROI Masks (Region of Interest Masks) | 'roi masks' |
+| **Miscellaneous** | 3D Imaging | '3d' |
+|  | Image Titles | 'image titles' |
+|  | No Image Type Mentioned | 'no image type mentioned' |
+
+
+* Decided to focus only on dataset details in papers for now (and wait with processing findings/annotations of bias-related sentences as it's more complicated)
+* Worked on data visualisations and refining flowcharts 
+
 ### What did you struggle with?
+* My mental health 
+* With finding my focus for this thesis
+* Data visualisations 
+* How I should present the findings of annotations and whether the main categories are sufficient enough 
+
 ### What would you like to work on next week?
 ### Where do you need help from Veronika?
 ### Any other topics
