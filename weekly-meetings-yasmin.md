@@ -473,6 +473,11 @@ Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my pr
 N/A
 ### What did you achieve?
 * Merged findings together in the report 
+  * Introduction: done
+  * Methodology: done
+  * Method: in-progress
+  * Results/Findings: not started
+  * Discussion: notes added
 * Finished a final annotation guide
 * Refined already-made annotations by merging values into categories 
   * Annotated 50 papers by sentence extractions 
@@ -513,8 +518,8 @@ The list of imange types from the annotations are divided into main categories o
 * Worked on data visualisations and refining flowcharts 
 
 ### What did you struggle with?
-* My mental health 
-* With finding my focus for this thesis
+* My mental health - not taking any breaks, feeling self-critical of my achivements 
+* Finding my focus for this thesis - I feel lost 
 * Data visualisations 
 * How I should present the findings of annotations and whether the main categories are sufficient enough 
 
