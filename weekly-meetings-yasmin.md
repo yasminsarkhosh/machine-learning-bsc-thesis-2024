@@ -11,7 +11,7 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [19 mar 2024](#date-19-mar-2024)
 * [22 mar 2024](#date-22-mar-2024)
 * [02 apr 2024](#date-02-apr-2024)
-
+* [09 apr 2024](#date-09-apr-2024)
 
 
 ***
@@ -463,9 +463,18 @@ With all the above
 * I feel kinda scattered. Been working hard on extracting data, defining annotation guides and purposes, writing and rewriting code, experiments. I work on my BA non-stop, and I managed to create and gather a lot of stuff/information. However, is it enough? What am I missing, where should I put my focus now nearing the submission date. 
 Nonetheless, I find it quite difficult evaluating the "quality"/"level" of my project: am I living up to the expections of making/writing a BA-thesis? All though I feel a lot of the work processes and methods I have used for this projects are new to me (not really something that's been prioritised in the curriculum I can't quite figure out if that lives up to the academic requirements for a BA thesis in data science..) 
 
-### What are the agreements after this meeting? (to fill in after the meeting) 
+### Any other topics
+* Models? Metrices? 
+* How much of the notebooks should I add to the report? Like the reasoning for how I created the different notebooks?
+* Annotation scheme
 
-
-
+### Date: 09 apr 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
+### What did you struggle with?
+### What would you like to work on next week?
+### Where do you need help from Veronika?
+### Any other topics
 
 
