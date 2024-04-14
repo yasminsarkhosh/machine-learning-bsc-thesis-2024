@@ -530,3 +530,37 @@ The list of image types from the annotations are divided into main categories of
 ### Any other topics
 
 
+
+### Date: 16 apr 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
+Report
+* Introduction: semi-done
+* Background: semi-done
+* Methodology: semi-done
+* Methods: in-progress
+  * Flowcharts
+* Findings: in-progress
+  * Making plots of findings
+  * Notebook: [analysis and data visualisations](notebooks/final_analysis.ipynb)
+  * Plots are added into a separate .tex file to get an overview of what plots are relevant and interesting
+
+Annotations
+* Annotated 62 papers
+  * [Annotation guide](<Annotation guide.docx>)
+  * [Annotations](outputs/annotation_data/new_annotations_final.xlsx)
+* Checked through the annotated papers 2 times
+* Refined scope of categories. Purpose: clear descriptions of what annotators need to annotate
+* Refined the annotation guide
+  * Still in progress
+  * Some categories need an update
+
+### What would you like to work on next week?
+* Finalizing the annotation guide completely for testing
+* Finding the right plots for Findings, maybe some inspiration for plot-ideas: both visually or altso categorially (what columns would be interesting to plot)
+
+### Where do you need help from Veronika?
+* To pick the right plots, evaluate which plots make sense, and if there are other good techniques for making data visualisations for categorial data 
+
+### Any other topics
