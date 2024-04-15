@@ -529,7 +529,7 @@ The list of image types from the annotations are divided into main categories of
 ### Where do you need help from Veronika?
 ### Any other topics
 
-
+***
 
 ### Date: 16 apr 2024
 ### Who helped you this week?
@@ -545,11 +545,13 @@ Report
   * Making plots of findings
   * Notebook: [analysis and data visualisations](notebooks/final_analysis.ipynb)
   * Plots are added into a separate .tex file to get an overview of what plots are relevant and interesting
+    * Captions are added  
+    * In overleaf this section is called 'data_visualisations.tex'
 
 Annotations
 * Annotated 62 papers
-  * [Annotation guide](<Annotation guide.docx>)
-  * [Annotations](outputs/annotation_data/new_annotations_final.xlsx)
+  * [Annotation guide](annotation_data/annotation_guide_details.docx)
+  * [Annotations](annotation_data/new_annotations_final.xlsx)
 * Checked through the annotated papers 2 times
 * Refined scope of categories. Purpose: clear descriptions of what annotators need to annotate
 * Refined the annotation guide
