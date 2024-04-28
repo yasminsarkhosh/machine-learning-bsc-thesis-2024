@@ -13,6 +13,7 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [02 apr 2024](#date-02-apr-2024)
 * [09 apr 2024](#date-09-apr-2024)
 * [16 apr 2024](#date-16-apr-2024)
+* [30 apr 2024](#date-30-apr-2024)
 
 ***
 ***
@@ -564,5 +565,58 @@ Annotations
 
 ### Where do you need help from Veronika?
 * To pick the right plots, evaluate which plots make sense, and if there are other good techniques for making data visualisations for categorial data 
+
+### Any other topics
+
+***
+
+### Date: 30 apr 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
+- Annotation Guide: Done
+  - Folder with 100 articles for annotations
+  - Instructions
+  - Annotation Scheme for Annotating
+  - Provided keyword list for searching after relevant text in articles
+- Annotation Data: Done
+  - 100 annotated articles
+  - 100 rows with raw data and 15 categories (besides article information)
+- Analysis of annotation data:
+  - Notebook: almost done with plots and statistics
+  - Overview of findings 
+  - List of datasets used 
+- Report
+  - Introduction: Done 
+  - Background: Almost done
+  - Methodology: Done
+  - Experimental Setting: Done
+  - Findings: Almost Done
+  - Discussion: In progress
+  - Flowcharts: Almost done
+  - Appendencies: Almost done
+- Data visualisations
+  - Stacked bar charts
+  - Sankey plots
+
+### What would you like to work on next week?
+- Finishing report
+- Tidying notebooks 
+- Settling on data visualisations (categories and metrices)
+
+### Where do you need help from Veronika?
+- Helping me maintain focus in my report:
+  - What should I leave out?
+  - Where should I put more focus?
+  - Should I add more theories to support the purpose of my paper?
+  - Does the sectioning made sense?
+  - Which plots should I settle on?
+- Feedback on Annotation Guide
+- How I should organise my submission in Github
+  - MICCAI papers
+  - Notebooks
+  - Raw Data
+  - Cleaned/Processed Data
+  - Packages and Libraries 
 
 ### Any other topics
