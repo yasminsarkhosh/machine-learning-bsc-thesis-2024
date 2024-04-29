@@ -601,7 +601,7 @@ N/A
 
 ### What would you like to work on next week?
 - Finishing report
-- Tidying notebooks 
+- Tidying notebooks and make them ready for submission (script + requirements.txt)
 - Settling on data visualisations (categories and metrices)
 
 ### Where do you need help from Veronika?
