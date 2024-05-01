@@ -1,0 +1,737 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Estimated Time to Surgical Procedure Completion: An Exploration of Video Analysis Methods</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Barak</forename><surname>Ariel</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Theator Inc</orgName>
+								<address>
+									<settlement>Palo Alto</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yariv</forename><surname>Colbeci</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Theator Inc</orgName>
+								<address>
+									<settlement>Palo Alto</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Judith</forename><surname>Rapoport Ferman</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Dotan</forename><surname>Asselmann</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Theator Inc</orgName>
+								<address>
+									<settlement>Palo Alto</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Omri</forename><surname>Bar</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Theator Inc</orgName>
+								<address>
+									<settlement>Palo Alto</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Estimated Time to Surgical Procedure Completion: An Exploration of Video Analysis Methods</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="165" to="175"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EF0699FAA5D562E31AEFC51B9D700C1C</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_16</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Surgical Intelligence • Operating Room</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>An accurate estimation of a surgical procedure's time to completion (ETC) is a valuable capability that has significant impact on operating room efficiency, and yet remains challenging to predict due to significant variability in procedure duration. This paper studies the ETC task in depth; rather than focusing on introducing a novel method or a new application, it provides a methodical exploration of key aspects relevant to training machine learning models to automatically and accurately predict ETC. We study four major elements related to training an ETC model: evaluation metrics, data, model architectures, and loss functions. The analysis was performed on a large-scale dataset of approximately 4,000 surgical videos including three surgical procedures: Cholecystectomy, Appendectomy, and Robotic-Assisted Radical Prostatectomy (RARP). This is the first demonstration of ETC performance using video datasets for Appendectomy and RARP. Even though AI-based applications are ubiquitous in many domains of our lives, some industries are still lagging behind. Specifically, today, ETC is still done by a mere average of a surgeon's past timing data without considering the visual data captured in the surgical video in real time. We hope this work will help bridge the technological gap and provide important information and experience to promote future research in this space. The source code for models and loss functions is available at: https://github. com/theator/etc.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>One of the significant logistical challenges facing hospital administrations today is operating room (OR) efficiency. This parameter is determined by many fac-tors, one of which is surgical procedure duration that reflects intracorporeal time, which in itself poses a challenge as, even across the same procedure type, duration can vary greatly. This variability is influenced by numerous elements, including the surgeon's experience, the patient's comorbidities, unexpected events occurring during the procedure, the procedure's complexity and more. Accurate realtime estimation of procedure duration improves scheduling efficiency because it allows administrators to dynamically reschedule before a procedure has run overtime. Another important aspect is the ability to increase patient safety and decrease complications by dosing and timing anesthetics more accurately.</p><p>Currently, methods aiming for OR workflow optimization through ETC are lacking. One study showed that surgeons underestimated surgery durations by an average of 31 min, while anesthesiologists underestimated the durations by 35 min <ref type="bibr" target="#b20">[21]</ref>. These underestimations drive inefficiencies, causing procedures to be delayed or postponed, forcing longer waiting times for patients. For example, a large variation of waiting time (47 ± 17 min) was observed in a study assessing 157 Cholecystectomy patients <ref type="bibr" target="#b14">[15]</ref>.</p><p>As AI capabilities have evolved greatly in recent years, the field of minimally invasive procedures, which is inherently video-based, has emerged as a potent platform for the harnessing of these capabilities to improve both patient care and workflow efficiency. Consequently, ETC has become a technologically achievable and clinically beneficial task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Initially, ETC studies performed preoperative estimates based on surgeon data, patient data, or a combination of these <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref>. Later on, intraoperative estimates were performed, with some studies requiring manual annotations or the addition of external information <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b15">16]</ref>. Recently, a study by Twinanda et al. <ref type="bibr" target="#b22">[23]</ref> achieved robust ETC results, even without incorporating external information, showing that video-based ETC is better than statistical analysis of past surgeons' data. However, all these studies have evaluated ETC using limited size datasets with inherent biases, as they are usually curated from a small number of surgeons and medical centers or exclude complex cases with significant unexpected events.</p><p>In this work, we study the key elements important to the development of ETC models and perform an in-depth methodical analysis of this task. First, we suggest an adequate metric for evaluation -SMAPE, and introduce two new architectures, one based on LSTM networks and one on the transformer architecture. Then, we examine how different ETC methods perform when trained with various loss functions and show that their errors are not necessarily correlated. We then test the hypothesis that an ensemble composed of several ETC model variations can significantly improve estimation compared to any single model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Evaluation Metrics</head><p>Mean Absolute Error (MAE). The evaluation metric used in prior work was MAE.</p><formula xml:id="formula_0">MAE(y, ŷ) = 1 T • T -1 t=0 |y t -ŷt | (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where T is a video duration, y is the actual time left until completion, and ŷ is the ETC predictions. A disadvantage of MAE is its reliance on the magnitude of values, consequently, short videos are likely to have small errors while long videos are likely to have large errors. In addition, MAE does not consider the actual video duration or the temporal location for which the predictions are made.</p><p>Symmetric Mean Absolute Percentage Error (SMAPE). SMAPE is invariant to the magnitude and keeps an equivalent scale for videos of different duration, thus better represents ETC performance <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b19">20]</ref>.</p><formula xml:id="formula_2">SM AP E(y, ŷ) = 1 T • T -1 t=0 ( |y t -ŷt | |y t | + | ŷt | • 100)<label>(2)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Datasets</head><p>We focus on three different surgical video datasets (a total of 3,993 videos) that were curated from several medical centers (MC) and include procedures performed by more than 100 surgeons. The first dataset is Laparoscopic Cholecystectomy that contains 2,400 videos (14 MC and 118 surgeons). This dataset was utilized for the development and ablation study. Additionally, we explore two other datasets: Laparoscopic Appendectomy which contains 1,364 videos (5 MC and 61 surgeons), and Robot-Assisted Radical Prostatectomy (RARP) which contains 229 videos (2 MC and 14 surgeons). The first two datasets are similar, both are relatively linear and straightforward procedures, have similar duration distribution, and are abdominal procedures with similarities in anatomical views. However, RARP is almost four times longer on average. Therefore, it is interesting to explore how methods developed on a relatively short and linear procedure will perform on a much longer procedure type such as RARP. Table <ref type="table">3</ref> in the appendix provides a video duration analysis for all datasets. The duration is defined as the difference between surgery start and end times, which is the time interval between scope-in and scope-out. All datasets were randomly divided into training, validation, and test sets with a ratio of 60/15/25%.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Loss Functions</head><p>Loss values are calculated by comparing ETC predictions ( ŷt ) for each timestamp to the actual time left until the procedure is complete (y t ). The final loss for each video is the result of averaging these values across all timestamps.</p><p>MAE Loss. The MAE loss is defined by:</p><formula xml:id="formula_3">L MAE (y, ŷ) = 1 T • T -1 t=0 |y t -ŷt | (3)</formula><p>Smooth L1 Loss. The smooth L1 loss is less sensitive to outliers <ref type="bibr" target="#b8">[9]</ref>.</p><formula xml:id="formula_4">L(y, ŷ) = 1 T • T -1 t=0 SmoothL1(y t -ŷt )<label>(4)</label></formula><p>in which</p><formula xml:id="formula_5">SmoothL1(x) = 0.5x 2 |x| &lt; 1 |x| -0.5 otherwise (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>SMAPE Loss. Based on the understanding that SMAPE (Sect. 3.1) is a good representation of the ETC problem, we also formulated it as a loss function:</p><formula xml:id="formula_7">L SMAP E (y, ŷ) = 1 T • T -1 t=0 ( |y t -ŷt | |y t | + | ŷt | • 100)<label>(6)</label></formula><p>Importantly, SMAPE produces higher loss values for the same absolute error as the procedure progresses, when the denominator is getting smaller. This property is valuable as the models should be more accurate as the surgery nears its end.</p><p>Corridor Loss. A key assumption overlooked in developing ETC methods is that significant and time-impacting events might occur during a procedure. For example, a prolonged procedure due to significant bleeding occurring after 30 min of surgery is information that is absent from the model when providing predictions at the 10 min timestamp. To tackle this problem, we apply the corridor loss <ref type="bibr" target="#b16">[17]</ref> that considers both the actual progress of a procedure and the average duration in the dataset (see Fig. <ref type="figure">2</ref> in the appendix for a visual example). The corridor loss acts as a wrapper (π) for other loss functions:</p><formula xml:id="formula_8">Corridor(Loss(y, ŷ)) = 1 T • T -1 t=0 π(y, t) • Loss(y t , ŷt )<label>(7)</label></formula><p>Interval L1 Loss. The losses described above focus on the error between predictions and labels for each timestamp independently. Influenced by the total variation loss, we suggest considering the video's sequential properties. The interval L1 loss focuses on jittering in predictions between timestamps in a pre-defined interval, aiming to force them to act more continuously. ŷt are the predictions per timestamp, and S is an interval time span (jump) between two timestamps.</p><formula xml:id="formula_9">L S IntervalL1 ( ŷt ) = T -S-1 t=0 |ŷ t+S -ŷt | (8)</formula><p>Total Variation Denoising Loss. This loss is inspired by a 1D total variation denoising loss and was modified to fit as part of the ETCouple model.</p><formula xml:id="formula_10">L squared_error (y, ŷ) = 1 2T • T -1 t=1 ((y t -ŷt ) 2 + (y t-S -ŷt-S ) 2 )<label>(9)</label></formula><p>L total_variation_denoising (y, ŷ) = L squared_error (y, ŷ) + λ • L S=120 IntervalL1 (ŷ) (10)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">ETC Models</head><p>Feature Representation. All models and experiments described in this work are based on fixed visual features that were extracted from the surgical videos using a pre-trained model. This approach allows for shorter training cycles, less computing requirements, and benefits from a model that was trained on a different task <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b13">14]</ref>. Previous works showed that pre-training could be done with either progress labels or surgical steps labels and that similar performances are achieved, with a slight improvement when using the steps label pre-training <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b22">23]</ref>. In this work, we use a pre-trained Video Transformer Network (VTN) <ref type="bibr" target="#b12">[13]</ref> model with a Vision Transformer (ViT) <ref type="bibr" target="#b7">[8]</ref> backbone as a feature extraction module. It was originally trained using the same training set (Sect. 3.2) for the step recognition task with a similar protocol to the one described by <ref type="bibr" target="#b4">[5]</ref>.</p><p>Inferring ETC. Our ETC architectures end with a single shared fully connected (FC) layer and a Sigmoid that outputs two values: ETC and progress.</p><p>ETC is inferred by averaging the predicted ETC value and the one calculated from the progress.</p><formula xml:id="formula_11">ET C = T -t el = t el progress -t el (<label>11</label></formula><formula xml:id="formula_12">)</formula><p>where T is the video duration and t el marks the elapsed time. Inspired by <ref type="bibr" target="#b11">[12]</ref>, we also incorporate t max which is defined as the expected maximum video length. t max is applied to scale the elapsed time and ensures values in a range [0, 1].</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ETC-LSTM.</head><p>A simple architecture that consists of an LSTM layer with a hidden size of 128. Following hyperparameters tuning on the validation set, the ETC-LSTM was trained using an SGD optimizer with a constant learning rate of 0.1 and a batch size of 32 videos.</p><p>ETCouple. ETCouple is a different approach to applying LSTM networks. In contrast to ETC-LSTM and similar methods which predict ETC for a single timestamp, here we randomly select one timestamp from the input video and set it as an anchor sample. The anchor is then paired with a past timestamp using a fixed interval of S = 120 s. The model is given two inputs, the features from the beginning of the procedure up to the anchor and the features up to the pair location. Instead of processing the entire video in an end-to-end manner, we only process past information and are thus able to use a bi-directional LSTM (hidden dimension is 128). The rest of the architecture contains a dropout layer (P = 0.5), the shared FC layer, and a Sigmoid function. We explored various hyperparameters and the final model was trained with a batch size of 16, an AdamW optimizer with a learning rate of 5 • 10 -4 , and a weight decay of 5 • 10 -3 .</p><p>ETCformer. LSTM networks have been shown to struggle with capturing longterm dependencies <ref type="bibr" target="#b21">[22]</ref>. Intuitively, ETC requires attending to events that occur in different temporal locations throughout the procedure. Thus, we propose a transformer-based network that uses attention modules <ref type="bibr" target="#b23">[24]</ref>. The transformer encoder architecture has four self-attention heads with a hidden dimension of size 512. To allow this model to train in a framework where all the video's features are the input to the model but still maintain a causal system, we used a forward direction self-attention <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref>. This is done by masking out future samples for each timestamp, thus relying only on past information. Best results on the validation set were achieved when training with a batch size of two videos, an AdamW optimizer with a learning rate of 10 -4 , and a weight decay of 0.1. 4 Results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Ablation Experiments</head><p>This section provides ablation studies on the Cholecystectomy dataset.</p><p>Loss Functions. Table <ref type="table" target="#tab_0">1</ref> provides a comparison on the same validation set when using one or the sum of a few loss functions. The classic approach of using LSTM produces the best results when using only MAE loss. However, ETCouple and ETCformer benefit from the combination of several loss functions.</p><p>Error Analysis. To test whether the errors of the various models are correlated, we compared the predictions made by the different models on a per-video basis. We use SMAPE and analyze the discrepancy by comparing the difference of every two model variations independently. Then, we divided the videos into a similar and a dissimilar group, by using a fixed threshold, i.e., if the SMAPE difference is smaller than the threshold the models are considered as providing similar results. The threshold was empirically set to 2, deduced from the ETC curves, which are almost identical when the SMAPE difference is smaller than 2 (Fig. <ref type="figure" target="#fig_1">1</ref>(a) and appendix Fig. <ref type="figure">4</ref>. We demonstrate these results visually in Fig. <ref type="figure" target="#fig_1">1</ref>(b). Interestingly, there are significant differences in SMAPE between different models (disagreement in more than 50%). ETC-LSTM and ETCouple show the highest disagreement.  Baseline Comparison. We reproduce RSDNet <ref type="bibr" target="#b22">[23]</ref> on top of our extracted features and use it as a baseline for comparison. We followed all methodical details described in the original paper, only changing the learning rate reduction policy to match the same epoch proportion in our dataset. Table <ref type="table" target="#tab_1">2</ref> shows that ETC-LSTM and RSDNet have similar results, ETC-LSTM achieves better SMAPE scores while RSDNet is more accurate in MAE. These differences can be the product of scaling the elapsed time using t max vs. s norm and shared vs. independent FC layer. The ETCformer model reaches the best SMAPE results but is still short on MAE.</p><p>Ensemble Analysis. There are many tasks in machine learning in which data can be divided into easy or hard samples. We argue that the ETC task is different in these regards. Based on the error analysis, we explored how an ensemble of models performs and if it produces better results (Table <ref type="table" target="#tab_1">2</ref>). In contrast to a classic use case of models ensemble, in which the same model is trained with bootstrapping on different folds of data, here we suggest an ensemble that uses different models, which essentially learn to perform differently on the same input video. Figure <ref type="figure">3</ref> in the appendix illustrates the MAE error graph for the ensemble, presenting the mean and SD of the MAE. All model variations' performance is also provided in the appendix in Table <ref type="table">4</ref>. When using more than one model, the ETC predictions for each model are averaged into a single end result. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Appendectomy and RARP Results</head><p>We examine the results on two additional datasets to showcase the key elements explored in this work (Table <ref type="table" target="#tab_1">2</ref>). In Appendectomy, the ensemble also achieves the best results on the test set with a significant drop in SMAPE and MAE scores. The ETCformer performs the worst compared to other model variations, this might be because transformers require more data for training, therefore additional data could show its potential as seen in Cholecystectomy. The RARP dataset contains fewer videos, but they are of longer duration. Here too, the ensemble achieves better SMAPE scores.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion</head><p>In this work, we examine different architectures trained with several loss functions and show how SMAPE can be utilized as a better metric to compare ETC models. In the error analysis, we conclude that each model learns to operate differently on the same videos. This led us to explore an ensemble of models which eventually achieves the best results. Yet, this conclusion can facilitate future work, focusing on understanding the differences and commonalities of the models' predictions and developing a unified or enhanced model, potentially reducing the complexity of training several ETC models and achieving better generalizability. Future work should also incorporate information regarding the surgeon's experience, which may improve the model's performance. This work has several limitations. First, the proposed models need to be evaluated across other procedures and specialties for their potential to be validated further. Second, the ensemble's main disadvantage is its requirement for more computing resources. In addition, there may be data biases due to variability in the time it takes surgeons to perform certain actions at different stages of their training. Finally, although our model relies on video footage only, and no annotations are required for ETC predictions, manual annotations of surgical steps are still needed for pre-training of the feature extraction model.</p><p>Real-time ETC holds great potential for surgical management. First, in optimizing OR scheduling, and second as a proxy to complications that cause unusual deviations in anticipated surgery duration. However, optimizing OR efficiency with accurate procedural ETC, based on surgical videos, has yet to be realized. We hope the information in this study will assist researchers in developing new methods and achieve robust performance across multiple surgical specialties, ultimately leading to better OR management and improved patient care.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) ETC per minute on a Cholecystectomy video. Each color represents a different ETC model, the numbers are the SMAPE scores. The dashed lines represents the ground truth progress. (b) An error analysis comparison was performed by measuring the difference in SMAPE per video between two independent models (each row is a pair of two models). The blue color represents the number of similar videos, and the orange color the number of dissimilar videos in the validation set (total of 366). (Color figure online)</figDesc><graphic coords="7,63,48,359,75,325,51,101,95" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparing validation set results of the mean SMAPE and MAE performance when training ETC models with one or a combination of a few loss functions.</figDesc><table><row><cell cols="4">MAE loss SMAPE loss Interval L1 loss (S = 1) Corridor loss Mean SMAPE MAE</cell></row><row><cell></cell><cell></cell><cell>20.68</cell><cell>7.67</cell></row><row><cell>ETC-LSTM</cell><cell></cell><cell>21 20.81</cell><cell>7.9 7.96</cell></row><row><cell></cell><cell></cell><cell>20.85</cell><cell>7.79</cell></row><row><cell></cell><cell></cell><cell>20.92</cell><cell>7.97</cell></row><row><cell>MAE loss SMAPE loss</cell><cell>Total variation denoising loss</cell><cell cols="2">Mean SMAPE MAE</cell></row><row><cell>ETCouple</cell><cell></cell><cell>21.84 21.7</cell><cell>7.81 8.82</cell></row><row><cell></cell><cell></cell><cell>21.6</cell><cell>8.1</cell></row><row><cell cols="4">MAE loss SMAPE loss Interval L1 loss (S = 1) Corridor loss Mean SMAPE MAE</cell></row><row><cell></cell><cell></cell><cell>21.13</cell><cell>7.79</cell></row><row><cell>ETCformer</cell><cell></cell><cell>21.06 20.78</cell><cell>7.65 7.38</cell></row><row><cell></cell><cell></cell><cell>20.68</cell><cell>7.72</cell></row><row><cell></cell><cell></cell><cell>20.54</cell><cell>7.67</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>ETC models comparison on the test set, using mean SMAPE and standard deviation (SD), median SMAPE, 90th percentile (90p) SMAPE, and MAE. The ensemble achieves the best results in most metrics.</figDesc><table><row><cell></cell><cell cols="4">Mean SMAPE [SD] Median SMAPE 90p SMAPE MAE (min)</cell></row><row><cell>RSDNet</cell><cell>20.97 [8.2]</cell><cell>19.06</cell><cell>32.6</cell><cell>7.48</cell></row><row><cell>ETC-LSTM</cell><cell>20.75 [8.1]</cell><cell>18.82</cell><cell>31.33</cell><cell>7.88</cell></row><row><cell>Cholecystectomy ETCouple</cell><cell>20.99 [8.3]</cell><cell>18.75</cell><cell>33.18</cell><cell>8.15</cell></row><row><cell>ETCformer</cell><cell>20.06 [7.8]</cell><cell>18.22</cell><cell>31.34</cell><cell>7.56</cell></row><row><cell>Ensemble</cell><cell>19.57 [7.9]</cell><cell>17.56</cell><cell>30.87</cell><cell>7.33</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. We thank <rs type="person">Ross Girshick</rs> for providing valuable feedback on this manuscript and for helpful suggestions on several experiments.</p></div>
+			</div>			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4_16.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deep neural networks predict remaining surgery duration from cholecystectomy videos</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Aksamentov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-66185-8_66</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-66185-8_66" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Descoteaux</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Franz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Collins</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Duchesne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10434</biblScope>
+			<biblScope unit="page" from="586" to="593" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Elective laparoscopic cholecystectomy</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ammori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Larvin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mcmahon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Surg. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="297" to="300" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Error measures for generalizing about forecasting methods: empirical comparisons</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Armstrong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Collopy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Forecast</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="69" to="80" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Armstrong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Forecasting</surname></persName>
+		</author>
+		<title level="m">From Crystal Ball to Computer</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1985">1985</date>
+			<biblScope unit="page">348</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Impact of data on generalization of AI for surgical intelligence applications</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A multi instance learning approach for critical view of safety detection in laparoscopic cholecystectomy</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Colbeci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zohar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Neimark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Asselmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Machine Learning Research</title>
+		<meeting>Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">182</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Automatic updating of times remaining in surgical cases using Bayesian analysis of historical case duration data and &quot;instant messaging&quot; updates from anesthesia providers</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Dexter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Epstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ledolter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Anesth. Analg</title>
+		<imprint>
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="929" to="940" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">An image is worth 16×16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Fast R-CNN</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1440" to="1448" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Estimating the duration of a case when the surgeon has not recently scheduled the procedure at the surgical suite</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Macario</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Dexter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Anesth. Analg</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1241" to="1245" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Online time and resource management based on surgical workflow time series analysis</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maktabi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Neumuth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="325" to="338" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">CataNet: predicting remaining cataract surgery duration</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Marafioti</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_41</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-1_41" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="426" to="435" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Video transformer network</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Neimark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zohar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Asselmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3163" to="3172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Train one, classify one, teach one&quot;-cross-surgery transfer learning for surgical step recognition</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Neimark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zohar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Asselmann</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="532" to="544" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Real-time estimation of surgical procedure duration</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Paalvast</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">17th International Conference on E-Health Networking, Application &amp; Services (HealthCom)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2015">2015. 2015</date>
+			<biblScope unit="page" from="6" to="10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">On-line recognition of surgical activity for monitoring in the operating room</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Blum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Feussner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">O</forename><surname>Berger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008">2008</date>
+			<biblScope unit="page" from="1718" to="1724" />
+		</imprint>
+		<respStmt>
+			<orgName>AAAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Unsupervised temporal video segmentation as an auxiliary task for predicting the remaining surgery duration</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rivoir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bodenstedt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Von Bechtolsheim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Distler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Weitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32695-1_4</idno>
+		<idno>OR 2.0/MLCN -2019</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32695-1_4" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11796</biblScope>
+			<biblScope unit="page" from="29" to="37" />
+			<date type="published" when="2019">2019</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">DiSAN: directional selfattention network for RNN/CNN-free language understanding</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Fast directional self-attention mechanism</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1805.00912</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A better measure of relative prediction accuracy for model selection and model estimation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tofallis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Oper. Res. Soc</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1352" to="1362" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Operating theatre time, where does it all go? A prospective observational study</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Travis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Woodhouse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Donovan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Brogan</surname></persName>
+		</author>
+		<idno type="DOI">10.1136/bmj.g7182</idno>
+		<ptr target="https://www.bmj.com/content/349/bmj.g7182" />
+	</analytic>
+	<monogr>
+		<title level="j">BMJ</title>
+		<imprint>
+			<biblScope unit="volume">349</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning longer-term dependencies in RNNs with auxiliary losses</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Trinh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Luong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4965" to="4974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">RSDNet: learning to predict remaining surgery duration from laparoscopic videos without manual annotations</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yengera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1069" to="1078" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

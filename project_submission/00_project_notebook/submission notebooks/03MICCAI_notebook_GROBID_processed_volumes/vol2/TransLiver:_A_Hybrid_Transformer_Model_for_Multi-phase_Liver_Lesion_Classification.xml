@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">TransLiver: A Hybrid Transformer Model for Multi-phase Liver Lesion Classification</title>
+				<funder ref="#_mgzQaKB">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_4FYhNSR">
+					<orgName type="full">Ministry of Science and Technology of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Xierui</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Zhejiang University</orgName>
+								<address>
+									<settlement>Hangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hanning</forename><surname>Ying</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Sir Run Run Shaw Hospital (SRRSH)</orgName>
+								<orgName type="institution">Zhejiang University School of Medicine</orgName>
+								<address>
+									<settlement>Hangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaoyin</forename><surname>Xu</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Brigham and Women&apos;s Hospital</orgName>
+								<orgName type="institution">Harvard Medical School</orgName>
+								<address>
+									<settlement>Boston</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiujun</forename><surname>Cai</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Sir Run Run Shaw Hospital (SRRSH)</orgName>
+								<orgName type="institution">Zhejiang University School of Medicine</orgName>
+								<address>
+									<settlement>Hangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Min</forename><surname>Zhang</surname></persName>
+							<email>minzhang@zju.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science and Technology</orgName>
+								<orgName type="institution">Zhejiang University</orgName>
+								<address>
+									<settlement>Hangzhou</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">TransLiver: A Hybrid Transformer Model for Multi-phase Liver Lesion Classification</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="329" to="338"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">FD864A0F6FB81B7CACEAF0DC787CD87F</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_31</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Focal liver lesion</term>
+					<term>Multi-phase fusion</term>
+					<term>Transformer X. Wang and H. Ying-Equal contribution</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Early diagnosis of focal liver lesions (FLLs) can decrease the fatality rate of liver cancer, which remains a big challenge. We designed a deep learning approach based on CT to assess and differentiate FLLs. To achieve high accuracy, CTs in different phases are integrated to provide more information than single-phase images. While most of the related studies use convolutional neural networks, we exploit the Transformer for multi-phase liver lesion classification. We propose a hybrid model called TransLiver, which has a transformer backbone and complementary convolutional modules. Specifically, we connect modified transformer blocks with convolutional encoder and down-samplers. For multi-phase fusion, we utilize cross phase tokens to reinforce the phases communication. In addition, we introduce a pre-processing unit to resolve realistic annotation issues. Extensive experiments are conducted, in which we achieve an overall accuracy of 90.9% on an in-house dataset of four CT phases and seven liver lesion classes. The results also show distinct advantages in comparison to state-of-art approaches in classification. The code is available at https://github.com/sherrydoge/TransLiver.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Liver cancer is one of the most deadly cancers and has the second highest fatality rate <ref type="bibr" target="#b17">[17]</ref>. Focal liver lesions (FLLs) are the most common lesions found in liver cancer, yet FLLs are challenging to diagnose because they can be either benign lesions, such as focal nodular hyperplasia (FNH), hepatic abscess (HA), hepatic hemangioma (HH), and hepatic cyst (HC) or malignant tumors, such as intrahepatic cholangiocarcinoma (ICC), hepatic metastases (HM), and hepatocellular carcinoma (HCC). Accurate early diagnosis of FLLs is thus critical to increasing the 5-year survival rate, a task that remains challenging as of today. Dynamic contrast-enhanced CT is a common technique for liver cancer diagnosis, where four different phases of imaging, namely, non-contrast (NC), arterial (ART), portal venous (PV), and delayed (DL) provide complementary information about the liver. Different types of FLLs acquired in the four phases are shown in Fig. <ref type="figure" target="#fig_0">1</ref>. With the development of deep learning, computer-aided liver lesion diagnosis has attracted much attention <ref type="bibr" target="#b5">[5,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b16">16]</ref> in recent years. Romero et al. <ref type="bibr" target="#b16">[16]</ref> presented an end-to-end framework based on Inception-V3 and InceptionResNet-V2 to discriminate liver lesions between cysts and malignant tumors. Heker et al. <ref type="bibr" target="#b8">[8]</ref> combined liver segmentation and classification using transfer learning and joint learning to increase the performance of CNN. As a manner to elevate the accuracy of CNNs, Frid-Adar et al. <ref type="bibr" target="#b5">[5]</ref> designed a GAN-based network to generate synthetic liver lesion images, improving the classification performance based on CNN. It is reported in many studies <ref type="bibr" target="#b9">[9,</ref><ref type="bibr" target="#b18">18]</ref> that using multi-phase data, like most professionals do in practice, can help the network get a more accurate result, which also acts in liver lesion classification <ref type="bibr" target="#b15">[15,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b24">24]</ref>. Yasaka et al. <ref type="bibr" target="#b24">[24]</ref> proposed multi-channel CNN to extract features from multi-phase liver CT by concatenation. Roboh et al. <ref type="bibr" target="#b15">[15]</ref> proposed an algorithm based on CNNs to handle 3D context in liver CTs and utilized clinical context to assist the classification. Xu et al. <ref type="bibr" target="#b23">[23]</ref> constructed a knowledge-guided framework to integrate liver lesion features from three phases using self-attention and fused them with a cross-feature interaction module and a cross-lesion correlation module.</p><p>A single-phase lesion annotation means the annotation of both lesion position and its class. In hospitals, collected multi-phase CTs are normally grouped by patients rather than lesions, which makes single-phase lesion annotation insufficient for feature fusion learning. However, the number of lesions inside a single patient can vary from one to dozens and they can be of different types in realistic cases. Multi-phase CTs are also not co-registered in most cases, therefore, it is necessary to make sure the lesions extracted from different phases are somehow aligned for feature fusion, which is called as multi-phase lesion annotation. Moreover, while most works have attached much importance to liver lesion segmentation <ref type="bibr" target="#b1">[2]</ref>, its outcome is usually organized at a single-phase level. Additional effort will be needed when consolidating segmentation and multi-phase classification.</p><p>Self-attention based transformers <ref type="bibr" target="#b19">[19]</ref> have shown strong capability in natural language processing tasks. Meanwhile, vision transformers (ViT) <ref type="bibr" target="#b4">[4]</ref> have been shown to replace CNN with a transformer encoder in computer vision tasks and can achieve obvious advantages on large-scale datasets. To the best of our knowledge, we find no study using ViT backbone network in liver lesion classification. The reason for this is twofold. First, pure ViT has several limitations itself <ref type="bibr" target="#b6">[6]</ref>, including ignoring local information within each patch, extracting only single-scale features, and lacking inductive bias. Second, no complete open liver lesion classification datasets exist. Most relevant studies are based on private datasets, which tend to be small in size and cause overfitting in learning models.</p><p>In this paper, we construct a hybrid framework with ViT backbone for liver lesion classification, TransLiver. We design a pre-processing unit to reduce the annotation cost, where we obtain lesion area on multi-phase CTs from annotations marked on a single phase. To alleviate the limitations of pure transformers, we propose a multi-stage pyramid structure and add convolutional layers to the original transformer encoder. We use additional cross phase tokens at the last stage to complete a multi-phase fusion, which can focus on cross-phase communication and improve the fusion effectiveness as compared with conventional modes. While most multi-phase liver lesion classification studies use datasets with no more than three phases (without DL phase for its difficulty of collection) or no more than six lesion classes, we validate the whole framework on an in-house dataset with four phases of abdominal CT and seven classes of liver lesions. Considering the disproportion of axial lesion slice number and the relatively small scale of the dataset, we adopt a 2-D network in classification part instead of 3-D in pre-processing part and achieve a 90.9% accuracy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_1">2</ref> illustrates the overall architecture of TransLiver, where activation layers and batch normalization layers are omitted. Multi-phase liver lesion CTs are converted from single-phase annotation to multi-phase annotation by a preprocessing unit including a registration network and a lesion matcher.</p><p>For each phase, a convolutional encoder extracts preliminary lesion features on axial slices. As the backbone of the whole framework, transformer encoder employs a 4-stage pyramid structure extracting multi-scale features, with each stage connected by a convolutional down-sampler. There are two types of transformer blocks, single-phase liver transformer block (SPLTB) and multi-phase liver transformer block (MPLTB). The former is phase-specific, while the latter is in charge of multi-phase fusion. Extracted features from different phases are averaged and classified by two successive fully connected networks. A voting strategy about slices is applied to decide the classification results. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Pre-processing Unit</head><p>The single-phase annotated lesion has the position and class labels in all phases but they are not aligned, so we could have difficulty finding out which lesions in different phases are the same with 2 or more lesions in one patient. To reduce errors caused by unregistered data and address the situation that one patient has multiple lesions of different types, we pre-process the multi-phase liver CTs registered and grouped by lesions.</p><p>The registration network is based on Voxelmorph <ref type="bibr" target="#b0">[1]</ref>, with a U-Net learning registration field and moving data transformed by the field. We also use auxiliary Dice loss function between fixed image lesion masks and moved image lesion masks to help the registration field learning. In <ref type="bibr" target="#b0">[1]</ref>, the network needs to specify an atlas image, otherwise, pairs of images will be registered to each other. But in our work, we need to register the original data in a cross-phase form. We choose an atlas phase ART as suggested by clinicians and other phases of CTs are registered to the ART phase of every patient.</p><p>After registration, a lesion matcher finds the same lesions in different phases. We generate a minimum circumscribed cuboid with padding as the lesion window for each lesion to keep the surrounding information. The windows are then converted to 0-1 masks to calculate Dice coefficient. Lesions with the maximal window Dice coefficient that is no less than a set threshold are considered the same. Only lesions completely found in all phases will be used in the following classification network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Convolutional Encoder and Convolutional Down-Sampler</head><p>In pure vision transformer, input images are converted to tokens by patch embedding and added with positional encoding to keep the positional information. Patch embedding consists of a linear connected layer or a convolutional layer, which does not enable to construct local relation <ref type="bibr" target="#b13">[13]</ref>. Absolute positional encoding destroys the translation variance <ref type="bibr" target="#b10">[10]</ref> that keeps the rotation and shift operations from altering the final results <ref type="bibr" target="#b6">[6]</ref>.</p><p>So, we construct a convolutional encoder without absolute positional encoding to replace the original embedding layer. For an input image X ∈ R B×H×W ×1 , B is the batch size, and H × W is the size of the input. The module contains four convolutional layers playing different roles. The first layer, Conv 1 , with a kernel size of 3, stride of 2, and output channels of 32, reduces the size to H 2 × W 2 . Next two layers, Conv 2 and Conv 3 , each with a kernel size of 3, stride of 1, and the same output channel as Conv 1 , extract local information. Conv 1 , Conv 2 , and Conv 3 each is followed by a GeLU activation layer and a batch normalization. Considering the design of PVTv2 <ref type="bibr" target="#b21">[21]</ref>, an overlapped convolutional layer, Conv 4 , with a kernel size of 7, stride of 2, and output channels of 64, is used to strengthen the connection among patches. It is followed by layer normalization.</p><formula xml:id="formula_0">The output Z is then reshaped from R B× H 4 × W 4 ×64 to R B× H×W 16 ×64</formula><p>to finish the tokenization of transformer.</p><p>We add convolutional down-samplers between stages of transformer encoder so that they can produce hierarchical representation like CNN structure. Each convolutional down-sampler contains a residual structure with a 3×3 depthwise convolution to increase the locality of our model. We also utilize a convolutional layer with a kernel size of 2 and stride of 2, which halves the image resolution and doubles the number of channels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Single-Phase Liver Transformer Block</head><p>Vision Transformers can get excellent performance on large-scale datasets such as ImageNet <ref type="bibr" target="#b4">[4]</ref>, but they are also prone to overfit on small datasets such as private hospital datasets. We adopt the spatial reduction structure proposed in PVT <ref type="bibr" target="#b20">[20]</ref> to largely reduce the computational overhead by reducing the size of K and V using depthwise convolution. Following <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b12">12]</ref>, a learnable relative positional encoding is added here to replace the absolute positional encoding. The self-attention module can be written as:</p><formula xml:id="formula_1">Attn (Q, K, V ) = Softmax Q × SR (K) √ d h + P SR (V )<label>(1)</label></formula><p>where Q, K, V are the same with original ViT, d h is the head dimension, and P is the relative positional encoding. Spatial reduction SR consists of a k × k depthwise convolution with a stride of k and a batch normalization, where k is the spatial reduction ratio set in each stage. Feed forward network (FFN) is designed for a better capacity of representation. We use the module designed in <ref type="bibr" target="#b6">[6]</ref> IRFFN (Inverted Residual FFN) with three convolutions instead of two linear layers in the initial vision transformer. The first and third convolutions are pointwise for dimension translation, which has a similar effect to the original linear layers. The second convolution with a shortcut connection extracts local information in a higher dimension and improves the gradient propagation ability across layers <ref type="bibr" target="#b6">[6]</ref>. The structure also has two GeLU activation layers between convolutional layers and three batch normalizations after the GeLUs and the last convolutional layer for better performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Multi-phase Liver Transformer Block</head><p>Single-phase liver transformer block (SPLTB) is phase-specific, which means the model parameters of each phase are independent. It can fully extract features in different phases before fusion. Inspired by <ref type="bibr" target="#b14">[14]</ref>, in stage 4, we design a multi-phase liver transformer block (MPLTB) for communication between phases. MPLTB introduced some new parameters that are not in the original transformer. These parameters are randomly initialized, concatenated with the corresponding phase tokens respectively, and updated in phase-specific SPLTB. Then, they are separated and averaged for the next layer. The whole module is defined as:</p><formula xml:id="formula_2">Concat X l+1 i , t l i = SPLTB Concat X l i , t l t l+1 = Avg t l i (2)</formula><p>where X l i is phase tokens of the ith phase and the lth layer and t l is cross phase tokens of the lth layer. Because of the phase-specific SPLTB, t l i represents the corresponding cross phase tokens output of the ith phase in the lth layer. Cross phase tokens need negligible extra cost and can force the information to concentrate inside the tokens <ref type="bibr" target="#b14">[14]</ref>. Compared to the direct fusion of input images or output features like average and concatenation, cross phase tokens can also reduce fusion granularity to sufficiently explore the relationship among phases. It is worth noting that these tokens will be removed provisionally when reshaping the phase tokens in SPLTB for right execution. The fusion is conducted in deep layers because the semantic concepts are learned in higher layers which benefits the cross phase connection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Liver Lesion Classification</head><p>Dataset. The employed single-phase annotated dataset is collected from Sir Run Run Shaw Hospital (SRRSH), affiliated with the Zhejiang University School of Medicine, and has received the ethics approval of IRB. The collection process can be found in supplementary materials. The size of each CT slice is decreased to 224×224 using cubic interpolation. After the pre-processing unit with window Dice threshold of 0.3, we screen 761 lesions from 444 patients with four phases of CTs, seven types of lesions (13.2% of HCC, 5.3% of HM, 11.3% of ICC, 22.6% of HH, 31.1% of HC, 8.7% of FNH, and 7.8% of HA), and totally 4820 slices. To handle the imbalance of dataset, we randomly select 586 lesions as the training and validation set with no more than 700 axial slices in each lesion type, and the rest 175 lesions constitute the test set. Lesions from the same patient are either assigned to the training and validation set or the test set, but not both.</p><p>Implementations. The training and validation set is randomly divided with a 4:1 ratio. The data is augmented by flip, rotation, crop, shift, and scale. We initialize the backbone network using pre-trained weights of CMT-S <ref type="bibr" target="#b6">[6]</ref>. Our models are implemented by Pytorch1.12.1 and Timm0.6.13 <ref type="bibr" target="#b22">[22]</ref>. Then, they are trained on four NVIDIA Tesla A100 GPUs for 200 epochs using cross-entropy loss function with label smoothing and SGD optimizer with learning rate warmup and cosine annealing. The batch size is 32 and the learning rate is 1e-3. We measured performance by precision (Pre.), sensitivity (Sen.), specificity (Spe.), F1-score (F1), area under the curve (AUC), and accuracy (Acc.).</p><p>Results. We first compare the class-wise accuracy of our model against other advanced methods applying different architectures in multi-phase liver lesion classification with more than four lesion types <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b11">11,</ref><ref type="bibr" target="#b15">15,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b24">24]</ref>. TransLiver gets the highest overall accuracy of 90.9% classifying the most lesion types of seven (HCC 90.9%, HM 62.5%, ICC 73.7%, HH 91.7%, HC 100.0%, FNH 100.0%, and HA 93.3%). In the results of our method, HM has a relatively low performance of 62.5%, mainly due to its low proportion in our dataset. The details can be found in supplementary materials.</p><p>Because the sources of data are different among the methods compared above and to the best of our knowledge, no relevant study based on transformers was found, we further train some SOTA normal classification models on our dataset. Considering the fairness, all the models below are initialized with pre-trained weights and adopt 2-D structures using the same slice-level classification strategy. For completeness, we concatenate the multi-phase features to execute the fusion. As illustrated in Table <ref type="table" target="#tab_0">1</ref>, our proposed TransLiver model gets better performance than other models in all metrics. Behind our model, CMT-S achieves the best performance, indicating the effect of convolutional structures in transformer. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Ablation Study</head><p>To verify the improvement of our modules, we conduct three baseline experiments for comparison. Here convolutional encoder, convolutional down-sampler, and SPLTB as a whole is called c-SPLTB. Baseline 0 does not use c-SPLTB or cross phase tokens in MPLTB but replaces them with pure vision transformer and output feature concatenation respectively. Baseline 1 adds the c-SPLTB and Baseline 2 adds the cross phase tokens. A 3-D version of Baseline 2 utilizing 3-D patch embedding is also studied in Baseline 3 to validate the advantage of our 2-D model. The result shown in Fig. <ref type="figure" target="#fig_2">3</ref> demonstrates that our design choice is appropriate. It is worth mentioning that the 2-D structure is prone to redundancy between axial slices and ignores the relation between slices compared with the 3-D structure but gets observably higher accuracy. We suppose the reason is twofold. Most of lesions in our dataset having few slices weakens the redundancy between slices in 2-D pipeline, while the number of slices is still obviously larger than the number of lesions, alleviating the overfitting issue. Furthermore, vision transformers are mostly pretrained in 2-D images, causing poor performance when transferring to 3-D pipeline.</p><p>We also evaluate the model performance under different phase combinations by cutting the branch of certain phases. It shows that information from various phases can significantly influence the classification performance. A missing phase can cause an accuracy drop of about 10% and complete four-phase model outperforms single-phase model by nearly 20%. Figure <ref type="figure" target="#fig_3">4</ref> contains average results of phase number and details with all phase combinations can be found in supplementary materials.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We have presented a hybrid architecture for multi-phase liver lesion classification in this paper. The lesion features are extracted by transformer backbone with several auxiliary convolutional modules. Then, we fuse the features from different phases through cross phase tokens to enhance their information exchange.</p><p>To handle the issues in realistic cases, we design a pre-processing unit to acquire multi-phase annotated lesions from single-phase annotated ones. We report performance of an overall 90.9% classification accuracy on a four-phase seven-class dataset through quantitative experiments and show obvious improvement compared with SOTA classification methods. In future work, we will extend classification to instance segmentation and provide an end-to-end effective model for liver lesion diagnosis.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Representative types of FLLs shown in different CT phases, where contours show the annotated lesion boundaries. In each image, the phase sequence from left to right and top to bottom is NC, ART, PV, and DL, respectively.</figDesc><graphic coords="2,59,79,164,60,304,39,69,25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The overall architecture of the proposed TransLiver model.</figDesc><graphic coords="4,45,81,54,17,332,65,190,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Ablation study of modules.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Ablation study of phase number.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Performance of TransLiver and other SOTA classification methods.</figDesc><table><row><cell>Method</cell><cell>Pre. Sen. Spe. F1</cell><cell>AUC Acc.</cell></row><row><cell cols="3">ResNet-18 [7] 71.7 72.6 96.1 71.2 92.6 77.1</cell></row><row><cell>ViT-S [4]</cell><cell cols="2">79.6 79.4 97.2 78.6 92.9 82.9</cell></row><row><cell>Swin-S [12]</cell><cell cols="2">77.7 78.1 97.1 77.3 93.8 82.3</cell></row><row><cell>CMT-S [6]</cell><cell cols="2">80.5 80.5 97.6 80.0 94.1 85.7</cell></row><row><cell cols="2">TransLiver 88.</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>7 87.4 98.5 87.3 95.1 90.9</head><label></label><figDesc></figDesc><table /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (grant numbers <rs type="grantNumber">62202426</rs>) and <rs type="funder">Ministry of Science and Technology of China</rs> (grant numbers <rs type="grantNumber">2022AAA010502</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_mgzQaKB">
+					<idno type="grant-number">62202426</idno>
+				</org>
+				<org type="funding" xml:id="_4FYhNSR">
+					<idno type="grant-number">2022AAA010502</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 31.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Voxelmorph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The liver tumor segmentation benchmark (LiTS)</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bilic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page">102680</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">A cascade attention network for liver lesion classification in weaklylabeled multi-phase CT images</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<editor>Wang, Q., et al.</editor>
+		<imprint/>
+	</monogr>
+	<note>DART/MIL3ID -2019</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-030-33391-1_15</idno>
+		<idno>978-3-030-33391-1 15</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">11795</biblScope>
+			<biblScope unit="page" from="129" to="138" />
+			<date type="published" when="2019">2019</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">An image is worth 16×16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">th International Conference on Learning Representations, ICLR 2021, Virtual Event</title>
+		<meeting><address><addrLine>Austria</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2021-05">May 2021. 2021</date>
+			<biblScope unit="page" from="3" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Synthetic data augmentation using GAN for improved liver lesion classification</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Frid-Adar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Klang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Amitai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Goldberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Greenspan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="289" to="293" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">CMT: Convolutional neural networks meet vision transformers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="12175" to="12185" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Joint liver lesion segmentation and classification via transfer learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Heker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Greenspan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2004.12352</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Non-parametric combination of multimodal MRI for lesion detection in focal epilepsy</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Isen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage Clin</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page">102837</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">On translation invariance in CNNs: convolutional layers can exploit absolute spatial location</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">S</forename><surname>Kayhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gemert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="14274" to="14285" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Combining convolutional and recurrent neural networks for classification of focal liver lesions in multi-phase CT images</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00934-2_74</idno>
+		<idno>978-3-030-00934-2 74</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11071</biblScope>
+			<biblScope unit="page" from="666" to="675" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Swin transformer: Hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Object recognition from local scale-invariant features</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Lowe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Seventh IEEE International Conference on Computer Vision</title>
+		<meeting>the Seventh IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="1999">1999</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1150" to="1157" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Attention bottlenecks for multimodal fusion</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nagrani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arnab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Schmid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="14200" to="14213" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Context in medical imaging: the case of focal liver lesion classification</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Raboh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Levanony</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dufort</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sitek</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Image Processing</title>
+		<imprint>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="165" to="172" />
+			<date type="published" when="2022">2022</date>
+			<publisher>SPIE</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">End-to-end discriminative deep network for liver lesion classification</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">P</forename><surname>Romero</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 16th International Symposium on Biomedical Imaging (ISBI 2019)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2019">2019. 2019</date>
+			<biblScope unit="page" from="1243" to="1246" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Cancer statistics</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Siegel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">D</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">E</forename><surname>Fuchs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jemal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="7" to="33" />
+			<date type="published" when="2022">2022. 2022</date>
+		</imprint>
+	</monogr>
+	<note>CA: a cancer</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Multimodal fusion using sparse CCA for breast cancer survival prediction</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Subramanian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Syeda-Mahmood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Do</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1429" to="1432" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Pyramid vision transformer: a versatile backbone for dense prediction without convolutions</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="568" to="578" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">PVT v2: improved baselines with pyramid vision transformer</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Visual Med</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="415" to="424" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wightman</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.4414861</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4414861" />
+		<title level="m">Pytorch image models</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">A knowledge-guided framework for fine-grained classification of liver lesions based on multi-phase ct images</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="386" to="396" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Deep learning with convolutional neural network for differentiation of liver masses at dynamic contrast-enhanced CT: a preliminary study</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yasaka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Akai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Abe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kiryu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">286</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="887" to="896" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

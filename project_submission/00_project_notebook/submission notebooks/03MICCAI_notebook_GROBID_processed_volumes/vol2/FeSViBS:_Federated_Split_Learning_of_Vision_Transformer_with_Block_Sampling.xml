@@ -1,0 +1,841 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">FeSViBS: Federated Split Learning of Vision Transformer with Block Sampling</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Faris</forename><surname>Almalik</surname></persName>
+							<email>faris.almalik@mbzuai.ac.ae</email>
+							<idno type="ORCID">0000-0002-7885-6285</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Mohamed Bin Zayed University of Artificial Intelligence</orgName>
+								<address>
+									<settlement>Abu Dhabi</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Naif</forename><surname>Alkhunaizi</surname></persName>
+							<email>naif.alkhunaizi@mbzuai.ac.ae</email>
+							<idno type="ORCID">0000-0002-7093-5034</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Mohamed Bin Zayed University of Artificial Intelligence</orgName>
+								<address>
+									<settlement>Abu Dhabi</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ibrahim</forename><surname>Almakky</surname></persName>
+							<email>ibrahim.almakky@mbzuai.ac.ae</email>
+							<idno type="ORCID">0009-0008-8802-7107</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Mohamed Bin Zayed University of Artificial Intelligence</orgName>
+								<address>
+									<settlement>Abu Dhabi</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Karthik</forename><surname>Nandakumar</surname></persName>
+							<email>karthik.nandakumar@mbzuai.ac.ae</email>
+							<idno type="ORCID">0000-0002-6274-9725</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Mohamed Bin Zayed University of Artificial Intelligence</orgName>
+								<address>
+									<settlement>Abu Dhabi</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">FeSViBS: Federated Split Learning of Vision Transformer with Block Sampling</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="350" to="360"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">B67C9784109C658CEDBA3165977FBA60</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_33</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Split learning</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Data scarcity is a significant obstacle hindering the learning of powerful machine learning models in critical healthcare applications. Data-sharing mechanisms among multiple entities (e.g., hospitals) can accelerate model training and yield more accurate predictions. Recently, approaches such as Federated Learning (FL) and Split Learning (SL) have facilitated collaboration without the need to exchange private data. In this work, we propose a framework for medical imaging classification tasks called Federated Split learning of Vision transformer with Block Sampling (FeSViBS). The FeSViBS framework builds upon the existing federated split vision transformer and introduces a block sampling module, which leverages intermediate features extracted by the Vision Transformer (ViT) at the server. This is achieved by sampling features (patch tokens) from an intermediate transformer block and distilling their information content into a pseudo class token before passing them back to the client. These pseudo class tokens serve as an effective feature augmentation strategy and enhances the generalizability of the learned model. We demonstrate the utility of our proposed method compared to other SL and FL approaches on three publicly available medical imaging datasets: HAM1000, BloodMNIST, and Fed-ISIC2019, under both IID and non-IID settings. Code: https://github.com/faresmalik/FeSViBS.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Vision Transformers (ViTs) are self-attention based neural networks that have achieved state-of-the-art performance on various medical imaging tasks <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b29">30]</ref>. Since ViTs are capable of encoding long range dependencies between input F. Almalik and N. Alkhunaizi-Equal contribution sequences <ref type="bibr" target="#b15">[16]</ref>, they are more robust against distribution shifts and are wellsuited for handling heterogeneous distributions <ref type="bibr" target="#b4">[5]</ref>. However, training ViT models typically requires significantly more data than traditional Convolutional Neural Network (CNN) models <ref type="bibr" target="#b15">[16]</ref>, which limits their application in domains such as healthcare, where data scarcity is a challenge. One way to overcome this challenge is to train such models in a collaborative and distributed manner, where large amounts of data can be leveraged from different sites without the need for sharing private data <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b10">11]</ref>. Federated learning and split learning are two well-known approaches for collaborative model training.</p><p>Federated Learning (FL) enables clients to collaboratively learn a global model by aggregating locally trained models <ref type="bibr" target="#b13">[14]</ref>. Since this can be accomplished without sharing raw data, FL mitigates risks related to private data leakage. Several aggregation rules such as FedAvg <ref type="bibr" target="#b19">[20]</ref> and FedProx <ref type="bibr" target="#b18">[19]</ref> have been proposed for FL. However, it has been demonstrated that most FL algorithms are vulnerable to gradient inversion attacks <ref type="bibr" target="#b12">[13]</ref>, which dilute their privacy guarantees. In contrast, Split Learning (SL) divides a deep neural network into components with independently accessible parameters <ref type="bibr" target="#b9">[10]</ref>. Since no participant in SL can access the complete model parameters, it has been claimed that SL offers better data confidentiality compared to FL. In particular, the U-shaped SL configuration, where each client has its own feature extraction head and a task-specific tail <ref type="bibr" target="#b26">[27]</ref> can further improve client privacy, as it circumvents the need to share the data or labels. Recently, SL frameworks have been proposed for various medical applications such as tumor classification <ref type="bibr" target="#b2">[3]</ref> and chext x-ray classification <ref type="bibr" target="#b22">[23]</ref>.</p><p>Recent studies <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b21">22]</ref> have demonstrated that both FL and SL can be combined to effectively train ViTs. In <ref type="bibr" target="#b21">[22]</ref>, a framework called FeSTA was proposed for medical image classification. The FeSTA framework involves a hybrid ViT architecture with U-shaped SL configuration -each client has its own CNN head and a multilayer perceptron (MLP) tail, while the shared ViT body resides on a central server. This architecture can be trained using both SL and FL in a potentially task-agnostic fashion, leading to better performance compared to other distributed learning methods. The work in <ref type="bibr" target="#b20">[21]</ref> focuses on privacy and incorporates differential privacy with mixed masked patches sent from the ViT on the server to the clients to prevent any potential data leakage.</p><p>In this work, we build upon the FeSTA framework <ref type="bibr" target="#b21">[22]</ref> for collaborative learning of ViT. Despite its success, FeSTA requires pretraining the ViT body on a large dataset prior to its utilization in the SL and FL training process. In the absence of pretraining, limited training data availability (a common problem in medical imaging) leads to severe overfitting and poor generalization. Furthermore, the FeSTA framework exploits only the final cls token produced by the ViT body and ignores all the other intermediate features of the ViT. It is well-known that intermediate features (referred to as patch tokens) also contain discriminative information that could be useful for the classification task <ref type="bibr" target="#b3">[4]</ref>.</p><p>To overcome the above limitations, we propose a framework called Federated Split learning of Vision transformer with Block Sampling (FeSViBS). Our primary novelty is the introduction of a block sampling module, which randomly selects an intermediate transformer block for each client in each training round, extracts intermediate features, and distills these features into a pseudo cls token using a shared projection network. The proposed approach has two key benefits: (i) it effectively leverages intermediate ViT features, which are completely ignored in FeSTA, and (ii) sampling these intermediate features from different blocks, rather than relying solely on an individual block's features or the final cls token, serves as a feature augmentation strategy for the network, enhancing its generalization. The contributions of this work can be summarized as follows: i. We propose the FeSViBS framework, a novel federated and split learning framework that leverages the features learned by intermediate ViT blocks to enhance the performance of the collaborative system. ii. We introduce block sampling at the server level, which acts as a feature augmentation strategy for better generalization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>We first describe the working of a typical split vision transformer before proceeding to describe FeSViBS.</p><formula xml:id="formula_0">Each client c ∈ [1, n] has access to local private data (x c , y c ) ∈ {x (i) c , y (i) c } Nc i=1</formula><p>, where N c is the number of training samples available at client c, x represents the input data, and y is the class label. Following <ref type="bibr" target="#b21">[22]</ref>, we assume U-shaped split learning setting, with each client having two local networks called head (H θc ) and tail (T ψc ), where θ c and ψ c are client-specific head and tail parameters, respectively. The server consists of a ViT body (B Φ ), which includes a stack of L transformer blocks denoted as</p><formula xml:id="formula_1">B Φ1 , B Φ2 , • • • , B ΦL and B Φ (•) = B ΦL (• • • (B Φ2 (B Φ1 (•)))).</formula><p>Here, Φ l represents the parameters of the l th transformer block and</p><formula xml:id="formula_2">Φ = [Φ 1 , Φ 2 , • • • , Φ L ]</formula><p>denotes the complete set of parameters of the transformer body.</p><p>During training, the client performs a forward pass of the input data through the head to produce an embedding h c = H θc (x c ) ∈ R 768×M of its local data, which is typically organized as M patch tokens representing different patches of the input image. These embeddings (smashed representations) are then sent to the server. The ViT appends an additional token called the class token (cls ∈ R 768×1 ) and utilizes the self-attention mechanism to obtain a representation b c = B Φ (h c ) ∈ R 768×1 , which is typically the cls token resulting from the last transformer block. This cls token is returned to the client for further processing. The tail at each client projects the received class token representation b c into a class probability distribution to get the final prediction ŷc = T ψc (b c ). This marks the end of the forward pass. Subsequently, the backpropagation starts with computing loss c (y c , ŷc ), where c (.) represents the client's loss function between the true labels y c and predicted labels ŷc . The gradient of this loss is propagated back in the reverse order from the client's tail, server's body, to the client's head. We refer to this setting as Split Learning of Vision Transformer (SLViT), where each client optimizes the following objective in each round:</p><formula xml:id="formula_3">min θc,Φ,ψc 1 N c Nc i=1 c y (i) c , T ψc (B Φ (H θc (x (i) c ))<label>(1)</label></formula><p>In FeSTA <ref type="bibr" target="#b21">[22]</ref>, an additional federation step was introduced. After every few SL rounds, the local (client-specific) heads and tails are aggregated in a unifying round using FedAvg <ref type="bibr" target="#b19">[20]</ref> to produce global parameters θ and ψ. Note that the above framework completely ignores all the intermediate features (patch tokens) extracted from various ViT blocks. In <ref type="bibr" target="#b3">[4]</ref>, it was demonstrated that these patch tokens are also discriminative and valuable for classification tasks. Hence, we aim to exploit these intermediate features to further enhance the performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">FeSViBS Framework</head><p>The proposed FeSViBS method is illustrated in Fig. <ref type="figure" target="#fig_0">1</ref> and detailed in Algorithm 1. The working of the FeSViBS framework is very similar to FeSTA, except for one key difference. During the forward pass of SLViT and FeSTA, the server always returns the cls token from the last ViT block. In contrast, a FeSViBS server samples an intermediate block l ∈ {1, 2. . . . , L} for each client c in each round and extracts the intermediate features z c,l from the chosen l th block as follows:</p><formula xml:id="formula_4">z c,l = B Φ l B Φ l-1 . . . B Φ1 H θc (x c )<label>(2)</label></formula><p>where z c,l ∈ R 768×M . The server then projects the extracted intermediate features into a lower dimension using a projection network R (shared across all blocks) to obtain the final representation b c,l = R π (z c,l ), where b c,l ∈ R 768×1 . This final representation b c,l can be considered as a pseudo class token and the role of the projection network is to distill the discriminative information contained in the intermediate features into this pseudo class token. The primary motivation for block sampling is to effectively leverage intermediate ViT features that are better at capturing local texture information (but are lost when only the final cls token is used). Stochasticity in the block selection serves as a feature augmentation strategy, thereby aiding the generalization performance.</p><p>The architecture of the projection network is shown in Fig. <ref type="figure" target="#fig_0">1</ref> and it resembles a simple ResNet <ref type="bibr" target="#b11">[12]</ref> block with skip connection. The pseudo class token is then sent to the client's tail to obtain the final prediction ŷc = T ψc (b c,l ) and complete the forward pass. Each client uses ŷc along with the true labels y c to compute the loss c (y c , ŷc ). The gradients of the client's tail are then calculated and sent back to the server, which then carries out the back-propagation through the projection network and relevant blocks of the ViT body (only those blocks involved in the corresponding forward pass). Next, the server sends the gradients back to the client to propagate them through the head and end the back-propagation step. Hence, the client's optimization problem is:</p><formula xml:id="formula_5">min θc,Φ 1:l,c ,π,ψc 1 N c Nc i=1 c y (i) c , T ψc (b (i) c,l ) . (<label>3</label></formula><formula xml:id="formula_6">)</formula><p>In the FeSViBS framework, the heads and tails of all the clients are assumed to have the same network architecture. Within each collaboration round, all the clients perform the forward and backward passes. While the parameters of the relevant head and tail as well as the shared projection network are updated after every backward pass, the parameters of the ViT body are updated only at the end of a collaboration round after aggregating updates from all the clients. The above protocol until this step is referred to as SViBS, because there is still no federation of the heads and tails. Similar to FeSTA, we also perform aggregation of the local heads and tails periodically in unifying rounds, resulting in the final FeSViBS framework. While in SViBS, the clients can initialize their heads and tails independently, FeSviBS requires a common initialization by the server and sharing of aggregated head and tail parameters after a unifying round.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Setup</head><p>Datasets. We conduct our experiments on three medical imaging datasets. The first dataset is HAM10000 <ref type="bibr" target="#b25">[26]</ref>, a multi-class dataset comprising of 10, 015 dermoscopic images from diverse populations. HAM10000 includes (</p><formula xml:id="formula_7">θ, ψ) ← ( 1 n c θc, 1 n c ψc) 20:</formula><p>end if 21: end for categories of pigmented lesions; we randomly perform 80%/20% split for training and testing, respectively. The second dataset <ref type="bibr" target="#b1">[2]</ref> termed "BloodMNIST" is a multi-class dataset consisting of 17, 092 blood cell images for 8 different imbalanced cell types. We followed <ref type="bibr" target="#b28">[29]</ref> and split the dataset into 70% training, 10% validation, and 20% testing. Finally, the Fed-ISIC2019 dataset consists of 23, 247 dermoscopy images for 8 different melanoma classes. This dataset was prepared by FLamby <ref type="bibr" target="#b24">[25]</ref> from the original ISIC2019 dataset <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b25">26]</ref> and the data was collected from 6 centers, with significant differences in population characteristics and acquisition systems, representing real-world domain shifts. We use 80%/20% split for training and testing, respectively. The training samples in all datasets are divided among 6 clients, whereas the testing set is shared among them all. The distribution of each dataset is depicted in Fig. <ref type="figure" target="#fig_1">2</ref>. Note that Fed-ISIC2019 and BloodMNIST are non-IID, whereas HAM10000 is IID.</p><p>Server's Network. For the server's body, we chose the ViT-B/16 model from timm library <ref type="bibr" target="#b27">[28]</ref> which includes L = 12 transformer blocks, embedding dimension D = 768, 12 attention heads, and divides the input image into patches each of size 16 × 16 with M = 196 patches. We limit the block sampling to the first 6 ViT blocks. Additionally, the projection network has two convolution layers with a skip connection, which takes an input of dimension 768 × 196 and projects it into a lower dimension of 768. Clients' Networks. Each client has two main networks: head and tail. We followed timm library's implementation of Hybrid ViTs (h-ViT) to design each client's head, which is a ResNet-50 <ref type="bibr" target="#b11">[12]</ref> with a convolution layer added to project the features extracted by ResNet-50 to a dimension of 768 × 196. The tail is a linear classifier. Also, we unify the clients' networks (head and tail) every 2 rounds using FedAvg. We conduct our experiments for 200 rounds with Adam optimizer <ref type="bibr" target="#b16">[17]</ref>, a learning rate of 1 × 10 -4 , and 32 batch size with a cross-entropy loss calculated at the tail. The code was implemented using PyTorch 1.10 and the models were trained using Nvidia A100 GPU with 40 GB memory.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results and Analysis</head><p>Following <ref type="bibr" target="#b24">[25]</ref>, we used balanced accuracy in all experiments to evaluate the performance of the classification task across all datasets. This metric defines as the average recall on each class. In Table <ref type="table" target="#tab_1">1</ref>, we compare the performance of FeS-ViBS and SViBS frameworks with other SOTA methods. FeSViBS consistently outperforms other methods on the three datasets with both IID and non-IID settings. More specifically, for HAM10000 (IID), FeSViBS outperforms all other methods with a 4.4% gain in performance over FeSTA and approximately 11% over FedAvg and FedProx (μ = 0.006). In the non-IID settings with both Blood-MNIST and Fed-ISIC2019, FeSViBS maintains a high performance compared to other methods. Under extreme non-IID settings (Fed-ISIC2019), our approach demonstrated a performance improvement of 10.4% compared to FeSTA and 5.8% over FedAvg and FedProx, demonstrating the robustness of FeSViBS.  We investigate the impact of sampling intermediate blocks in SViBS, by analysing the individual performance of intermediate features from specific blocks during training. The results in Fig. <ref type="figure" target="#fig_2">3</ref> demonstrate that the majority of individual blocks outperform the vanilla split learning setting (SLViT), which is dependent on the cls token. On the other hand, SViBS shows dominant performance across datasets, where the sampling of ViT blocks provides augmented representations of the input images at different rounds and improves the generalizability. From Table <ref type="table" target="#tab_1">1</ref>, we also observe that the variance of the accuracy achieved by FeSViBS due to stochastic block sampling during inference is very low.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Ablation Study</head><p>Set of ViT Blocks. To study the impact of ViT blocks from which the intermediate features are sampled on the overall performance of FeSViBS, we carry out experiments choosing different sets of blocks. The results depicted in Fig. <ref type="figure" target="#fig_3">4</ref> (left) show consistent performance for different sets of blocks across different datasets. This indicates that implementing FeSViBS with the first 6 ViT blocks would reduce the computational cost without compromising performance.</p><p>FeSViBS with Differential Privacy. Differential Privacy (DP) <ref type="bibr" target="#b0">[1]</ref> is a widelyused approach that aims to improve the privacy of local client's data by adding noise. We conduct experiments where we add Gaussian noise to the client's head output (h c ). In such a scenario, DP makes it more challenging for a malicious/curious server to infer the client's input from the smashed representations. With different values, the results in Fig. <ref type="figure" target="#fig_3">4</ref> (right) show that FeSViBS maintains its performance even under a small value ( = 0.1), while also outperforming FeSTA under the same constraints.</p><p>Number of Unifying Rounds. We investigated the impact of reducing communication rounds (unifying rounds) on FeSViBS performance. However, our results showed that performance was maintained even with decreasing the number of communication rounds.</p><p>Computational and Communication Overhead. Except for MOON and SCAFFOLD, all methods in Table <ref type="table" target="#tab_1">1</ref> share the same h-ViT architecture, resulting in similar computational costs. SViBS and FeSViBS require training an additional projection network but avoid needing a complete ViT forward/backward pass. Centralized and local training methods have no communication cost. For other methods, the communication cost per client per collaboration round: (i) FedAvg/FedProx: ∼ 97M, (ii) SLViT/SViBS: ∼ 197M values for HAM10000 dataset, and (iii) FeSTA/FeSViBS: ∼ 197M values +12M parameters per client per unifying round. Thus, the proposed method has a marginally higher communication overload than SL and twice the communication burden as FL.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion and Future Directions</head><p>We proposed a novel Federated Split Learning of Vision Transformer with Block Sampling (FeSViBS), which utilizes FL, SL and sampling of ViT blocks to enhance the performance of the collaborative system. We evaluate FeSViBS framework under IID and non-IID settings on three real-world medical imaging datasets and demonstrate consistent performance. In the future, we aim to (i) extend our work and evaluate the privacy of FeSViBS under the presence of malicious clients/server, (ii) evaluate FeSViBS in the context of natural images and (iii) extend the current framework to multi-task settings.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. FeSViBS framework. The server receives smashed representations from the clients, samples a ViT block for each client, uses a projection network to distill patch tokens into pseudo class tokens, which are sent back to the client for final prediction.</figDesc><graphic coords="2,72,96,54,62,306,58,112,09" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Distribution of: (left) HAM10000, (middle) BloodMNIST, and (right) Fed-ISIC2019. Each stacked bar represents the number of samples, and each color represents each class. The last bar in each figure represents the testing set.</figDesc><graphic coords="5,47,79,53,78,328,72,75,91" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Performance of each ViT block, sending cls token (SLViT), and SViBS. Sampling from blocks 1 to 6 (SViBS) showed better performance than individual blocks.</figDesc><graphic coords="8,78,96,185,33,294,10,83,17" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. FeSViBS performance with: Left different set of ViT blocks. Right: Differential Privacy with different values along with the original FeSViBS.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>7 imbalanced Algorithm 1. FeSViBS Require: Local data at client c (xc, yc). Server initializes the body parameters (Φ), Projection Network parameters (π), client head and tail parameters ( θ, ψ) 1: for rounds r = 1, 2, . . . , R do</figDesc><table><row><cell>2:</cell><cell>for client c ∈ [1, n] do</cell><cell></cell></row><row><cell>3: 4:</cell><cell cols="2">if r = 1 or (r -1) ∈ Unifying Rounds then (θc, ψc) ← ( θ, ψ)</cell></row><row><cell>5:</cell><cell>end if</cell><cell></cell></row><row><cell>6:</cell><cell>Client c: hc ← H θc (xc)</cell><cell></cell></row><row><cell>7:</cell><cell>Server:</cell><cell></cell></row><row><cell>8:</cell><cell cols="2">Sample a ViT block (l) for client c</cell></row><row><cell>9:</cell><cell cols="2">b c,l ← Rπ BΦ l BΦ l-1 . . . BΦ 1 (hc)</cell></row><row><cell>10:</cell><cell>Client c:</cell><cell></cell></row><row><cell>11:</cell><cell cols="2">Compute c yc, T ψc (b c,l ) and Backprop.</cell></row><row><cell>12:</cell><cell cols="2">Update (θc, ψc) with suitable optimizer</cell></row><row><cell>13:</cell><cell>Server:</cell><cell></cell></row><row><cell>14:</cell><cell cols="2">Update (π) with suitable optimizer, Compute and store Φ 1:l,c</cell></row><row><cell>15:</cell><cell>end for</cell><cell></cell></row><row><cell>16:</cell><cell>Server:</cell><cell></cell></row><row><cell>17: 18:</cell><cell>Update body: Φ ← 1 n if r ∈ Unifying Rounds then</cell><cell>c Φ 1:l,c</cell></row><row><cell>19:</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Average balanced accuracy for different methods. Centralized, FedAvg, Fed-Prox, SCAFFOLD, MOON, and FeSTA have one global unified model for all clients. For local, SLViT, and SViBS, we report the standard deviation (stdev) across clients. For FeSViBS, we report stdev over stochastic sampling of ViT blocks during inference.</figDesc><table><row><cell></cell><cell></cell><cell>Dataset</cell><cell></cell></row><row><cell></cell><cell>HAM10000</cell><cell>BloodMNIST</cell><cell>Fed-ISIC2019</cell></row><row><cell>Centralized</cell><cell>0.615</cell><cell>0.957</cell><cell>0.614</cell></row><row><cell>Local</cell><cell>0.494 ± 0.024</cell><cell>0.785 ± 0.017</cell><cell>0.290 ± 0.113</cell></row><row><cell>SLViT</cell><cell>0.540 ± 0.029</cell><cell>0.826 ± 0.018</cell><cell>0.293 ± 0.133</cell></row><row><cell>SViBS (ours)</cell><cell>0.570 ± 0.011</cell><cell>0.836 ± 0.014</cell><cell>0.330 ± 0.042</cell></row><row><cell>FedAvg [20]</cell><cell>0.564</cell><cell>0.894</cell><cell>0.476</cell></row><row><cell>FedProx [19]</cell><cell>0.568</cell><cell>0.892</cell><cell>0.472</cell></row><row><cell cols="2">SCAFFOLD [15] 0.290</cell><cell>0.880</cell><cell>0.330</cell></row><row><cell>MOON [18]</cell><cell>0.570</cell><cell>0.903</cell><cell>0.450</cell></row><row><cell>FeSTA [22]</cell><cell>0.638</cell><cell>0.929</cell><cell>0.430</cell></row><row><cell cols="4">FeSViBS (ours) 0.682 ± 0.021 0.936 ± 0.002 0.534 ± 0.005</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deep learning with differential privacy</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security</title>
+		<meeting>the 2016 ACM SIGSAC Conference on Computer and Communications Security</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="308" to="318" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A dataset of microscopic peripheral blood cell images for development of automatic recognition systems</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Acevedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Merino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Alférez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Á</forename><surname>Molina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Boldú</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rodellar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Brief</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="1" to="5" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Multi-limb split learning for tumor classification on vertically distributed data</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">S</forename><surname>Ads</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Alfares</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A M</forename><surname>Salem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 Tenth International Conference on Intelligent Computing and Information Systems (ICICIS)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="88" to="92" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Self-ensembling vision transformer (SEViT) for robust medical image classification</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Almalik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yaqub</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nandakumar</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_36</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-8_36" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention. MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="376" to="386" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Understanding robustness of transformers for image classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bhojanapalli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Glasner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Unterthiner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Veit</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10231" to="10241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Skin lesion analysis toward melanoma detection: a challenge at the 2017 international symposium on biomedical imaging (ISBI), hosted by the international skin imaging collaboration (ISIC)</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C F</forename><surname>Codella</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ISBI.2018.8363547</idno>
+		<ptr target="https://doi.org/10.1109/ISBI.2018.8363547" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Combalia</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.02288</idno>
+		<title level="m">Bcn20000: Dermoscopic lesions in the wild</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">TransMed: transformers advance multi-modal medical image classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Diagnostics</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">1384</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Federated learning for predicting clinical outcomes in patients with COVID-19</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Dayan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Med</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1735" to="1743" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Distributed learning of deep neural network over multiple agents</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Raskar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Netw. Comput. Appl</title>
+		<imprint>
+			<biblScope unit="volume">116</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Feasibility study of multisite split learning for privacy-preserving medical systems under data imbalance constraints in COVID-19, x-ray, and cholesterol dataset</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Ha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">1534</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Evaluating gradient inversion attacks and defenses in federated learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="7232" to="7241" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Advances and open problems in federated learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kairouz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Found. Trends R Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="1" to="210" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Scaffold: stochastic controlled averaging for federated learning</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Karimireddy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mohri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Reddi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Stich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">T</forename><surname>Suresh</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="5132" to="5143" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Transformers in vision: a survey</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Naseer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hayat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Zamir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Comput. Surv. (CSUR)</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="1" to="41" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Model-contrastive federated learning</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10713" to="10722" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Federated optimization in heterogeneous networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Sahu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zaheer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sanjabi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Talwalkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Mach. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="429" to="450" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Communicationefficient learning of deep networks from decentralized data</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mcmahan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ramage</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hampson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Arcas</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence and Statistics</title>
+		<imprint>
+			<biblScope unit="page" from="1273" to="1282" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Differentially private cutmix for split learning with vision transformer</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Oh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">First Workshop on Interpolation Regularizers and Beyond at NeurIPS 2022</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Federated split vision transformer for COVID-19 CXR diagnosis using task-agnostic training</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">th Conference on Neural Information Processing Systems</title>
+		<meeting><address><addrLine>NeurIPS</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2021">2021. 2021</date>
+			<biblScope unit="page" from="24617" to="24630" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Split learning for collaborative deep learning in healthcare</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Poirot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vepakomma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kalpathy-Cramer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Raskar</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.1912.12115</idno>
+		<ptr target="https://arxiv.org/abs/1912.12115" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shamshad</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2201.09873</idno>
+		<title level="m">Transformers in medical imaging: a survey</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">FLamby: datasets and benchmarks for cross-silo federated learning in realistic healthcare settings</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">O</forename><surname>Du Terrail</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=GgM5DiAb6A2" />
+	</analytic>
+	<monogr>
+		<title level="m">Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">The ham10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tschandl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosendahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kittler</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/sdata.2018.161</idno>
+		<ptr target="https://doi.org/10.1038/sdata.2018.161" />
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page">180161</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Split learning for health: Distributed deep learning without sharing raw patient data</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Vepakomma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Swedish</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Raskar</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1812.00564</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wightman</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.4414861</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.4414861" />
+		<title level="m">Pytorch image models</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">MedMNIST classification decathlon: a lightweight AutoML benchmark for medical image analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="191" to="195" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Rethinking semantic segmentation from a sequence-to-sequence perspective with transformers</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6881" to="6890" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

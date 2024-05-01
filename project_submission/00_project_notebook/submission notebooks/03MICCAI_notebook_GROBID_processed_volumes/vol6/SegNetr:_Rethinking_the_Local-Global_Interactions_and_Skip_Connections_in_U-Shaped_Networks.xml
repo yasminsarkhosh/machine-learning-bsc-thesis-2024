@@ -1,0 +1,882 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SegNetr: Rethinking the Local-Global Interactions and Skip Connections in U-Shaped Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Junlong</forename><surname>Cheng</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<postCode>610065</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chengrui</forename><surname>Gao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<postCode>610065</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fengjie</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<postCode>610065</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Min</forename><surname>Zhu</surname></persName>
+							<email>zhumin@scu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">College of Computer Science</orgName>
+								<orgName type="institution">Sichuan University</orgName>
+								<address>
+									<postCode>610065</postCode>
+									<settlement>Chengdu</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SegNetr: Rethinking the Local-Global Interactions and Skip Connections in U-Shaped Networks</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="64" to="74"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">74B15E6064571294E409B16D4AC3BAF1</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_7</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Local-global interactions</term>
+					<term>Information retention skip connection</term>
+					<term>Medical image segmentation</term>
+					<term>U-shaped networks</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Recently, U-shaped networks have dominated the field of medical image segmentation due to their simple and easily tuned structure. However, existing U-shaped segmentation networks: 1) mostly focus on designing complex self-attention modules to compensate for the lack of long-term dependence based on convolution operation, which increases the overall number of parameters and computational complexity of the network; 2) simply fuse the features of encoder and decoder, ignoring the connection between their spatial locations. In this paper, we rethink the above problem and build a lightweight medical image segmentation network, called SegNetr. Specifically, we introduce a novel SegNetr block that can perform local-global interactions dynamically at any stage and with only linear complexity. At the same time, we design a general information retention skip connection (IRSC) to preserve the spatial location information of encoder features and achieve accurate fusion with the decoder features. We validate the effectiveness of SegNetr on four mainstream medical image segmentation datasets, with 59% and 76% fewer parameters and GFLOPs than vanilla U-Net, while achieving segmentation performance comparable to state-of-the-art methods. Notably, the components proposed in this paper can be applied to other U-shaped networks to improve their segmentation performance.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation has been one of the key aspects in developing automated assisted diagnosis systems, which aims to separate objects or structures in medical images for independent analysis and processing. Normally, segmentation needs to be performed manually by professional physicians, which is time-consuming and error-prone. In contrast, developing computer-aided segmentation algorithms can be faster and more accurate for batch processing. The approach represented by U-Net <ref type="bibr" target="#b0">[1]</ref> is a general architecture for medical image segmentation, which generates a hierarchical feature representation of the image through a top-down encoder path and uses a bottom-up decoder path to map the learned feature representation to the original resolution to achieve pixel-by-pixel classification. After U-Net, U-shaped methods based on Convolutional Neural Networks (CNN) have been extended for various medical image segmentation tasks <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref>. They either enhance the feature representation capabilities of the encoder-decoder or carefully design the attention module to focus on specific content in the image. Although these extensions can improve the benchmark approach, the local nature of the convolution limits them to capturing long-term dependencies, which is critical for medical image segmentation. Recently, segmentation methods based on U-shaped networks have undergone significant changes driven by Transformer <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b10">11]</ref>. Chen et al <ref type="bibr" target="#b11">[12]</ref> proposed the first Transformer-based U-shaped segmentation network. Cao et al <ref type="bibr" target="#b12">[13]</ref> extended the Swin Transformer <ref type="bibr" target="#b13">[14]</ref> directly to the U-shaped structure. The above methods suffer from high computational and memory cost explosion when the feature map size becomes large. In addition, some researchers have tried to build Hybrid Networks by combining the advantages of CNN and Transformer, such as UNeXt <ref type="bibr" target="#b14">[15]</ref>, TransFuse <ref type="bibr" target="#b15">[16]</ref>, MedT <ref type="bibr" target="#b16">[17]</ref>, and FAT-Net <ref type="bibr" target="#b17">[18]</ref>. Similar to these works, we redesign the window-based local-global interaction and insert it into a pure convolutional framework to compensate for the deficiency of convolution in capturing global features and to reduce the high computational cost arising from self-attention operations.</p><p>Skip connection is the most basic operation for fusing shallow and deep features in U-shaped networks. Considering that this simple fusion does not fully exploit the information, researchers have proposed some novel ways of skip connection <ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b20">[20]</ref><ref type="bibr" target="#b21">[21]</ref><ref type="bibr" target="#b22">[22]</ref>. UNet++ <ref type="bibr" target="#b18">[19]</ref> design a series of dense skip connections to reduce the semantic gap between the encoder and decoder sub-network feature maps. SegNet <ref type="bibr" target="#b20">[20]</ref> used the maximum pooling index to determine the location information to avoid the ambiguity problem during up-sampling using deconvolution. BiO-Net <ref type="bibr" target="#b21">[21]</ref> proposed bi-directional skip connections to reuse building blocks in a cyclic manner. UCTransNet <ref type="bibr" target="#b22">[22]</ref> designed a Transformer-based channel feature fusion method to bridge the semantic gap between shallow and deep features. Our approach focuses on the connection between the spatial locations of the encoder and decoder, preserving more of the original features to help recover the resolution of the feature map in the upsampling phase, and thus obtaining a more accurate segmentation map.</p><p>By reviewing the above multiple successful cases based on U-shaped structure, we believe that the efficiency and performance of U-shaped networks can be improved by improving the following two aspects: (i) local-global interactions. Often networks need to deal with objects of different sizes in medical images, and local-global interactions can help the network understand the content of the images more accurately. (ii) Spatial connection between encoder-decoder. Semantically stronger and positionally more accurate features can be obtained using the spatial information between encoder-decoders. Based on the above analysis, this paper rethinks the design of the U-shaped network. Specifically, we construct lightweight SegNetr (Segmentation Network with Transformer) blocks to dynamically learn local-global information over non-overlapping windows and maintain linear complexity. We propose information retention skip connection (IRSC), which focuses on the connection between encoder and decoder spatial locations, retaining more original features to help recover the resolution of the feature map in the up-sampling phase. In summary, the contributions of this paper can be summarized as follows: 1) We propose a lightweight U-shape SegNetr segmentation network with less computational cost and better segmentation performance. 2) We investigate the potential deficiency of the traditional U-shaped framework for skip connection and improve a skip connection with information retention. 3) When we apply the components proposed in this paper to other U-shaped methods, the segmentation performance obtains a consistent improvement. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, SegNetr is a hierarchical U-shaped network with important components including SegNetr blocks and IRSC. To make the network more lightweight, we use MBConv <ref type="bibr" target="#b24">[24]</ref> as the base convolutional building block. SegNetr blocks implement dynamic local-global interaction in the encoder and decoder stages. Patch merging <ref type="bibr" target="#b13">[14]</ref> is used to reduce the resolution by a factor of two without losing the original image information. IRSC is used to fuse encoder and decoder features, reducing the detailed information lost by the network as the depth deepens. Note that by changing the number of channels, we can get the smaller version of SegNetr-S (C = 32) and the standard version of SegNetr (C = 64). Next, we will explain in detail the important components in SegNetr.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">SegNetr Block</head><p>The self-attention mechanism with global interactions is one of the keys to Transformer's success, but computing the attention matrix over the entire space requires a quadratic complexity. Inspired by the window attention method <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b23">23]</ref>, we construct SegNetr blocks that require only linear complexity to implement local-global interactions. Let the input feature map be X ∈ R H×W ×C . We first extract the feature X MBConv ∈ R H×W ×C using MBConv <ref type="bibr" target="#b24">[24]</ref>, which provides non-explicit position encoding compared to the usual convolutional layer.</p><p>Local interaction can be achieved by calculating the attention matrix of non-overlapping small patches (P for patch size). First, we divide X MBConv into a series of patches ( H×W P ×P , P, P, C) that are spatially continuous (Fig. <ref type="figure" target="#fig_0">1</ref> shows the patch size for P = 2) using a computationally costless local partition (LP) operation. Then, we average the information of the channel dimensions and flatten the spatial dimensions to obtain ( H×W P ×P , P × P ), which is fed into the FFN <ref type="bibr" target="#b10">[11]</ref> for linear computation. Since the importance of the channel aspect is weighed in MBConv <ref type="bibr" target="#b24">[24]</ref>, we focus on the computation of spatial attention when performing local interactions. Finally, we use Softamx to obtain the spatial dimensional probability distribution and weight the input features X MBConv . This approach is not only beneficial for parallel computation, but also focuses more purely on the importance of the local space.</p><p>Considering that local interactions are not sufficient and may have underfitting problems, we also design parallel global interaction branches. First, we use the global partition (GP) operation to aggregate non-contiguous patches on the space. GP adds the operation of window displacement to LP with the aim of changing the overall distribution of features in space (The global branch in Fig. <ref type="figure" target="#fig_0">1</ref> shows the change in patch space location after displacement). The displacement rules are one window to the left for odd patches in the horizontal direction (and vice versa for even patches to the right), and one window up for odd patches in the vertical direction (and vice versa for even patches down). Note that the displacement of patches does not have any computational cost and only memory changes occur. Compared to the sliding window operation of <ref type="bibr" target="#b13">[14]</ref>, our approach is more global in nature. Then, we decompose the spatially shifted feature map into 2P ( H×W 2P ×2P , 2P, 2P, C) patches and perform global attention computation (similar to the local interaction branch). Even though the global interaction computes the attention matrix over a larger window relative to the local interaction operation, the amount of computation required is much smaller than that of the standard self-attention model.</p><p>The local and global branches are finally fused by weighted summation, before which the feature map shape needs to be recovered by LP and GP reversal operations (i.e., local reverse (LR) and global reverse (GR)). In addition, our approach also employs efficient designs of Transformer, such as Norm, feedforward networks (FFN) and residual connections. Most Transformer models use fixed-size patches <ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b24">24]</ref>, but this approach limits them to focus on a wider range of regions in the early stages. This paper alleviates this problem by applying dynamically sized patches. In the encoder stage, we compute local attention using patches of (8, 4, 2, 1) in turn, and the global branch expands patches to the size of (16, 8, 4, 2). To reduce the hyper-parameter setting, the patches of the decoder stage are of the same size as the encoder patches of the corresponding stage.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Information Retention Skip Connection</head><p>Figure <ref type="figure" target="#fig_1">2</ref> shows three different types of skip connections. U-Net splices the channel dimensions at the corresponding stages of the encoder and decoder, allowing the decoder to retain more high-resolution detail information when performing upsampling. SegNet assists the decoder to recover the feature map resolution by retaining the position information of the down-sampling process in the encoder. We design the IRSC to consider both of these features, i.e., to preserve the location information of encoder features while achieving the fusion of shallow and deep features. Specifically, the patch merging (PM) operation in the encoder reduces the resolution of the input feature map X in ∈ R H×W ×C to twice the original one, while the channel dimension is expanded to four times the original one to obtain</p><formula xml:id="formula_0">X P M ∈ R H 2 × W 2 ×4C</formula><p>. The essence of the PM operation is to convert the information in the spatial dimension into a channel representation without any computational cost and retaining all the information of the input features. The patch reverse (PR) in IRSC is used to recover the spatial resolution of the encoder, and it is a reciprocal operation with PM. We alternately select half the number of channels of X P M (i.e., H 2 × W 2 × 2C) as the input of PR, which can reduce the redundant features in the encoder on the one hand and align the number of feature channels in the decoder on the other hand. PR reduces the problem of information loss to a large extent compared to traditional upsampling methods, while providing accurate location information. Finally, the output features X P R ∈ R H×W × C 2 of PR are fused with the up-sampled features of the decoder for the next stage of learning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Discussion</head><p>Datasets. To verify the validity of SegNetr, we selected four datasets, ISIC2017 <ref type="bibr" target="#b25">[25]</ref>, PH2 <ref type="bibr" target="#b26">[26]</ref>, TNSCUI <ref type="bibr" target="#b27">[27]</ref> and ACDC <ref type="bibr" target="#b28">[28]</ref>, for benchmarking. ISIC2017 consists of 2000 training images, 200 validation images, and 600 test images. The PH2 and ISIC2017 tasks are the same, but this dataset contains only 200 images without any specific test set, so we use a five-fold cross-validation approach to validate the different models. The TNSCUI dataset has 3644 ultrasound images of thyroid nodules, which we randomly divided into a 6:2:2 ratio for training, validation, and testing. The ACDC contains Cardiac MRI images from 150 patients, and we obtained a total of 1489 slice images from 150 3D images, of which 951 were used for training and 538 for testing. Unlike the three datasets mentioned above, the ACDC dataset contains three categories: left ventricle (LV), right ventricle (RV), and myocardium (Myo). We use this dataset to explore the performance of different models for multi-category segmentation.</p><p>Implementation Details. We implement the SegNetr method based on the PyTorch framework by training on an NVIDIA 3090 GPU with 24 GB of memory. Use the Adam optimizer with a fixed learning rate of 1e-4. All networks use a cross-entropy loss function and an input image resolution of 224 × 224, and training is stopped when 200 epochs are iteratively optimized. We use the source code provided by the authors to conduct experiments with the same dataset, and data enhancement strategy. In addition, we use the IoU and Dice metrics to evaluate the segmentation performance, while giving the number of parameters and GFLOPs for the comparison models.  <ref type="table" target="#tab_0">1</ref>, we compared SegNetr with the baseline U-Net and eight other state-of-the-art methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b17">[18]</ref><ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b20">[20]</ref><ref type="bibr" target="#b29">29]</ref>. On the ISIC2017 dataset, SegNetr and TransUNet obtained the highest IoU (0.775), which is 3.9% higher than the baseline U-Net. Even SegNetr-S with a smaller number of parameters can obtain a segmentation performance similar to that of its UNeXt-L counterpart. By observing the experimental results of PH2, we found that the Transformer-based method Swin-UNet segmentation has the worst performance, which is directly related to the data volume of the target dataset. Our method obtains the best segmentation performance on this dataset and keeps the overhead low. Although we use an attention method based on window displacement, the convolutional neural network has a better inductive bias, so the dependence on the amount of data is smaller compared to Transformer-based methods such as Swin-UNet or TransUNet. TNSCUI and ACDC Results. As shown in Table <ref type="table" target="#tab_1">2</ref>, SegNetr's IoU and Dice are 1.6% and 0.8 higher than those of the dual encoder FATNet, respectively, while the GFLOPs are 32.65 less. In the ACDC dataset, the left ventricle is easier to segment, with an IoU of 0.861 for U-Net, but 1.1% worse than SegNetr. The myocardium is in the middle of the left and right ventricles in an annular pattern, and our method is 0.6% higher IoU than the EANet that focuses on the boundary segmentation mass. In addition, we observe the segmentation performance of the four networks UNeXt, UNeXt-L, SegNetr-S and SegNetr to find that the smaller parameters may limit the learning ability of the network. The proposed method in this paper shows competitive segmentation performance on all four datasets, indicating that our method has good generalization performance and robustness. Additional qualitative results are in the supplementary.</p><p>In addition, Fig. <ref type="figure" target="#fig_2">3</ref> provides qualitative examples that demonstrate the effectiveness and robustness of our proposed method. The results show that SegNetr is capable of accurately describing skin lesions with less data, and achieves multiclass segmentation with minimized under-segmentation and over-segmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Ablation Study</head><p>Effect of Local-Global Interactions. The role of local-global interactions in SegNetr can be understood from Table <ref type="table" target="#tab_2">3</ref>. The overall parameters of the network are less when there is no local or global interaction, but the segmentation performance is also greatly affected. With the addition of local or global interactions, the segmentation performance of the network for different categories  is improved. In addition, similar performance can be obtained by running the local-global interaction modules in series and parallel, but the series connection leads to lower computational efficiency and affects the running speed.</p><p>Effect of Patch Size. As shown in Table <ref type="table" target="#tab_3">4</ref> (left), different patch size significantly affects the efficiency and parameters of the model. The number of parameters reaches 54.34 M when patches of size 2 are used in each phase, which is an increase of 42.08 M compared to using dynamic patches of size <ref type="bibr" target="#b7">(8,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b0">1)</ref>.</p><p>Based on this ablation study, we recommend the use of [ Resolution   14   ] patches size at different stages.</p><p>Effect of IRSC. Table <ref type="table" target="#tab_3">4</ref> (right) shows the experimental results of replacing the skip connections of UNeXt, U-Net, U-Net++, and SegNet with IRSC. These methods get consistent improvement with the help of IRSC, which clearly shows that IRSC is useful.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this study, we introduce a novel framework SegNetr for medical image segmentation, which achieves segmentation performance improvement by optimizing local-global interactions and skip connections. Specifically, the SegNetr block implements dynamic interactions based on non-overlapping windows using parallel local and global branches, and IRSC enables more accurate fusion of shallow and deep features by providing spacial information. We evaluated the proposed method using four medical image datasets, and extensive experiments showed that SegNetr is able to obtain challenging experimental results while maintaining a small number of parameters and GFLOPs. The proposed framework is general and flexible that we believe it can be easily extended to other U-shaped networks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the SegNetr approach. SegNetr blocks interact through parallel local and global branches. IRSC preserves the positional information of encoder features and achieves accurate fusion with decoder features.</figDesc><graphic coords="3,44,79,219,95,334,57,142,84" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Comparison of skip connections of U-Net, SegNet and our SegNetr. Our method does not incorporate redundant computable modules, but the patch reverse (PR) provides spatial location information.</figDesc><graphic coords="5,57,81,54,35,308,59,92,35" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative experimental results of different methods on four datasets.</figDesc><graphic coords="8,58,98,221,84,334,54,115,66" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results on ISIC2017 and PH2 datasets.</figDesc><table><row><cell>Network</cell><cell>ISIC2017</cell><cell>PH2</cell><cell></cell><cell cols="2">Params GFLOPs</cell></row><row><cell></cell><cell cols="2">IoU Dice IoU</cell><cell>Dice</cell><cell></cell></row><row><cell>U-Net [1]</cell><cell cols="5">0.736 0.825 0.878 ± 0.025 0.919 ± 0.045 29.59 M 41.83</cell></row><row><cell>SegNet [20]</cell><cell cols="5">0.696 0.821 0.880 ± 0.020 0.934 ± 0.012 17.94 M 22.35</cell></row><row><cell>UNet++ [19]</cell><cell cols="5">0.753 0.840 0.883 ± 0.013 0.936 ± 0.008 25.66 M 28.77</cell></row><row><cell>FAT-Net [18]</cell><cell cols="5">0.765 0.850 0.895 ± 0.019 0.943 ± 0.011 28.23 M 42.83</cell></row><row><cell cols="3">ResGANet [5] 0.764 0.862 -</cell><cell>-</cell><cell cols="2">39.21 M 65.10</cell></row><row><cell>nnU-Net [29]</cell><cell cols="2">0.760 0.843 -</cell><cell>-</cell><cell>-</cell><cell>-</cell></row><row><cell cols="5">Swin-UNet [13] 0.767 0.850 0.872 ± 0.022 0.927 ± 0.014 25.86 M</cell><cell>5.86</cell></row><row><cell cols="6">TransUNet [12] 0.775 0.847 0.887 ± 0.020 0.937 ± 0.012 88.87 M 24.63</cell></row><row><cell>UNeXt-L [15]</cell><cell cols="4">0.754 0.840 0.884 ± 0.021 0.936 ± 0.013 3.80 M</cell><cell>1.08</cell></row><row><cell>SegNetr-S</cell><cell cols="4">0.752 0.838 0.889 ± 0.018 0.939 ± 0.011 3.60 M</cell><cell>2.71</cell></row><row><cell>SegNetr</cell><cell cols="5">0.775 0.856 0.905 ± 0.023 0.948 ± 0.014 12.26 M 10.18</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Quantitative results on TNSCUI and ACDC datasets.</figDesc><table><row><cell>Network</cell><cell>TNSCUI</cell><cell cols="2">ACDC/IoU</cell><cell>Average IoU (Dice) Params GFLOPs</cell></row><row><cell></cell><cell>IoU (Dice)</cell><cell>RV</cell><cell>Myo LV</cell></row><row><cell>U-Net [1]</cell><cell cols="4">0.718 (0.806) 0.743 0.717 0.861 0.774 (0.834)</cell><cell>29.59 M 41.83</cell></row><row><cell>SegNet [20]</cell><cell cols="4">0.726 (0.819) 0.738 0.720 0.864 0.774 (0.836)</cell><cell>17.94 M 22.35</cell></row><row><cell>FAT-Net [18]</cell><cell cols="4">0.751 (0.842) 0.743 0.702 0.859 0.768 (0.834)</cell><cell>28.23 M 42.83</cell></row><row><cell cols="5">Swin-UNet [13] 0.744 (0.835) 0.754 0.722 0.865 0.780 (0.843)</cell><cell>25.86 M 5.86</cell></row><row><cell cols="5">TransUNet [12] 0.746 (0.837) 0.750 0.715 0.866 0.777 (0.838)</cell><cell>88.87 M 24.63</cell></row><row><cell>EANet [30]</cell><cell cols="4">0.751 (0.839) 0.742 0.732 0.864 0.779 (0.839)</cell><cell>47.07 M 98.63</cell></row><row><cell>UNeXt [15]</cell><cell cols="4">0.655 (0.749) 0.697 0.646 0.814 0.719 (0.796)</cell><cell>1.40 M 0.44</cell></row><row><cell>UNeXt-L [15]</cell><cell cols="4">0.693 (0.794) 0.719 0.675 0.840 0.744 (0.815)</cell><cell>3.80 M 1.08</cell></row><row><cell>SegNetr-S</cell><cell cols="4">0.707 (0.804) 0.723 0.692 0.845 0.753 (0.821)</cell><cell>3.60 M 2.71</cell></row><row><cell>SegNetr</cell><cell cols="4">0.767 (0.850) 0.761 0.738 0.872 0.791 (0.847)</cell><cell>12.26 M 10.18</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation study of local-global interactions on the ACDC dataset.</figDesc><table><row><cell>Settings</cell><cell>ACDC</cell><cell></cell><cell>Average IoU (Dice) Params GFLOPs</cell></row><row><cell></cell><cell>RV</cell><cell>Myo</cell><cell>LV</cell></row><row><cell>Without</cell><cell cols="3">0.750(0.799) 0.720(0.816) 0.861(0.897) 0.777(0.837)</cell><cell>10.93 M 9.75</cell></row><row><cell cols="4">Only local 0.753(0.800) 0.733(0.825) 0.868(0.904) 0.785(0.843)</cell><cell>12.22 M 10.18</cell></row><row><cell cols="4">Only global 0.756(0.803) 0.734(0.827) 0.875(0.909) 0.788(0.846)</cell><cell>11.64 M 10.17</cell></row><row><cell>Series</cell><cell cols="3">0.761(0.809) 0.732(0.824) 0.871(0.907) 0.788(0.846)</cell><cell>12.26 M 10.18</cell></row><row><cell>Parallel</cell><cell cols="3">0.761(0.807) 0.738(0.828) 0.872(0.907) 0.791(0.847)</cell><cell>12.26 M 10.18</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Ablation study of patch size (left) and IRSC (right) on TNSCUI and ISIC2017 datasets.</figDesc><table><row><cell cols="2">Patch size TNSCUI</cell><cell cols="3">Params GFLOPs Network+IRSC ISIC2017</cell></row><row><cell></cell><cell>IoU Dice</cell><cell></cell><cell></cell><cell>IoU</cell><cell>Dice</cell></row><row><cell>(2,2,2,2)</cell><cell cols="2">0.751 0.835 54.34 M 10.38</cell><cell>UNeXt-L</cell><cell>0.760(+0.6%) 0.843(+0.3%)</cell></row><row><cell>(4,4,4,2)</cell><cell cols="2">0.762 0.841 14.32 M 10.22</cell><cell>U-Net</cell><cell>0.744(+0.8%) 0.839(+1.4%)</cell></row><row><cell>(8,4,4,2)</cell><cell cols="2">0.762 0.843 11.96 M 10.18</cell><cell>UNet++</cell><cell>0.763(+1.0%) 0.845(+0.5%)</cell></row><row><cell>(8,4,2,1)</cell><cell cols="2">0.767 0.850 12.26 M 10.18</cell><cell>SegNet</cell><cell>0.712(+1.6%) 0.829(+0.8%)</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Coarse-to-fine segmentation of organs at risk in nasopharyngeal carcinoma radiotherapy</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_34</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_34" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="358" to="368" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">ConvUNeXt: an efficient convolution neural network for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KBS</title>
+		<imprint>
+			<biblScope unit="volume">253</biblScope>
+			<biblScope unit="page">109512</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<author>
+			<persName><forename type="first">O</forename><surname>Oktay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schlemper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">L</forename><surname>Folgoc</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.03999</idno>
+		<title level="m">Attention U-Net: learning where to look for the pancreas</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">ResGANet: residual group attention network for medical image classification and segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">102313</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation via a tripled-uncertainty guided mean teacher model with contrastive learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="page">102447</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Ce-net: context encoder network for 2D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TMI</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2281" to="2292" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">D-former: a U-shaped dilated transformer for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s00521-022-07859-1</idno>
+		<idno>1007/ s00521-022-07859-1</idno>
+		<ptr target="https://doi.org/10" />
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput. Appl</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A deep learning algorithm using contrastenhanced computed tomography (CT) images for segmentation and rapid automatic detection of aortic dissection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BSPC</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="page">102145</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">An image is worth 16×16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3" to="7" />
+		</imprint>
+		<respStmt>
+			<orgName>ICLR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NIPS</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">TransUNet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Swin-Unet: Unet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25066-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25066-8_9" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Karlinsky</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Michaeli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Nishino</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">13803</biblScope>
+			<biblScope unit="page" from="205" to="218" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE ICCV</title>
+		<imprint>
+			<biblScope unit="page" from="10012" to="10022" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">UNeXt: MLP-based rapid medical image segmentation network</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M J</forename><surname>Valanarasu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_3</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-9_3" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="23" to="33" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">TransFuse: fusing transformers and CNNs for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_2</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_2" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="14" to="24" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Medical transformer: gated axial-attention for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M J</forename><surname>Valanarasu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Oza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Hacihaliloglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Essert</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="36" to="46" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">FAT-Net: feature adaptive transformers for automated skin lesion segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">102327</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">UNet++: a nested U-Net architecture for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Rahman Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<editor>Stoyanov, D., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-030-00889-5_1</idno>
+		<idno>DLMIA/ML-CDS -2018</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-5_1" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="3" to="11" />
+			<date type="published" when="2018">2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">SegNet: a deep convolutional encoder-decoder architecture for image segmentation</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Badrinarayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kendall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cipolla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TPAMI</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2481" to="2495" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">BiO-Net: learning recurrent bi-directional connections for encoder-decoder architecture</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-8_8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="74" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">UCTransNet: rethinking the skip connections in U-Net from a channel-wise perspective with transformer</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAAI</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="2441" to="2449" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">MaxViT: multi-axis vision transformer</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Tu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13684</biblScope>
+			<biblScope unit="page" from="459" to="479" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">EfficientNet: rethinking model scaling for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<biblScope unit="page" from="6105" to="6114" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Automatic skin lesion analysis towards melanoma detection</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">H</forename><surname>Quang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IES</title>
+		<imprint>
+			<biblScope unit="page" from="106" to="111" />
+			<date type="published" when="2017">2017</date>
+			<publisher>IEEE</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">PH 2-A dermoscopic image database for research and benchmarking</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mendonça</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<publisher>IEEE</publisher>
+			<biblScope unit="page" from="5437" to="5440" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">An open access thyroid ultrasound image database</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pedraza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SPIE</title>
+		<imprint>
+			<biblScope unit="volume">9287</biblScope>
+			<biblScope unit="page" from="188" to="193" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multi-structures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lalande</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zotti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TMI</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A A</forename><surname>Kohl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">EANet: iterative edge attention network for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">127</biblScope>
+			<biblScope unit="page">108636</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Anatomical Landmark Detection Using a Multiresolution Learning Approach with a Hybrid Transformer-CNN Model</title>
+				<funder>
+					<orgName type="full">Institute of Information and communications Technology Planning and Evaluation</orgName>
+					<orgName type="abbreviated">IITP</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">BK21 FOUR (Fostering Outstanding Universities for Research)</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Ministry of Education (MOE, Korea)</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Artificial Intelligence Convergence Innovation Human Resources Development (Ewha Womans University)</orgName>
+				</funder>
+				<funder ref="#_GmTuW9y">
+					<orgName type="full">Korean government (MSIT)</orgName>
+				</funder>
+				<funder ref="#_Y2dgkXE #_jHahsBA">
+					<orgName type="full">National Research Foundation of Korea</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Thanaporn</forename><surname>Viriyasaranon</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Division of Mechanical and Biomedical Engineering</orgName>
+								<orgName type="department" key="dep2">Graduate Program in System Health Science and Engineering</orgName>
+								<orgName type="institution">Ewha Womans University</orgName>
+								<address>
+									<settlement>Seoul</settlement>
+									<country key="KR">South Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Serie</forename><surname>Ma</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Division of Mechanical and Biomedical Engineering</orgName>
+								<orgName type="department" key="dep2">Graduate Program in System Health Science and Engineering</orgName>
+								<orgName type="institution">Ewha Womans University</orgName>
+								<address>
+									<settlement>Seoul</settlement>
+									<country key="KR">South Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Jang-Hwan</forename><surname>Choi</surname></persName>
+							<email>choij@ewha.ac.kr</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Division of Mechanical and Biomedical Engineering</orgName>
+								<orgName type="department" key="dep2">Graduate Program in System Health Science and Engineering</orgName>
+								<orgName type="institution">Ewha Womans University</orgName>
+								<address>
+									<settlement>Seoul</settlement>
+									<country key="KR">South Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Anatomical Landmark Detection Using a Multiresolution Learning Approach with a Hybrid Transformer-CNN Model</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="433" to="443"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">78228D6E3BA2D9BF276DEB954330FEFD</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_42</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Anatomical landmark detection</term>
+					<term>Multiresolution learning</term>
+					<term>Hybrid transformer-CNN T. Viriyasaranon and S. Ma-Equally contributed</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate localization of anatomical landmarks has a critical role in clinical diagnosis, treatment planning, and research. Most existing deep learning methods for anatomical landmark localization rely on heatmap regression-based learning, which generates label representations as 2D Gaussian distributions centered at the labeled coordinates of each of the landmarks and integrates them into a single spatial resolution heatmap. However, the accuracy of this method is limited by the resolution of the heatmap, which restricts its ability to capture finer details. In this study, we introduce a multiresolution heatmap learning strategy that enables the network to capture semantic feature representations precisely using multiresolution heatmaps generated from the feature representations at each resolution independently, resulting in improved localization accuracy. Moreover, we propose a novel network architecture called hybrid transformer-CNN (HTC), which combines the strengths of both CNN and vision transformer models to improve the network's ability to effectively extract both local and global representations. Extensive experiments demonstrated that our approach outperforms state-of-theart deep learning-based anatomical landmark localization networks on the numerical XCAT 2D projection images and two public X-ray landmark detection benchmark datasets. Our code is available at https:// github.com/seriee/Multiresolution-HTC.git.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Anatomical landmark detection has been used successfully in parametric modeling <ref type="bibr" target="#b18">[19]</ref>, registration <ref type="bibr" target="#b21">[22]</ref>, and quantification of various anatomical abnormalities <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b20">21]</ref>. To detect landmarks automatically and accurately, advanced artificial intelligence technologies, including deep learning with convolutional neural net-work (CNN)-based <ref type="bibr" target="#b12">[13]</ref>, transformer-based <ref type="bibr" target="#b6">[7]</ref>, and graph-convolution methods <ref type="bibr" target="#b7">[8]</ref>, have been developed and have attracted great interest from both academia and industry.</p><p>Generally, deep learning-based anatomical landmark detection is based on heatmap regression approaches <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3]</ref>, which decode the predicted landmark coordinates from the heatmap corresponding to the landmarks. In previous studies, the networks mostly generate only one resolution of the heatmap to decode the landmark coordinates. However, deriving the landmark coordinate from a highresolution heatmap exhibits high bias and low variance, whereas the landmark coordinates obtained from a low-resolution heatmap demonstrate low bias and high variance. Typically, the heatmap regression-based detectors generate highresolution heatmaps by utilizing the high-resolution coarse feature. However, this process results in the loss of specific landmark-related features, including crucial information regarding the geometric relationship between landmarks. Consequently, this impacts the network's ability to accurately localize landmarks.</p><p>In this study, we propose a multiresolution heatmap learning strategy that derives the predicted landmark coordinate from multiresolution heatmaps to balance the bias and variance of the predicted landmarks. Moreover, leveraging multiresolution feature representations to generate the heatmap can effectively increase the localization accuracy of the deep learning network.</p><p>Typically, the existing methods of anatomical landmark detection are formulated using CNN-based or transformer-based encoder-decoder architecture <ref type="bibr" target="#b15">[16]</ref>. The convolution operation collects information by layer, which focus on the local feature information. Meanwhile, the vision transformer has the ability to encode global representations. To combine the advantages of CNNs and transformers, we introduce a novel hierarchical hybrid transformer and CNN architecture called the hybrid transformer-CNN (HTC). HTC introduces a stack of convolutional and transformer modules, which are applied to all stages of the encoder for extracting global information, and local information. Furthermore, we propose a lightweight positional-encoding-free transformer module. Instead of using multihead attention, we introduce the bilinear pooling operation to capture secondorder statistics of features and generate global representations. Moreover, general transformer encoders suffer from the fixed resolution of positional encoding, which results in decreased accuracy when interpolating the positional encoding during testing with resolutions different from the training data. To alleviate this problem, we remove the positional encoding from the transformer modules and employ a 3 ˆ3 convolutional operation as the patch embedding to capture location information and generate low-resolution fine features for the hierarchical encoder architecture design.</p><p>The main contributions of this paper are as follows:</p><p>-Introduction of a multiresolution heatmaps learning strategy, which increases the detection ability of the network by leveraging multiresolution information to derive the predicted landmark. -Development of a hierarchical hybrid transformer and CNN architecture named the HTC, which sequentially combines transformer and convolutional modules.</p><p>-Our proposed HTC model trained with a multiresolution heatmap learning approach clearly outperforms previous state-of-the-art models on three datasets: XCAT 2D projections of head CBCT volumes, X-ray dataset from ISBI2023 Challenge <ref type="bibr" target="#b0">[1]</ref>, and hand X-ray dataset <ref type="bibr" target="#b12">[13]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>In this section, we introduce our anatomical landmark detector, which consists of the proposed multiresolution heatmap learning method and the HTC backbone network, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Multiresolution Heatmap Learning</head><p>As depicted in Fig.  </p><formula xml:id="formula_0">H1 " Conv 1 (Conv 3 (D 3 )), H2 " Conv 1 (Conv 3 (D 4 )),</formula><p>where Conv 1 and Conv 3 are 1ˆ1 and 3ˆ3 convolutional operations, respectively. In addition, K is the number of landmarks.</p><p>During training, we use mean squared error (MSE) as the loss function between the predicted and ground-truth heatmaps for each resolution. Moreover, we enforce the detector to learn global and local information from the heatmap generated by the high-resolution coarse feature and the low-resolution fine-grained features, through the weighted summation of the heatmap loss from each resolution heatmap as follows:</p><formula xml:id="formula_1">L " L H1 `λL H2 , (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>where L H1 and L H2 are the respective losses calculated from the predicted heatmap H 1 and ground truth heatmap of size H 4 ˆW 4 ˆK as well as the predicted heatmap H 2 and ground truth heatmap of size H 2 ˆW 2 ˆK. Additionally, λ is the loss weight, which is set as three in all the experiments. During inference, we calculate the output landmark prediction coordinates of the model by averaging the corresponding coordinates decoded from the heatmap at each resolution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Hybrid Transformer-CNN (HTC)</head><p>We introduce a novel hierarchical encoder architecture named HTC, which consists of four stages of a stack of the convolutional ConvU i and transformer mod-ules T ransU i to generate multi-level feature representation. The overall architecture design of the HTC is shown in Fig. <ref type="figure" target="#fig_0">1</ref>. At each stage, the transformer module captures global information such as the geometric relation between landmarks, while the convolutional module extracts local information. The architecture of the transformer and convolutional module are shown in Fig. <ref type="figure" target="#fig_1">2</ref> (a) and (b), respectively. In this study, we proposed a lightweight positional-encoding-free transformer module. Instead of using multi-head attention, we introduce the bilinear pooling operation to capture second-order statistics of features and generate global representations. Moreover, we eliminate the usage of positional encoding to address the challenge of reduced model performance when testing the model with resolutions that differ from the training data. This modification aims to mitigate the issue and improve the overall performance under varying resolution scenarios.</p><p>In the first stage, an input image of size H ˆW ˆ3 is fed to the patch embedding, which is a convolutional 3 ˆ3 operation to obtain a patch token of size H 2 ˆW 2 ˆC1 . Then, the patch token is passed through the bilinear pooling attention module, which requires three inputs: a query Q, a key K, and a value V , which are the patch token that passes through the 1 ˆ1 convolutional operations, separately. Then, Q, K, and V are flattened to size HW 2 2 ˆC1 . The key and query are then fed to bilinear pooling <ref type="bibr" target="#b8">[9]</ref>, which is an effective way of gathering the key features and capturing the global representations of the images as follows:</p><formula xml:id="formula_3">F " nPN K n Q n , (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>where N is the set of spatial locations (combinations of rows and columns).</p><p>We further applied the softmax function to the output of bilinear pooling F to generate the attention weighting vector. Thereafter, matrix multiplication was performed between F and V , and the output of the bilinear pooling attention module was passed through to the feed-forward layer <ref type="bibr" target="#b22">[23]</ref>. Then, the output of the feed-forward layer was reshaped as feature representations G i of size H 2 ˆW 2 Ĉ1 . In addition, the output of the transformer module T ransU i was fed to the convolutional module ConvU i , comprising 3ˆ3 convolutional layers with dilated rates equal to one and two (Conv 3,d1 and Conv 3,d2 ), a batch normalization operation (Norm), and a rectified linear unit (ReLU ) activation function as follows:</p><formula xml:id="formula_5">E i " ReLU (Conv 3,d1 (G i ) `Norm(Conv 3,d2 (ReLU (Norm(Conv 3,d1 (G i )))))).</formula><p>(3) Similarly, using the feature representations from the previous stages as inputs, we obtained E 2 , E 3 , and E 4 with spatial reduction ratios of 4, 8, and 16 pixels, respectively, with respect to the input image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>To evaluate our method, we conducted experiments on a total of three datasets, including one 4D XCAT phantom CT dataset and two public X-ray datasets. Here, we generated head models from the 4D XCAT dataset <ref type="bibr" target="#b16">[17]</ref> for 27 patients with varying anatomical sizes and genders. We manually labeled 13 cephalometric landmarks on CT phantom volumes. Moreover, we perform forward projection on both the 3D phantom CT volumes and landmarks at 360 angles per patient to obtain 2D images and landmark labels. We randomly selected 70% of the patients' CT scans as the training dataset (18 patients) and the remaining 30% as the test dataset (9 patients). The size of each image was 620ˆ480, with a pixel spacing of 0.66 mm.</p><p>We also evaluated our method on the public X-ray dataset from the IEEE ISBI 2023 Challenge <ref type="bibr" target="#b0">[1]</ref>. A total of 29 ground truth landmarks were labeled by two experts. The image sizes and pixel spacings vary over patients. We randomly selected 75% of the X-ray images of the provided training dataset as the network training dataset(525 images) and the remaining 25% as the test dataset.</p><p>Finally, we performed experiments on a public hand dataset containing Xray images from 895 patients and having 37 landmarks <ref type="bibr" target="#b12">[13]</ref>. The sizes of these images are not all the same, so we resized the images to 1024ˆ1216. Owing to their lack of physical pixel resolution, we calculated the pixel spacing based on the assumption that the distance between two landmarks at both endpoints of the wrist is approximately 50 mm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>In our experiments, we implemented our framework using MMPose <ref type="bibr" target="#b3">[4]</ref>, an opensource toolbox for pose estimation based on PyTorch. For XCAT CT landmark detection, our HTC with multiresolution heatmap learning was trained for 50 epochs using the AdamW optimizer with the initial learning rate set to 0.0003. Furthermore, we trained the ISBI2023 landmark detection method for 180 epochs using the AdamW optimizer, with an initial learning rate of 0.00045. In addition, for hand landmark detection, we trained for 300 epochs using the AdamW optimizer at an initial learning rate of 0.0004. For all the experiments, the evaluation metrics are the mean radial error (MRE, mm) and successful detection rate (SDR, %) under 2 mm, 2.5 mm, 3 mm, and 4 mm conditions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Performance Evaluation</head><p>In this section, we compare the performances of the proposed and state-of-theart methods as well as analyze ablation studies on the proposed method. In each of the tables below, the metrics showing the best and second-best performances are indicated by boldface and underlined, respectively.  <ref type="table" target="#tab_2">2</ref> presents the performance comparison between the proposed and existing methods on the hand dataset. Our method significantly outperformed the best performance for all metrics on the hand dataset, with 0.56 mm MRE and 0.58 mm standard deviation of MRE. Additionally, qualitative comparisons of the images of the detection results are shown in Fig. <ref type="figure" target="#fig_2">3</ref>.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ablation Study:</head><p>We conducted an additional study to observe the effects of the proposed multiresolution heatmap learning and HTC. For this study, we compared the HTC with Conformer <ref type="bibr" target="#b14">[15]</ref>, which is a representative hybrid transformer and CNN architecture. As shown in Table <ref type="table" target="#tab_4">3</ref>, the HTC outperforms Conformer with MRE values of 3.03 and 1.11 mm for the XCAT CT and ISBI2023 datasets, respectively. Furthermore, the implementation of multiresolution heatmap learning can enhance the MRE of 0.15 and 0.03 mm for the XCAT CT and ISBI2023 datasets, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This study presents a new feature extraction architecture, referred to as the hybrid transformer-CNN (HTC), along with multiresolution heatmap learning for automatic anatomical landmark detection. The HTC architecture comprises of multiple stages of stacked transformer modules, which incorporate a bilinear pooling attention module to capture the global information of images and convolutional modules to extract local and specific feature representations relevant to landmarks. Additionally, we introduced multiresolution heatmap learning to improve the network's ability to capture global and local representations more accurately than learning from a single heatmap resolution, thereby enhancing network localization. Our experimental evaluations on three benchmark datasets demonstrate that the proposed method surpasses state-of-the-art approaches across various modalities and anatomical regions. These findings highlight the potential of our method for automatic anatomical landmark detection in various medical applications.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of the overall architecture of the anatomical detector, including multiresolution heatmap learning and the hybrid transformer-CNN (HTC).</figDesc><graphic coords="3,58,98,53,66,334,48,135,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Architecture of the components within each stage of the HTC (a) transformer modules; (b) convolutional modules.</figDesc><graphic coords="4,49,80,54,62,324,64,113,08" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Comparison of the proposed method and other models on the XCAT CT, ISBI2023, and hand datasets (from left to right). Ground-truth landmarks are marked in green, and the predictions are marked in red. We mark landmarks that do not overlap between predictions and ground truth with circles. (Color figure online)</figDesc><graphic coords="8,44,79,136,31,334,48,155,80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>1, we generate the multiresolution prediction heatmap using multiresolution feature representations (D i ) from the decoder layers and extra convolutional layers. The output feature representations of the decoder layers are a combination of the feature representations from each of the stages of the encoder and upsampled feature representations from the previous stage. The number of channels of all stages of the decoder feature representations are set to be equal to C d . In this work, we defined C d as 256.The lowest-resolution feature representation of the encoder E 4 of size H</figDesc><table /><note><p>16 Ŵ 16 ˆC4 is passed through 1 ˆ1 convolutional operation, and the output feature representation D 1 has size H 16 ˆW 16 ˆCd . Then, D 1 is upsampled using 3ˆ3 deconvolution operations and aggregated with the encoder feature representations E 3 to generate the next stage feature representations D 2 having size H 8 ˆW 8 ˆCd .</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Performance comparison of the proposed method with previous state-of-theart methods on the XCAT CT and ISBI2023 datasets.</figDesc><table><row><cell>Model</cell><cell cols="2">#Param(M) XCAT CT dataset</cell><cell>ISBI2023 dataset</cell></row><row><cell></cell><cell></cell><cell>MRE(SD) SDR(%)</cell><cell>MRE(SD) SDR(%)</cell></row><row><cell></cell><cell></cell><cell>2 mm 2.5 mm 3 mm 4 mm</cell><cell>2 mm 2.5 mm 3 mm 4 mm</cell></row><row><cell>Hourglass [11]</cell><cell>94.85</cell><cell cols="2">5.35(10.21) 38.71 49.54 58.36 71.19 1.32(1.88) 82.90 88.41 92.12 95.53</cell></row><row><cell>HRNet-W48 [20]</cell><cell>65.33</cell><cell cols="2">3.91(6.22) 36.38 48.47 58.56 73.01 1.26(1.49) 83.94 88.85 92.26 96.00</cell></row><row><cell>HRFormer-S [26]</cell><cell>44.04</cell><cell cols="2">3.40(2.82) 36.50 48.58 58.71 72.67 1.34(1.45) 81.83 88.41 91.74 95.70</cell></row><row><cell>UNet [16]</cell><cell>35.35</cell><cell cols="2">4.08(9.49) 47.28 58.44 66.47 76.81 3.97(15.04) 82.13 86.58 89.28 92.22</cell></row><row><cell>PVT-Tiny [24]</cell><cell>16.91</cell><cell cols="2">5.93(7.72) 18.18 26.17 34.39 49.48 2.00(4.77) 72.99 80.43 85.34 90.54</cell></row><row><cell>Conformer-Ti [15]</cell><cell>22.32</cell><cell cols="2">3.88(4.17) 42.26 31.65 52.12 66.99 1.70(2.93) 75.69 83.23 87.35 93.10</cell></row><row><cell>GU2Net [27]</cell><cell>2.74</cell><cell cols="2">5.96(15.36) 38.66 48.41 56.39 66.67 1.78(5.10) 81.97 86.31 88.87 92.28</cell></row><row><cell>FARNet [2]</cell><cell>78.97</cell><cell cols="2">3.51(3.57) 35.62 46.54 56.21 71.33 1.10(1.33) 87.59 91.88 94.48 96.87</cell></row><row><cell>AFPF [3]</cell><cell>20.68</cell><cell cols="2">4.59(11.58) 41.57 52.98 61.74 72.51 4.13(16.35) 79.09 83.67 86.72 90.05</cell></row><row><cell>Multi-task UNet [25]</cell><cell>13.58</cell><cell cols="2">4.27(8.71) 40.80 51.46 59.74 71.87 5.91(15.63) 74.58 79.29 81.81 84.71</cell></row><row><cell cols="2">HTC+Multiresolution learning 16.20</cell><cell cols="2">2.88(2.51) 46.82 59.02 67.97 79.68 1.08(1.37) 88.05 92.17 94.50 96.69</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Performance comparison of the proposed method with other state-of-the-art models on the hand dataset. The symbol " * " indicates that we repeated the training with the same environment used to develop our method.</figDesc><table><row><cell>Model</cell><cell cols="2">Hand dataset</cell></row><row><cell></cell><cell cols="2">MRE(SD) SDR(%)</cell></row><row><cell></cell><cell></cell><cell>2 mm 4 mm 10 mm</cell></row><row><cell>Payer et al. [12]</cell><cell cols="2">1.13(0.98) 87.60 98.66 99.96</cell></row><row><cell>GIRRF [5]</cell><cell cols="2">0.97(2.45) 91.60 97.84 99.31</cell></row><row><cell>DATR [28]</cell><cell>0.86(-)</cell><cell>94.04 99.20 99.97</cell></row><row><cell>Lindner et al. [10]</cell><cell cols="2">0.85(1.01) 93.68 98.95 99.94</cell></row><row><cell>Urschler et al. [21]</cell><cell cols="2">0.80(0.93) 92.19 98.46 98.46</cell></row><row><cell>Štern et al. [18]</cell><cell cols="2">0.80(0.91) 92.20 98.45 99.83</cell></row><row><cell>FARNet* [2]</cell><cell cols="2">0.67(0.64) 95.65 99.58 99.99</cell></row><row><cell>Payer et al. [14]</cell><cell cols="2">0.66(0.74) 94.99 99.27 99.99</cell></row><row><cell>HRNet-W48* [20]</cell><cell cols="2">0.65(0.62) 96.10 99.60 100</cell></row><row><cell>GU2Net* [27]</cell><cell cols="2">0.63(1.36) 96.01 99.39 99.98</cell></row><row><cell cols="2">HTC+Multiresolution learning 0</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>.56(0.58) 96.84 99.63 100 Comparisons with State-of-the-art Methods:</head><label></label><figDesc>Performance comparisons on the XCAT CT and ISBI2023 dataset are shown in Table1. We compared our proposed model with both natural and medical-domain landmark detectors. Our method remarkably achieved the best performance on the XCAT CT dataset with an MRE of 2.88 mm and on the ISBI2023 dataset with an MRE of 1.08 mm. Furthermore, our approach showed effects in lowering the standard deviation of the mean error on the XCAT CT dataset and improved the percentage of successful detection by 2.87%. Moreover, our method outperformed the highest detection rate among previous studies, reaching an SDR of 88.05% on the ISBI2023 dataset. Furthermore, the HTC was intentionally designed to have a smaller number of parameters compared to transformer-based architectures such as HRFormer and Conformer, despite achieving superior detection accu-racy. Table</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 3 .</head><label>3</label><figDesc>Comparison of the effects of the proposed HTC and multiresolution heatmap learning.</figDesc><table><row><cell>Model</cell><cell>Multi-</cell><cell>XCAT CT dataset</cell><cell>ISBI2023 dataset</cell></row><row><cell></cell><cell>resolution</cell><cell></cell><cell></cell></row><row><cell></cell><cell>learning</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>MRE(SD) SDR(%)</cell><cell>MRE(SD) SDR(%)</cell></row><row><cell></cell><cell></cell><cell>2 mm 2.5 mm 3 mm 4 mm</cell><cell>2 mm 2.5 mm 3 mm 4 mm</cell></row><row><cell cols="2">Conformer [15] ✗</cell><cell cols="2">3.88(4.16) 42.26 31.65 52.11 66.98 1.70(2.93) 75.69 83.23 87.35 93.10</cell></row><row><cell>HTC</cell><cell>✗</cell><cell cols="2">3.03(2.59) 43.64 55.72 64.73 76.99 1.11(1.37) 87.56 91.80 94.26 96.65</cell></row><row><cell></cell><cell>✓</cell><cell cols="2">2.88(2.51) 46.82 59.02 67.97 79.68 1.08(1.35) 87.80 91.80 94.18 96.45</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>. This research was partly supported by the <rs type="funder">BK21 FOUR (Fostering Outstanding Universities for Research)</rs> funded by the <rs type="funder">Ministry of Education (MOE, Korea)</rs> and <rs type="funder">National Research Foundation of Korea</rs> (<rs type="grantNumber">NRF-5199990614253</rs>); by the <rs type="programName">Technology development Program</rs> of MSS [S3146559]; by the <rs type="funder">National Research Foundation of Korea</rs> (<rs type="grantNumber">NRF-2022R1A2C1092072</rs>); and <rs type="funder">Institute of Information and communications Technology Planning and Evaluation (IITP)</rs> grant funded by the <rs type="funder">Korean government (MSIT)</rs> (No. <rs type="grantNumber">RS-2022-00155966</rs>, <rs type="funder">Artificial Intelligence Convergence Innovation Human Resources Development (Ewha Womans University)</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Y2dgkXE">
+					<idno type="grant-number">NRF-5199990614253</idno>
+					<orgName type="program" subtype="full">Technology development Program</orgName>
+				</org>
+				<org type="funding" xml:id="_jHahsBA">
+					<idno type="grant-number">NRF-2022R1A2C1092072</idno>
+				</org>
+				<org type="funding" xml:id="_GmTuW9y">
+					<idno type="grant-number">RS-2022-00155966</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">CEPHA29: automatic cephalometric landmark detection challenge 2023</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Anwaar Khalid</surname></persName>
+		</author>
+		<idno>arxiv.org/abs/2212.04808</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Feature aggregation and refinement network for 2D anatomical landmark detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10278-022-00718-4</idno>
+		<idno>10278-022-00718-4</idno>
+		<ptr target="https://doi.org/10.1007/s" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="547" to="561" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Cephalometric landmark detection by attentive feature pyramid fusion and regression-voting</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32248-9_97</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32248-997" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11766</biblScope>
+			<biblScope unit="page" from="873" to="881" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Contributors</surname></persName>
+		</author>
+		<ptr target="https://github.com/open-mmlab/mmpose" />
+		<title level="m">OpenMMLab pose estimation toolbox and benchmark</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Towards automatic bone age estimation from MRI: localization of 3D anatomical landmarks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ebner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Donner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10470-6_53</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10470-653" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2014</title>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Golland</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Hata</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Barillot</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Howe</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8674</biblScope>
+			<biblScope unit="page" from="421" to="428" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Shape representation for efficient landmark-based segmentation in 3-D</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ibragimov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Likar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pernuš</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vrtovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="861" to="874" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">CephalFormer: incorporating global structure constraint into visual features for general cephalometric landmark detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-822" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022. MICCAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="227" to="237" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Automatic localization of landmarks in craniomaxillofacial CBCT images using a local attention-based graph convolution network</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_79</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-179" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="817" to="826" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Bilinear CNN models for fine-grained visual recognition</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Roychowdhury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Maji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1449" to="1457" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Robust and accurate shape model matching using random forest regression-voting</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lindner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Bromiley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Ionita</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">F</forename><surname>Cootes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1862" to="1874" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Stacked hourglass networks for human pose estimation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Newell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46484-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46484-8" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9912</biblScope>
+			<biblScope unit="page">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Regressing heatmaps for multiple landmark localization using CNNs</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_27</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-827" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="230" to="238" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Integrating spatial configuration into heatmap regression based CNNs for landmark localization</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="207" to="219" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Integrating spatial configuration into heatmap regression based CNNs for landmark localization</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="207" to="219" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Conformer: local features coupling global representations for visual recognition</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Peng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="367" to="376" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">4D XCAT phantom for multimodality imaging research</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">P</forename><surname>Segars</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sturgeon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mendonca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Grimes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">M</forename><surname>Tsui</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="4902" to="4915" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">From local to global random regression forests: exploring anatomical landmark localization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ebner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_26</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-826" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="221" to="229" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Parametric modelling and segmentation of vertebral bodies in 3D CT and MR spine images</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Likar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pernuš</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vrtovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">23</biblScope>
+			<biblScope unit="page">7505</biblScope>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Deep high-resolution representation learning for human pose estimation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="5693" to="5703" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Integrating geometric configuration and appearance information into a unified framework for anatomical landmark localization</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ebner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="23" to="36" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Automatic point landmark matching for regularizing nonlinear intensity registration: application to thoracic CT images</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ditt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/11866763_87</idno>
+		<ptr target="https://doi.org/10.1007/1186676387" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2006</title>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Larsen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Nielsen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Sporring</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2006">2006</date>
+			<biblScope unit="volume">4191</biblScope>
+			<biblScope unit="page" from="710" to="717" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<idno>ArXiv abs/1706.03762</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Pyramid vision transformer: a versatile backbone for dense prediction without convolutions</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="568" to="578" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Miss the point: targeted adversarial attack on multiple landmark detection</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-167" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="692" to="702" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">HRFormer: high-resolution vision transformer for dense predict</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="7281" to="7293" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">You only learn once: universal anatomical landmark detection</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-39" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="85" to="95" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">DATR: domain-adaptive transformer for multidomain landmark detection</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.06433</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

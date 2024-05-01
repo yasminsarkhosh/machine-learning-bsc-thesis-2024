@@ -1,0 +1,962 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">M&amp;M: Tackling False Positives in Mammography with a Multi-view and Multi-instance Learning Sparse Detector</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yen</forename><forename type="middle">Nhi</forename><surname>Truong Vu</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Dan</forename><surname>Guo</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">WhiteRabbit.AI</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ahmed</forename><surname>Taha</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">WhiteRabbit.AI</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jason</forename><surname>Su</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">WhiteRabbit.AI</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Thomas</forename><forename type="middle">Paul</forename><surname>Matthews</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">WhiteRabbit.AI</orgName>
+								<address>
+									<settlement>Santa Clara</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">M&amp;M: Tackling False Positives in Mammography with a Multi-view and Multi-instance Learning Sparse Detector</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="778" to="788"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">759221696C58869C44A7EFC246D9F995</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-9_75</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Mammography</term>
+					<term>Detection</term>
+					<term>Classification</term>
+					<term>False positive Y.N.Truong Vu and D. Guo-Equal Contribution</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deep-learning-based object detection methods show promise for improving screening mammography, but high rates of false positives can hinder their effectiveness in clinical practice. To reduce false positives, we identify three challenges: (1) unlike natural images, a malignant mammogram typically contains only one malignant finding; (2) mammography exams contain two views of each breast, and both views ought to be considered to make a correct assessment; (3) most mammograms are negative and do not contain any findings. In this work, we tackle the three aforementioned challenges by: (1) leveraging Sparse R-CNN and showing that sparse detectors are more appropriate than dense detectors for mammography; (2) including a multi-view cross-attention module to synthesize information from different views; (3) incorporating multiinstance learning (MIL) to train with unannotated images and perform breast-level classification. The resulting model, M&amp;M, is a Multi-view and Multi-instance learning system that can both localize malignant findings and provide breast-level predictions. We validate M&amp;M's detection and classification performance using five mammography datasets. In addition, we demonstrate the effectiveness of each proposed component through comprehensive ablation studies.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Screening mammography helps detect breast cancer earlier and has reduced the breast cancer mortality rate significantly <ref type="bibr" target="#b3">[4]</ref>. Computer-aided diagnosis (CAD) software was developed to aid radiologists, but its effectiveness has been questioned following recent large-scale clinical studies <ref type="bibr" target="#b5">[6]</ref>. In particular, the high  <ref type="bibr" target="#b8">[9]</ref>) to few negative cases (DDSM <ref type="bibr" target="#b7">[8]</ref>, INBreast <ref type="bibr" target="#b16">[17]</ref>). To illustrate the distribution shift, we train four popular dense detectors using a standard setup that includes only annotated malignant and benign cases <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16]</ref>. We utilize OPTIMAM <ref type="bibr" target="#b6">[7]</ref>, a large dataset with a significant proportion of negatives (Table <ref type="table" target="#tab_1">1</ref>), for training and evaluation. Across all dense models, there is a large performance drop in the clinically representative setting that includes negative images. This means that the dense models are producing too many FPs on negative images. Our model, M&amp;M, successfully tackles this performance gap.</p><p>rate of false positive (FP) predictions of CAD can cause a significant reduction in radiologists' specificity <ref type="bibr" target="#b5">[6]</ref>. Surprisingly, recent deep learning literature <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b31">32]</ref> focuses on improving recall without considering the need to operate at low FP rates. As shown in Fig. <ref type="figure" target="#fig_0">1a</ref>, most works focus on reporting recalls outside the clinically relevant region of less than 1 FP/image. To tackle the high rate of false positives in mammography, we identify three challenges: (1) A malignant mammogram typically contains only one malignant finding. This is different from natural images: for example, an image in COCO contains on average 7.7 objects <ref type="bibr" target="#b10">[11]</ref>. This calls into question the usage of dense detectors for mammography; (2) A standard screening exam consists of two views per breast. Both views are essential in making a clinical decision because a finding may appear suspicious in one view but not the other; (3) Most mammograms are negative: they do not contain any findings. However, excluding negative images from training and evaluation leads to a distribution shift since negative images are abundant in clinical practice. Concretely, the false positive rate is low for a typical evaluation data distribution but much higher for a clinicallyrepresentative data distribution, as shown in Fig. <ref type="figure" target="#fig_0">1b</ref>.</p><p>In this work, we tackle these challenges and propose a Multi-view and Multiinstance learning system, M&amp;M. M&amp;M is an end-to-end system that detects malignant findings and provides breast-level classification. To achieve these goals, M&amp;M leverages three components: (1) Sparse R-CNN to replace dense anchors with a set of sparse proposals; (2) Multi-view cross-attention to synthesize information from two views and iteratively refine the predictions, and (3) Multiinstance learning (MIL) to include negative images during training. Ultimately, each component contributes to our goal of reducing false positives.</p><p>We validate M&amp;M through evaluation on five datasets: two in-house datasets, two public datasets -DDSM <ref type="bibr" target="#b7">[8]</ref> and CBIS-DDSM <ref type="bibr" target="#b8">[9]</ref>, and OPTIMAM <ref type="bibr" target="#b6">[7]</ref>. We perform ablation studies to verify the contribution of each component of M&amp;M. To summarize, our contributions are:</p><p>1. We show that sparsity of proposals is beneficial to the analysis of mammograms, which have low disease prevalence (Sec. With MIL, M&amp;M improves the recall at 0.1 FP/image by 12.6% (Fig. <ref type="figure" target="#fig_3">4</ref>). Furthermore, M&amp;M can provide breast-level classification predictions, achieving AUCs of more than 0.88 on four different datasets (Table <ref type="table">3</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">M&amp;M: A Multi-view and MIL System</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Sparse R-CNN with Dual Classification Heads</head><p>The sparsity of malignant findings calls into question the use of dense detectors.</p><p>As shown in Fig. <ref type="figure" target="#fig_0">1b</ref>, dense detectors generalize poorly to negative images as they produce too many false positives. Thus, we propose to use Sparse R-CNN <ref type="bibr" target="#b23">[24]</ref>. Sparse R-CNN utilizes a sparse set of N learnable proposals consisting of b 0 ∈ R N ×4 coordinates and h 0 ∈ R N ×D features. The architecture uses 6 cascading heads to iteratively refine the proposals. Within the i th head, the proposals h i-1 first interact with themselves via self-attention, and then generate DynamicConv (Fig. <ref type="figure" target="#fig_3">4</ref>, <ref type="bibr" target="#b23">[24]</ref>) to interact with RoI features cropped by b i-1 . The resulting outputs h i ∈ R N ×D are features for the (i+1) th head. In addition, a regression module is applied to h i to generate boxes b i ∈ R N ×4 , and a classification module generates scores p i ∈ R N ×C , with C being the number of classes.</p><p>We modify Sparse R-CNN to include dual classification modules (Fig. <ref type="figure" target="#fig_1">2</ref>). First, an objectness module produces objectness logits o i ∈ R N to distinguish all findings -malignant and benign -from the background. By utilizing all findings, the objectness head increases the training sample size <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16]</ref>, but also increases FPs because it flags benign findings. To mitigate this side effect, we include a dedicated malignancy module [W i , b i ] to generate malignancy logits m i ∈ R N that is trained to distinguish malignant from benign findings:</p><formula xml:id="formula_0">m i = o i -SoftPlus(W i h i + b i ).</formula><p>(1) The strictly positive function SoftPlus(x) = log(1 + e x ) is chosen to enforce consistency: a high objectness logit o i is required to generate a high malignancy logit m i . Thus, at the finding level, we obtain the following loss</p><formula xml:id="formula_1">L lesion = L malignant + L objectness + 2L giou + 5L L1 ,<label>(2)</label></formula><p>where L giou and L L1 are regression losses as in Sparse R-CNN. L objectness and L malignancy are focal losses applied to the predicted objectness o i and the predicted malignancy m i across all cascading heads 1 ≤ i ≤ 6, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Multi-view Reasoning</head><p>A standard screening exam includes two standard views of each breast. The craniocaudal (CC) view is taken from the top down, while the mediolateral oblique (MLO) view is captured from the side at an oblique angle. Radiologists examine both views when making a clinical decision as a finding may look innocuous in one view but suspicious in the other.</p><p>To enable multi-view reasoning, M&amp;M incorporates a cross-attention module <ref type="bibr" target="#b27">[28]</ref> into every cascading head. Recall that within the i th cascading head, selfattention is first applied to proposal features h i-1 to reason about the relations between objects. After this self-attention module, we introduce a cross-attention module (Fig. <ref type="figure" target="#fig_1">2</ref>, Appendix Algo. 1) to reason about the relations between CC view feature h CC i-1 and MLO view feature h MLO i-1 :</p><formula xml:id="formula_2">hCC i-1 = h CC i-1 + MultiHeadAttn(Q = h CC i-1 , V = h MLO i-1 , K = h MLO i-1 ), (3) hMLO i-1 = h MLO i-1 + MultiHeadAttn(Q = h MLO i-1 , V = h CC i-1 , K = h CC i-1 ).<label>(4)</label></formula><p>The enhanced embeddings hCC i-1 , hMLO i-1 then generate DynamicConv to interact with RoI features and produce new features h CC i , h MLO i for the (i + 1) th head. Thus, with the proposed cross-attention module, the CC view's proposal features are refined iteratively using the MLO view's proposal features and vice versa.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Multi-instance Learning</head><p>Mammogram annotation is costly to obtain due to a dependency on radiologists. This high cost means that bounding boxes are often unavailable. Further, most mammograms are negative: they do not contain any findings. Yet, a model generalizes poorly if these negative images are dropped during training (Fig. <ref type="figure" target="#fig_0">1b</ref>).</p><p>Since image-and breast-level labels are available, we adopt an MIL module to include images without bounding boxes during training. To compute imageand breast-level scores, we leverage the proposal malignancy logits m i (Eq. ( <ref type="formula">1</ref>)). Since an image is malignant if it contains a malignant lesion, we obtain imagelevel scores by applying the NoisyOR function f</p><formula xml:id="formula_3">(x) = 1 - N k=1 (1 -x[k]) to the malignancy probabilities p i = Sigmoid(m i ) ∈ R N .</formula><p>Next, as CC and MLO views offer complimentary information on a breast, we obtain breast-level malignancy score by averaging the image-level scores across these views.</p><p>We apply cross-entropy losses L image and L breast at the image and breast level for all training samples. The lesion loss L lesion (Eq. ( <ref type="formula" target="#formula_1">2</ref>)) is only applied for annotated lesions. We thus obtain the following total training loss for M&amp;M: L = 1 annotated lesion L lesion + 0.5L image + 0.5L breast .</p><p>(5)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Implementation Details. We use PyTorch 1.10. The training settings follow Sparse R-CNN <ref type="bibr" target="#b23">[24]</ref>. We apply random horizontal flipping and random rotation. We resize the images' shorter edges to 2560 with the larger edges no longer than 3328. We utilize a COCO-pretrained PVT-B2-Li backbone <ref type="bibr" target="#b29">[30]</ref>. We use AdamW optimizer with 5 × 10 -5 learning rate and 0.0001 weight decay. The model is trained for 9000 iterations, and the learning rate is scaled by 0.1 at the 6750 and 8250 iterations. Each batch contains 16 breasts (32 images). We employ a 1:1 sampling ratio between unannotated and annotated images.</p><p>Datasets. We utilize three 2D digital mammography datasets: (1) OPTIMAM : a development dataset derived from the OPTIMAM database <ref type="bibr" target="#b6">[7]</ref>, which is funded by Cancer Research UK. We split the data into train/val/test with an 80:10:10 ratio at the patient level; (2) Inhouse-A: an evaluation dataset collected from a U.S. multi-site mammography operator; (3) Inhouse-B : an evaluation dataset collected from a U.S. academic hospital (see <ref type="bibr" target="#b17">[18]</ref>, Sec. 2.2 for more details on the inhouse datasets). We also utilize two film mammography datasets: (4) DDSM: a dataset maintained at the University of South Florida <ref type="bibr" target="#b7">[8]</ref>. We followed the methods by <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16]</ref> to split the test set; (5) CBIS-DDSM: a curated subset of DDSM <ref type="bibr" target="#b8">[9]</ref>. We only include breasts that have one CC view and one MLO view. Dataset statistics are reported in Table <ref type="table" target="#tab_1">1</ref>.</p><p>Metrics. We report average precision with Intersection over Union from 0.25 to 0.75. AP mb denotes average precision on the set of annotated malignant and benign images. AP denotes average precision when all data is included. We report free response operating characteristic (FROC) curves and recalls at various FP/image (R@t). Following <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b28">29]</ref>, a proposal is considered true positive if its center lies within the ground truth box. For classification, we report the area under the receiver operating characteristic curve (AUC).</p><p>Detection Results.  GMIC <ref type="bibr" target="#b22">[23]</ref> 0.911 0.896 0.814 0.815 0.796 HCT <ref type="bibr" target="#b24">[25]</ref> 0.923 0.912 0.816 0.817 0.793 M&amp;M (ours) 0.960 0.942 0.920 0.910 0.898</p><formula xml:id="formula_4">(b) CBIS-DDSM Model Breast AUC</formula><p>ResNet50 <ref type="bibr" target="#b13">[14]</ref> 0.724 Shared ResNet <ref type="bibr" target="#b30">[31]</ref> 0.735 PHResNet50 <ref type="bibr" target="#b13">[14]</ref> 0.739 Cross-view Transformer <ref type="bibr" target="#b26">[27]</ref> 0.803 * M&amp;M (ours) 0.883</p><p>23 points (pt) between excluding and including negative images. Large Δ means the models are producing too many FPs on negative images. Sparse R-CNN <ref type="bibr" target="#b23">[24]</ref> generalizes significantly better with a gap of 17pt. This shows the importance of sparsity for reducing FP. By adding both multi-view and MIL, M&amp;M successfully reduces the Δ gap to 3.5pt. With this performance gap closed, M&amp;M is able to achieve a high recall of 87.7% at just 0.1 FP/image. Figure <ref type="figure" target="#fig_0">1a</ref> compares M&amp;M with recent literature evaluated on DDSM. M&amp;M adopts the same DDSM splits used by <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b32">33]</ref>, while <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b31">32]</ref> use other splits. M&amp;M (87% R@0.5) outperforms all recent SOTA with the same test split, including 2022 SOTA <ref type="bibr" target="#b32">[33]</ref> (83% R@0.5), by at least 4%.</p><p>Classification Results. Table 3a reports M&amp;M's breast-level and exam-level classification results on OPTIMAM and the two inhouse datasets. We use GMIC <ref type="bibr" target="#b22">[23]</ref> and HCT <ref type="bibr" target="#b24">[25]</ref> as baselines since they are open-sourced classifiers developed for mammography. All three models were trained only on OPTIMAM. For all models, the breast-level score is the average of the CC score and MLO score, while the exam-level score is the max of the left breast score and right breast score. Both baseline models suffer large generalization drops of approximately  <ref type="table">3b</ref> compares M&amp;M with recent literature reporting on the public CBIS-DDSM dataset. In particular, M&amp;M outperforms the cross-view transformer <ref type="bibr" target="#b26">[27]</ref> and PHResNet50 <ref type="bibr" target="#b13">[14]</ref> by 0.08 and 0.14 breast AUC, respectively. Qualitative Evaluation. Figure <ref type="figure">3</ref> presents a qualitative evaluation of the multi-view module. With multi-view, M&amp;M produces a tighter box on the CC view and recovers a missed finding on the MLO view. Ablation Studies. Figure <ref type="figure" target="#fig_3">4</ref> presents ablation results using the OPTIMAM validation split. On the left, we demonstrate how each component of M&amp;M contributes to closing the gap Δ between evaluating with and without negative images. Notably, without using any extra training samples, multi-view reasoning reduces Δ to only -5.9pt (Row 3). MIL allows the model to train with significantly more negative images, reducing Δ to -3.6pt (Row 4). On the right of Fig. <ref type="figure" target="#fig_3">4</ref>, the FROC curves show how each component of M&amp;M improves recall significantly at low FP/image. In particular, M&amp;M's recall at 0.1FP/image is 86.3%, +21.2% over vanilla Sparse R-CNN.</p><p>Further studies. In the appendix, we present more qualitative evaluation as well as further ablation studies on (1) number of learnable proposals, (2) different MIL schemes, (3) backbone choices and (4) positional encoding.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion and Conclusion</head><p>We present M&amp;M, an end-to-end model leveraging multi-view reasoning and multi-instance learning for mammography detection and classification.</p><p>As a detector, M&amp;M offers significant improvement in recall at low FP/image (Fig. <ref type="figure" target="#fig_0">1a</ref>, Table <ref type="table" target="#tab_2">2</ref>). This success comes from three points of advancement. First, unlike previous works that do not consider the impact of sparsity <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b32">33]</ref>, we show that sparsity of proposals is beneficial for false positive reduction (Table <ref type="table" target="#tab_2">2</ref>).</p><p>Second, M&amp;M incorporates multi-view reasoning through iterative application of cross-attention and proposal refinement in the cascading heads. M&amp;M's multiview module is effective (Fig. <ref type="figure" target="#fig_3">4</ref>) yet simple, requiring neither positional encoding <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b31">32]</ref> nor extra proposal correspondence annotations <ref type="bibr" target="#b32">[33]</ref>. Finally, our MIL formulation allows for training with representative data distribution in an endto-end one stage pipeline. This is more advantageous than previous pipelines that require additional stages or classifiers to reduce false positives <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b28">29]</ref>.</p><p>As a classifier, M&amp;M establishes strong performance on several datasets (Table <ref type="table">3</ref>). M&amp;M offers two advantages over image classifiers: (1) Image classifiers are often pre-trained as patch classifiers with patches cropped from bounding box annotations <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b24">25]</ref>. In comparison, M&amp;M utilizes these bounding boxes to learn localization and can be trained directly in a single stage from COCO/ImageNet weights; (2) Image classifiers offer limited explainability, while M&amp;M's breast-level prediction is more interpretable through its localization ability.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Two gaps between deep learning literature and clinical applicability. (a) Few works report detailed performance in the clinically relevant region of less than 1 FP/image. M&amp;M surpasses previous works by a large margin in this region. (b) Typical evaluation datasets are not representative: they contain from zero (CBIS-DDSM<ref type="bibr" target="#b8">[9]</ref>) to few negative cases (DDSM<ref type="bibr" target="#b7">[8]</ref>, INBreast<ref type="bibr" target="#b16">[17]</ref>). To illustrate the distribution shift, we train four popular dense detectors using a standard setup that includes only annotated malignant and benign cases<ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b15">16]</ref>. We utilize OPTIMAM<ref type="bibr" target="#b6">[7]</ref>, a large dataset with a significant proportion of negatives (Table1), for training and evaluation. Across all dense models, there is a large performance drop in the clinically representative setting that includes negative images. This means that the dense models are producing too many FPs on negative images. Our model, M&amp;M, successfully tackles this performance gap.</figDesc><graphic coords="2,153,39,57,50,65,39,114,25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. M&amp;M tackles false positives through (1, blue, dotted arrows) leveraging the Sparse R-CNN cascade architecture to iteratively refine sparse learnable proposals into predictions, (2, red, solid arrows) incorporating a cross-attention module to reason about relations between objects across two views, and (3, green, dashed arrows) utilizing image and breast MIL pooling to train with images that do not have lesion annotations. (Color figure online)</figDesc><graphic coords="4,56,97,53,81,338,56,186,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .Table 3 .</head><label>33</label><figDesc>Fig. 3. Qualitative Evaluation. Left: Model without multi-view (row 4 of Fig. 4) produces a loose box on the CC view and misses the finding on the MLO view. Right: M&amp;M produces tight boxes around the finding in both views. Table 3. Quantitative classification evaluation. (a) On three private datasets, we use two open-sourced mammography classifiers as baselines [23, 25]. All models were trained only on OPTIMAM. We report AUC at both the breast and the exam level, except for Inhouse-A, where breast-level labels are unavailable. (b) We train M&amp;M on CBIS-DDSM and compare breast AUC with recent literature. (* Tulder et al. [27] report results using five-fold cross validation.)</figDesc><graphic coords="7,43,29,54,08,337,12,84,61" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Effect of M&amp;M's components on classification and detection performance.</figDesc><graphic coords="8,234,45,54,26,161,65,100,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Dataset statistics. We report the number of breasts in each dataset, broken down by 3 categories: malignant, benign, and negative. Malignant breasts contain findings with positive biopsy outcomes. Benign breasts contain findings that are determined to be non-malignant after additional follow-up. Negative breasts do not contain any radiologist-marked findings. In the parentheses, we report the number of breasts with bounding box annotations. "Bbox" indicates whether bounding box annotations are available.</figDesc><table><row><cell>Datasets</cell><cell cols="6">Bbox Malignant (Ann.) Benign (Ann.) Negative (Ann.)</cell></row><row><cell>OPTIMAM</cell><cell>✓</cell><cell cols="5">4,838 (4,245) 1,999 (567) 26,003</cell><cell>(2)</cell></row><row><cell>Inhouse-A</cell><cell></cell><cell>496</cell><cell cols="2">(0) 2,128</cell><cell>(0)</cell><cell>2074</cell><cell>(0)</cell></row><row><cell>Inhouse-B</cell><cell></cell><cell>243</cell><cell cols="2">(0) 7,797</cell><cell>(0)</cell><cell>47,929</cell><cell>(0)</cell></row><row><cell>DDSM</cell><cell>✓</cell><cell cols="2">624 (624)</cell><cell cols="2">555 (555)</cell><cell>2,877</cell><cell>(1)</cell></row><row><cell cols="2">CBIS-DDSM ✓</cell><cell cols="2">312 (310)</cell><cell cols="2">347 (336)</cell><cell>0</cell><cell>(0)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Quantitative detection evaluation on OPTIMAM. Δ denotes the AP gap between evaluating with and without negative images.</figDesc><table><row><cell>Model</cell><cell>AP mb AP Δ</cell><cell cols="3">R@0.1 R@0.25 R@0.5</cell></row><row><cell>RetinaNet [10]</cell><cell cols="2">52.4 25.5 -26.9 53.3</cell><cell>73.1</cell><cell>83.0</cell></row><row><cell>FCOS [26]</cell><cell cols="2">52.2 27.9 -24.3 52.0</cell><cell>77.4</cell><cell>87.0</cell></row><row><cell cols="3">Faster R-CNN [19] 52.5 27.1 -25.4 51.5</cell><cell>71.2</cell><cell>84.1</cell></row><row><cell cols="3">Cascade R-CNN [2] 52.7 29.7 -23.0 54.9</cell><cell>77.0</cell><cell>86.2</cell></row><row><cell cols="3">Sparse R-CNN [24] 53.2 36.2 -17.0 64.3</cell><cell>77.0</cell><cell>85.5</cell></row><row><cell>M&amp;M (ours)</cell><cell cols="3">57.1 53.6 -3.5 87.7 90.9</cell><cell>92.5</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2</head><label>2</label><figDesc></figDesc><table /><note><p><p><p>presents quantitative detection evaluation on OPTIMAM. All dense detectors</p><ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b25">26]</ref> </p>suffer a large Δ gap of more than</p></note></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43904-9_75.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Automatic mass detection in mammograms using deep convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Diaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Lladó</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Martí</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">31409</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Cascade R-CNN: delving into high quality object detection</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Vasconcelos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A novel featureless approach to mass detection in digital mammograms based on support vector machines</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Campanini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Bio</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">961</biblScope>
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mammography screening reduces rates of advanced and fatal breast cancers: results in 549,091 women</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Duffy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cancer</title>
+		<imprint>
+			<biblScope unit="volume">126</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<biblScope unit="page" from="2971" to="2979" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A concentric morphology model for the detection of masses in mammography</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">H</forename><surname>Eltonsy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Tourassi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Elmaghraby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="880" to="889" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Effectiveness of computer-aided detection in community mammography practice</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Fenton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. National Cancer Inst</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">15</biblScope>
+			<biblScope unit="page" from="1152" to="1161" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">OPTIMAM mammography image database: a largescale resource of mammography images and clinical data</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Halling-Brown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<date type="published" when="2020">200103. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The digital database for screening mammography</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Heath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Bowyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kopans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kegelmeyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fifth International Workshop on Digital Mammography</title>
+		<meeting>the Fifth International Workshop on Digital Mammography</meeting>
+		<imprint>
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A curated mammography data set for use in computer-aided detection and diagnosis research</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Gimenez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hoogi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Miyake</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gorovoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Focal loss for dense object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Microsoft COCO: common objects in context</title>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10602-1_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10602-1_48" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2014: 13th European Conference</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Zurich, Switzerland; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">September 6-12, 2014. 2014</date>
+			<biblScope unit="page" from="740" to="755" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Act like a radiologist: towards reliable multi-view correspondence reasoning for mammogram mass detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PAMI</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="5947" to="5961" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Cross-view correspondence reasoning based on bipartite graph convolutional network for mammogram mass detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3812" to="3822" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Multi-view breast cancer classification via hypercomplex neural networks</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Lopez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Grassucci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Valleriani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Comminiello</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2204.05798</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Robust breast cancer detection in mammography and digital breast tomosynthesis using an annotation-efficient deep learning approach</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lotter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Med</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="244" to="249" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Cross-view relation networks for mammogram mass detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Menze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 25th International Conference on Pattern Recognition (ICPR)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8632" to="8638" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">INBreast: toward a full-field digital mammographic database</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">C</forename><surname>Moreira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Amaral</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Domingues</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cardoso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Cardoso</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acad. Radiol</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="236" to="248" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pedemonte</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2204.06671</idno>
+		<title level="m">A deep learning algorithm for reducing false positives in screening mammography</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Faster R-CNN: towards real-time object detection with region proposal networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Retina-Match: ipsilateral mammography lesion matching in a single shot detection pipeline</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ren</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-3_33" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2021: 24th International Conference</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Strasbourg, France; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021-10-01">September 27 -October 1, 2021. 2021</date>
+			<biblScope unit="page" from="345" to="354" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A model-based framework for the detection of spiculated masses on mammography a</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Sampat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Whitman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Markey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="2110" to="2123" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">A two-stage multiple instance learning framework for the detection of breast cancer in mammograms</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Sarath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chakravarty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sethuraman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sheet</surname></persName>
+		</author>
+		<editor>EMBC. IEEE</editor>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page">101908</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Sparse R-CNN: end-to-end object detection with learnable proposals</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Deep is a Luxury We Don&apos;t Have</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Taha</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Truong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mombourquette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Matthews</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Singh</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_3</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-8_3" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="page" from="25" to="35" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Fcos: fully convolutional one-stage object detection</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Tian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Multi-view Analysis of Unregistered Medical Images Using Cross-View Transformers</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Van Tulder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Marchiori</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4_10" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="104" to="113" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">WRDet: a breast cancer detector for full-field digital mammograms</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N T</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mombourquette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Matthews</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computer-Aided Diagnosis</title>
+		<imprint>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="219" to="230" />
+			<date type="published" when="2022">2022</date>
+			<publisher>SPIE</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Pvt v2: improved baselines with pyramid vision transformer</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Visual Media</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="415" to="424" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Improving the ability of deep neural networks to use information from multiple views in breast cancer screening</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jastrzębski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Moy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Geras</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">MommiNet-v2: mammographic multi-view mass identification networks</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">102204</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Check and link: pairwise lesion correspondence guides mammogram mass detection</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19803-8_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19803-8_23" />
+	</analytic>
+	<monogr>
+		<title level="j">ECCV</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

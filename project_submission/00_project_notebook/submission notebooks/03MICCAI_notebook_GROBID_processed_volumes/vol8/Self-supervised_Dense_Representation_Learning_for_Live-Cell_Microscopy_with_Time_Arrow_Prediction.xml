@@ -1,0 +1,997 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Self-supervised Dense Representation Learning for Live-Cell Microscopy with Time Arrow Prediction</title>
+				<funder ref="#_AdPtZMr">
+					<orgName type="full">EPFL</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">CARIGEST SA</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Benjamin</forename><surname>Gallusser</surname></persName>
+							<email>benjamin.gallusser@epfl.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">École Polytechnique Fédérale de Lausanne (EPFL)</orgName>
+								<address>
+									<settlement>Lausanne</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Max</forename><surname>Stieber</surname></persName>
+							<email>max.stieber@epfl.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">École Polytechnique Fédérale de Lausanne (EPFL)</orgName>
+								<address>
+									<settlement>Lausanne</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Martin</forename><surname>Weigert</surname></persName>
+							<email>martin.weigert@epfl.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">École Polytechnique Fédérale de Lausanne (EPFL)</orgName>
+								<address>
+									<settlement>Lausanne</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Self-supervised Dense Representation Learning for Live-Cell Microscopy with Time Arrow Prediction</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="537" to="547"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D9A3F51E7023D303ED22609745F69BF2</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_52</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Self-supervised learning • Live-cell microscopy</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>State-of-the-art object detection and segmentation methods for microscopy images rely on supervised machine learning, which requires laborious manual annotation of training data. Here we present a self-supervised method based on time arrow prediction pre-training that learns dense image representations from raw, unlabeled live-cell microscopy videos. Our method builds upon the task of predicting the correct order of time-flipped image regions via a single-image feature extractor followed by a time arrow prediction head that operates on the fused features. We show that the resulting dense representations capture inherently time-asymmetric biological processes such as cell divisions on a pixel-level. We furthermore demonstrate the utility of these representations on several live-cell microscopy datasets for detection and segmentation of dividing cells, as well as for cell state classification. Our method outperforms supervised methods, particularly when only limited ground truth annotations are available as is commonly the case in practice. We provide code at https://github.com/weigertlab/tarrow.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Live-cell microscopy is a fundamental tool to study the spatio-temporal dynamics of biological systems <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b25">26]</ref>. The resulting datasets can consist of terabytes of raw videos that require automatic methods for downstream tasks such as classification, segmentation, and tracking of objects (e.g. cells or nuclei). Current state-of-the-art methods rely on supervised learning using deep neural networks that are trained on large amounts of ground truth annotations <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b30">31]</ref>. The manual creation of these annotations, however, is laborious and often constitutes a practical bottleneck in the analysis of microscopy experiments <ref type="bibr" target="#b5">[6]</ref>. Recently, self-supervised representation learning (SSL) has emerged as a promising approach to alleviate this problem <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b2">3]</ref>. In SSL one first defines a pretext task which can be formulated solely based on unlabeled images (e.g. inpainting <ref type="bibr" target="#b7">[8]</ref>, or rotation prediction <ref type="bibr" target="#b4">[5]</ref>) and tasks a neural network to solve it, with the aim of generating latent representations that capture high-level image semantics. In a second step, these representations can then be either finetuned or used directly (e.g. via linear probing) for a downstream task (e.g. image classification) with available ground truth <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b17">18]</ref>. Importantly, a proper choice of the pretext task is crucial for the resulting representations to be beneficial for a specific downstream task.</p><p>In this paper we investigate whether time arrow prediction, i.e. the prediction of the correct order of temporally shuffled image frames extracted from live-cell microscopy videos, can serve as a suitable pretext task to generate meaningful representations of microscopy images. We are motivated by the observation that for most biological systems the temporal dynamics of local image features are closely related to their semantic content: whereas static background regions are time-symmetric, processes such as cell divisions or cell death are inherently timeasymmetric (cf. Fig. <ref type="figure" target="#fig_0">1a</ref>). Importantly, we are interested in dense representations of individual images as they are useful for both image-level (e.g. classification) or pixel-level (e.g. segmentation) downstream tasks. To that end, we propose a time arrow prediction pre-training scheme, which we call Tap, that uses a feature extractor operating on single images followed by a time arrow prediction head operating on the fused representations of consecutive time points. The use of time arrow prediction as a pretext task for natural (e.g. youtube) videos was introduced by Pickup et al . <ref type="bibr" target="#b18">[19]</ref> and has since then seen numerous applications for image-level tasks, such as action recognition, video retrieval, and motion classification <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b29">30]</ref>. However, to the best of our knowledge, SSL via time arrow prediction has not yet been studied in the context of live-cell microscopy. Concretely our contributions are: i) We introduce the time arrow prediction pretext task to the domain of live-cell microscopy and propose the Tap pre-training scheme, which learns dense representations (in contrast to only image-level representations) from raw, unlabeled live-cell microscopy videos, ii) we propose a custom (permutation-equivariant) time arrow prediction head that enables robust training, iii) we show via attribution maps that the representations learned by Tap capture biologically relevant processes such as cell divisions, and finally iv) we demonstrate that Tap representations are beneficial for common image-level and pixel-level downstream tasks in live-cell microscopy, especially in the low training data regime.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Our proposed Tap pre-training takes as input a set {I} of live-cell microscopy image sequences I ∈ R T ×H×W with the goal to produce a feature extractor f that generates c-dimensional dense representations z = f (x) ∈ R c×H×W from single images x ∈ R H×W (cf. Fig. <ref type="figure" target="#fig_0">1b</ref> for an overview of Tap). To that end, we randomly sample from each sequence I pairs of smaller patches x 1 , x 2 ∈ R h×w from the same spatial location but consecutive time points x 1 ⊂ I t , x 2 ⊂ I t+1 . We next flip the order of each pair with equal probability p = 0.5, assign it the corresponding label y (forward or backward ) and compute dense representations z 1 = f (x 1 ) and z 2 = f (x 2 ) with z 1 , z 2 ∈ R c×h×w via a fully convolutional feature extractor f . The stacked representations z = [z 1 , z 2 ] ∈ R 2×c×h×w are fed to a time arrow prediction head h, which produces the classification logits</p><formula xml:id="formula_0">ŷ = [ŷ 1 , ŷ2 ] = h([z 1 , z 2 ]) = h([f (x 1 ), f(x 2 )]) ∈ R 2 .</formula><p>Both f and h are trained jointly to minimize the loss</p><formula xml:id="formula_1">L = L BCE (y, ŷ) + λL Decorr (z) ,<label>(1)</label></formula><p>where L BCE denotes the standard softmax + binary cross-entropy loss between the ground truth label y and the logits ŷ = h(z), and L Decorr is a loss term that promotes z to be decorrelated across feature channels <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b32">33]</ref> via maximizing the diagonal of the softmax-normalized correlation matrix A ij :</p><formula xml:id="formula_2">L Decorr (z) = - 1 c log c i=1 A ii , A ij = softmax(z T i • zj /τ ) = e zT i •zj /τ c j=1 e zT i •zj /τ (2)</formula><p>Here z ∈ R c×2hw denotes the stacked features z flattened across the non-channel dimensions, and τ is a temperature parameter. Throughout the experiments we use λ = 0.01 and τ = 0.2. Note that instead of creating image pairs from consecutive video frames we can as well choose a custom time step Δt ∈ N and sample x 1 ⊂ I t and x 2 ⊂ I t+Δt , which we empirically found to work better for datasets with high frame rate.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Permutation-equivariant Time Arrow Prediction Head:</head><p>The time arrow prediction task has an inherent symmetry:</p><formula xml:id="formula_3">flipping the input [z 1 , z 2 ] → [z 2 , z 1 ] should flip the logits [ŷ 1 , ŷ2 ] → [ŷ 2 , ŷ1 ].</formula><p>In other words, h should be equivariant wrt. to permutations of the input. In contrast to common models (e.g. ResNet <ref type="bibr" target="#b8">[9]</ref>) that lack this symmetry, we here directly incorporate this inductive bias via a permutation-equivariant head h that is a generalization of the set permutation-equivariant layer proposed in <ref type="bibr" target="#b31">[32]</ref> to dense inputs. Specifically, we choose h = h 1 • . . . • h L as a chain of permutation-equivariant layers h l :</p><formula xml:id="formula_4">h l : R 2×c×h×w → R 2×c×h×w h l (z) tmij = σ n L mn z t,n,i,j + s,n G mn z s,n,i,j ,<label>(3)</label></formula><p>with weight matrices L, G ∈ R c×c and a non-linear activation function σ. Note that L operates independently on each temporal axis and thus is trivially permutation equivariant, while G operates on the temporal sum and thus is permutation invariant. The last layer h L includes an additional global average pooling along the spatial dimensions to yield the final logits ŷ ∈ R 2 .</p><p>Augmentations: To avoid overfitting on artificial image cues that could be discriminative of the temporal order (such as a globally consistent cell drift, or decay of image intensity due to photo-bleaching) we apply the following augmentations (with probability 0.5) to each image patch pair x 1 , x 2 : flips, arbitrary rotations and elastic transformations (jointly for x 1 and x 2 ), translations for x 1 and x 2 (independently), spatial scaling, additive Gaussian noise, and intensity shifting and scaling (jointly+independently).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>To demonstrate the utility of Tap for a diverse set of specimen and microscopy modalities we use the following four different datasets:</p><p>HeLa. Human cervical cancer cells expressing histone 2B-GFP imaged by fluorescence microscopy every 30 min <ref type="bibr" target="#b28">[29]</ref> . The dataset consists of four videos with overall 368 frames of size 1100 × 700. We use Δt = 1 for Tap training.</p><p>Mdck. Madin-Darby canine kidney epithelial cells expressing histone 2B-GFP (cf. Fig. <ref type="figure" target="#fig_2">3b</ref>), imaged by fluorescence microscopy every 4 min <ref type="bibr" target="#b26">[27,</ref><ref type="bibr" target="#b27">28]</ref>. The dataset consists of a single video with 1200 frames of size 1600×1200. We use Δt ∈ {4, 8}.</p><p>Flywing. Drosphila melanogaster pupal wing expressing Ecad::GFP (cf. Fig. <ref type="figure" target="#fig_2">3a</ref>), imaged by spinning disk confocal microscopy every 5 min <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b19">20]</ref>. The dataset consists of three videos with overall 410 frames of size 3900 × 1900.</p><p>We use Δt = 1.</p><p>Yeast. S. cerevisiae cells (cf. Fig. <ref type="figure" target="#fig_2">3c</ref>) imaged by phase-contrast microscopy every 3 min <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17]</ref>. The dataset consists of five videos with overall 600 frames of size 1024 × 1024. We use Δt ∈ {1, 2, 3}.</p><p>For each dataset we heuristically choose Δt to roughly correspond to the time scale of observable biological processes (i.e. larger Δt for higher frame rates). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details:</head><p>For the feature extractor f we use a 2D U-Net <ref type="bibr" target="#b20">[21]</ref> with depth 3 and c = 32 output features, batch normalization and leaky ReLU activation (approx. 2M params). The time arrow prediction head h consists of two permutationequivariant layers with batch normalization and leaky ReLU activation, followed by global average pooling and a final permutation-equivariant layer (approx. 5k params). We train all Tap models for 200 epochs and 10 5 samples per epoch, using the Adam optimizer <ref type="bibr" target="#b12">[13]</ref> with a learning rate of 4 × 10 -4 with cyclic schedule, and batch size 256. Total training time for a single Tap model is roughly 8h on a single GPU. Tap is implemented in PyTorch.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Time Arrow Prediction Pretraining</head><p>We first study how well the time arrow prediction pretext task can be solved depending on different image structures and used data augmentations. To that end, we train Tap networks with an increasing number of augmentations on HeLa and compute the Tap classification accuracy for consecutive image patches x 1 , x 2 that contain either background, interphase (non-dividing) cells, or mitotic (dividing) cells. As shown in Fig. <ref type="figure" target="#fig_1">2a</ref>, the accuracy on background regions is approx. 50% irrespective of the used augmentations, suggesting the absence of predictive cues in the background for this dataset. In contrast, on regions with cell divisions the accuracy reaches almost 100%, confirming that Tap is able to pick up on strong time-asymmetric image features. Interestingly, the accuracy for regions with non-dividing cells ranges from 68% to 80%, indicating the presence of weak visual cues such as global drift or cell growth. When using more data augmentations the accuracy decreases by roughly 12% points, suggesting that data augmentation is key to avoid overfitting on confounding cues.</p><p>Next we investigate which regions in full-sized videos are most discriminative for Tap. To that end, we apply a trained Tap network on consecutive fullsized frames x 1 , x 2 and compute the dense attribution map of the classification logits y wrt. to the Tap representations z via Grad-CAM <ref type="bibr" target="#b22">[23]</ref>. In Fig. <ref type="figure" target="#fig_2">3</ref> we show example attribution maps on top of single raw frames for three different datasets. Strikingly, the attribution maps highlight only a few distributed, yet highly localized image regions. When inspecting the top six most discriminative regions and their temporal context for a single image frame, we find that virtually all of them contain cell divisions (cf. Fig. <ref type="figure" target="#fig_2">3</ref>). Moreover, when examining the attribution maps for full videos, we find that indeed most highlighted regions correspond to mitotic cells, underlining the strong potential of Tap to reveal time-asymmetric biological phenomena from raw microscopy videos alone (cf. Supplementary Video 1). Finally, we emphasize the positive effect of the permutation-equivariant time arrow prediction head on the training process. When we originally used a regular CNN-based head, we consistently observed that the Tap loss stagnated during the initial training epochs and decreased only slowly thereafter (cf. Fig. <ref type="figure" target="#fig_1">2b</ref>). Using the permutation-equivariant head alleviated this problem and enabled a consistent loss decrease already from the beginning of training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Downstream Tasks</head><p>We next investigate whether the learned Tap representations are useful for common supervised downstream tasks, where we especially focus on their utility in the low training data regime. First we test the learned representations on two image-level classification tasks, and later on two dense segmentation tasks. Mitosis Classification on Flywing: Since Tap attribution maps strongly highlight cell divisions, we consider predicting mitotic events an appropriate first downstream task to evaluate Tap. To that end, we generate a dataset of 97k crops of size 2 × 96 × 96 from Flywing and label them as mitotic/nonmitotic (16k/81k) based on available tracking data <ref type="bibr" target="#b19">[20]</ref>. We train Tap networks on Flywing and use a small ResNet architecture (≈ 5M params) that is trained from scratch as a supervised baseline. In Fig. <ref type="figure" target="#fig_3">4a</ref>   Mitosis Segmentation on Flywing: We now apply Tap on a pixel-level downstream task to fully exploit that the learned Tap representations are dense. We use the same dataset as for Flywing mitosis classification, but now densely label post-mitotic cells. We predict a pixel-wise probability map, threshold it at 0.5 and extract connected components as objects. To evaluate performance, we match a predicted/ground truth object if their intersection over union (IoU) is greater than 0.5, and report the F1 score after matching. The baseline model is a U-Net trained from scratch. Training a U-Net on fixed Tap representations always outperforms the baseline, and when only using 3% of the training data it reaches similar performance as the baseline trained on all available labels (0.67 vs. 0.68, Fig. <ref type="figure" target="#fig_5">5a</ref>). Interestingly, fine-tuning Tap only slightly outperforms the supervised baseline for this task even for moderate amounts of training data, suggesting that fixed Tap representations generalize better for limited-size datasets.</p><p>Emerging Bud Detection on Yeast: Finally, we test Tap on the challenging task of segmenting emerging buds in phase contrast images of yeast colonies. We train Tap networks on Yeast and generate a dataset of 1205 crops of size 5 × 192 × 192 where we densely label yeast buds in the central frame (defined as buds that appeared less than 13 frames ago) based on available segmentation data <ref type="bibr" target="#b16">[17]</ref>. We evaluate all methods on held out test videos by interpreting the resulting 2D+time segmentations as 3D objects and computing the F1 score using an IoU threshold of 0.25. The baseline model is again a U-Net trained from scratch. Surprisingly, training with fixed Tap representations performs slightly worse than the baseline for this dataset (Fig. <ref type="figure" target="#fig_5">5b</ref>), possibly due to cell density differences between Tap training and test videos. However, fine-tuning Tap features outperforms the baseline by a large margin (e.g. 0.64 vs. 0.39 for 120 frames) across the full training data regime, yielding already with 15% labels the same F1 score as the baseline using all labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Discussion</head><p>We have presented Tap, a self-supervised pretraining scheme that learns biologically meaningful representations from live-cell microscopy videos. We show that Tap uncovers sparse time-asymmetric biological processes and events in raw unlabeled recordings without any human supervision. Furthermore, we demonstrate on a variety of datasets that the learned features can substantially reduce the required amount of annotations for downstream tasks. Although in this work we focus on 2D+t image sequences, the principle of Tap should generalize to 3D+t datasets, for which dense ground truth creation is often prohibitively expensive and therefore the benefits of modern deep learning are not fully tapped into. We leave this to future work, together with the application of Tap to cell tracking algorithms, in which accurate mitosis detection is a crucial component.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. a) Example frames from two live-cell microscopy videos. Top: MDCK cells with labeled nuclei [28], Bottom: Drosophila wing with labeled membrane [4]. Insets show three consecutive time points containing cell divisions. b) Overview of Tap: We create crops (x1, x2) from consecutive time points of a given video. After randomly flipping the input order (forward/backward), each crop is passed through a dense feature extractor f creating pixel-wise Tap representations (z1, z2). These are stacked and fed to the time arrow prediction head h. c) We design h to be permutation-equivariant ensuring consistent classification of temporally flipped inputs. d) The learned Tap representations z are used as input to a downstream model d.</figDesc><graphic coords="2,52,17,61,10,231,88,128,59" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. a) Tap validation accuracy for different image augmentations on crops of background, interphase (non-dividing), and mitotic (dividing) cells (from HeLa dataset). b) Tap validation loss during training on Flywing for a regular CNN time arrow prediction head (green) and the proposed permutation-equivariant head (orange). We show results of three runs per model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. A single image frame overlayed with Tap attribution maps (computed with Grad-CAM [23]) for a) Flywing, b) Mdck, and c) Yeast. Insets show the top six most discriminative regions and their temporal context (± 2 timepoints). Note that across all datasets almost all regions contain cell divisions. Best viewed on screen.</figDesc><graphic coords="6,41,79,303,80,340,21,198,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. a) Mitosis classification on Flywing for two consecutive timepoints with Tap representations vs. a supervised ResNet baseline (green). b) Cell state classification in Mdck with fixed/fine-tuned Tap representations vs. a supervised ResNet baseline (green). We show results of three runs per model, # of params in parenthesis.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>we show average precision (AP) on a held-out test set while varying the amount of available training data. As expected, the performance of the supervised baseline drops substantially for low amounts of training data and surprisingly is already outperformed by a linear classifier (100 params) on top of Tap representations (e.g. 0.90 vs. 0.77 for 76 labeled crops). Training a small ResNet on fixed Tap representations consistently outperforms the supervised baseline even if hundreds of annotated cell divisions are available for training (e.g. 0.96 vs. 0.95 for 2328 labeled crops with ∼ 400 cell divisions), confirming the value of Tap representations to detect mitotic events. Cell State Classification on Mdck: Next we turn to the more challenging task of distinguishing between cells in interphase, prometaphase and anaphase from Mdck. This dataset consists of 4800 crops of size 80 × 80 that are labeled with one of the three classes (1600 crops/class). Again we use a ResNet as supervised baseline and report in Fig. 4b test classification accuracy for varying amount of training data. As before, both a linear classifier as well as a ResNet trained on fixed Tap representations outperform the baseline especially in the low data regime, with the latter showing better or comparable results across the whole data regime (e.g. 0.90 vs. 0.83 for 117 annotated cells). Additionally, we finetune the pretrained Tap feature extractor for this downstream task, which slightly improves the results given enough training data. Notably, already at 30% training data it reaches the same performance (0.97) as the baseline model trained on the full training set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. a) Mitosis segmentation in Flywing for two consecutive timepoints with fixed/finetuned Tap representations vs. a supervised U-Net baseline (green). We report F1 @ 0.5 IoU after removing objects smaller than 64 pixels. b) Emerging bud detection in Yeast from five consecutive timepoints with fixed/finetuned Tap representations versus a supervised U-Net baseline (green). We report F1 @ 0.25 IoU on 2D+time objects. We show results of three runs per model, # of params in parenthesis.</figDesc></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. We thank <rs type="person">Albert Dominguez</rs> (EPFL) and <rs type="person">Uwe Schmidt</rs> for helpful comments, <rs type="person">Natalie Dye</rs> (<rs type="person">PoL Dresden</rs>) and <rs type="person">Franz Gruber</rs> for providing the Flywing dataset, <rs type="person">Benedikt Mairhörmann</rs> and <rs type="person">Kurt Schmoller</rs> (<rs type="person">Helmholtz Munich</rs>) for providing additional Yeast training data, and <rs type="person">Alan Lowe</rs> (<rs type="affiliation">UCL</rs>) for providing the Mdck dataset. M.W. and B.G. are supported by the <rs type="funder">EPFL</rs> <rs type="programName">School of Life Sciences ELISIR program</rs> and <rs type="funder">CARIGEST SA</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_AdPtZMr">
+					<orgName type="program" subtype="full">School of Life Sciences ELISIR program</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3_52.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">SCVRL: shuffled contrastive video representation learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dorkenwald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Brattoli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tighe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Modolo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="4132" to="4141" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Self-supervised representation learning: introduction, advances, and challenges</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ericsson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gouk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Loy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Hospedales</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Sig. Process. Mag</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="42" to="62" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Interplay of cell dynamics and epithelial tension during morphogenesis of the Drosophila pupal wing</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Etournay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Popović</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Merkel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nandi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Blasse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Aigouy</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page">7090</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Unsupervised representation learning by predicting image rotations</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gidaris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Komodakis</surname></persName>
+		</author>
+		<editor>ICLR, OpenReview.net</editor>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Whole-cell segmentation of tissue images with human-level performance using large-scale data annotation and deep learning</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">F</forename><surname>Greenwald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Moen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kagel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Biotechnol</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="555" to="565" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Self-supervised voxel-level representation rediscovers subcellular structures in volume electron microscopy</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dmitrieva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Tam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rittscher</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>CVPRW</publisher>
+			<biblScope unit="page" from="1874" to="1883" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Masked autoencoders are scalable vision learners</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="16000" to="16009" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Capturing implicit hierarchical structure in 3d biomedical images with self-supervised hyperbolic representations</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yeung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="5112" to="5123" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Contrast and order representations for video self-supervised learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Raj</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Savvides</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="7939" to="7949" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">On feature decorrelation in self-supervised learning</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hua</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="9598" to="9608" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Unsupervised representation learning by sorting sequences</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">Y</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="667" to="676" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Shuffle and learn: unsupervised learning using temporal order verification</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Zitnick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<publisher>ECCV</publisher>
+			<biblScope unit="page" from="527" to="544" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Segmentation, tracking and cell cycle analysis of live-cell imaging data with Cell-ACDC</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Padovani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mairhörmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Falter-Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lengefeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Schmoller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Biol</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page">174</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Cell-ACDC: segmentation, tracking, annotation and quantification of microscopy imaging data (dataset</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Padovani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mairhörmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lengefeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Falter-Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schmoller</surname></persName>
+		</author>
+		<ptr target="https://zenodo.org/record/6795124" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Context encoders: feature learning by inpainting</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Pathak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Krahenbuhl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Donahue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2536" to="2544" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Seeing the arrow of time</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Pickup</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="2043" to="2050" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Core PCP mutations affect short time mechanical properties but not tissue morphogenesis in the Drosophila pupal wing</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Piscitello-Gómez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Gruber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krishna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Duclut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Modes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">bioRxiv</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning for videos: a survey</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Schiappa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">S</forename><surname>Rawat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Comput. Surv</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">13s</biblScope>
+			<biblScope unit="page" from="1" to="37" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Grad-CAM: visual explanations from deep networks via gradient-based localization</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cogswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vedantam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Batra</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="618" to="626" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Light sheet fluorescence microscopy</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">H K</forename><surname>Stelzer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Rev. Methods Primers</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="25" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Cellpose: a generalist algorithm for cellular segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stringer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Michaelos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pachitariu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="100" to="106" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Shedding light on the system: studying embryonic development with light sheet microscopy</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tomer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Khairy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Keller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Opin. Genet. Dev</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="558" to="565" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ulicna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Vallardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Charras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lowe</surname></persName>
+		</author>
+		<ptr target="https://rdr.ucl.ac.uk/articles/dataset/Cell_tracking_reference_dataset/16595978" />
+		<title level="m">Mdck cell tracking reference dataset</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Automated deep lineage tree analysis using a bayesian single cell tracking approach</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ulicna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Vallardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Charras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Lowe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Comput. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">734559</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">An objective comparison of cell-tracking algorithms</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ulman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maška</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">E G</forename><surname>Magnusson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Haubold</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/nmeth.4473</idno>
+		<ptr target="https://doi.org/10.1038/nmeth.4473" />
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1141" to="1152" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Learning and using the arrow of time</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">T</forename><surname>Freeman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="8052" to="8060" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Star-convex polyhedra for 3d object detection and segmentation in microscopy</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Weigert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Haase</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sugawara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Myers</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>WACV</publisher>
+			<biblScope unit="page" from="3666" to="3673" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zaheer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kottur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ravanbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Poczos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Smola</surname></persName>
+		</author>
+		<title level="m">Deep sets</title>
+		<imprint>
+			<publisher>NeurIPS</publisher>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Barlow twins: self-supervised learning via redundancy reduction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zbontar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Deny</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12310" to="12320" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

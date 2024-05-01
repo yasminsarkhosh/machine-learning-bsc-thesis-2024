@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Partially Supervised Multi-organ Segmentation via Affinity-Aware Consistency Learning and Cross Site Feature Alignment</title>
+				<funder ref="#_UcUFjbm">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_prRGdFn">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Qin</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Institute of Medical Robotics</orgName>
+								<orgName type="department" key="dep2">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<addrLine>No. 800, Dongchuan Road</addrLine>
+									<postCode>200240</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Peng</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Institute of Medical Robotics</orgName>
+								<orgName type="department" key="dep2">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<addrLine>No. 800, Dongchuan Road</addrLine>
+									<postCode>200240</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Guoyan</forename><surname>Zheng</surname></persName>
+							<email>guoyan.zheng@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Institute of Medical Robotics</orgName>
+								<orgName type="department" key="dep2">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<addrLine>No. 800, Dongchuan Road</addrLine>
+									<postCode>200240</postCode>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Partially Supervised Multi-organ Segmentation via Affinity-Aware Consistency Learning and Cross Site Feature Alignment</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="671" to="680"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D3FCE906EA3AF5D62336C317DB1608A0</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_63</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Multi-organ Segmentation</term>
+					<term>Partially Supervised</term>
+					<term>Affinity Relationship</term>
+					<term>Consistency Learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Partially Supervised Multi-Organ Segmentation (PSMOS) has attracted increasing attention. However, facing with challenges from lacking sufficiently labeled data and cross-site data discrepancy, PSMOS remains largely an unsolved problem. In this paper, to fully take advantage of the unlabeled data, we propose to incorporate voxel-to-organ affinity in embedding space into a consistency learning framework, ensuring consistency in both label space and latent feature space. Furthermore, to mitigate the cross-site data discrepancy, we propose to propagate the organ-specific feature centers and inter-organ affinity relationships across different sites, calibrating the multi-site feature distribution from a statistical perspective. Extensive experiments manifest that our method generates favorable results compared with other state-of-the-art methods, especially on hard organs with relatively smaller sizes.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Automatic multi-organ segmentation (MOS) plays a vital role in computeraided diagnosis and treatment planning. Recently, deep learning based methods have made remarkable progress in solving MOS tasks. However, they typically require a large amount of expert-level accurate, densely-annotated data for training, which is laborious and time consuming to collect. Therefore, existing fully labeled datasets (termed as FLDs) are very few and often low in sample size <ref type="bibr" target="#b0">[1]</ref>. While there exist many publicly available partially labeled datasets (PLDs) <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3]</ref>, each with one or a few out of the many organs annotated. This has motivated the development of various Partially-Supervised Multi-Organ Segmentation (PSMOS) methods that aim to learn a unified model from a union of such datasets. For example, Dmitriev and Kaufman proposed the conditional U-Net to enable PSMOS using a single unified network <ref type="bibr" target="#b3">[4]</ref>. Co-training between two models with consistency constraints on soft pseudo labels <ref type="bibr" target="#b5">[6]</ref>, and multi-scale features learned in a pyramid-input and pyramid-output network <ref type="bibr" target="#b6">[7]</ref> were both explored for PSMOS. Other researchers resorted to prior knowledge to guide the training process. In PaNN <ref type="bibr" target="#b7">[8]</ref>, the average organ size distributions on the PLDs were constrained to resemble the prior statistics obtained from the FLD. Another method was introduced in <ref type="bibr" target="#b8">[9]</ref> where the non-overlapping characteristics between different organs were exploited to design the exclusion loss.</p><p>Although witnessed great progress in PSMOS, existing methods are faced with the following challenges: 1) Shortage in sufficiently labeled samples for supervised learning, since voxel-level labels are only available for a subset of organs in PLDs; 2) Significant cross-site appearance variations caused by different imaging protocols or subject cohorts. Different from existing methods, we propose a novel framework to explicitly tackle the above-mentioned challenges.</p><p>To handle the label-scarcity problem in PLDs, we propose a novel Affinityaware Consistency Learning (ACL) scheme to incorporate voxel-to-organ affinity in the embedding space into consistency learning. Although consistency learning is frequently used for leveraging unlabeled data in label-efficient learning <ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref>, it is mostly deployed in the label space <ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref>, while little attention has been paid to exploring consistency in the latent feature space. Zheng et al. <ref type="bibr" target="#b15">[16]</ref> proposed to adopt auxiliary student-teacher networks to utilize the features for consistency learning, which introduced more parameters, thus were computationally expensive. By incorporating voxel-to-organ affinity in the embedding space into consistency learning, our ACL scheme is plug-and-play and can capture rich context information in the embedding space.</p><p>To tackle the data discrepancy problem <ref type="bibr" target="#b16">[17]</ref>, based on the assumption that a well trained joint model should generate consistent feature distributions across different sites, we propose a novel Cross-Site Feature Alignment (CSFA) module, where two terms are introduced to attend to both the organ-specific and interorgan statistics in the latent feature space. Concretely, for each PLD, we restrain the organ-specific prototypes calculated in each mini-batch to be close to the corresponding prototypes generated on the small-sized FLD. To further reduce the data discrepancy problem, we constrain the affinity relationships across different organ-specific prototypes to be consistent among different sites. By doing this, we transfer not only the single-class centroid, but also the inter-organ affinity learned from the small-sized FLD to PLDs, allowing for knowledge propagation at multiple granularity levels. Our contributions can be summarized as follows:</p><p>-We propose a novel affinity-aware consistency learning scheme to incorporate voxel-to-organ affinity in the embedding space into a consistency learning framework, which can capture semantic context in the latent feature space. -We design a novel cross site feature alignment module to calibrate feature distributions of PLDs with distribution priors learned from a small-sized FLD, alleviating the cross-site data discrepancy. -We demonstrate on five datasets collected from different sites that our method can effectively learn a unified MOS model from multi-source datasets, achieving superior performance over the state-of-the-art (SOTA) methods. A schematic illustration of our framework. "Aug" refers to perturbations with data augmentations. In the CSFA module, hollow shapes refer to the features belonging to unlabeled organs in the PLDs, while solid ones refer to labeled organs. The affinity matrix is calculated according to Eq. 10 and Eq. 11. Lseg is the segmentation loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>To learn a unified model from a small-sized FLD and a number of PLDs, we propose a novel framework to address the issues of label-scarcity and cross-site data discrepancy. The overall workflow of our method is presented in Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>During training, in each batch, we sample 3D patches from both the FLD and one of the PLDs, where the teacher-student scheme <ref type="bibr" target="#b13">[14]</ref> is adopted to impose consistency constraints on the unlabeled voxels of the PLD. In our method, apart from the label space consistency, we introduce the ACL scheme to explore consistency in the embedding space. We further leverage the CSFA module to perform feature alignment between the FLD and the PLD. Please note that consistency constraints are only imposed on the unlabeled voxels of PLDs. The label space consistency loss is omitted in Fig. <ref type="figure" target="#fig_0">1</ref> for brevity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Preliminaries</head><p>Denote Y full as the full label set, i.e., Y full = {0, 1, 2, • • • , C}, where 0 refers to the background class, and {1, • • • , C} are one-to-one mappings to the target organs, C is the number of target organs. Given a small-sized FLD D f and a number of PLDs</p><formula xml:id="formula_0">D p = {D n p , n ∈ {1, • • • , N}},</formula><p>where N is the number of PLDs. Each dataset can then be formally defined as either</p><formula xml:id="formula_1">D f = {I f j,i , y f j,i } or D n p = {I n j,i , y n j,i }</formula><p>, where I f j,i is the i-th pixel of the j-th image in the FLD D f , and y f j,i is its corresponding label. Similarly, (I n j,i , y n j,i ) is the i-th pixel-label pair of the j-th image in the n-th PLD D n p . Please note that each D n p contains only a subset of the full label set, i.e., Y n p = unique({y n j,i }) Y full , where unique(•) returns the unique values in the label set. The task of PSMOS aims to learn the mapping function ϕ = f • g to project the 3D image patch I j ∈ R h×w×z to its corresponding semantic labels, where f is the feature extractor, g is the segmentation head, and • means sequentially executing f and g, (h, w, z) are the 3D patch size. Since foreground organ in one PLD may be labeled as background in another dataset, such a background ambiguity brings challenges to joint training on multiple PLDs. To address this issue, we follow <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b8">9]</ref> to calculate the marginal cross entropy and marginal Dice loss as the baseline segmentation loss L seg .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Prototype Generation</head><p>In our proposed framework, the calculation of both the pixel-to-prototype predictions (in ACL) and the feature alignment loss (in CSFA) are based on organspecific prototypes. In each mini-batch, denote the organ-specific prototypes for the FLD as {q c }, c ∈ {0, • • • , C} and prototypes for the n-th PLD as {q n c }, c ∈ {0, • • • , C}, then they are generated as follows. On the FLD, we generate the prototypes in an exponential moving average scheme. Specifically, the feature prototype of the t-th iteration is calculated as (for brevity, we omit the iteration superscript t),</p><formula xml:id="formula_2">q c = αq c + (1 -α)q update c , c ∈ {0, • • • , C},<label>(1)</label></formula><p>where q update c is the average feature of the c-th class in current mini-batch of the FLD and α is the weighting coefficient. Given the feature maps F = {f i } and their related labels {y i }, where f i represents the i-th pixel in the feature maps of current mini-batch, the feature center of the c-th class is then calculated as,</p><formula xml:id="formula_3">q update c = 1 Z c i,yi=c f i , c ∈ {0, • • • , C},<label>(2)</label></formula><p>where Z c is the number of pixels belonging to the c-th class in current mini-batch. On the n-th PLD, we directly adopt the feature centers calculated in each mini-batch as the organ-specific prototypes. In specific, for the labeled organs, the prototypes {q n c }, c ∈ Y n p are calculated according to Eq. 2, with feature maps generated on 3D patches from the n-th PLD. While on the unlabeled organs, only reliable features are used for calculating the pseudo feature centers as,</p><formula xml:id="formula_4">q n c = 1 Z c i,yi=c 1[p n i &gt; τ]f i , c / ∈ Y n p ,<label>(3)</label></formula><p>where p n i is the normalized prediction score generated from the teacher model, y i denotes the corresponding pseudo label, τ is the confidence threshold, Z c is the number of reliable predictions in class c, and 1[•] returns 1 if the inside condition is True, otherwise, returns 0.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Affinity-Aware Consistency Learning</head><p>In this paper, we propose to incorporate the voxel-to-organ affinity into consistency learning. Specifically, instance-to-prototype matching is calculated to capture the voxel-to-organ affinity. The affinities are then transformed into normalized scores for calculating the consistency constraint on two perturbed inputs. We adopt the teacher-student scheme <ref type="bibr" target="#b13">[14]</ref> for consistency learning on the unlabeled data. Formally, denote I t , I s as the perturbed versions of the same sampled 3D patch for the teacher branch and the student branch respectively. In the teacher branch, denote φ i = f tea (I t,i ) ∈ R d as the extracted feature for the i-th pixel of 3D image patch I t . Given the prototypes generated on the FLD</p><formula xml:id="formula_5">{q c }, c ∈ {0, • • • , C}, then the pixel-to-prototype classification logit p t,i = {p c t,i } is calculated as, p c t,i =&lt; φ i , q c &gt;, c ∈ {0, • • • , C}<label>(4)</label></formula><p>where &lt; •, • &gt; calculates the cosine similarity between the two terms.</p><p>Similarly, in the student branch, denote ψ i as the i-th feature</p><formula xml:id="formula_6">ψ i = f stu (I s,i ) ∈ R d , then prototype based predictions p s,i = {p c s,i } can be obtained as, p c s,i =&lt; ψ i , q c &gt;, c ∈ {0, • • • , C},<label>(5)</label></formula><p>Since p t,i , p s,i model the voxel-to-organ affinities in the embedding space, constraining consistency on them introduces rich context information for training on the unlabeled data, which is formulated as,</p><formula xml:id="formula_7">L f c = 1 Z f c i KL(p s,i , p t,i ),<label>(6)</label></formula><p>where 1</p><formula xml:id="formula_8">Z f c</formula><p>is the normalization factor to get the mean KL-Divergence in the feature embedding space. Denote ϕ tea = f tea • g tea , ϕ stu = f stu • g stu as the teacher and student segmentation model respectively, the logits from the student and the teacher branch can be calculated as l s,i = ϕ stu (I s,i ), l t,i = ϕ tea (I t,i ). Then the consistency loss in the label space is calculated as,</p><formula xml:id="formula_9">L l c = 1 Z l c i KL(l s,i , l t,i ),<label>(7)</label></formula><p>where 1</p><formula xml:id="formula_10">Z l c</formula><p>is the normalization factor. The overall affinity-aware consistency loss is finally formulated as,</p><formula xml:id="formula_11">L c = L f c + L l c ,<label>(8)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Cross-Site Feature Alignment (CSFA) Module</head><p>The CSFA module is proposed to calibrate feature distributions across different sites. Specifically, given the learned prototypes from current mini-batch of the n-th PLD ({q n c }, c ∈ {0, • • • , C}), they can be regarded as the organ-specific cluster centers in the embedding space. Then, compactness loss is introduced to calibrate D n p with the cluster centers learned from the FLD as,</p><formula xml:id="formula_12">L l,n a = 1 |Y n p | c∈Y n p ||q n c -q c || 2 2 , (<label>9</label></formula><formula xml:id="formula_13">)</formula><p>where |Y n p | returns the number of labeled organs in D n p . To further take into consideration the inter-organ affinity relationships during feature distribution alignment, we first model inter-organ affinity relationships on the FLD by calculating the affinity matrix A = {a ij } ∈ R (C+1)×(C+1) as shown in Fig. <ref type="figure" target="#fig_0">1</ref>,</p><formula xml:id="formula_14">a ij =&lt; q i , q j &gt;, i ∈ {0, • • • , C}, j ∈ {0, • • • , C},<label>(10)</label></formula><p>Similarly, we can obtain the affinity matrix</p><formula xml:id="formula_15">A n p = {a n ij } ∈ R (C+1)×(C+1) on partially labeled dataset D n p as, a n ij =&lt; q n i , q n j &gt;, i ∈ {0, • • • , C}, j ∈ {0, • • • , C}, (<label>11</label></formula><formula xml:id="formula_16">)</formula><p>Then the affinity relationship aware feature alignment loss is calculated as,</p><formula xml:id="formula_17">L g,n a = 1 C + 1 c KL(a c , a n p,c ),<label>(12)</label></formula><p>where a c , a n p,c refer to the c-th row of A and A n p respectively. The overall cross-site alignment loss is then calculated as the sum of the compactness loss and the affinity relationship aware calibration loss,</p><formula xml:id="formula_18">L a = L l,n a + L g,n a , (<label>13</label></formula><formula xml:id="formula_19">)</formula><p>The overall training objective is finally formulated as,</p><formula xml:id="formula_20">L = L seg + L c + λ a L a . (<label>14</label></formula><formula xml:id="formula_21">)</formula><p>where λ a is the tradeoff parameter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Datasets and Implementation Details. We use five abdominal CT datasets (MALBCVWC <ref type="bibr" target="#b0">[1]</ref>, Decathlon Spleen <ref type="bibr" target="#b2">[3]</ref>, KiTS <ref type="bibr" target="#b1">[2]</ref>, Decathlon Liver <ref type="bibr" target="#b2">[3]</ref> and Decathlon Pancreas <ref type="bibr" target="#b2">[3]</ref> datasets respectively) to evaluate the effectiveness of our method <ref type="bibr" target="#b0">[1]</ref><ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref>. The spatial resolution of all these datasets are resampled to (1 × 1 × 3)mm 3 . We randomly split each dataset into training (60%), validation (20%) and testing (20%). We adopt 3D U-Net <ref type="bibr" target="#b17">[18]</ref> as our backbone model. The patch size (h, w, z) is set to (160, 160, 96). The hyper-parameters α and τ are empirically set to 0.9, and 0.8, respectively. λ a is initialized as 0.01 and linearly decreased to 1e-3 at 20000 iterations. We use SGD optimizer to train the model and the initial learning rate is set to 0.01. We adopt Dice similarity coefficient (DSC) as metric to evaluate the performance of different methods.  <ref type="table" target="#tab_0">1</ref>, the "baseline+ACL" setting reports the results with our proposed affinity-aware consistency learning scheme. Comparing to the baseline, it brings a 1.1% performance gain in terms of DSC. By introducing the CSFA module, the "baseline+ACL+CSFA" setting can further boost the performance by 0.5% in terms of DSC. We further study the effectiveness of the CSFA module in alleviating crosssite data discrepancy. Concretely, we measure the feature distribution discrepancy between the FLD and each PLD by calculating the Maximum Mean Discrepancy (MMD) using gaussian kernel <ref type="bibr" target="#b18">[19]</ref>, which was designed to quantify domain discrepancy. We conduct "full vs partial" MMD analysis on the following two settings: "Ours w/CSFA" and "Ours wo/CSFA", where "Ours w/CSFA" is the proposed framework, while "Ours wo/CSFA" setting refers to removing the CSFA module from our framework. In the MMD calculation, for each dataset, we first generate features from the penultimate layer. Then we randomly select 2000 features in each class for MMD calculation. Please note, for each PLD, we adopt the pseudo labels for feature selection. Detailed comparison results are illustrated in Table <ref type="table" target="#tab_1">2</ref>. As shown, by introducing the CSFA module, the feature distribution discrepancy in terms of MMD can be effectively alleviated across all the "full vs partial" dataset pairs.</p><p>Comparison with the State-of-the-Art (SOTA) Methods. We compare with four SOTA methods, including PaNN <ref type="bibr" target="#b7">[8]</ref>, PIPO <ref type="bibr" target="#b6">[7]</ref>, Marginal Loss <ref type="bibr" target="#b8">[9]</ref>, and DoDNet <ref type="bibr" target="#b4">[5]</ref>. For fair comparison, all the SOTA methods were trained/tested on our own dataset splits. We also implemented our method taking the nnUNet as the backbone to compare with Marginal Loss <ref type="bibr" target="#b8">[9]</ref> and PaNN <ref type="bibr" target="#b7">[8]</ref>. We reported the DSC values for each organ across test sets from all the datasets. For a straightforward comparison with the SOTA, we also recorded the average DSC over all the organs. Detailed results are illustrated in Table <ref type="table" target="#tab_2">3</ref>. As shown, our method achieves the best performance. Specifically, our method outperforms the secondbest method PaNN <ref type="bibr" target="#b7">[8]</ref> with a 1.2% DSC gain using the same nnUNet backbone. And our method when taking 3D-UNet as the backbone also outperforms the listed SOTA methods. We further conduct paired t-test to compare the difference between ours and other SOTA methods, the p-values are 2E-8 (PIPO), 2E-5 (DoDNet), 2E-4 (Marginal Loss), 0.037 (PaNN), respectively. As all p-values are smaller than 0.05, the differences between ours and other SOTA methods are statistically significant. In practice, some organs are much harder to be well-segmented than others due to their relatively small organ sizes. Therefore, we pay more attention to the performance on those hard organs (in our datasets, Pancreas and Kidneys are deemed to be more difficult due to their relatively small sizes). From the last column of Table <ref type="table" target="#tab_2">3</ref>, we can see that the segmentation performance gains of our method are more pronounced on hard organs (on average a 1.8% DSC gain). Figure <ref type="figure">2</ref> demonstrates the qualitative visualization results on some hard samples. As shown in this figure, our method can generate better segmentation results than other SOTA methods. Besides, the reasonable performance on segmenting kidney with tumors (row 2 in Fig. <ref type="figure">2</ref>) makes our method promising in clinical practice.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we designed a novel Affinity-aware Consistency Learning scheme (ACL) to model voxel-to-organ affinity context in the feature embedding space into consistency learning. Meanwhile, the CSFA module was designed to perform feature distribution alignment across different sites, where both organ-specific cluster centers and the inter-organ affinity relationships were propagated from the small-sized FLD to PLDs for cross-site feature alignment. Extensive ablation studies validated effectiveness of each component in our method. Quantitative and Qualitative comparison results with other SOTA methods demonstrated superior performance of our method.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. A schematic illustration of our framework. "Aug" refers to perturbations with data augmentations. In the CSFA module, hollow shapes refer to the features belonging to unlabeled organs in the PLDs, while solid ones refer to labeled organs. The affinity matrix is calculated according to Eq. 10 and Eq. 11. Lseg is the segmentation loss.</figDesc><graphic coords="3,63,48,54,59,325,72,185,11" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Results of the ablation study on the effectiveness of each component in our method (Metric: DSC (%)).</figDesc><table><row><cell>Settings</cell><cell cols="3">Liver Spleen Pancreas RK LK Overall</cell></row><row><cell>baseline</cell><cell>94.7 91.9</cell><cell>77.5</cell><cell>94.1 93.5 90.3</cell></row><row><cell>baseline + ACL</cell><cell>94.5 94.1</cell><cell>77.4</cell><cell>95.5 95.3 91.4</cell></row><row><cell cols="2">baseline + ACL + CSFA 95.2 93.8</cell><cell>79.0</cell><cell>96.0 95.5 91.9</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Analysis on the effectiveness of CSFA in mitigating cross-site data discrepancy. Please note D0 -D4 refer to the MALBCVWC<ref type="bibr" target="#b0">[1]</ref>, Decathlon-Spleen<ref type="bibr" target="#b2">[3]</ref>, KiTS<ref type="bibr" target="#b1">[2]</ref>, Decathlon-Liver<ref type="bibr" target="#b2">[3]</ref> and Decathlon-Pancreas<ref type="bibr" target="#b2">[3]</ref> datasets respectively, where D0 is the FLD, and others are PLDs. Please note small MMD indicates small data discrepancy. In this subsection, we carry out experiments to investigate effectiveness of each component in the proposed framework. Concretely, the baseline results are trained with only the L seg loss. In Table</figDesc><table><row><cell>Settings</cell><cell cols="5">D0 vs D1 D0 vs D2 D0 vs D3 D0 vs D4 Overall</cell></row><row><cell cols="2">Ours wo/CSFA 0.3030</cell><cell>0.3187</cell><cell>0.2818</cell><cell>0.3577</cell><cell>0.3153</cell></row><row><cell cols="2">Ours w/CSFA 0.1589</cell><cell>0.2036</cell><cell>0.1358</cell><cell>0.2925</cell><cell>0.1977</cell></row><row><cell>Ablation Study.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Comparison with state-of-the-art methods in terms of DSC. "RK", "LK" refer to "Right Kidney" and "Left Kidney" respectively.</figDesc><table><row><cell>Methods</cell><cell cols="3">backbone Liver Spleen Pancreas RK LK</cell><cell cols="2">Overall Avg hard</cell></row><row><cell>PIPO [7]</cell><cell cols="2">3D-UNet 93.01 93.63 76.51</cell><cell cols="2">93.50 89.98 89.3</cell><cell>86.7</cell></row><row><cell>DoDNet [5]</cell><cell cols="2">3D-UNet 95.41 95.09 70.01</cell><cell cols="2">94.06 92.00 89.3</cell><cell>85.4</cell></row><row><cell cols="3">Marginal Loss [9] nnUNet 95.45 94.88 77.91</cell><cell cols="2">94.14 91.52 90.8</cell><cell>87.9</cell></row><row><cell>PaNN [8]</cell><cell cols="2">nnUNet 95.13 95.14 78.88</cell><cell cols="2">96.21 91.02 91.3</cell><cell>88.7</cell></row><row><cell>Ours</cell><cell cols="2">3D-UNet 95.2 93.82 79.03</cell><cell cols="2">96.04 95.49 91.9</cell><cell>90.2</cell></row><row><cell>Ours</cell><cell>nnUNet 95.8 95.0</cell><cell>83.1</cell><cell cols="2">94.7 93.8 92.5</cell><cell>90.5</cell></row></table><note><p>Fig. 2. 3D visualized results of some hard samples.</p></note></figure>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>This study was partially supported by the <rs type="funder">National Natural Science Foundation of China</rs> via projects <rs type="grantNumber">U20A20199</rs> and <rs type="grantNumber">62201341</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_prRGdFn">
+					<idno type="grant-number">U20A20199</idno>
+				</org>
+				<org type="funding" xml:id="_UcUFjbm">
+					<idno type="grant-number">62201341</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Miccai multiatlas labeling beyond the cranial vault-workshop and challenge</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bennett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</title>
+		<meeting>MICCAI Multi-Atlas Labeling Beyond Cranial Vault-Workshop Challenge</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">12</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">The kits19 challenge data: 300 kidney tumor cases with clinical context, CT semantic segmentations, and surgical outcomes</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nicholas</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1904.00445</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">A large annotated medical image dataset for the development and evaluation of segmentation algorithms</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">S</forename><surname>Amber</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.09063</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Learning multi-class segmentations from singleclass datasets</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Konstantin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Kaufman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="9501" to="9511" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">DoDNet: learning to segment multi-organ and tumors from multiple partially labeled datasets</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1195" to="1204" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Multi-organ segmentation via co-training weight-averaged models from few-organ datasets</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-1_15" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="146" to="155" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Multi-organ segmentation over partially labeled datasets with multi-scale feature abstraction</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3619" to="3629" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Prior-aware neural network for partially-supervised multi-organ segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="10672" to="10681" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Marginal loss and exclusion loss for partially supervised multi-organ segmentation</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">101979</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Consistency-based semi-supervised learning for object detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jisoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kwak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Adaptive consistency regularization for semi-supervised transfer learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abuduweili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6923" to="6932" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross-consistency training</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ouali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hudelot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tami</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="12674" to="12684" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Temporal ensembling for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Samuli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations (ICLR</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Antti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation needs strong, varied perturbations</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>French</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mackiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Finlayson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">British Machine Vision Conference</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Double noise mean teacher self-Ensembling model for semi-supervised tumor segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Conference on Acoustics, Speech and Signal Processing</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1446" to="1450" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Deep learning in large and multi-site structural brain MR imaging datasets</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bento</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Fantini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Rittner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Frayne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">82</biblScope>
+			<biblScope unit="page">805669</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">3D-UNet: learning dense volumetric segmentation from sparse annotation</title>
+		<author>
+			<persName><forename type="first">Ö</forename><surname>Çiçek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abdulkadir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Lienkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Image Computing and Computer-Assisted Intervention-MICCAI</title>
+		<imprint>
+			<biblScope unit="page" from="424" to="432" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A kernel two-sample test</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gretton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Borgwardt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Rasch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schölkopf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Smola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="723" to="773" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

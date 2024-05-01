@@ -1,0 +1,1327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Rethinking Semi-Supervised Federated Learning: How to Co-train Fully-Labeled and Fully-Unlabeled Client Imaging Data</title>
+				<funder ref="#_gWMCwj3">
+					<orgName type="full">UK EPSRC (Engineering and Physical Research Council)</orgName>
+				</funder>
+				<funder ref="#_ezeWQS5">
+					<orgName type="full">InnoHK-funded Hong Kong Centre for Cerebro-cardiovascular Health Engineering (COCHE)</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Pramit</forename><surname>Saha</surname></persName>
+							<email>pramit.saha@eng.ox.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Engineering Science</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Divyanshu</forename><surname>Mishra</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Engineering Science</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">J</forename><forename type="middle">Alison</forename><surname>Noble</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Engineering Science</orgName>
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Rethinking Semi-Supervised Federated Learning: How to Co-train Fully-Labeled and Fully-Unlabeled Client Imaging Data</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="414" to="424"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">97D422719345FF536767762D4FDEE9A9</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_39</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The most challenging, yet practical, setting of semisupervised federated learning (SSFL) is where a few clients have fully labeled data whereas the other clients have fully unlabeled data. This is particularly common in healthcare settings where collaborating partners (typically hospitals) may have images but not annotations. The bottleneck in this setting is the joint training of labeled and unlabeled clients as the objective function for each client varies based on the availability of labels. This paper investigates an alternative way for effective training with labeled and unlabeled clients in a federated setting. We propose a novel learning scheme specifically designed for SSFL which we call Isolated Federated Learning (IsoFed) that circumvents the problem by avoiding simple averaging of supervised and semi-supervised models together. In particular, our training approach consists of two parts -(a) isolated aggregation of labeled and unlabeled client models, and (b) local self-supervised pretraining of isolated global models in all clients. We evaluate our model performance on medical image datasets of four different modalities publicly available within the biomedical image classification benchmark MedMNIST. We further vary the proportion of labeled clients and the degree of heterogeneity to demonstrate the effectiveness of the proposed method under varied experimental settings.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Federated Learning (FL) <ref type="bibr">[10]</ref><ref type="bibr">[11]</ref><ref type="bibr">[12]</ref><ref type="bibr" target="#b43">27</ref>] is a distributed learning approach that allows the collaborative training of machine learning models using data from decentralized sources while preserving data privacy. However, most current FL methods have limitations, including assuming fully annotated and homogeneous data distribution among local clients. In a practical scenario, like a multiinstitutional healthcare collaboration, the participating clients (i.e., medical institutions and hospitals) may not have the incentive or resources to annotate their data <ref type="bibr">[16]</ref>. To address this, semi-supervised federated learning (SSFL) <ref type="bibr">[4,</ref><ref type="bibr">16,</ref><ref type="bibr" target="#b44">28]</ref> methods have been proposed to utilize unlabeled data and integrate semi-supervised learning algorithms <ref type="bibr" target="#b18">[2,</ref><ref type="bibr">[19]</ref><ref type="bibr" target="#b36">[20]</ref><ref type="bibr" target="#b37">[21]</ref><ref type="bibr" target="#b42">26]</ref> into federated settings.</p><p>Based on the availability of labeled data, the existing SSFL studies can be classified into two main scenarios: (a) labels-at-client, with each client having some labeled and some unlabeled data <ref type="bibr">[9,</ref><ref type="bibr">15]</ref>, (b) labels-at-server, with each client possessing only unlabeled data and the server possessing some labeled data <ref type="bibr">[4,</ref><ref type="bibr">7,</ref><ref type="bibr">9,</ref><ref type="bibr" target="#b44">28]</ref>. We argue that a more realistic SSFL scenario which is highly challenging but rarely explored in the literature is where some clients have labeled data, and others have completely unlabeled data <ref type="bibr">[14,</ref><ref type="bibr">16,</ref><ref type="bibr" target="#b40">24]</ref>.</p><p>The classic federated averaging scheme aggregates weights of all labeled and unlabeled client models trained in parallel. The labeled clients typically use cross-entropy-based loss functions while the unlabeled clients primarily use consistency regularization loss <ref type="bibr">[19]</ref> or pseudo-labeling-based <ref type="bibr" target="#b17">[1,</ref><ref type="bibr" target="#b39">23]</ref> semi-supervised learning schemes. This results in high gradient diversity <ref type="bibr" target="#b44">[28]</ref> between the supervised and unsupervised models particularly in heterogeneous client settings, as these are targeted to optimize separate objective functions. As a result, the aggregated global model is weak and unable to capture a strong representation of either group of clients. This, in turn, leads to the generation of noisy targets for unlabeled clients and hence the global model fails to converge. The situation is further aggravated under non-IID data distribution conditions where the labeled client class distribution varies greatly from that of unlabeled clients. This naturally poses the following important question: "How can we effectively co-train supervised and unsupervised models under FL setting that aim to optimize separate objective functions at their respective heterogeneous labeled data or unlabeled data clients?"</p><p>To address this question, we present a novel SSFL algorithm which we call IsoFed that effectively improves client training by isolating the model aggregation of labeled and unlabeled client groups while still leveraging one group of models to improve another. In summary, the primary contributions of this paper are:</p><p>1. We propose IsoFed, a novel SSFL framework, that realizes isolated aggregation of labeled and unlabeled client models in the server followed by federated self-supervised pretraining of the global model in each individual site. 2. This is the first work to reformulate model aggregation for fully labeled and fully unlabeled clients under SSFL settings. To the best of our knowledge, we are the first to isolate the aggregation of labeled and unlabeled client models while switching between the two client groups. 3. This work bridges the gap between Federated Learning and Transfer Learning (TL) <ref type="bibr" target="#b38">[22]</ref> by combining the best of both worlds for learning across sites. First, we conduct federated model aggregation among the labeled or unlabeled client groups. Next, we leverage Transfer Learning to allow knowledge transfer between the two groups. Therefore, we avoid the issue of averaging the supervised and unsupervised models with high gradient diversity in the context of SSFL while also being unaffected by catastrophic forgetting encountered in multi-domain transfer learning. 4. We, for the first time, extensively evaluate SSFL methods on multiple medical image benchmarks with a varying proportion of clients and degree of heterogeneity. Our results show that the proposed isolated aggregation followed by federated pretraining outperforms the state-of-the-art method, viz., RSCFed [14] by 6.91% in terms of accuracy and achieves near-supervised learning performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Problem Description</head><p>Assume a federated learning setting with m fully labeled clients denoted as {C 1 , C 2 , ..., C m } each possessing a labeled dataset D l = {(X l i , y l i )} N l i=1 and n fully unlabeled clients defined as {C m+1 , C m+2 , ..., C m+n } each possessing an unlabeled dataset D u = {(X u i )} N u i=1 . Our objective is to learn a global model θ glob via decentralized training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Local Training</head><p>We adopt mean-teacher-based semi-supervised learning <ref type="bibr">[12,</ref><ref type="bibr">14,</ref><ref type="bibr" target="#b36">20]</ref> to train each unlabeled client. At the beginning of each round, the global model W glob is used to initialize the teacher model W t . At the end of each communicating round, the student model W s is returned to the server as the local model. Each batch of images undergoes two types of augmentations. The teacher model receives weakly augmented data whereas the student model receives strongly augmented data in each local iteration. In order to decrease entropy of model output, the temperature of predictions is further increased via sharpening operation <ref type="bibr" target="#b18">[2,</ref><ref type="bibr">3,</ref><ref type="bibr">5,</ref><ref type="bibr">14]</ref> as pt,i = Sharpen (p t , τ) i = p</p><formula xml:id="formula_0">1 τ t,i / j p 1 τ</formula><p>t,j where p t,i and pt,i denote each element in p t before and after sharpening, respectively. τ denotes the temperature parameter. The student model is trained on the local data (D u ) via consistency regularization with the teacher model output. The consistency regularization loss is defined as L MSE = pt -p s 2 2 where pt and p s are teacher and student predictions, respectively. . 2  2 denotes L2-norm. The student model weights are optimized via backpropagation whereas the teacher model weights are updated by exponential moving averaging (EMA) after each local iteration, as in Eq. 1:</p><formula xml:id="formula_1">W t+1 = αW s + (1 -α)W t (1)</formula><p>where α denotes momentum parameter. We optimize cross-entropy loss for local training on labeled clients defined as L CE = -y i log p i , where y i denotes labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Isolated Federated Aggregation</head><p>In this section, we explain the proposed isolated aggregation of labeled and unlabeled client models. Each communication round is composed of two consecutive substeps. First, the server initializes the global model W t glob and sends it to unlabeled clients (U i ). The global model is used to initialize the teacher model W t in each client. At this stage, only the unlabeled clients perform local training on the global model by minimizing the consistency regularization loss. The updated semi-supervised models obtained after running the local epochs are then uploaded to the server. We adopt a dynamically weighted Federated Averaging scheme <ref type="bibr">[14]</ref> to aggregate the model parameters of all unlabeled clients W u at the server. For this, we first obtain the averaged model by performing Fed-Avg as in Eq. 2.</p><formula xml:id="formula_2">W avg = k=K k=1 n k W k k=K k=1 n k (2)</formula><p>where K is the total number of clients. n k is the number of samples in each client. The client models are then dynamically scaled using coefficients c k designed as functions of the individual distances from the averaged model as denoted in Eq. 3. The global model (W glob ) is updated by re-aggregating the client weights scaled by new coefficients c k . In Eq. 3, λ c is a hyperparameter.</p><formula xml:id="formula_3">c k = n k exp(-λ c W k -Wavg 2 n k ) k=K k=1 n k , W glob = k=K k=1 c k W k k=K k=1 c k (3)</formula><p>The updated global model parameters are then communicated to each labeled client which initializes its models using these weights and trains the local model via minimization of the standard cross-entropy loss. After a predefined number of local epochs, each labeled client uploads its local model to the server. The server then aggregates all the supervised models employing the aforementioned weighting scheme and the resultant global model W t+1 glob is then sent to each unlabeled client at the beginning of the next round. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Client-Adaptive Pretraining</head><p>Motivated by the recent success of continued pretraining in Natural Language Processing <ref type="bibr">[6,</ref><ref type="bibr">8,</ref><ref type="bibr">17]</ref>, we present a client-adaptive pretraining strategy as the second part of our proposed method. If we view the isolated FL from a transfer learning perspective, the global model received in one group of clients from the server can be regarded as an averaged model pretrained on the other group of clients. To improve client-specific model performance, we conduct a second phase of in-client federated pretraining on the global model before initializing it as a teacher model.</p><p>For self-supervised pretraining, we jointly learn the client-invariant features and client-specific classifier by optimizing an information-theoretic metric called information maximization (IM) loss denoted as L inf in Eq. 4. It acts as an estimate of the expected misclassification error of the global model for each client. Optimizing the IM loss makes the global model output predictions that are individually certain but collectively diverse. With the help of a diversity preserving regularizer (first component in Eq. 4), IM avoids the trivial solution of entropy minimization where all unlabeled data collapses to the same one-hot encoding. The joint optimization is done by reducing the entropy of the output probability distribution of global model (p i ) in conjunction with maximizing the mutual information between the data distribution and the estimated output distribution yielded by the global model.</p><formula xml:id="formula_4">L inf = E x∈D 1 N N i=1 p i log 1 N N i=1 p i - 1 N N i=1 p i log p i (<label>4</label></formula><formula xml:id="formula_5">)</formula><p>where N is the number of classes. x denotes any instance belonging to a dataset D. The entropy minimization leads to the least number of confused predictions whereas the regularizer avoids the degenerate solution where every data sample is assigned to the same class <ref type="bibr">[13,</ref><ref type="bibr">18]</ref>. The pretrained model is then initialized as the teacher model to train the local student model in each round.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and FL Settings</head><p>To evaluate the performance and generalisability of the proposed method, we conduct experiments on four publicly available medical image benchmark datasets with different modalities <ref type="bibr" target="#b41">[25]</ref>, viz., BloodMNIST (microscopic peripheral blood cell images), PathMNIST (colon pathology), PneumoniaMNIST (chest X-ray), and OrganAMNIST (abdominal CT -axial view). Each image resolution is 28 × 28 pixels and is normalized before feeding it to the network. BloodMNIST contains a total of 17,092 images and is organized into 8 classes.</p><p>PathMNIST has 107,180 images and has 9 types of tissues. PneumoniaMNIST is a collection of 5,856 images and the task is binary classification (diseased vs normal). OrganAMNIST is comprised of 58,850 images and the task is multi-class classification of 11 body organs. We split each training dataset between 4 clients to mimic a practical collaborative setting in healthcare. To testify the versatility of the models, we study two challenging non-IID data partition strategies with 0.5 and 0.8-Dirichlet (γ). As a result, the number of samples per class and per client widely vary from each other. Additionally, we show the impact of varying the proportion of labeled clients (75%, 50%, 25%) on model performance. See Suppl. Sec 1 for more details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation and Training Details</head><p>For all datasets, we employ a simple CNN comprising of two 5 × 5 convolution layers, a 2 × 2 max-pooling layer, and two fully-connected layers as the feature extraction backbone followed by a two-layer MLP and a fully-connected layer as the classification network. Our model is implemented with PyTorch. We follow the settings prescribed for a training RSCFed to enable a fair comparison. See Suppl. Sec 2 for more training details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results and Discussion</head><p>We use the standard metrics -accuracy, area under a ROC curve (AUC), Precision, and Recall to evaluate performance. We observe that the dynamically weighted version of Fed-Avg (discussed in Sect. 2.3) outperforms standard Fed-Avg and hence use it as a baseline in this paper instead of vanilla Fed-Avg.</p><p>In order to fairly evaluate IsoFed, we compare with the following state-of-theart SSFL benchmarks: (a) MT+wFed-Avg: a combination of Mean Teacher and dynamically weighted Fed-Avg, (b) RSCFed: Random sampling consensusbased FL <ref type="bibr">[14]</ref>. Since RSCFed has already been shown to significantly outperform FedIRM <ref type="bibr">[16]</ref> and Fed-Consist <ref type="bibr" target="#b40">[24]</ref> on multiple datasets, we exclude those methods from our comparative study due to space constraints. We consider fully-supervised FL as an upper bound and report the results for both the non-IID settings on each dataset. Tables <ref type="table" target="#tab_0">1</ref><ref type="table" target="#tab_3">2</ref>show that overall, IsoFed outperforms RSCFed by 6.91%, 4.15%, 7.28%, and 6.71% in terms of average accuracy, AUC, Precision, and Recall respectively. Table <ref type="table" target="#tab_0">1</ref> shows our method and our baselines on 8-class classification with BloodMNIST. L and U denote the number of labeled and unlabeled clients respectively. The average accuracy for fully-supervised FL is 79.51%. Among the baselines, MT+wFed-Avg has a higher overall accuracy score of 68.36% while RSCFed has an accuracy score of 63.41%. Particularly, we find RSCFed collapses under the most extreme case of γ = 0.5 and U=3. IsoFed improves the accuracy score to 73.83% and is stable for all evaluated conditions. Table <ref type="table" target="#tab_0">1</ref> further reports performance on 9-class classification with PathMNIST. The fully-supervised FL achieves an overall accuracy of 69.71%. The baselines have very similar accuracy scores of 60.53% and 60.84% respectively. IsoFed improves it to 64.69%.</p><p>Table <ref type="table" target="#tab_3">2</ref> shows binary classification results on PneumoniaMNIST. The fullysupervised FL has an overall accuracy of 87.18%. MT+wFed-Avg and RSCFed  <ref type="table" target="#tab_3">2</ref>. The upper bound accuracy is 69.61% and the baseline accuracies are 61.91% and 62.97% respectively. IsoFed achieves an overall accuracy score of 65.97%. In general, the performance of all methods decreases with γ changing from 0.8 to 0.5. It is expected as the clients become more label-skewed due to higher non-IID data partition. However, our approach is least affected by this which is reflected in its accuracy decrease by 2.19% as opposed to 4.45% and 2.94% incurred by baselines. As foreseen, performance also deteriorates with decrease in the number of labeled clients. For L:U = 3:1, 2:2, 1:3, the baseline accuracies degrade by 2.16%, 5.61%, 15.31% and 2%, 5.01%, 12.91% w.r.t. fully supervised FL setting. However, for IsoFed, the decrease in accuracy is only 0.55%, 3.09%, and 7.28%, respectively. This proves the near-supervised learning performance of the proposed training method. The superior performance of IsoFed over the baselines and closer performance to the upper bound demonstrates better learning and generalization. This is achieved by the isolated aggregation strategy and federated pretraining on all datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Ablation Study</head><p>Owing to space constraints, we show ablation experiments only on OrganAM-NIST, which provides the most challenging classification task, to evaluate the impact of IsoFed components. (More results in Suppl. Sec 2). Table <ref type="table" target="#tab_3">2</ref> demonstrates that client-adaptive pretraining improves model accuracy by 5.50% for the most extreme condition of γ = 0.5 and L:U = 1:3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We have introduced a novel SSFL framework called IsoFed, an isolated federated learning technique, to address joint training of labeled and unlabeled clients in the context of decentralized semi-supervised learning. It opens a new research direction in learning across domains by unifying two dominant approaches -Federated Learning (among labeled or unlabeled clients) and Transfer Learning (between labeled and unlabeled clients). Our results challenge the conventional strategy of co-training fully labeled and fully unlabeled clients in SSFL. Experimental results on 4 different medical imaging datasets with varied proportion of labeled clients (25, 50, 75%) and varied non-IID distribution (0.5 &amp; 0.8-Dirichlet) show that IsoFed achieves a considerable boost compared to current state-of-the-art SSFL method. IsoFed can be easily incorporated into other federated learning-based aggregation schemes as well as used in conjunction with any other semi-supervised learning framework in federated learning setting.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Problem settings and aggregation schemes for semi-supervised federated learning. (a) Three plausible semi-supervised federated learning settings. We address the unique condition (3) with fully labeled and fully unlabeled clients. (b) One round of a standard FL aggregation scheme. (c) One round of our proposed two-step isolated aggregation scheme for labeled clients and unlabeled clients.</figDesc><graphic coords="5,41,79,54,26,340,21,89,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of our proposed methodology (IsoFed) with 1 labeled and 3 unlabeled clients. The unlabeled clients are trained using a mean-teacher-based SSL model. A switching mechanism swaps between labeled and unlabeled clients for isolated model aggregation in each round. After isolated model aggregation, an information maximization loss is used for client-adaptive pretraining to enhance the certainty and diversity of predictions of the global model for each client before actual local training.</figDesc><graphic coords="7,41,79,54,44,340,12,129,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with baselines on BloodMNIST and PathMNIST. wFedAvg refers to dynamically weighted Federated averaging. UB implies Upper Bound. MT refers to Mean teacher-based SSL. Acc. and Prec. denote Accuracy and Precision. L and U denote the number of labeled and unlabeled clients respectively.</figDesc><table><row><cell></cell><cell></cell><cell>Client</cell><cell>Metrics (%)</cell><cell>Metrics (%)</cell></row><row><cell>Labeling</cell><cell>Method</cell><cell>L U</cell><cell cols="2">Acc. AUC Prec. Recall Acc. AUC Prec. Recall γ = 0.8 (less non-IID) γ = 0.5 (more non-IID)</cell></row><row><cell></cell><cell cols="3">Dataset 1 : BloodMNIST, Task : 8-class classification</cell></row><row><cell cols="3">Fully supervised wFed-Avg (UB) 4 0</cell><cell cols="2">79.57 96.61 77.65 75.70 79.45 96.80 78.28 73.31</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 3 1</cell><cell cols="2">77.32 96.70 74.16 73.79 70.89 95.11 73.46 65.06</cell></row><row><cell></cell><cell>RSCFed</cell><cell>3 1</cell><cell cols="2">76.94 95.54 75.11 71.18 75.18 94.99 76.55 68.96</cell></row><row><cell></cell><cell>IsoFed</cell><cell>3 1</cell><cell cols="2">79.43 97.32 76.70 76.67 76.10 95.88 77.13 72.29</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 2 2</cell><cell cols="2">75.88 96.56 72.85 71.94 58.29 88.35 57.85 60.46</cell></row><row><cell>Semi supervised</cell><cell>RSCFed</cell><cell>2 2</cell><cell cols="2">75.97 95.30 73.58 72.77 61.18 91.50 54.85 60.79</cell></row><row><cell></cell><cell>IsoFed</cell><cell>2 2</cell><cell cols="2">80.47 97.25 77.11 78.11 64.05 90.01 60.26 64.03</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 1 3</cell><cell cols="2">75.24 95.13 72.43 70.37 52.56 89.39 57.89 55.81</cell></row><row><cell></cell><cell>RSCFed</cell><cell>1 3</cell><cell cols="2">71.88 93.96 70.47 67.75 19.35 64.31 07.05 23.62</cell></row><row><cell></cell><cell>IsoFed</cell><cell>1 3</cell><cell>79.23</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>96.43 76.68 77.00 63.70 90.58 70.22 63.81 Dataset 2 : PathMNIST, Task : 9-class classification</head><label></label><figDesc></figDesc><table><row><cell cols="3">Fully supervised wFed-Avg (UB) 4 0</cell><cell>70.45 94.92 72.13 69.84 68.97 94.93 68.05 67.58</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 3 1</cell><cell>60.97 93.60 68.14 62.00 57.92 92.93 67.20 59.98</cell></row><row><cell></cell><cell>RSCFed</cell><cell>3 1</cell><cell>61.55 93.71 61.00 58.95 58.33 93.59 60.68 58.73</cell></row><row><cell></cell><cell>IsoFed</cell><cell>3 1</cell><cell>63.10 94.73 69.25 64.62 60.23 93.98 52.80 61.66</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 2 2</cell><cell>67.10 95.17 66.41 66.40 61.28 91.26 61.50 57.56</cell></row><row><cell>Semi supervised</cell><cell>RSCFed</cell><cell>2 2</cell><cell>64.18 93.17 60.79 58.89 58.83 90.35 58.88 55.02</cell></row><row><cell></cell><cell>IsoFed</cell><cell>2 2</cell><cell>70.32 94.74 65.96 64.86 64.00 93.46 63.88 61.22</cell></row><row><cell></cell><cell cols="2">MT+wFed-Avg 1 3</cell><cell>59.57 90.66 63.14 58.93 56.31 89.92 60.42 53.92</cell></row><row><cell></cell><cell>RSCFed</cell><cell>1 3</cell><cell>64.75 94.09 66.89 63.66 57.42 89.43 54.96 53.53</cell></row><row><cell></cell><cell>IsoFed</cell><cell>1 3</cell><cell>66.48 92.24 63.71 62.06 64</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>.02 93.99 66.12 62.39</head><label></label><figDesc></figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 .</head><label>2</label><figDesc>Performance comparison of IsoFed with baselines on PneumoniaMNIST and OrganAMNIST (with ablation study). PT refers to the federated pretraining step.</figDesc><table><row><cell></cell><cell></cell><cell>Client</cell><cell>Metrics (%)</cell><cell>Metrics (%)</cell></row><row><cell>Labeling</cell><cell>Method</cell><cell>L U</cell><cell cols="2">Acc. AUC Prec. Recall Acc. AUC Prec. Recall γ = 0.8 (less non-IID) γ = 0.5 (more non-IID)</cell></row><row><cell></cell><cell cols="4">Dataset 3 : PneumoniaMNIST, Task : Binary classification</cell></row><row><cell cols="5">Fully supervised wFed-Avg (UB) 4 0 87.34 95.32 86.71 89.02 87.02 95.64 86.45 88.76</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 3 1 86.54 95.20 85.94 88.21 86.86 94.85 85.92 87.86</cell></row><row><cell></cell><cell>RSCFed</cell><cell cols="3">3 1 86.58 95.63 89.02 88.68 86.70 94.50 85.75 87.65</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="3">3 1 87.10 95.04 86.45 89.00 89.26 95.80 88.26 89.44</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 2 2 83.65 89.74 82.45 82.99 82.21 96.17 83.20 85.26</cell></row><row><cell>Semi supervised</cell><cell>RSCFed</cell><cell cols="3">2 2 78.37 87.36 77.31 78.76 84.46 95.58 84.58 86.88</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="3">2 2 84.70 90.75 83.56 84.64 82.68 95.15 83.34 85.41</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 1 3 81.41 89.84 82.05 77.69 79.97 94.45 81.28 83.12</cell></row><row><cell></cell><cell>RSCFed</cell><cell cols="3">1 3 78.85 86.66 77.56 76.84 62.50 50.00 31.25 50.00</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="3">1 3 85.00 91.68 83.98 83.95 77.12 93.65 80.47 81.40</cell></row><row><cell></cell><cell cols="4">Dataset 4 : OrganAMNIST, Task: 11-class classification</cell></row><row><cell cols="5">Fully supervised wFed-Avg (UB) 4 0 69.72 94.41 67.44 69.60 69.50 94.63 68.12 69.60</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 3 1 68.36 93.72 68.02 69.38 66.49 93.69 67.51 68.25</cell></row><row><cell></cell><cell>RSCFed</cell><cell cols="3">3 1 68.14 94.26 67.44 69.53 67.08 93.82 68.82 68.36</cell></row><row><cell></cell><cell cols="4">IsoFed w/o PT 3 1 68.98 94.32 68.83 69.88 67.45 93.98 67.85 69.35</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="3">3 1 69.47 95.05 68.04 70.85 68.65 94.88 68.64 69.77</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 2 2 66.28 92.77 66.12 67.63 61.71 92.55 65.79 62.66</cell></row><row><cell>Semi supervised</cell><cell>RSCFed</cell><cell cols="3">2 2 66.68 92.42 66.90 66.56 62.51 91.89 64.09 63.35</cell></row><row><cell></cell><cell cols="4">IsoFed w/o PT 2 2 68.67 93.25 67.65 68.50 64.37 92.11 65.70 65.17</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="3">2 2 68.95 93.95 68.32 69.83 64.08 92.45 64.56 65.47</cell></row><row><cell></cell><cell cols="4">MT+wFed-Avg 1 3 57.75 90.95 61.50 55.68 50.84 87.65 60.07 48.51</cell></row><row><cell></cell><cell>RSCFed</cell><cell cols="3">1 3 58.50 90.86 63.48 55.76 54.90 89.58 50.53 53.41</cell></row><row><cell></cell><cell cols="4">IsoFed w/o PT 1 3 62.03 91.36 64.50 61.44 56.40 89.79 61.61 55.72</cell></row><row><cell></cell><cell>IsoFed</cell><cell cols="2">1 3 62</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>.77 91.48 64.52 61.79 61.90 91.55 62.39 60.21 achieve</head><label></label><figDesc>average accuracy scores of 83.44% and 79.57%. IsoFed has the best accuracy of 85.45%. Furthermore, the results of 11-class anatomy classification task on OrganAMNIST are also reported in Table</figDesc><table /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported in part by the <rs type="funder">UK EPSRC (Engineering and Physical Research Council)</rs> <rs type="grantName">Programme Grant</rs> <rs type="grantNumber">EP/T028572/1</rs> (VisualAI), a <rs type="grantName">UK EPSRC Doctoral Training Partnership award</rs>, and the <rs type="funder">InnoHK-funded Hong Kong Centre for Cerebro-cardiovascular Health Engineering (COCHE)</rs> Project <rs type="grantNumber">2.1</rs> (Cardiovascular risks in early life and fetal echocardiography).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_gWMCwj3">
+					<idno type="grant-number">EP/T028572/1</idno>
+					<orgName type="grant-name">Programme Grant</orgName>
+				</org>
+				<org type="funding" xml:id="_ezeWQS5">
+					<idno type="grant-number">2.1</idno>
+					<orgName type="grant-name">UK EPSRC Doctoral Training Partnership award</orgName>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 39.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Artificial intelligence for precision education in radiology</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">T</forename><surname>Duong</surname></persName>
+		</author>
+		<idno type="DOI">10.1259/BJR.20190389</idno>
+		<ptr target="https://doi.org/10.1259/BJR.20190389" />
+	</analytic>
+	<monogr>
+		<title level="j">Br. J. Radiol</title>
+		<imprint>
+			<biblScope unit="volume">92</biblScope>
+			<biblScope unit="page">20190389</biblScope>
+			<date type="published" when="1103">1103. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Latent space manipulation for high-resolution medical image synthesis via the StyleGAN</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fetty</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.zemedi.2020.05.001</idno>
+		<ptr target="https://doi.org/10.1016/j.zemedi.2020.05.001" />
+	</analytic>
+	<monogr>
+		<title level="j">Z. Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="305" to="314" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Generative Adversarial Nets</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Goodfellow</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paper/2014/file/5" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems (NIPS)</title>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Cortes</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Lawrence</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Weinberger</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">27</biblScope>
+		</imprint>
+	</monogr>
+	<note>ca3e9b122f61f8f06494c97b1afccf3-Paper.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">PiCIE: Unsupervised Semantic Segmentation using Invariance and Equivariance in Clustering</title>
+		<author>
+			<persName><forename type="first">Hyun</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Bala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hariharan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR46437.2021.01652</idno>
+		<ptr target="https://doi.org/10.1109/CVPR46437.2021.01652" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="16789" to="16799" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Invariant Information Clustering for Unsupervised Image Classification and Segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Henriques</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV.2019.00996</idno>
+		<ptr target="https://doi.org/10.1109/ICCV.2019.00996" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="9864" to="9873" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Focal Frequency Loss for Image Reconstruction and Synthesis</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Loy</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV48922.2021.01366</idno>
+		<ptr target="https://doi.org/10.1109/ICCV48922.2021.01366" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="13899" to="13909" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Fast Decoding in Sequence Models using Discrete Latent Variables</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Roy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<ptr target="https://proceedings.mlr.press/v80/kaiser18a.html" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 35th International Conference on Machine Learning (ICML). Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Dy</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Krause</surname></persName>
+		</editor>
+		<meeting>the 35th International Conference on Machine Learning (ICML). Machine Learning Research</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="2390" to="2399" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Superpixel-guided label softening for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-1_23" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="227" to="237" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">EditGAN: High-Precision Semantic Image Editing</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kreis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Fidler</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems (NeurIPS)</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Ranzato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Beygelzimer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Dauphin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Liang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Vaughan</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="16331" to="16345" />
+		</imprint>
+	</monogr>
+	<note>cc/paper/2021/file/880610aa9f9de9ea7c545169c716f477-Paper.pdf</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">PyTorch: An Imperative Style, High-Performance Deep Learning Library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+		<ptr target="https://proceedings.neurips.cc/paper/2019/hash/bdbca" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems (NeurIPS)</title>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Wallach</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Larochelle</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Beygelzimer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Alché-Buc</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Fox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Garnett</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="8024" to="8035" />
+		</imprint>
+	</monogr>
+	<note>288fee7f92f2bfa9f7012727740-Abstract.html</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Latentoptimization based disease-aware image editing for medical image augmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Saboo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Gyawali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shukla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<ptr target="https://www.bmvc2021-virtualconference.com/assets/papers/0840.pdf" />
+	</analytic>
+	<monogr>
+		<title level="m">32nd British Machine Vision Conference (BMVC)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page">181</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Image Synthesis-Based Late Stage Cancer Augmentation and Semi-supervised Segmentation for MRI Rectal Cancer Staging</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sasuga</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-17027-0_1</idno>
+		<ptr target="https://link.springer.com/chapter/10.1007/978-3-031-17027-0_1" />
+	</analytic>
+	<monogr>
+		<title level="m">Data Augmentation, Labelling, and Imperfections</title>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">V</forename><surname>Nguyen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><forename type="middle">X</forename><surname>Huang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Xue</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer Nature Switzerland</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A U-Net based discriminator for generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Schonfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khoreva</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR42600.2020.00823</idno>
+		<ptr target="https://doi.org/10.1109/CVPR42600.2020.00823" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="8207" to="8216" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Controllable cardiac synthesis via disentangled anatomy arithmetic</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Thermos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>O'neil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Tsaftaris</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4_15" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="160" to="170" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A domain translation framework with an adversarial denoising diffusion model to generate synthetic datasets of echocardiography images</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tiago</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Snare</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Šprem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcleod</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ACCESS.2023.3246762</idno>
+		<ptr target="https://doi.org/10.1109/ACCESS.2023.3246762" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="17594" to="17602" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">The unreasonable effectiveness of deep features as a perceptual metric</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shechtman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2018.00068</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2018.00068" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="586" to="595" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Pseudolabeling and confirmation bias in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arazo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ortego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>O'connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcguinness</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 International Joint Conference on Neural Networks (IJCNN)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">MixMatch: a holistic approach to semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Berthelot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carlini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Goodfellow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Papernot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oliver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">A</forename><surname>Raffel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Semifl: communication efficient semi-supervised federated learning with unlabeled clients</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Diao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Tarokh</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2106.014323</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Goodfellow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Courville</surname></persName>
+		</author>
+		<title level="m">Deep Learning</title>
+		<meeting><address><addrLine>Cambridge</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Don&apos;t stop pretraining: adapt language models to domains and tasks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gururangan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2004.10964</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">SSFL: tackling label deficiency in federated learning via personalized self-supervision</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mushtaq</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Soltanolkotabi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Avestimehr</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2110.02470</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Universal language model fine-tuning for text classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ruder</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1801.06146</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Federated semi-supervised learning with inter-client consistency &amp; disjoint learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Jeong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yoon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Hwang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2006.12097</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Emerging trends in federated learning: From model fusion to federated x learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Saravirta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Walid</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.12920</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Advances and open problems in federated learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kairouz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Found. Trends R Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="1" to="210" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Federated learning: challenges, methods, and future directions</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Sahu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Talwalkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Sig. Process. Mag</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="50" to="60" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Do we really need to access the source data? source hypothesis transfer for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6028" to="6039" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">RSCFed: random sampling consensus federated semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="10154" to="10163" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Semifed: Semi-supervised federated learning with consistency and pseudo-labeling</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shahabi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2108.09412</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Federated semi-supervised medical image classification via inter-client relation matching</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-431" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="325" to="335" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1907.11692</idno>
+		<title level="m">Roberta: a robustly optimized bert pretraining approach</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Information-theoretical learning of discriminative clusters for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Sha</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1206.6438</idno>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">FixMatch: simplifying semi-supervised learning with consistency and confidence</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sohn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="596" to="608" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">A survey on semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Van Engelen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">H</forename><surname>Hoos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="373" to="440" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">A survey of transfer learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Khoshgoftaar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">D</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s40537-016-0043-6</idno>
+		<ptr target="https://doi.org/10.1186/s40537-016-0043-6" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Big Data</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="40" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Survey on pseudo-labeling methods in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yafen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yifeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lingyi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Guohe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wenjie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Front. Comput. Sci. Technol</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">1279</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Federated semi-supervised learning for covid region segmentation in chest CT using multi-national data from china</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Italy, japan. Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">101992</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Medmnist v2a large-scale lightweight benchmark for 2d and 3d biomedical image classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pfister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">41</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">FlexMatch: boosting semi-supervised learning with curriculum pseudo labeling</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="18408" to="18419" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">A survey on federated learning</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl.-Based Syst</title>
+		<imprint>
+			<biblScope unit="volume">216</biblScope>
+			<biblScope unit="page">106775</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Improving semi-supervised federated learning by reducing the gradient diversity of models</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE International Conference on Big Data (Big Data)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1214" to="1225" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

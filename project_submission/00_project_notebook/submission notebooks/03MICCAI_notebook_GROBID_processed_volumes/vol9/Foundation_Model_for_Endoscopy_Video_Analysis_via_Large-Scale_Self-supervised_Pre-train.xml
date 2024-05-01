@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Foundation Model for Endoscopy Video Analysis via Large-Scale Self-supervised Pre-train</title>
+				<funder>
+					<orgName type="full">Shenzhen Portion of Shenzhen-Hong Kong Science and Technology Innovation Cooperation Zone</orgName>
+				</funder>
+				<funder ref="#_4Kpt2UK">
+					<orgName type="full">Science, Technology and Innovation Commission of Shenzhen Municipality</orgName>
+				</funder>
+				<funder ref="#_TQNGZdX">
+					<orgName type="full">Hong Kong Innovation and Technology Commission</orgName>
+				</funder>
+				<funder ref="#_jc7HsNs">
+					<orgName type="full">Hong Kong Research Grants Council</orgName>
+				</funder>
+				<funder ref="#_3QFsdNM">
+					<orgName type="full">Action Plan of Shanghai Science and Technology Commission</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhao</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chang</forename><surname>Liu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">SenseTime Research</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shaoting</forename><surname>Zhang</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="laboratory">Shanghai Artificial Intelligence Laboratory</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Qi</forename><surname>Dou</surname></persName>
+							<email>qidou@cuhk.edu.hk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Foundation Model for Endoscopy Video Analysis via Large-Scale Self-supervised Pre-train</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="101" to="111"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8F91EB7947AB9BDF397890D0BBBA0648</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_10</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Foundation model</term>
+					<term>Endoscopy video</term>
+					<term>Pre-train</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Foundation models have exhibited remarkable success in various applications, such as disease diagnosis and text report generation. To date, a foundation model for endoscopic video analysis is still lacking. In this paper, we propose Endo-FM, a foundation model specifically developed using massive endoscopic video data. First, we build a video transformer, which captures both local and global long-range dependencies across spatial and temporal dimensions. Second, we pre-train our transformer model using global and local views via a self-supervised manner, aiming to make it robust to spatial-temporal variations and discriminative across different scenes. To develop the foundation model, we construct a large-scale endoscopy video dataset by combining 9 publicly available datasets and a privately collected dataset from Baoshan Branch of Renji Hospital in Shanghai, China. Our dataset overall consists of over 33K video clips with up to 5 million frames, encompassing various protocols, target organs, and disease types. Our pre-trained Endo-FM can be easily adopted for a given downtream task via fine-tuning by serving as the backbone. With experiments on 3 different types of downstream tasks, including classification, segmentation, and detection, our Endo-FM surpasses the current state-of-the-art (SOTA) self-supervised pre-training and adapter-based transfer learning methods by a significant margin, such as VCL (3.1% F1, 4.8% Dice, and 5.5% F1 for classification, segmentation, and detection) and ST-Adapter (5.9% F1, 9.6% Dice, and 9.9% F1 for classification, segmentation, and detection). Code, datasets, and models are released at https://github.com/med-air/Endo-FM.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Foundation models pre-trained on large-scale data have recently showed success in various downstream tasks on medical images including classification <ref type="bibr" target="#b8">[9]</ref>, detection <ref type="bibr" target="#b32">[33]</ref>, and segmentation <ref type="bibr" target="#b30">[31]</ref>. However, medical data have various imaging modalities, and clinical data collection is expensive. It is arguable that a specific foundation model trained on some certain type of data is useful at the moment. In this paper, we focus on endoscopic video, which is a routine imaging modality and increasingly studied in gastrointestinal disease diagnosis, minimally invasive procedure and robotic surgery. Having an effective foundation model is promising to facilitate downstream tasks that necessitate endoscopic video analysis.</p><p>Existing work on foundation models for medical tasks, such as X-ray diagnosis <ref type="bibr" target="#b3">[4]</ref> and radiology report generation <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21]</ref>, involves pre-training on large-scale image-text pairs and relies on large language models to learn cross-modality features. However, since clinical routines for endoscopy videos typically do not involve text data, a pure image-based foundation model is currently more feasible. To this end, we develop a video transformer, based on ViT B/16 <ref type="bibr" target="#b7">[8]</ref>, containing 121M parameters, which serves as the foundation model backbone for our video data. We note that a similarly scaled foundation model in recent work <ref type="bibr" target="#b32">[33]</ref> based on Swin UNETR <ref type="bibr" target="#b10">[11]</ref> with 62M parameters has been successfully employed for CT scans. This would indicate that our video transformer could have sufficient capacity to model the rich spatial-temporal information of endoscopy videos.</p><p>To learn rich spatial-temporal information from endoscopy video data <ref type="bibr" target="#b11">[12]</ref>, our Endo-FM is pre-trained via a self-supervised manner by narrowing the gap between feature representations from different spatial-temporal views of the same video. These views are generated to address the variety of context information and motions of endoscopy videos. Drawing inspiration from self-supervised vision transformers <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b28">29]</ref>, we propose to pre-train the model via a teacherstudent scheme. Under this scheme, the student is trained to predict (match) the teacher's output in the latent feature space. In other words, given two spatialtemporal aware views from the same video, one view processed by the teacher is predicted by another one processed by the student to learn the spatial-temporal information. Therefore, designing effective and suitable matching strategies for different spatial-temporal views from the same endoscopy video is important.</p><p>In this paper, we propose Endo-FM, a novel foundation model designed for endoscopic video analysis. First, we build a video transformer based on ViT <ref type="bibr" target="#b7">[8]</ref> to capture long-range spatial and temporal dependencies, together with dynamic spatial-temporal positional encoding designed for tackling input data with diverse spatial sizes and temporal frame rates. Second, Endo-FM is pretrained under a teacher-student scheme via spatial-temporal matching on diverse video views. Specifically, we create various spatial-temporal aware views differing in spatial sizes and frame rates for an input video clip. Both teacher and student models process these views of a video and predict one view from another in the latent feature space. This enables Endo-FM to learn spatial-temporal invariant (to view, scale, and motion) features that are transferable across different endoscopic domains and disease types while retaining discriminative features that are specific to each context. We construct a large-scale endoscopic video dataset by combining 9 public and a new private collected dataset from Baoshan Branch of Renji Hospital in Shanghai, China, with over 33K video clips with up to 5 million frames. Our pre-trained Endo-FM can be easily applied to various downstream tasks by serving as the backbone. Experimental results on 3 different types of downstream tasks demonstrate the effectiveness of Endo-FM, surpassing the current state-of-the-art self-supervised pre-training and adapter-based transfer learning methods by a significant margin, such as VCL (3.1% F1, 4.8% Dice, and 5.5% F1 for classification, segmentation, and detection) and ST-Adapter (5.9% F1, 9.6% Dice, and 9.9% F1 for classification, segmentation, and detection).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>To begin with, we build a video transformer as the architecture of our Endo-FM (Sect. 2.1). Then, we propose a novel self-supervised spatial-temporal matching scheme (Sect. 2.2). Finally, we describe the overall training objective and specifics in Sect. 2.3. An overview of our method is shown in Fig. <ref type="figure" target="#fig_1">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Video Transformer for Spatial-Temporal Encoding</head><p>We build a video transformer to encode input endoscopic video. The spatial and temporal attention mechanisms in our model capture long-range dependencies across both spatial and temporal dimensions, with a larger receptive field than conventional convolutional kernels <ref type="bibr" target="#b21">[22]</ref>. Our model is built using 12 encoder blocks, equipped with space-time attention <ref type="bibr" target="#b2">[3]</ref>. Specifically, given an endoscopic video clip X ∈ R T×3×H×W as input, consisting of T frames with size H×W , each frame in X is divided into N = HW/P 2 patches of size P×P , and these patches are then mapped into N patch tokens. Thus, each encoder block processes N patch (spatial) and T temporal tokens. Given the intermediate token z m ∈ R D for a patch from block m, the token computation in the next block is as follows:</p><formula xml:id="formula_0">z m+1 time = MHSAtime (LN (z m )) + z m , z m+1 space = MHSAspace LN z m+1 time + z m+1 time , z m+1 = MLP LN z m+1 space + z m+1 space ,<label>(1)</label></formula><p>where MHSA denotes multi-head self-attention, LN denotes LayerNorm <ref type="bibr" target="#b0">[1]</ref>, and MLP denotes multi-layer perceptron. Our model also includes a learnable class token, representing the global features learned by the model along the spatial and temporal dimensions. For pre-training, we use a MLP to project the class token from the last encoder block as the feature f of X.</p><p>Different from static positional encoding in ViT <ref type="bibr" target="#b7">[8]</ref>, we design a dynamic spatial-temporal encoding strategy to help our model tackle various spatialtemporal views with different spatial sizes and frame rates (Sect. 2.2). Specifically, We fix the spatial and temporal positional encoding vectors to the highest resolution of the input view for each dimension, making it easy to interpolate for views with smaller spatial size or lower temporal frame rate. These spatial and temporal positional encoding vectors are added to the corresponding spatial and temporal tokens. Such dynamic strategy ensures that the learned positional encoding is suitable for downstream tasks with diverse input sizes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Self-supervised Pre-train via Spatial-Temporal Matching</head><p>Considering the difficulties of tackling the context information related with lesions, tissues, and dynamic scenes in endoscopic data, we pre-train Endo-FM to be robust to such spatial-temporal characteristics. Inspired by self-supervised vision transformers <ref type="bibr" target="#b5">[6]</ref>, the pre-training is designed in a teacher-student scheme, where the student is trained to match the teacher's output. To achieve this, given an input video X, we create two types of spatial-temporal views serving as the model inputs: global and local views, as shown in Fig. <ref type="figure" target="#fig_1">1</ref>. The global views {v i g ∈R T i g ×3×Hg×Wg } G i=1 are generated by uniformly sampling X with different frame rates, and the local ones {v j l ∈R T j l ×3×H l ×W l } L j=1 are generated by uniformly sampling video frames with different frame rates from a randomly cropped region of X (T l ≤ T g ). During pre-training, the global views are fed into both teacher and student, and the local ones are only fed into the student. The model output f is then normalized by a softmax function with a temperature τ to obtain the probability distribution p=softmax(f /τ ). In the following, we design two matching schemes with respect to the difficulties of tackling endoscopy videos.</p><p>Cross-View Matching. Different from image-based pre-training <ref type="bibr" target="#b32">[33]</ref>, our video-oriented pre-training is designed to capture the relationships between different spatial-temporal variations. Specifically, the context information presented in different frames of the same endoscope video can vary under two key factors: 1) the proportion of tissue and lesions within the frame, and 2) the presence or absence of lesion areas. To address these, we employ a cross-view matching approach where the target global views processed by the teacher ({p</p><formula xml:id="formula_1">t v i g } G i=1</formula><p>) are predicted from the online local views processed by the student ({p s v j l } L j=1 ). By adopting this strategy, our model learns high-level context information from two perspectives: 1) spatial context in terms of the possible neighboring tissue and lesions within a local spatial crop, and 2) temporal context in terms of the possible presence of lesions in the previous or future frames of a local temporal crop. Thus, our method effectively addresses the proportion and existence issues that may be encountered. We minimize the following loss for cross-view matching:</p><formula xml:id="formula_2">Lcv = G i=1 L j=1 -p t v i g • log p s v j l .</formula><p>(2) Dynamic Motion Matching. In addition to the proportion and existence issues of lesions, a further challenge arises from the inherent dynamic nature of the scenes captured in endoscopy videos. The speeds and ranges of motion can vary greatly across different videos, making it difficult to train a model that is effective across a wide range of dynamic scenarios. The previous model <ref type="bibr" target="#b26">[27]</ref> learned from clips with fixed frame rate can not tackle this issue, as clips sampled with various frame rates contain different motion context information (e.g., fast v.s. slow scene changing) and differ in nuanced tissue and lesions. To address this challenge, our approach involves motion modeling during pretraining under dynamic endoscope scenes by predicting a target global view (p t ) processed by the student. Moreover, by predicting the nuanced differences of tissue and lesions in a view with a high frame rate from another with a low frame rate, the model is encouraged to learn more comprehensive motion-related contextual information. The dynamic motion difference among global view pairs is minimized by</p><formula xml:id="formula_3">L dm = G i=1 G k=1 -1 [i =k] p t v i g • log p s v k g ,<label>(3)</label></formula><p>where 1[•] is an indicator function.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Overall Optimization Objective and Pre-training Specifics</head><p>The overall training objective for Endo-FM is L pre-train = L cv + L dm . Centering and sharpening schemes <ref type="bibr" target="#b5">[6]</ref> are incorporated to the teacher outputs. To prevent the problem of the teacher and student models constantly outputting the same value during pre-training, we update the student model θ through backpropagation, while the teacher model φ is updated through exponential moving average (EMA) using the student's weights. This is achieved by updating the teacher's weights as φ t ← αφ t-1 + (1α)θ t at each training iteration t. Here, α is a momentum hyper-parameter that determines the updating rate. Except for the challenges posed by the issues of size proportion, existence, and dynamic scenes in Sect. 2.2, we have also observed that the appearance of  endoscope videos is highly diverse. These videos are captured using different surgical systems and in a wide range of environmental conditions <ref type="bibr" target="#b9">[10]</ref>. To address this variability, we apply temporally consistent spatial augmentations <ref type="bibr" target="#b26">[27]</ref> to all frames within a single view. Our augmentation approach includes random horizontal flips, color jitter, Gaussian blur, solarization, and so on, which enhances the robustness and generalizability of Endo-FM.</p><p>For Endo-FM, we set the patch size P as 16 and embedding dimension D as 768. We create G = 2 global views and L = 8 local views for every input endoscopy video, where T g ∈ <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b15">16]</ref> and T l ∈ <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b15">16]</ref>. The spatial sizes of global and local views are 224×224 and 96×96, respectively. The MLP head projects the dimension of class token to 65536. The temperature hyper-parameters are set as τ t = 0.04 and τ s = 0.07. The EMA update momentum α is 0.996. The training batch size is 12 with AdamW <ref type="bibr" target="#b16">[17]</ref> optimizer (learning rate 2e-5, weight decay 4e-2). The pre-training is finished with 30 epochs with a cosine schedule <ref type="bibr" target="#b15">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiment</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and Downstream Setup</head><p>We collect all possible public endoscope video datasets and a new one from Baoshan Branch of Renji Hospital for pre-training. As shown in Table <ref type="table" target="#tab_0">1</ref>, these public datasets are provided by world-wide research groups <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b29">30]</ref> and previous EndoVis challenge <ref type="bibr" target="#b22">[23]</ref>, covering 3 endoscopy protocols and 10+ types of diseases. We process the original videos into 30fps short clips with a duration of 5 s on average. We evaluate our pre-trained Endo-FM on three downstream tasks: disease diagnosis (PolypDiag <ref type="bibr" target="#b31">[32]</ref>), polyp segmentation (CVC-12k <ref type="bibr" target="#b1">[2]</ref>), and detection (KUMC <ref type="bibr" target="#b14">[15]</ref>). The detailed information of three downstream datasets is shown in Table <ref type="table" target="#tab_0">1</ref>. The example frames of the 10 datasets are shown in Fig. <ref type="figure" target="#fig_3">2</ref>.</p><p>For downstream fine-tuning, we utilize the following setup: 1) PolypDiag: A randomly initialized linear layer is appended to our pre-trained Endo-FM. We sample 8 frames with spatial size 224 × 224 for every video as the input and train for 20 epochs. 2) CVC-12k: A TransUNet equipped with Endo-FM as the backbone is implemented. We resize the spatial size as 224×224 and train for 150 epochs. 3) KUMC: we implement a STFT <ref type="bibr" target="#b33">[34]</ref> with our pre-trained model as backbone for generating feature pyramid. We resize the spatial size as 640×640 and train for 24k iterations. We report F1 score for PolypDiag, Dice for CVC-12k, and F1 score for KUMC.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Comparison with State-of-the-Art Methods</head><p>We compare our method with recent SOTA video-based pre-training methods, including the TimeSformer <ref type="bibr" target="#b2">[3]</ref> introduces spatial-temporal attention for video processing, the CORP <ref type="bibr" target="#b11">[12]</ref> presents a self-supervised contrast-and-order representation framework, the FAME <ref type="bibr" target="#b6">[7]</ref> proposes a foreground-background merging scheme, the ProViCo <ref type="bibr" target="#b24">[25]</ref> applies a self-supervised probabilistic video contrastive learning strategy, the VCL <ref type="bibr" target="#b25">[26]</ref> learns the static and dynamic visual concepts, and the ST-Adapter <ref type="bibr" target="#b23">[24]</ref> adapts the CLIP <ref type="bibr" target="#b27">[28]</ref> by a depth-wise convolution. We also train our model from scratch to serve as a baseline. The same experimental setup is applied to all the experiments for fair comparisons.</p><p>Quantitative comparison results are shown in Table <ref type="table" target="#tab_1">2</ref>. We can observe that the scratch model shows low performance on all 3 downstream tasks, especially for segmentation. Compared with training from scratch, our Endo-FM achieves +7.2% F1, +20.7% Dice, and +10.6% F1 improvements for classification, seg-mentation, and detection tasks, respectively, indicating the high effectiveness of our proposed pre-training approach. Moreover, our Endo-FM outperforms all SOTA methods, with +3.1% F1, +4.8% Dice, and +5.5% F1 boosts for the 3 downstream tasks over the second-best. Such significant improvements are benefited from our specific spatial-temporal pre-training designed for endoscopy videos to tackle the complex context information and dynamic scenes. Meanwhile, Endo-FM requires less pre-training time than SOTA pre-training methods, except the lighter but much worse ST-Adapter <ref type="bibr" target="#b23">[24]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Analytical Studies</head><p>Without loss of generality, we conduct ablation studies on polyp diagnosis task from 3 aspects: 1) components analysis of our pre-training method; 2) varying combinations of global and local views in spatial-temporal matching; 3) varying the construction of global and local views. Components Analysis. We first study each component in our approach, as shown in Fig. <ref type="figure" target="#fig_4">3</ref>(a). Here, "w/L cv (spat.)" and "w/L cv (temp.)" indicate that only spatial and temporal sampling are used for generating the local views. We can learn that both spatial and temporal sampling for local views can help improve the performance and their combination produces a plus, yielding +4.3% F1 improvement. Furthermore, our proposed dynamic matching scheme boosts the performance to 89.7%, demonstrating the importance of capturing the motion related context information from dynamic scenes. Additionally, the performance is further improved with video augmentations from 89.7% to 90.7%. Spatial-Temporal Matching Combinations. We further investigate the effects of combinations of global and local views in spatial-temporal matching, as depicted in Fig. <ref type="figure" target="#fig_4">3(b</ref>). Here, the notation v l → v g represents the prediction of v g from v l , and vice versa. It indicates that joint prediction scenarios, where we predict v g from both v l (cross-view matching) and v g (dynamic motion matching), result in optimal performance. This trend can be attributed to the fact that joint prediction scenarios allow for a more comprehensive understanding of the context in complex endoscopy videos, which is lacking in individual cases.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Z</head><label></label><figDesc>. Wang and C. Liu-Equal contributions. c The Author(s), under exclusive license to Springer Nature Switzerland AG 2023 H. Greenspan et al. (Eds.): MICCAI 2023, LNCS 14228, pp. 101-111, 2023. https://doi.org/10.1007/978-3-031-43996-4_10</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of our proposed Endo-FM. We build a video transformer model and design a self-supervised pre-training approach.</figDesc><graphic coords="3,59,34,59,06,312,76,123,64" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>teacher from another online global view (p s v k g</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Example frames of the 10 pre-train and downstream datasets used in this work.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Ablations on PolypDiag: (a) components analysis; (b) different combinations of views; (c) number of global and local views; (d) length of local views.</figDesc><graphic coords="8,46,80,257,96,330,28,68,68" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Details of all pre-train and downstream datasets used in this work.</figDesc><table><row><cell>Phase</cell><cell>Dataset</cell><cell>Provider</cell><cell cols="3">Videos Frames Protocol</cell><cell>Disease</cell></row><row><cell>Pre-train</cell><cell>Colonoscopic [19]</cell><cell>CNRS</cell><cell>210</cell><cell>36534</cell><cell cols="2">colonoscope adenoma, hyperplasia</cell></row><row><cell></cell><cell>SUN-SEG [13]</cell><cell>ANU</cell><cell>1018</cell><cell cols="3">159400 colonoscope SSL, adenoma, hyperplasia, T1b</cell></row><row><cell></cell><cell cols="2">LDPolypVideo [18] USTC</cell><cell>237</cell><cell>40186</cell><cell cols="2">colonoscope polyp</cell></row><row><cell></cell><cell>Hyper-Kvasir [5]</cell><cell>Simula</cell><cell>5704</cell><cell cols="3">875940 gastroscope barrett's oesophagus, polyp, cancer</cell></row><row><cell></cell><cell cols="2">Kvasir-Capsule [30] Simula</cell><cell>1000</cell><cell cols="3">158892 gastroscope erosion, erythema, etc</cell></row><row><cell></cell><cell cols="2">CholecTriplet [23] BIDMC</cell><cell>580</cell><cell>90444</cell><cell cols="2">laparoscope cholecystectomy</cell></row><row><cell></cell><cell>Ours</cell><cell cols="5">Baoshan Branch 16494 2491952 colonoscope polyp, erosion, etc.</cell></row><row><cell></cell><cell></cell><cell cols="2">of Renji Hospital 7653</cell><cell cols="2">1170753 gastroscope</cell></row><row><cell></cell><cell>Summary</cell><cell>6 providers</cell><cell cols="4">32896 5024101 3 protocols 10+ diseases</cell></row><row><cell cols="2">Downstream PolypDiag [32]</cell><cell>Adelaide</cell><cell>253</cell><cell cols="3">485561 gastroscope polyp, cancer</cell></row><row><cell></cell><cell>CVC-12k [2]</cell><cell>UAB</cell><cell>29</cell><cell>612</cell><cell cols="2">colonoscope polyp</cell></row><row><cell></cell><cell>KUMC [15]</cell><cell>Kansas</cell><cell>53</cell><cell>19832</cell><cell cols="2">colonoscope adenoma, hyperplasia</cell></row><row><cell></cell><cell>Summary</cell><cell>3 providers</cell><cell>335</cell><cell cols="3">506005 2 protocols 4 diseases</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison with other latest SOTA methods on 3 downstream tasks. We report F1 score (%) for PolypDiag, Dice (%) for CVC-12k, and F1 score (%) for KUMC.</figDesc><table><row><cell>Method</cell><cell>Venue</cell><cell cols="4">Pre-training Time (h) (Classification) (Segmentation) (Detection) PolypDiag CVC-12k KUMC</cell></row><row><cell>Scratch (Rand. init.)</cell><cell></cell><cell>N/A</cell><cell>83.5±1.3</cell><cell>53.2±3.2</cell><cell>73.5±4.3</cell></row><row><cell>TimeSformer [3]</cell><cell>ICML'21</cell><cell>104.0</cell><cell>84.2±0.8</cell><cell>56.3±1.5</cell><cell>75.8±2.1</cell></row><row><cell>CORP [12]</cell><cell>ICCV'21</cell><cell>65.4</cell><cell>87.1±0.6</cell><cell>68.4±1.1</cell><cell>78.2±1.4</cell></row><row><cell>FAME [7]</cell><cell>CVPR'22</cell><cell>48.9</cell><cell>85.4±0.8</cell><cell>67.2±1.3</cell><cell>76.9±1.2</cell></row><row><cell>ProViCo [25]</cell><cell>CVPR'22</cell><cell>71.2</cell><cell>86.9±0.5</cell><cell>69.0±1.5</cell><cell>78.6±1.7</cell></row><row><cell>VCL [26]</cell><cell>ECCV'22</cell><cell>74.9</cell><cell>87.6±0.6</cell><cell>69.1±1.2</cell><cell>78.1±1.9</cell></row><row><cell>ST-Adapter [24]</cell><cell>NeurIPS'22</cell><cell>8.1</cell><cell>84.8±0.7</cell><cell>64.3±1.9</cell><cell>74.9±2.9</cell></row><row><cell>Endo-FM (Ours)</cell><cell></cell><cell>20.4</cell><cell>90.7±0.4</cell><cell>73.9±1.2</cell><cell>84.1±1.3</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>. This work was supported in part by <rs type="funder">Shenzhen Portion of Shenzhen-Hong Kong Science and Technology Innovation Cooperation Zone</rs> under HZQB-KCZYB-20200089, in part by <rs type="funder">Science, Technology and Innovation Commission of Shenzhen Municipality</rs> Project No. <rs type="grantNumber">SGDX20220530111201008</rs>, in part by <rs type="funder">Hong Kong Innovation and Technology Commission</rs> Project No. <rs type="grantNumber">ITS/237/21FP</rs>, in part by <rs type="funder">Hong Kong Research Grants Council</rs> Project No. <rs type="grantNumber">T45-401/22</rs>-N, and in part by the <rs type="funder">Action Plan of Shanghai Science and Technology Commission</rs> [<rs type="grantNumber">21SQBS02300</rs>].</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_4Kpt2UK">
+					<idno type="grant-number">SGDX20220530111201008</idno>
+				</org>
+				<org type="funding" xml:id="_TQNGZdX">
+					<idno type="grant-number">ITS/237/21FP</idno>
+				</org>
+				<org type="funding" xml:id="_jc7HsNs">
+					<idno type="grant-number">T45-401/22</idno>
+				</org>
+				<org type="funding" xml:id="_3QFsdNM">
+					<idno type="grant-number">21SQBS02300</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Construction of Global and Local</head><p>Views. We conduct a further analysis of the strategies for constructing global (G ∈ <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref>) and local views (L ∈ <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b7">8]</ref>). We vary the number of global and local views, and the length of local views (T l ), as depicted in Fig. <ref type="figure">3</ref>(c), and Fig. <ref type="figure">3(d)</ref>. We find that incorporating more views and increasing the length variations of local views yields better performance. For "G = 1", we still create 2 global views for L dm but only consider the longer one for L cv . These improvements stem from the spatial-temporal change invariant and cross-video discriminative features learned from the diverse endoscopy videos.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion and Discussion</head><p>To the best of our knowledge, we develop the first foundation model, Endo-FM, Which is specifically designed for analyzing endoscopy videos. Endo-FM is built upon a video transformer to capture rich spatial-temporal information and pre-trained to be robust to diverse spatial-temporal variations. A largescale endoscope video dataset with over 33K video clips is constructed. Extensive experimental results on 3 downstream tasks demonstrate the effectiveness of Endo-FM, significantly outperforming other state-of-the-art video-based pretraining methods, and showcasing its potential for clinical application.</p><p>Regarding the recent SAM <ref type="bibr" target="#b13">[14]</ref> model, which is developed for segmentation task, we try to apply SAM for our downstream task CVC-12k with the same fine-tuning scheme as Endo-FM. The experimental results show that SAM can achieve comparable performance with our Endo-FM for the downstream segmentation task. Considering that SAM is trained with 10x samples, our domain Endo-FM is considered to be powerful for endoscopy scenarios. Moreover, besides segmentation, Endo-FM can also be easily applied to other types of tasks including classification and detection. Therefore, we envision that, despite existence of general-purpose foundation models, Endo-FM or similar domain-specific foundation models will be helpful for medical applications.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Ba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Kiros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Layer normalization</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">WM-DOVA maps for accurate polyp highlighting in colonoscopy: validation vs. saliency maps from physicians</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bernal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Sánchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Fernández-Esparrach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Vilariño</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Med. Imaging Graph</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="99" to="111" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Is space-time attention all you need for video understanding?</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bertasius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Torresani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Making the most of text semantics to improve biomedical vision-language processing</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Boecking</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20059-5_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20059-51" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13696</biblScope>
+			<biblScope unit="page" from="1" to="21" />
+		</imprint>
+	</monogr>
+	<note>ECCV 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Hyperkvasir, a comprehensive multi-class image and video dataset for gastrointestinal endoscopy</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Borgli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Emerging properties in self-supervised vision transformers</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Caron</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICCV</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Motion-aware contrastive video representation learning via foreground-background merging</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ding</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="9716" to="9726" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">An image is worth 16 × 16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Anatomy-aware contrastive representation learning for fetal ultrasound</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yasrab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Drukker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">T</forename><surname>Papageorghiou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Noble</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25066-8_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25066-823" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022 Workshops</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Karlinsky</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Michaeli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Nishino</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">13803</biblScope>
+			<biblScope unit="page" from="422" to="436" />
+		</imprint>
+	</monogr>
+	<note>ECCV 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Goodman</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.07219</idno>
+		<title level="m">A real-time spatiotemporal AI model analyzes skill in open surgical videos</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Swin UNETR: swin transformers for semantic segmentation of brain tumors in MRI images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Nath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-08999-2_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-08999-222" />
+	</analytic>
+	<monogr>
+		<title level="m">BrainLes 2021</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Crimi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">12962</biblScope>
+			<biblScope unit="page" from="272" to="284" />
+		</imprint>
+	</monogr>
+	<note>Brainlesion: Glioma, Multiple Sclerosis, Stroke and Traumatic Brain Injuries</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Contrast and order representations for video self-supervised learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Raj</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Savvides</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="7939" to="7949" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Video polyp segmentation: a deep learning perspective</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">P</forename><surname>Ji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Intell. Res</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="531" to="549" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2304.02643</idno>
+		<title level="m">Segment anything</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Colonoscopy polyp detection and classification: dataset creation and comparative evaluations</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">255809</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">SGDR: stochastic gradient descent with warm restarts</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Decoupled weight decay regularization</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Bin: LDPolypVideo benchmark: a large-scale colonoscopy video dataset of diverse polyps</title>
+		<author>
+			<persName><forename type="first">Yiting</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Xuejin</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Kai</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sun</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-337" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="387" to="396" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Computer-aided classification of gastrointestinal lesions in regular colonoscopy</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mesejo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TMI</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2051" to="2063" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Multi-modal understanding and generation for medical images and text via vision-language pre-training</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Moon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Choi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE JBHI</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="6070" to="6080" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Foundation models for generalist medical artificial intelligence</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Moor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">616</biblScope>
+			<biblScope unit="issue">7956</biblScope>
+			<biblScope unit="page" from="259" to="265" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Intriguing properties of vision transformers</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Naseer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ranasinghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hayat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shahbaz Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Rendezvous: attention mechanisms for the recognition of surgical action triplets in endoscopic videos</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Nwoye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Media</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">102433</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">St-adapter: parameter-efficient imageto-video transfer learning for action recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Probabilistic representations for video contrastive learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sohn</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="14711" to="14721" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Static and dynamic concepts for self-supervised video representation learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Qian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19809-0_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19809-09" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13686</biblScope>
+			<biblScope unit="page" from="145" to="164" />
+		</imprint>
+	</monogr>
+	<note>ECCV 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Spatiotemporal contrastive video representation learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Qian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Self-supervised video transformer</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ranasinghe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Naseer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ryoo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022-06">June 2022</date>
+			<publisher>CVPR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Kvasir-capsule, a video capsule endoscopy dataset</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Smedsrud</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Self-supervised pre-training of Swin transformers for 3D medical image analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20730" to="20740" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Contrastive transformer-based multiple instance learning for weakly supervised polyp frame detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-89" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="88" to="98" />
+		</imprint>
+	</monogr>
+	<note>MICCAI 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Toward foundational deep learning models for medical imaging in the new era of transformer networks</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Willemink</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Sandfort</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">210284</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Multi-frame collaboration for effective endoscopic video polyp detection via spatial-temporal feature transformation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-329" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="302" to="312" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

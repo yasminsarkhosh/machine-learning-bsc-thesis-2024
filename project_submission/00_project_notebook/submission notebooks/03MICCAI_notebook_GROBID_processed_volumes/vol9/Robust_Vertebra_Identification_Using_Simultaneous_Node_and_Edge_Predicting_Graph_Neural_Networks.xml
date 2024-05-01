@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Robust Vertebra Identification Using Simultaneous Node and Edge Predicting Graph Neural Networks</title>
+				<funder>
+					<orgName type="full">DAAD program Konrad Zuse Schools of Excellence in Artificial Intelligence</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Federal Ministry of Education and Research</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Vincent</forename><surname>Bürgin</surname></persName>
+							<email>vincent.buergin@tum.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">ImFusion GmbH</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Technical University of Munich</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Raphael</forename><surname>Prevost</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">ImFusion GmbH</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Marijn</forename><forename type="middle">F</forename><surname>Stollenga</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">ImFusion GmbH</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Robust Vertebra Identification Using Simultaneous Node and Edge Predicting Graph Neural Networks</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="483" to="493"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">350A52550DBDAB50E00F6EBF74747DD7</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_46</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>graph neural networks</term>
+					<term>spine localization</term>
+					<term>spine classification</term>
+					<term>deep learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Automatic vertebra localization and identification in CT scans is important for numerous clinical applications. Much progress has been made on this topic, but it mostly targets positional localization of vertebrae, ignoring their orientation. Additionally, most methods employ heuristics in their pipeline that can be sensitive in real clinical images which tend to contain abnormalities. We introduce a simple pipeline that employs a standard prediction with a U-Net, followed by a single graph neural network to associate and classify vertebrae with full orientation. To test our method, we introduce a new vertebra dataset that also contains pedicle detections that are associated with vertebra bodies, creating a more challenging landmark prediction, association and classification task. Our method is able to accurately associate the correct body and pedicle landmarks, ignore false positives and classify vertebrae in a simple, fully trainable pipeline avoiding application-specific heuristics. We show our method outperforms traditional approaches such as Hungarian Matching and Hidden Markov Models. We also show competitive performance on the standard VerSe challenge body identification task.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Vertebra localization and identification from CT scans is an essential step in medical applications, such as pathology diagnosis, surgical planning, and outcome assessment <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b5">6]</ref>. This is however a tedious manual task in a time-sensitive setting that can benefit a lot from automation. However, automatically identifying and determining the location and orientation of each vertebra from a CT Fig. <ref type="figure">1</ref>. Summary of the proposed method. A CNN generates a heatmap from which local maxima are connected using k-nearest neighbours to form a graph. Then a single GNN associates the keypoints, performs classification and filters out false postives. The full pipeline is trained and does not require hand-tuned post-processing.</p><p>scan can be very challenging: (i) scans vary greatly in intensity and constrast, (ii) metal implants and other materials can affect the scan quality, (iii) vertebrae might be deformed, crushed or merged together due to medical conditions, (iv) vertebrae might be missing due to accidents or previous surgical operations.</p><p>Recently, public challenges like the VerSe challenge <ref type="bibr" target="#b24">[24]</ref> have offered a common benchmarking platform to evaluate algorithms to automate this task, resulting in a boost in research on this topic. However, these challenges focus on finding the position of vertebrae, ignoring the orientation or direction. Additionally, practically all methods employ manual heuristic methods to identify landmarks and filter out false positives.</p><p>In this paper, we introduce a trainable method that performs vertebrae localization, orientation estimation and classification with a single architecture. We replace all hand-crafted rules and post-processing steps with a single trainable Graph Neural Network (GNN) that learns to filter out, associate and classify landmarks. We apply a generalized Message Passing layer that can perform edge and node classification simultaneously. This alleviates the need for sensitive hand-tuned parameter tuning, and increases robustness of the overall pipeline.</p><p>The main contributions of our work are: (1) introducing a pipeline that uses a single Graph Neural Network to perform simultaneous vertebra identification, landmark association, and false positive pruning, without the need for any heuristic methods and (2) building and releasing a new spine detection dataset that adds pedicles of vertebrae to create a more complex task that includes orientation estimation of vertebrae, which is relevant for clinical applications.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Spine Landmark Prediction and Classification. The introduction of standardised spine localization and classification challenges <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b24">24]</ref> resulted in a boost in research on this problem. Convolutional Neural Networks (CNN) became a dominant step in most approaches shortly after their introduction <ref type="bibr" target="#b6">[7]</ref>. Most modern methods process the results of a CNN using a heuristic method to create a 1-dimensional sequence of vertebra detections, before applying classification: <ref type="bibr" target="#b27">[27]</ref> generate heatmaps for body positions, and refine it into a single sequence graph that uses message passing for classification. <ref type="bibr" target="#b14">[14]</ref> generate heatmaps, extract a 1-dimensional sequence and use a recurrent neural network for classification. <ref type="bibr" target="#b18">[18]</ref> produce a heatmap using a U-Net <ref type="bibr" target="#b21">[21]</ref>, but use a simpler approach by taking the local maxima as landmarks, and forming a sequence by accepting the closest vertebra that is within a defined distance range. <ref type="bibr" target="#b16">[16]</ref> uses a directional graph and Dynamic Programming to find an optimal classification. Graph Neural Networks. In recent years, Graph Neural Networks (GNN) have surged in popularity <ref type="bibr" target="#b11">[11]</ref>, with a wide and growing range of applications <ref type="bibr" target="#b26">[26]</ref>. A prominent task in the literature is node-level representation learning and classification. A less prominent task is edge classification, for which early work used a dual representation to turn edge-into node representations <ref type="bibr" target="#b0">[1]</ref>. Other approaches model edge embeddings explicitly, such as <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">12]</ref>. The most general formulation of GNNs is the message-passing formulation <ref type="bibr" target="#b4">[5]</ref> which can be adapted to perform both edge and node classification at the same time. We use this formulation in our method.</p><p>Various methods have applied GNNs to keypoint detection, however they all apply to 2-dimensional input data. In <ref type="bibr" target="#b20">[20]</ref> GNNs are used to detect cars in images. An edge classification task is used to predict occluded parts of the car. However, the GNN step is ran individually for every car detection and the relation between cars is not taken into account, unlike our task. Also there is no node classification applied. In <ref type="bibr" target="#b15">[15]</ref> a GNN is used to group detected keypoints for human-pose estimation on images. Keypoints are grouped using edge prediction where edge-embeddings are used as input the GNN. A separate GNN processes node embeddings to facilitate the final grouping. However, the node and edge embeddings are processed separately from each other.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Method</head><p>In this paper we tackle vertebra localization and classification, but unlike other methods that only focus on detecting the body of the vertebrae, we also detect the pedicles and associate them with their corresponding body. This allows us to also define the orientation of the vertebra defined by the plane passing through the body and pedicles<ref type="foot" target="#foot_0">1</ref> . To this end we introduce a new dataset that includes pedicles for each vertebra, described in Sect. 4.1, creating a challenging keypoint detection and association task.</p><p>Our method consists of a two-stage pipeline shown in Fig. <ref type="figure">1</ref>: we detect keypoints from image data using a CNN stage, and form a connected graph from these keypoints that is processed by a GNN stage to perform simultaneous node and edge classification, tackling classification, body to pedicle association as well as false positive detection with a single trainable pipeline without heuristics.</p><p>CNN Stage. The CNN stage detects candidate body, left pedicle and right pedicle keypoints and provides segment classifications for the body keypoints as either cervical, thoracic, lumbar or sacral. We use a UNet 2 CNN <ref type="bibr" target="#b19">[19]</ref> and select all local maxima with an intensity above a certain threshold τ , in this paper we use τ = 0.5. These keypoints are connected to their k nearest neighbours, forming a graph. In rare cases this can result in unconnected cliques, in which case the nearest keypoint of each clique is connected to k 3 nearest points in the other cliques, ensuring a fully connected graph. All nodes and edges are associated with information through embeddings, described below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>GNN Stage.</head><p>The second stage employs a generalized message-passing GNN following <ref type="bibr" target="#b4">[5]</ref> to perform several prediction tasks on this graph simultaneously:</p><p>1. keypoint association prediction: we model association between body keypoints and their corresponding pedicle keypoints as binary edge classification on the over-connected k-NN graph. 2. body keypoint level prediction: for body keypoints, we model the spine level prediction as multi-class node classification. 3. keypoint legitimacy prediction: to filter out false-positive keypoints, we additionally compute an binary legitimacy prediction for each node.</p><p>To perform these task, our message-passing GNN maintains edge and node embeddings which are updated in each layer. A message-passing layer performs a node update and edge update operation. Denoting the feature vector of a node v by x v , and the feature vector of a directed edge (u, v) by x uv , the node and edge features are updated as follows:</p><formula xml:id="formula_0">x u = v∈Nu∪{u} ψ node (x u , x v , x uv ) Node update , x uv = ψ edge (x u , x v , x uv ) Edge update<label>(1)</label></formula><p>Here denotes a symmetric pooling operation (in our case max pooling) over the neighborhood N u . ψ node and edge are trainable parametric functions: in our case, two distinct two-layer MLPs with ReLU nonlinearities. After N such message-passing layers we obtain an embedding vector for each node and edge. Each node/edge embedding is passed through a linear layer (distinct for nodes and edges) to obtain a vector of node class logits or a single edge prediction logit, respectively. The last entry in the node prediction vector is interpreted as a node legitimacy prediction score: nodes predicted as illegitimate are discarded for the output.</p><p>The node input features x u ∈ R 7 consist of the one-hot encoded keypoint type (body, left or right pedicle) and the segment input information (a pseudoprobability in [0, 1] for each of the four spine segments of belonging to that segment, computed by applying a sigmoid to the heatmap network's output channels which represent the different spine segments). The edge input features x uv ∈ R 4 consist of the normalized direction vector of the edge and the distance between the two endpoints.</p><p>The output of the GNN contains finer spine-level classification (i.e. C1-C7, T1-T13, L1-L6, S1-S2), keypoint-level legitimacy (legitimate vs. false-positive detection) and body-pedicle association via edge prediction, implicitly defining the orientation of each vertebra. Prediction scores of corresponding directed edges (u, v) and (v, u) are symmetrized by taking the mean.</p><p>In our experiments we consider variations to our architecture: weight sharing between consecutive GNN layers, multiple heads with a shared backbone (jointly trained) and dedicated networks (separately trained) for edge/node prediction. 4 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Dataset</head><p>Our main dataset consists of 2118 scans, of which 1949 form the training dataset, and 169 the validation dataset. This includes 360 scans from the VerSe datasets <ref type="bibr" target="#b24">[24]</ref>, 1676 scans from the CT Colonography dataset <ref type="bibr" target="#b25">[25]</ref> and 82 scans from the CT Pancreas dataset <ref type="bibr" target="#b22">[22]</ref>. Of these datasets, only VerSe has labels for spine levels, and none of the datasets have labels for the pedicles of vertebrae. The labeling was done in a two-step process with initial pedicle locations determined through post-processing of ground truth segmentations, then transfered to other datasets via bootstrapping. For each vertebra, the vertebra level is labeled, including the position of the body and the right and left pedicles. This keypoint dataset is publicly available at https://github.com/ImFusionGmbH/VIDvertebra-identification-dataset. Additionally, we also perform the VerSe body classification task on the original VerSe dataset <ref type="bibr" target="#b24">[24]</ref> which contains 160 scans in an 80/40/40 split.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Training</head><p>Heatmap Network. The heatmap is generated by a UNet 2 network <ref type="bibr" target="#b19">[19]</ref>, with 4 layers and 32 channels. The network is trained on crops of 128 3 voxels with 1.5 mm spacing. The target data consists of Gaussian blobs (σ = 6 mm) at the landmark positions. We sample 70% of the crops around landmark locations, and 30% randomly from the volume. Additionally we apply 50% mirror augmentations, and 20 • rotations around all axes. We use the MADGRAD optimizer <ref type="bibr" target="#b8">[8]</ref> with a learning rate of 10 -3 . We use a binary cross-entropy loss, with an 80% weighting towards positive outputs to counter the data's balancing.</p><p>Graph Neural Network. The GNN is implemented in PyTorch Geometric 2.0.4 <ref type="bibr" target="#b9">[9]</ref>. The three predictions of the graph neural network -edge classification, node classification and node legitimacy prediction -are trained via cross-entropy losses which are weighted to obtain the overall loss:</p><formula xml:id="formula_1">L = αL BCE edge + βL CE node class + γL BCE node legit<label>(2)</label></formula><p>We only make edge predictions on edges that run between a body and a pedicle keypoint -the other edges are only used as propagation edges for the GNN. Similarly, we only make spine level predictions on body keypoints. Solely these subsets of nodes/edges go into the respective losses.</p><p>As input data, we use the predicted keypoints of the heatmap network on the training/validation set. The ground-truth keypoints are associated to this graph to create the target of the GNN. We include three synthetic model spines during training (keypoints in a line spaced 30 mm apart) to show the network typical configurations and all potential levels (with all levels/without T13, L6, S2/without T12, T13, L6, S2).</p><p>We tune various hyperparameters of our method, such as network depth and weight sharing, the k of the k-NN graph, the loss weighting parameters α, β, γ and the number of hidden channels in the message-passing MLP. We use a short notation for our architectures, such as (5 × 1, 4, 1) for 5 independent messagepassing layers followed by 4 message-passing layers with shared weights and another independent message-passing layer.</p><p>Various data augmentations are used to make our network more robust to overfitting: (i) rotation of the spine by small random angles, (ii) mirroring along the saggital axis (relabeling left/right pedicles to keep consistency), (iii) perturbation of keypoints by small random distances, (iv) keypoint duplication and displacement by a small distance (to emulate false-positive duplicate detections of the same keypoint), (v) keypoint duplication and displacement by a large distance (to emulate false-positive detections in unrelated parts of the scan) and (vi) random falsification of spine segment input features. We define four levels of augmentation strength (no/light/default/heavy augmentations) and refer to the supplementary material for precise definitions of these levels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Evaluation</head><p>We evaluate our method on two tasks. The first one is the full task consisting of node and edge classification for vertebra level and keypoint association detection. We evaluate this on the 2118 scan dataset which comes with pedicle annotations. The second task consists only of vertebra localization, which we evaluate on the VerSe 2019 dataset <ref type="bibr" target="#b24">[24]</ref>. Unless otherwise specified, we use k = 14, the (13 × 1) architecture, batch size 25 and reaugment every 25 epochs for the full task, and k = 4, the (9 × 1) architecture, batch size 1 and reaugment every epoch for the VerSe task. In both cases we use the default augmentation level and α = β = 1. As evaluation metrics we use the VerSe metrics identification rate (ratio of ground-truth body keypoints for which the closest predicted point is correctly classified and within 20mm) and d mean (mean distance of correctly identified body keypoints to their 1-NN predictions) <ref type="bibr" target="#b24">[24]</ref>. Furthermore we evaluate the edge and illegitimacy binary predictions by their F 1 scores. Since the identification rate is largely unaffected by false-positive predicted keypoints, we disable legitimacy predictions unless for specific legitimacy prediction experiments to help comparability. We compare our methods to two baselines: For node prediction, we use a Hidden Markov Model (HMM) <ref type="bibr" target="#b1">[2]</ref> that is fitted to the training data using the Baum-Welch algorithm using the pomegranate library <ref type="bibr" target="#b23">[23]</ref>. The HMM gets the predicted segment labels in sequence. Dealing with false-positive detection outliers is very difficult for this baseline, therefore we filter out non-legitimate detections for the HMM inputs to get a fairer comparison, making the task slightly easier for the HMM. For the VerSe challenge, we also compare our results to the top papers reported in the VerSe challenge <ref type="bibr" target="#b24">[24]</ref>. For edge prediction, we compare our method to Hungarian matching on the keypoints from the CNN pipeline.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Results</head><p>The results on our introduced dataset are shown in Table <ref type="table" target="#tab_0">1</ref>. Our method outperforms the baseline methods, both in identification rate and edge accuracy. We also show results on a 'hard' subset, selected as the data samples where either of the methods disagree with the ground truth. This subset contains 47 scans and represents harder cases where the association is not trivial. We give p-values of the Wilcoxon signed-ranked test against the respective baseline for numbers that are better than the baseline. Figure <ref type="figure" target="#fig_0">2</ref> shows a qualitative example where the baseline method fails due to false-positive and false-negative misdetections in the input (these errors in the input were generated by augmentations and are more extreme than usual, to demonstrate several typical baseline failures in one example). The GNN correctly learns to find the correct association and is not derailed by the misdetections. The examples where our architecture fails typically have off-by-one errors in the output from the CNN: for example, the last thoracic vertebra is detected as a lumbar vertebra (usually in edge cases where the two types are hard to distinguish). Hence the GNN classifications of the lumbar segment, and possibly the thoracic segment, will be off by one (see Figure <ref type="figure" target="#fig_0">S2</ref> in the supplementary).</p><p>Table <ref type="table" target="#tab_1">2</ref> shows the performance differences of various GNN architectures. The single-head architecture with 13 individual layers performs the best on identification rate, although the 13-layer architecture with 11 shared layers performs very similarly. The architectures with fewer layers perform slightly better in edge accuracy since this task is less context dependent. Multi-head architectures perform slightly worse on identification, but retain a good edge accuracy. Training a model solely directed to edge classification does yield the highest edge accuracy, as expected. Enabling legitimacy predictions slightly degrades the performance, likely due to two facts: for one, an extra loss term is added, which makes the model harder to train. Also, the identification rate metric is not majorly affected by having additional false-positive detections, hence there is little to be gained in terms of this metric by filtering out false positives. An optimal legitimacy loss weighting seems to be λ = 1.0. Finally, augmentations help generalization of the model, but the amount of augmentations seems to have little effect.</p><p>Table <ref type="table" target="#tab_2">3</ref> shows the result on the traditional VerSe body-identification task. Our method yields a competitive performance despite not being optimized on this task (identification rate slightly lower than the leaders but a better average distance to the landmarks).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We introduced a simple pipeline consisting of a CNN followed by a single GNN to perform complex vertebra localization, identification and keypoint association. We introduced a new more complex vertebra detection dataset that includes associated pedicles defining the full orientation of each vertebra, to test our method. We show that our method can learn to associate and classify correctly with a single GNN that performs simultaneous edge and node classification.</p><p>The method is fully trainable and avoids most heuristics of other methods. We also show competitive performance on the VerSe body-identification dataset, a dataset the method was not optimized for. We believe this method is general enough to be usable for many other detection and association tasks, which we will explore in the future.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Examples of challenging cases for the Hungarian Matching edge detection baseline, and corresponding correct detections by our GNN architecture (red = false positive, blue = false negative detection). (Color figure online)</figDesc><graphic coords="5,123,39,172,82,272,20,71,32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Results on the 2118 spine dataset (full validation set/hard subset). Comparing best GNN architectures with the baselines. Wilcoxon signed-rank test p-values are given for GNN numbers that outperform the baseline (by the test's construction, p-values agree between the full and hard subset).</figDesc><table><row><cell>Method</cell><cell></cell><cell>identification rate</cell><cell>edge F1 score</cell><cell>dmean</cell></row><row><cell cols="2">Edge vs. node classification Joint node/edge</cell><cell cols="2">97.19/89.88 (p = 0.080) 98.81 / 96.22</cell><cell>1.68/1.95</cell></row><row><cell></cell><cell>Node only</cell><cell cols="2">96.91 / 88.90 (p = 0.109) -</cell><cell>1.68 / 1.96</cell></row><row><cell></cell><cell>Edge only</cell><cell>-</cell><cell cols="2">99.31/97.77 (p = 0.019) -</cell></row><row><cell>Baselines</cell><cell>Hidden Markov</cell><cell>94.29 / 79.46</cell><cell>-</cell><cell>1.81 / 2.52</cell></row><row><cell></cell><cell cols="2">Hungarian matching -</cell><cell>98.93 / 96.56</cell><cell>-</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Hyperparameter comparisons on the 2118 spine dataset. Comparing GNN architectures, influence of enabling legitimacy predictions and of different augmentation strengths. Best values within each group highlighted in bold.</figDesc><table><row><cell>Method</cell><cell></cell><cell cols="3">identification rate edge F1 score illegitimacy F1</cell></row><row><cell>Single-head</cell><cell>(7 × 1)</cell><cell>96.74</cell><cell>98.86</cell><cell>-</cell></row><row><cell>architectures</cell><cell>(13 × 1)</cell><cell>97.19</cell><cell>98.81</cell><cell>-</cell></row><row><cell></cell><cell>(1,5,1)</cell><cell>96.75</cell><cell>98.91</cell><cell>-</cell></row><row><cell></cell><cell>(1,11,1)</cell><cell>97.10</cell><cell>98.67</cell><cell>-</cell></row><row><cell>Multi-head</cell><cell cols="2">(1 × 1), (4 × 1), (12 × 1) 96.94</cell><cell>99.16</cell><cell>-</cell></row><row><cell>architectures:</cell><cell cols="2">(3 × 1), (2 × 1), (10 × 1) 96.87</cell><cell>99.00</cell><cell>-</cell></row><row><cell>backbone, edge/node head</cell><cell>(5 × 1), (-) , (8 × 1)</cell><cell>96.79</cell><cell>98.88</cell><cell>-</cell></row><row><cell>Dedicated edge</cell><cell>(3 × 1)</cell><cell>-</cell><cell>99.28</cell><cell>-</cell></row><row><cell>architectures</cell><cell>(5 × 1)</cell><cell>-</cell><cell>99.28</cell><cell>-</cell></row><row><cell></cell><cell>(1,3,1)</cell><cell>-</cell><cell>99.35</cell><cell>-</cell></row><row><cell>With legitimacy prediction: different</cell><cell>γ = 0.1 γ = 1.0</cell><cell>95.61 96.50</cell><cell>98.96 98.75</cell><cell>56.00 62.41</cell></row><row><cell>legit. loss weights</cell><cell>γ = 5.0</cell><cell>96.35</cell><cell>98.18</cell><cell>61.67</cell></row><row><cell></cell><cell>γ = 10.0</cell><cell>96.42</cell><cell>98.96</cell><cell>62.78</cell></row><row><cell>Augmentations</cell><cell>None</cell><cell>95.27</cell><cell>96.83</cell><cell>-</cell></row><row><cell></cell><cell>Light</cell><cell>97.18</cell><cell>98.83</cell><cell>-</cell></row><row><cell></cell><cell>Default</cell><cell>97.19</cell><cell>98.81</cell><cell>-</cell></row><row><cell></cell><cell>Heavy</cell><cell>97.03</cell><cell>98.67</cell><cell>-</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Results on the VerSe 2019 dataset (validation/test set). We compare our GNN architecture, our Hidden Markov baseline, and the reported numbers of the three top VerSe challenge entries<ref type="bibr" target="#b24">[24]</ref>. Best values highlighted in bold.</figDesc><table><row><cell>Method</cell><cell></cell><cell>identification rate</cell><cell>dmean</cell><cell>illegitimacy F1</cell></row><row><cell>Single-head GNN</cell><cell>(9 × 1)</cell><cell cols="3">93.26/93.02 (p=3.1e 6/p = 5.2e 7) 1.28/1.43 -</cell></row><row><cell cols="2">With legitimacy prediction γ = 10.0</cell><cell cols="3">90.75/87.51 (p=4.8e 6/p = 9.4e 7) 1.23/1.32 77.67/81.69</cell></row><row><cell>Baseline</cell><cell>Hidden Markov</cell><cell>48.59/49.06</cell><cell cols="2">1.32/1.45 -</cell></row><row><cell cols="2">VerSe challenge entries [24] Payer C. [17]</cell><cell>95.65/94.25</cell><cell cols="2">4.27/4.80 -</cell></row><row><cell></cell><cell cols="2">Lessmann N. [13] 89.86/90.42</cell><cell cols="2">14.12/7.04 -</cell></row><row><cell></cell><cell>Chen M. [24]</cell><cell>96.94/86.73</cell><cell cols="2">4.43/7.13 -</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Another common way to define the orientation is using the end-plates of the vertebra body; however end-plates can be irregular and ill-defined in pathological cases.</p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>This work is supported by the <rs type="funder">DAAD program Konrad Zuse Schools of Excellence in Artificial Intelligence</rs>, sponsored by the <rs type="funder">Federal Ministry of Education and Research</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4_46.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Beyond node embedding: a direct unsupervised edge representation framework for homogeneous networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bandyopadhyay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Murty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Narayanam</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1912.05140</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Statistical inference for probabilistic functions of finite state Markov chains</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Baum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Petrie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Math. Stat</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1554" to="1563" />
+			<date type="published" when="1966">1966</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The evolution of image-guided lumbosacral spine surgery</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bourgeois</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Faulkner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Pasciak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">C</forename><surname>Bradley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Transl. Med</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Learning a neural solver for multiple object tracking</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Brasó</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Leal-Taixé</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6247" to="6257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Bronstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bruna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Veličković</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2104.13478</idno>
+		<title level="m">Geometric deep learning: grids, groups, graphs, geodesics, and gauges</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Automated detection, localization, and classification of traumatic vertebral body fractures in the thoracic and lumbar spine at ct</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Burns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Muñoz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">278</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">64</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Automatic localization and identification of vertebrae in spine CT via a joint learning model with deep neural networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">9349</biblScope>
+			<biblScope unit="page" from="515" to="522" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title/>
+		<idno type="DOI">10.1007/978-3-319-24553-9_63</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24553-9_63" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Adaptivity without compromise: a momentumized, adaptive, dual averaged gradient method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Defazio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jelassi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="1" to="34" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Fast graph representation learning with PyTorch geometric</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Lenssen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1903.02428</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Vertebrae localization in pathological spine CT via dense classification from sparse annotations</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Glocker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zikic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Konukoglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">R</forename><surname>Haynor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Criminisi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-40763-5_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-40763-5_33" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2013</title>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Mori</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Sakuma</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Sato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Barillot</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">8150</biblScope>
+			<biblScope unit="page" from="262" to="270" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">A new model for learning in graph domains</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Monfardini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Scarselli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings. 2005 IEEE International Joint Conference on Neural Networks</title>
+		<meeting>2005 IEEE International Joint Conference on Neural Networks</meeting>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="729" to="734" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Neural relational inference for interacting systems</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kipf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fetaya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zemel</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="2688" to="2697" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Iterative fully convolutional neural networks for automatic vertebra segmentation and identification</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Lessmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Van Ginneken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jong</forename><surname>De</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Išgum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="page" from="142" to="155" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Joint vertebrae identification and localization in spinal CT images by combining short-and long-range contextual information</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mesfin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1266" to="1275" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Learning spatial context with graph neural network for multiperson pose grouping</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4230" to="4236" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Vertebrae localization, segmentation and identification using a graph optimization and an anatomic consistency cycle</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mohammed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Boyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pujades</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-21014-3_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-21014-3_32" />
+	</analytic>
+	<monogr>
+		<title level="m">MLMI 2022</title>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Lian</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Cao</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Rekik</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Cui</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13583</biblScope>
+			<biblScope unit="page" from="307" to="317" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Vertebrae localization and segmentation with SpatialConfiguration-net and U-net</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Large Scale Vertebrae Segmentation Challenge</title>
+		<imprint>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Coarse to fine vertebrae localization and segmentation with SpatialConfiguration-net and U-net</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">VISIGRAPP</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="124" to="133" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">U2-net: going deeper with nested U-structure for salient object detection. Pattern Recogn</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Dehghan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">R</forename><surname>Zaiane</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jagersand</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="page">107404</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Occlusion-net: 2D/3D occluded keypoint localization using graph networks</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">D</forename><surname>Reddy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Vo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Narasimhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="7326" to="7335" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Data from pancreas-CT. The cancer imaging archive</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Farag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Turkbey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Pomegranate: fast and flexible probabilistic modeling in Python</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schreiber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5992" to="5997" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Verse: a vertebrae labelling and segmentation benchmark for multi-detector CT images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sekuboyina</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">102166</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<author>
+			<persName><forename type="first">K</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Data from CT_colonography</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A comprehensive survey on graph neural networks</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Philip</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="4" to="24" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Automatic vertebra labeling in large-scale 3D CT using deep image-to-image network with message passing and sparsity regularization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-59050-9_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-59050-9_50" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10265</biblScope>
+			<biblScope unit="page" from="633" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

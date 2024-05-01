@@ -1,0 +1,1098 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SLPD: Slide-Level Prototypical Distillation for WSIs</title>
+				<funder ref="#_k8SE8mu">
+					<orgName type="full">Shanghai Municipal Science and Technology Major Project</orgName>
+				</funder>
+				<funder ref="#_fXFVRQt">
+					<orgName type="full">NSFC</orgName>
+				</funder>
+				<funder ref="#_MvYryph #_YbBVWsx #_f2C6xKp">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_UZZYmDp">
+					<orgName type="full">SJTU Science and Technology Innovation Special Fund</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhimiao</forename><surname>Yu</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Tiancheng</forename><surname>Lin</surname></persName>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Yi</forename><surname>Xu</surname></persName>
+							<email>xuyi@sjtu.edu.cn</email>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">MoE Key Lab of Artificial Intelligence</orgName>
+								<orgName type="institution">AI Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SLPD: Slide-Level Prototypical Distillation for WSIs</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="259" to="269"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">3444D7E5416062ABC1B21F647C7FA83B</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_25</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Computational pathology</term>
+					<term>Whole slide images(WSIs)</term>
+					<term>Self-supervised learning Z. Yu and T. Lin-Equal contribution</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Improving the feature representation ability is the foundation of many whole slide pathological image (WSIs) tasks. Recent works have achieved great success in pathological-specific self-supervised learning (SSL). However, most of them only focus on learning patch-level representations, thus there is still a gap between pretext and slide-level downstream tasks, e.g., subtyping, grading and staging. Aiming towards slide-level representations, we propose Slide-Level Prototypical Distillation (SLPD) to explore intra-and inter-slide semantic structures for context modeling on WSIs. Specifically, we iteratively perform intra-slide clustering for the regions (4096 × 4096 patches) within each WSI to yield the prototypes and encourage the region representations to be closer to the assigned prototypes. By representing each slide with its prototypes, we further select similar slides by the set distance of prototypes and assign the regions by cross-slide prototypes for distillation. SLPD achieves state-of-the-art results on multiple slide-level benchmarks and demonstrates that representation learning of semantic structures of slides can make a suitable proxy task for WSI analysis. Code will be available at https://github.com/Carboxy/SLPD.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In computational histopathology, visual representation extraction is a fundamental problem <ref type="bibr" target="#b14">[14]</ref>, serving as a cornerstone of the (downstream) task-specific learning on whole slide pathological images (WSIs). Our community has witnessed the progress of the de facto representation learning paradigm from the supervised ImageNet pre-training to self-supervised learning (SSL) <ref type="bibr" target="#b15">[15,</ref><ref type="bibr" target="#b37">36]</ref>. Numerous pathological applications benefit from SSL, including classification of glioma <ref type="bibr" target="#b7">[7]</ref>, breast carcinoma <ref type="bibr" target="#b0">[1]</ref>, and non-small-cell lung carcinoma <ref type="bibr" target="#b26">[25]</ref>, mutation prediction <ref type="bibr" target="#b33">[32]</ref>, microsatellite instability prediction <ref type="bibr" target="#b32">[31]</ref>, and survival prediction from WSIs <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b16">16]</ref>. Among them, pioneering works <ref type="bibr" target="#b12">[12,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b28">27]</ref> directly apply the SSL algorithms developed for natural images (e.g., SimCLR <ref type="bibr" target="#b10">[10]</ref>, CPC <ref type="bibr" target="#b31">[30]</ref> and MoCo <ref type="bibr" target="#b11">[11]</ref>) to WSI analysis tasks, and the improved performance proves the effectiveness of SSL. However, WSI is quite different from natural images in that it exhibits a hierarchical structure with giga-pixel resolution. Following works turn to designing pathological-specific tasks to explore the inherent characteristics of WSIs for representation learning, e.g., resolution-aware tasks <ref type="bibr" target="#b18">[18,</ref><ref type="bibr" target="#b35">34,</ref><ref type="bibr" target="#b38">37]</ref> and color-aware tasks <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b39">38]</ref>. Since the pretext tasks encourage to mine the pathologically relevant patterns, the learned representations are expected to be more suitable for WSI analysis. Nevertheless, these works only consider learning the representations at the patch level, i.e, the cellular organization, but neglecting macro-scale morphological features, e.g., tissue phenotypes and intra-tumoral heterogeneity. As a result, there is still a gap between the pre-trained representations and downstream tasks, as the latter is mainly at the slide level, e.g., subtyping, grading and staging.</p><p>More recently, some works propose to close the gap via directly learning slidelevel representations in pre-training. For instance, HIPT <ref type="bibr" target="#b8">[8]</ref>, a milestone work, introduces hierarchical pre-training (DINO <ref type="bibr" target="#b5">[6]</ref>) for the patch-level (256 × 256) and region-level (4096 × 4096) in a two-stage manner, achieving superior performance on slide-level tasks. SS-CAMIL <ref type="bibr" target="#b13">[13]</ref> uses EfficientNet-B0 for image compression in the first stage and then derives multi-task learning on the compressed WSIs, which assumes the primary site information, e.g., the organ type, is always available and can be used as pseudo labels. SS-MIL <ref type="bibr" target="#b36">[35]</ref> also proposes a two-stage pre-training framework for WSIs using contrastive learning (SimCLR <ref type="bibr" target="#b10">[10]</ref>), where the differently subsampled bags<ref type="foot" target="#foot_0">1</ref> from the same WSI are positive pairs in the second stage. A similar idea can be found in Giga-SSL <ref type="bibr" target="#b20">[20]</ref> with delicate patch-and WSI-level augmentations. The aforementioned methods share the same two-stage pre-training paradigm, i.e., patch-to-region/slide. Thus broader context information is preserved to close the gap between pretext and downstream tasks. However, they are essentially instance discrimination where only the self-invariance of region/slide is considered, leaving the intraand inter-slide semantic structures unexplored.</p><p>In this paper, we propose to encode the intra-and inter-slide semantic structures by modeling the mutual-region/slide relations, which is called SLPD: Slide-Level Prototypical Distillation for WSIs. Specifically, we perform the slide-level clustering for the 4096 × 4096 regions within each WSI to yield the prototypes, which characterize the medically representative patterns of the tumor (e.g., morphological phenotypes). In order to learn this intra-slide semantic structure, we encourage the region representations to be closer to the assigned prototypes. By representing each slide with its prototypes, we further select semantically simi- lar slides by the set-to-set distance of prototypes. Then, we learn the inter-slide semantic structure by building correspondences between region representations and cross-slide prototypes. We conduct experiments on two benchmarks, NSCLC subtyping and BRCA subtyping. SLPD achieves state-of-the-art results on multiple slide-level tasks, demonstrating that representation learning of semantic structures of slides can make a suitable proxy task for WSI analysis. We also perform extensive ablation studies to verify the effectiveness of crucial model components.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Overview</head><p>As shown in Fig. <ref type="figure" target="#fig_0">1</ref>(a), a WSI exhibits hierarchical structure at varying resolutions under 20× magnification: 1) the 4096×4096 regions describing macro-scale organizations of cells, 2) the 256 × 256 patches capturing local clusters of cells, 3) and the 16 × 16 images characterizing the fine-grained features at the celllevel. Given N unlabeled WSIs</p><formula xml:id="formula_0">{w 1 , w 2 , • • • , w N }, consisting of numerous regions {{x l n } Ln l=1 } N n=1</formula><p>, where L n denotes the number of regions of WSI w n , we aim to learn a powerful encoder that maps each x l n to an embedding z l n ∈ R D . SLPD is built upon the two-stage pre-training paradigm proposed by HIPT, which will be described in Sect. 2.2. Fig <ref type="figure" target="#fig_0">1(c-d</ref>) illustrates the pipeline of SLPD. We characterize the semantic structure of slides in Sect. 2.2, which is leveraged to establish the relationship within and across slides, leading to the proposed intraand inter-slide distillation in Sect. 2.4 and Sect. 2.5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Preliminaries</head><p>We revisit Hierarchical Image Pyramid Transformer (HIPT) <ref type="bibr" target="#b8">[8]</ref>, a cutting-edge method for learning representations of WSIs via self-supervised vision transformers. As shown in Fig. <ref type="figure" target="#fig_0">1</ref> HIPT leverages DINO <ref type="bibr" target="#b5">[6]</ref> to pre-train ViT 256 -16 and ViT 4096 -256, respectively. The learning objective of DINO is self-distillation. Taking stage two as an example, DINO distills the knowledge from teacher to student by minimizing the cross-entropy between the probability distributions of two views at region-level:</p><formula xml:id="formula_1">L self = E x∼p d H(g t (ẑ), g s (z)),<label>(1)</label></formula><p>where H(a, b) = -a log b, and p d is the data distribution that all regions are drawn from. The teacher and the student share the same architecture consisting of an encoder (e.g., ViT) and a projection head g t /g s . ẑ and z are the embeddings of two views at region-level yielded by the encoder. The parameters of the student are exponentially moving averaged to the parameters of the teacher.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Slide-Level Clustering</head><p>Many histopathologic features have been established based on the morphologic phenotypes of the tumor, such as tumor invasion, anaplasia, necrosis and mitoses, which are then used for cancer diagnosis, prognosis and the estimation of response-to-treatment in patients <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b9">9]</ref>. To obtain meaningful representations of slides, we aim to explore and maintain such histopathologic features in the latent space. Clustering can reveal the representative patterns in the data and has achieved success in the area of unsupervised representation learning <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b25">24,</ref><ref type="bibr" target="#b27">26]</ref>.</p><p>To characterize the histopathologic features underlying the slides, a straightforward practice is the global clustering, i.e., clustering the region embeddings from all the WSIs, as shown in the left of Fig. <ref type="figure" target="#fig_0">1(d</ref>). However, the obtained clustering centers, i.e., the prototypes, are inclined to represent the visual bias related to staining or scanning procedure rather than medically relevant features <ref type="bibr" target="#b34">[33]</ref>. Meanwhile, this clustering strategy ignores the hierarchical structure "region→WSI→whole dataset" underlying the data, where the ID of the WSI can be served as an extra learning signal. Therefore, we first consider the slidelevel clustering that clusters the embeddings within each WSI, which is shown in the right of Fig. <ref type="figure" target="#fig_0">1(d</ref>). Specifically, we conduct k-means algorithm before the start of each epoch over L n region embeddings {z l n } Ln l=1 of w n to obtain M prototypes {c m n ∈ R D } M m=1 . Similar operations are applied across other slides, and then we acquire N groups of prototypes {{c m n } M m=1 } N n=1 . Each group of prototypes is expected to encode the semantic structure (e.g., the combination of histopathologic features) of the WSI.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Intra-Slide Distillation</head><p>The self-distillation utilized by HIPT in stage two encourages the correspondence between two views of a region at the macro-scale because the organizations of cells share mutual information spatially. However, the self-distillation, which solely mines the spatial correspondences inside the 4096 × 4096 region, cannot comprehensively understand the histopathologic consistency at the slide-level. In order to achieve better representations, the histopathologic connections between the WSI and its regions should be modeled and learned, which is called intraslide correspondences. With the proposed slide-level clustering in Sect. 2.3, a slide can be abstracted by a group of prototypes, which capture the semantic structure of the WSI. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>(e), we assume that the representation z and its assigned prototype c also share mutual information and encourage z to be closer to c with the intra-slide distillation:</p><formula xml:id="formula_2">L intra = E x∼p d H (g t (c), g s (z)) ,<label>(2)</label></formula><p>We omit super-/sub-scripts of z for brevity. Through Eq. 2, we can leverage more intra-slide correspondences to guide the learning process. For further understanding, a prototype can be viewed as an augmented representation aggregating the slide-level information. Thus this distillation objective is encoding such information into the corresponding region embedding, which makes the learning process semantic structure-aware at the slide-level.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Inter-Slide Distillation</head><p>Tumors of different patients can exhibit morphological similarities in some respects <ref type="bibr" target="#b17">[17,</ref><ref type="bibr" target="#b21">21]</ref>, so the correspondences across slides should be characterized during learning. Previous self-supervised learning methods applied to histopathologic images only capture such correspondences with positive pairs at the patchlevel <ref type="bibr" target="#b22">[22,</ref><ref type="bibr" target="#b23">23]</ref>, which overlooks the semantic structure of the WSI. We rethink this problem from the perspective how to measure the similarity between two slides accurately. Due to the heterogeneity of the slides, comparing them with the local crops or the averaged global features are both susceptible to being one-sided. To address this, we bridge the slides with their semantic structures and define the semantic similarity between two slides w i and w j through an optimal bipartite matching between two sets of prototypes:</p><formula xml:id="formula_3">D(w i , w j ) = max{ 1 M M m=1 cos(c m i , c σ(m) j ) | σ ∈ S M }, D(w i , w j ) ∈ [-1, 1],<label>(3)</label></formula><p>where cos(•, •) measures the cosine similarity between two vectors, and S M enumerates the permutations of M elements. The optimal permutation σ * can be computed efficiently with the Hungarian algorithm <ref type="bibr" target="#b19">[19]</ref>. With the proposed setto-set distance, we can model the inter-slide correspondences conveniently and accurately. Specifically, for a region embedding z belonging to the slide w and assigned to the prototype c, we first search the top-K nearest neighbors of w in the dataset based on the semantic similarity, denoted as { ŵk } K k=1 . Second, we also obtain the matched prototype pairs {(c, ĉk )} K k=1 determined by the optimal permutation, where ĉk is the prototype of ŵk . Finally, we encourage z to be closer to ĉk with the inter-slide distillation:</p><formula xml:id="formula_4">L inter = E x∼p d [ 1 K K k=1 H (g t (ĉ k ), g s (z))].<label>(4)</label></formula><p>The inter-slide distillation can encode the sldie-level information complementary to that of intra-slide distillation into the region embeddings.</p><p>The overall learning objective of the proposed SLPD is defined as:</p><formula xml:id="formula_5">L total = L self + α 1 L intra + α 2 L inter , (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>where the loss scale is simply set to α 1 = α 2 = 1. We believe the performance can be further improved by tuning this.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head><p>Datasets. We conduct experiments on two public WSI datasets for downstream tasks. With the pre-extracted embeddings, we fine-tune three aggregators (i.e., MIL <ref type="bibr" target="#b29">[28]</ref>, DS-MIL <ref type="bibr" target="#b22">[22]</ref> and ViT WSI -4096 <ref type="bibr" target="#b8">[8]</ref>) for 20 epochs and follow other settings in the official code of HIPT.</p><p>Evaluation Metrics. We adopt the 10-fold cross validated Accuracy (Acc.) and area under the curve (AUC) to evaluate the weakly-supervised classification performance. The data splitting scheme is kept consistent with HIPT. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Weakly-Supervised Classification</head><p>We conduct experiments on two slide-level classification tasks, NSCLC subtyping and BRCA subtyping, and report the results in Table <ref type="table" target="#tab_2">1</ref>. The region-level embeddings generated by SLPD outperform the patch-level embeddings across two aggregators<ref type="foot" target="#foot_2">3</ref> and two tasks (#1∼ 5). This illustrates that learning representations with broader image contexts is more suitable for WSI analysis.</p><p>Compared with the strong baseline, i.e., the two-stage pre-training method proposed by HIPT (#6), SLPD achieves performance increases of 1.3% and 3.2% AUC on NSCLC and BRCA (#9). Nontrivial performance improvements are also observed under KNN evaluation (#10 vs.#13): +2.3% and +3.1% AUC on NSCLC and BRCA. The superior performance of SLPD demonstrates that learning representations with slide-level semantic structure appropriately can significantly narrow the gap between pre-training and downstream slide-level tasks. Moreover, intra-slide and inter-slide distillation show consistent performance over the baseline, corroborating the effectiveness of these critical components of SLPD.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Ablation Study</head><p>Different Clustering Methods. As discussed in Sect. 2.3, we can alternatively use the global clustering to obtain prototypes and then optimize the network with a similar distillation objective as Eq. 2. For a fair comparison, the total number of prototypes of the two clustering methods is approximately the same.  Different Inter-slide Distillations. The proposed inter-slide distillation is semantic structure-aware at the slide-level, since we build the correspondence between the region embedding and the matched prototype (#4 in Table <ref type="table" target="#tab_3">2</ref>). To verify the necessity of this distillation method, we turn to another design where the inter-slide correspondence is explored through two nearest region embeddings across slides (#3 in Table <ref type="table" target="#tab_3">2</ref>). As can be seen, the region-level correspondences lead to inferior performances, even worse than the baseline (#5 in Table <ref type="table" target="#tab_2">1</ref>), because the learning process is not guided by the slide-level information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Number of Prototypes.</head><p>As shown in Table <ref type="table" target="#tab_3">2</ref>(#5∼7), the performance of SLPD is relatively robust to the number of prototypes on NSCLC, but is somewhat affected by it on BRCA. One possible reason is that the heterogeneity of invasive breast carcinoma is low <ref type="bibr" target="#b30">[29]</ref>, and thus the excessive number of prototypes cannot obtain medically meaningful clustering results. Empirically, we set M = 4 on NSCLC and M = 2 on BRCA as the default configuration. We suggest the optimal number of prototypes should refer to clinical practice, by considering tissue types, cell morphology, gene expression and other factors.</p><p>Number of Slide Neighbors. As demonstrated in Table <ref type="table" target="#tab_3">2</ref>(#5∼7), the performance of SLPD is robust to the number of slide neighbors. Considering that more slide neighbors require more computation resources, we set K = 1 as the default configuration. For more results, please refer to the Supplementary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This paper reflects on slide-level representation learning from a novel perspective by considering the intra-and inter-slide semantic structures. This leads to the proposed Slide-Level Prototypical Distillation (SLPD), a new self-supervised learning approach achieving the more comprehensive understanding of WSIs. SLPD leverages the slide-level clustering to characterize semantic structures of slides. By representing slides as prototypes, the mutual-region/slide relations are further established and learned with the proposed intra-and inter-slide distillation. Extensive experiments have been conducted on multiple WSI benchmarks and SLPD achieves state-of-the-art results. Though SLPD is distillation-based, we plan to apply our idea to other pre-training methods in the future, e.g., contrastive learning <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b11">11]</ref>.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) A WSI possesses the hierarchical structure of WSI-region-patch-image, from coarse to fine. (b) Two-stage pre-training paradigm successively performs the image-topatch and patch-to-region aggregations. (c-e) The proposed SLPD. SLPD explores the semantic structure by slide-level clustering. Besides self-distillation, region representations are associated with the prototypes within and across slides to comprehensively understand WSIs.</figDesc><graphic coords="3,69,96,54,59,312,64,208,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>(b), HIPT proposes a two-stage pre-training paradigm considering the hierarchical structure of WSIs. In stage one, a patch-level vision transformer, denoted as ViT 256 -16, aggregates non-overlapping 16 × 16 images within 256 × 256 patches to form patch-level representations. In stage two, the pre-trained ViT</figDesc><table /><note><p>256 -16 is freezed and leveraged to tokenize the patches within 4096 × 4096 regions. Then a region-level vision transformer ViT 4096 -256 aggregates these tokens to obtain region-level representations. With this hierarchical aggregation strategy, a WSI can be represented as a bag of region-level representations, which are then aggregated with another vision transformer, ViT WSI -4096, to perform slide-level prediction tasks.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>2 . TCGA-NSCLC dataset includes two subtypes in lung cancer, Lung Squamous Cell Carcinoma and Lung Adenocarcinoma, with a total of 1,054 WSIs. TCGA-BRCA dataset includes two subtypes in breast cancer, Invasive Ductal and Invasive Lobular Carcinoma, with a total of 1,134 WSIs.Pre-training. We extract 62,852 and 60,153 regions at 20× magnification from TCGA-NSCLC and TCGA-BRCA for pre-training ViT 4096 -256 in stage two. We leverage the pre-trained ViT 256 -16 in stage one provided by HIPT to tokenize the patches within each region. Following the official code of HIPT, ViT 4096 -256 is optimized for 100 epochs with optimizer of AdamW, base learning rate of 5e-4 and batch size of 256 on 4 GTX3090 GPUs.Fine-tuning. We use the pre-trained ViT 256 -16 and ViT 4096 -256 to extract embeddings at the patch-level (256 × 256) and the region-level (4096 × 4096)</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 1 .</head><label>1</label><figDesc>Slide-level classification. "Mean" leverages the averaged pre-extracted embeddings to evaluate KNN performance. Bold and underlined numbers highlight the best and second best performance</figDesc><table><row><cell>#</cell><cell>Feature Aggragtor</cell><cell>Feature Extraction</cell><cell>Pretrain Method</cell><cell>Acc.</cell><cell>NSCLC</cell><cell>AUC</cell><cell>Acc.</cell><cell>BRCA</cell><cell>AUC</cell></row><row><cell cols="3">Weakly supervised classification</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>1 2</cell><cell>MIL [28]</cell><cell>patch-level region-level</cell><cell>DINO SLPD</cell><cell cols="6">0.780±0.126 0.864±0.089 0.856±0.025 0.926±0.017 0.879±0.035 0.863±0.076 0.822±0.047 0.783±0.056</cell></row><row><cell>3 4</cell><cell>DS-MIL [22]</cell><cell>patch-level region-level</cell><cell>DINO DINO</cell><cell cols="3">0.825±0.054 0.905±0.059 0.841±0.036 0.917±0.035</cell><cell cols="3">0.847±0.032 0.848±0.075 0.854±0.032 0.848±0.075</cell></row><row><cell>5</cell><cell></cell><cell>region-level</cell><cell>SLPD</cell><cell cols="3">0.858±0.040 0.938±0.026</cell><cell cols="3">0.854±0.039 0.876±0.050</cell></row><row><cell>6</cell><cell></cell><cell>region-level</cell><cell>DINO</cell><cell cols="3">0.843±0.044 0.926±0.032</cell><cell cols="3">0.849±0.037 0.854±0.069</cell></row><row><cell>7 8</cell><cell>ViTWSI-4096 [8]</cell><cell cols="5">region-level DINO+Lintra 0.850±0.042 0.931±0.041 region-level DINO+Linter 0.850±0.043 0.938±0.028</cell><cell cols="3">0.866±0.030 0.881±0.069 0.860±0.030 0.874±0.059</cell></row><row><cell>9</cell><cell></cell><cell>region-level</cell><cell>SLPD</cell><cell cols="6">0.864±0.042 0.939±0.022 0.869±0.039 0.886±0.057</cell></row><row><cell cols="3">K-nearest neighbors (KNN) evaluation</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>10</cell><cell></cell><cell>region-level</cell><cell>DINO</cell><cell cols="3">0.770±0.031 0.840±0.038</cell><cell cols="3">0.837±0.014 0.724±0.055</cell></row><row><cell>11</cell><cell>Mean</cell><cell cols="5">region-level DINO+Lintra 0.776±0.039 0.850±0.023</cell><cell cols="3">0.841±0.012 0.731±0.064</cell></row><row><cell>12</cell><cell></cell><cell cols="5">region-level DINO+Linter 0.782±0.027 0.854±0.025</cell><cell cols="3">0.845±0.014 0.738±0.080</cell></row><row><cell>13</cell><cell></cell><cell>region-level</cell><cell>SLPD</cell><cell cols="6">0.792±0.035 0.863±0.024 0.849±0.014 0.751±0.079</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 (</head><label>2</label><figDesc>#1,2) reports the comparative results, where the slide-level clustering surpasses the global clustering by 0.6% and 1.8% of AUC on NSCLC and BRCA, which verifies the effectiveness of the former. The inferior performance of the global clustering is due to the visual bias underlying the whole dataset.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 2 .</head><label>2</label><figDesc>Ablation studies of SLPD. ViTWSI-4096 is the aggregator with region-level embeddings.</figDesc><table><row><cell cols="2"># Ablation</cell><cell>Method</cell><cell>Acc.</cell><cell>NSCLC</cell><cell>AUC</cell><cell>Acc.</cell><cell>BRCA</cell><cell>AUC</cell></row><row><cell cols="2">1 Different cluster-</cell><cell>global</cell><cell cols="6">0.848±0.045 0.925±0.033 0.842±0.048 0.863±0.060</cell></row><row><cell>2</cell><cell>ing methods</cell><cell>slide-level</cell><cell cols="6">0.850±0.042 0.931±0.041 0.866±0.030 0.881±0.069</cell></row><row><cell cols="2">3 Different inter-</cell><cell>region</cell><cell cols="6">0.828±0.040 0.915±0.025 0.843±0.024 0.849±0.067</cell></row><row><cell>4</cell><cell>slide distillations</cell><cell>p r o t o t y p e</cell><cell cols="6">0.850±0.043 0.938±0.028 0.860±0.030 0.874±0.059</cell></row><row><cell>5 6 7</cell><cell>Number of prototypes</cell><cell>M = 2 M = 3 M = 4</cell><cell cols="6">0.859±0.036 0.936±0.021 0.869±0.039 0.886±0.057 0.864±0.035 0.938±0.022 0.861±0.056 0.878±0.069 0.864±0.042 0.939±0.022 0.860±0.031 0.872±0.060</cell></row><row><cell>8 9 10</cell><cell>Number of slide neighbors</cell><cell>K = 1 K = 2 K = 3</cell><cell cols="6">0.864±0.042 0.939±0.022 0.869±0.039 0.886±0.057 0.862±0.039 0.938±0.029 0.875±0.038 0.889±0.057 0.869±0.034 0.936±0.024 0.873±0.051 0.880±0.058</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>By formulating WSI tasks as a multi-instance learning problem, the WSI is treated as a bag with corresponding patches as instances.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>The data is released under a CC-BY-NC 4.0 international license.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="3" xml:id="foot_2"><p>The feature extraction of the patch-level is impracticable for the ViT-based model due to its quadratic complexity in memory usage.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported in part by <rs type="funder">NSFC</rs> <rs type="grantNumber">62171282</rs>, <rs type="funder">Shanghai Municipal Science and Technology Major Project</rs> (<rs type="grantNumber">2021SHZDZX0102</rs>), <rs type="grantNumber">111</rs> project <rs type="grantNumber">BP0719010</rs>, <rs type="grantNumber">STCSM 22DZ2229005</rs>, and <rs type="funder">SJTU Science and Technology Innovation Special Fund</rs> <rs type="grantNumber">YG2022QN037</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_fXFVRQt">
+					<idno type="grant-number">62171282</idno>
+				</org>
+				<org type="funding" xml:id="_k8SE8mu">
+					<idno type="grant-number">2021SHZDZX0102</idno>
+				</org>
+				<org type="funding" xml:id="_MvYryph">
+					<idno type="grant-number">111</idno>
+				</org>
+				<org type="funding" xml:id="_YbBVWsx">
+					<idno type="grant-number">BP0719010</idno>
+				</org>
+				<org type="funding" xml:id="_UZZYmDp">
+					<idno type="grant-number">STCSM 22DZ2229005</idno>
+				</org>
+				<org type="funding" xml:id="_f2C6xKp">
+					<idno type="grant-number">YG2022QN037</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_25.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Molecular subtype prediction for breast cancer using H&amp;E specialized backbone</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Abbasi-Sureshjani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yüce</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Schönenberger</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Divide-and-rule: selfsupervised learning for survival analysis in colorectal cancer</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Abbet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Zlobec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Bozorgtabar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-P</forename><surname>Thiran</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59722-1_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59722-1_46" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12265</biblScope>
+			<biblScope unit="page" from="480" to="489" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The eighth edition AJCC cancer staging manual: continuing to build a bridge from a population-based to a more personalized approach to cancer staging</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">B</forename><surname>Amin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">L</forename><surname>Greene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">B</forename><surname>Edge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CA Cancer J. Clin</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="93" to="99" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Deep clustering for unsupervised learning of visual features</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Caron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bojanowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Joulin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Douze</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>ECCV</publisher>
+			<biblScope unit="page" from="132" to="149" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of visual features by contrasting cluster assignments</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Caron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mairal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bojanowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Joulin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="9912" to="9924" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Emerging properties in self-supervised vision transformers</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Caron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="9650" to="9660" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yu</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning for media using image context restoration</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bentley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MedIA</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page">101539</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Scaling vision transformers to gigapixel images via hierarchical self-supervised learning</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="16144" to="16155" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Pan-cancer integrative histologygenomic analysis via multimodal deep learning</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F K</forename><surname>Williamson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cancer Cell</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="865" to="878" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Improved baselines with momentum contrastive learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2003.04297</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">O</forename><surname>Dehaene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Camara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Moindrot</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2012.03583</idno>
+		<title level="m">Self-supervision closes the gap between weak and strong supervision in histology</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A self-supervised contrastive learning approach for whole slide image representation in digital pathology</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Fashi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hemati</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Babaie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tizhoosh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Pathol. Inform</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="page">100133</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Histopathological image analysis: a review</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Gurcan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">E</forename><surname>Boucheron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Can</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Rev. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="147" to="171" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Momentum contrast for unsupervised visual representation learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9729" to="9738" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Integration of patch features through self-supervised learning and transformer for survival analysis on whole slide images</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87237-3_54</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87237-3_54" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12908</biblScope>
+			<biblScope unit="page" from="561" to="570" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">HNPCC and sporadic MSI-H colorectal cancer: a review of the morphological similarities and differences</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Jass</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Fam. Cancer</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="93" to="100" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Self-path: self-supervision for classification of pathology images with limited annotations</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">A</forename><surname>Koohbanani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Unnikrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Khurram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Krishnaswamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Rajpoot</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2845" to="2856" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The Hungarian method for the assignment problem</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">W</forename><surname>Kuhn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nav. Res. Logist. Q</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="83" to="97" />
+			<date type="published" when="1955">1955</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Self-supervised extreme compression of gigapixel images</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lazard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lerousseau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Decencière</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Walter</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Spatial transcriptomics inferred from pathology wholeslide images links tumor heterogeneity to survival in breast and lung cancer</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Levy-Jurgenson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Dual-stream multiple instance learning network for whole slide image classification with self-supervised contrastive learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>Eliceiri</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="14318" to="14328" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">SSLP: spatial guided self-supervised learning on pathological images</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="3" to="12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-3_1" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Hoi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2005.04966</idno>
+		<title level="m">Prototypical contrastive learning of unsupervised representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning-based multi-scale feature fusion network for survival analysis from whole slide images</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">153</biblScope>
+			<biblScope unit="page">106482</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Contrastive clustering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Peng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAAI</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="8547" to="8555" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Semi-supervised breast cancer histology classification using deep multiple instance learning and contrast predictive coding (conference presentation)</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mahmood</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Digital Pathology</title>
+		<imprint>
+			<biblScope unit="volume">11320</biblScope>
+			<biblScope unit="page">113200</biblScope>
+			<date type="published" when="2020">2020. 2020</date>
+			<publisher>International Society for Optics and Photonics</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Data-efficient and weakly supervised computational pathology on whole-slide images</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Williamson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="555" to="570" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Her2 genetic heterogeneity in breast carcinoma</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Öhlschlegel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zahel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kradolfer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Jochum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin. Pathol</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1112" to="1116" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V D</forename><surname>Oord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Vinyals</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1807.03748</idno>
+		<title level="m">Representation learning with contrastive predictive coding</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Self supervised learning improves dMMR/MSI detection from histology slides across multiple cancers</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Saillard</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Dehaene</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.05819</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Self-supervised deep learning for pan-cancer mutation prediction from histopathology</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">L</forename><surname>Saldanha</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Loeffler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">bioRxiv</title>
+		<imprint>
+			<biblScope unit="page" from="2022" to="2029" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Cluster-to-conquer: a framework for end-to-end multi-instance learning for whole slide image classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shrivastava</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ehsan</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="682" to="698" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Self-supervised driven consistency training for annotation efficient histopathology image analysis</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Srinidhi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">D</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Media</title>
+		<imprint>
+			<biblScope unit="volume">75</biblScope>
+			<biblScope unit="page">102256</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Contrastive multiple instance learning: an unsupervised framework for learning slide-level representations of whole slide histopathology images without labels</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Tavolara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Gurcan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K K</forename><surname>Niazi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cancers</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">23</biblScope>
+			<biblScope unit="page">5778</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title level="m" type="main">Unsupervised feature learning via nonparametric instance discrimination</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="3733" to="3742" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Instance-aware self-supervised learning for nuclei segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59722-1_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59722-1_33" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12265</biblScope>
+			<biblScope unit="page" from="341" to="350" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">CS-CO: a hybrid self-supervised visual representation learning method for H&amp;E-stained histopathological images</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Media</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page">102539</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

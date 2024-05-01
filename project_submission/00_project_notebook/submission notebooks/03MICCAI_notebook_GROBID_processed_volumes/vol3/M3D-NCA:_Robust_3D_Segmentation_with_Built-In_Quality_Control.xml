@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">M3D-NCA: Robust 3D Segmentation with Built-In Quality Control</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">John</forename><surname>Kalkhof</surname></persName>
+							<email>john.kalkhof@gris.tu-darmstadt.de</email>
+							<idno type="ORCID">0000-0001-7316-1903</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Darmstadt University of Technology</orgName>
+								<address>
+									<addrLine>Karolinenplatz 5</addrLine>
+									<postCode>64289</postCode>
+									<settlement>Darmstadt</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Anirban</forename><surname>Mukhopadhyay</surname></persName>
+							<idno type="ORCID">0000-0003-0669-4018</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Darmstadt University of Technology</orgName>
+								<address>
+									<addrLine>Karolinenplatz 5</addrLine>
+									<postCode>64289</postCode>
+									<settlement>Darmstadt</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">M3D-NCA: Robust 3D Segmentation with Built-In Quality Control</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="169" to="178"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">6162017FA0EBB02F2BEC4F0476D981ED</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_17</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:01+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Neural Cellular Automata</term>
+					<term>Medical Image Segmentation</term>
+					<term>Automatic Quality Control</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Medical image segmentation relies heavily on large-scale deep learning models, such as UNet-based architectures. However, the real-world utility of such models is limited by their high computational requirements, which makes them impractical for resource-constrained environments such as primary care facilities and conflict zones. Furthermore, shifts in the imaging domain can render these models ineffective and even compromise patient safety if such errors go undetected. To address these challenges, we propose M3D-NCA, a novel methodology that leverages Neural Cellular Automata (NCA) segmentation for 3D medical images using n-level patchification. Moreover, we exploit the variance in M3D-NCA to develop a novel quality metric which can automatically detect errors in the segmentation process of NCAs. M3D-NCA outperforms the two magnitudes larger UNet models in hippocampus and prostate segmentation by 2% Dice and can be run on a Raspberry Pi 4 Model B (2 GB RAM). This highlights the potential of M3D-NCA as an effective and efficient alternative for medical image segmentation in resource-constrained environments.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is ruled by large machine learning models which require substantial infrastructure to be executed. These are variations of UNetstyle <ref type="bibr" target="#b16">[17]</ref> architectures that win numerous grand challenges <ref type="bibr" target="#b8">[9]</ref>. This emerging trend raises concerns, as the utilization of such models is limited to scenarios with abundant resources, posing barriers to adoption in resource-limited settings. For example, conflict zones <ref type="bibr" target="#b9">[10]</ref>, low-income countries <ref type="bibr" target="#b2">[3]</ref>, and primary care facilities in rural areas <ref type="bibr" target="#b0">[1]</ref> often lack the necessary infrastructure to support the deployment of these models, impeding access to critical medical services. Even when the infrastructure is in place, shifts in domains can cause the performance of deployed models to deteriorate, posing a risk to patient treatment decisions. To address this risk, automated quality control is essential <ref type="bibr" target="#b5">[6]</ref>, but it can be difficult and computationally expensive.</p><p>Neural Cellular Automata (NCA) <ref type="bibr" target="#b4">[5]</ref> diverges strongly from most deep learning architectures. Inspired by cell communication, NCAs are one-cell models that communicate only with their direct neighbours. By iterating over each cell of an image, these relatively simple models, with often sizes of less than 13k parameters, can reach complex global targets. By contrast, UNet-style models quickly reach 30m parameters <ref type="bibr" target="#b10">[11]</ref>, limiting their area of application. Though several minimal UNet-style architectures with backbones such as EfficientNet <ref type="bibr" target="#b21">[22]</ref>, MobileNetV2 <ref type="bibr" target="#b17">[18]</ref>, ResNet18 <ref type="bibr" target="#b6">[7]</ref> or VGG11 <ref type="bibr" target="#b19">[20]</ref> exist, their performance is generally restricted by their limited size and still require several million parameters.</p><p>With Med-NCA, Kalkhof et al. <ref type="bibr" target="#b10">[11]</ref> have shown that by iterating over two scales of the same image, high-resolution 2D medical image segmentation using NCAs is possible while reaching similar performance to UNet-style architectures. While this is a step in the right direction, the limitation to two-dimensional data and the fixed number of downscaling layers make this method inapplicable for many medical imaging scenarios and ultimately restricts its potential.</p><p>Naively adapting Med-NCA for three-dimensional inputs exponentially increases VRAM usage and convergence becomes unstable. We address these challenges with M3D-NCA, which takes NCA medical image segmentation to the third dimension and is illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. Our n-level architecture addresses VRAM limitations by training on patches that are precisely adaptable to the dataset requirements. Due to the one-cell architecture of NCAs the inference can be performed on the full-frame image. Our batch duplication scheme stabilizes the loss across segmentation levels, enabling segmentation of highresolution 3D volumes with NCAs. In addition, we propose a pseudo-ensemble technique that exploits the stochasticity of NCAs to generate multiple valid segmentations masks that, when averaged, improve performance by 0.5-1.3%. Moreover, by calculating the variance of these segmentations we obtain a quality assessment of the derived segmentation mask. Our NCA quality metric (NQM) detects between 50% (prostate) and 94.6% (hippocampus) of failure cases. M3D-NCA is lightweigth enough to be run on a Raspberry Pi 4 Model B (2 GB RAM).</p><p>We compare our proposed M3D-NCA against the UNet <ref type="bibr" target="#b16">[17]</ref>, minimal variations of UNet, Seg-NCA <ref type="bibr" target="#b18">[19]</ref> and Med-NCA <ref type="bibr" target="#b10">[11]</ref> on the medical segmentation decathlon <ref type="bibr" target="#b1">[2]</ref> datasets for hippocampus and prostate. M3D-NCA consistently outperforms minimal UNet-style and other NCA architectures by at least 2.2% and 1.1% on the hippocampus and prostate, respectively, while being at least two magnitudes smaller than UNet-style models. However, the performance is still lower than the nnUNet by 0.6% and 6.3% Dice, the state-of-the-art auto ML pipeline for many medical image segmentation tasks. This could be due to the additional pre-and post-processing steps of the pipeline, as well as the extensive augmentation operations. We make our complete framework available under github.com/MECLabTU DA/M3D-NCA, including the trained M3D-NCA models for both anatomies as they are only 56 KB in size.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Cellular Automata (CA) are sets of typically hand-designed rules that are iteratively applied to each cell of a grid. They have been actively researched for decades, Game Of Life <ref type="bibr" target="#b3">[4]</ref> being the most prominent example of them. Recently, this idea has been adapted by Gilpin et al. <ref type="bibr" target="#b4">[5]</ref> to use neural networks as a representation of the update rule. These Neural Cellular Automata (NCA) are minimal and interact only locally (illustration of a 2D example can be found in the supplementary). Recent research has demonstrated the applicability of NCAs to many different domains, including image generation tasks <ref type="bibr" target="#b11">[12]</ref>, selfclassification <ref type="bibr" target="#b15">[16]</ref>, and even 2D medical image segmentation <ref type="bibr" target="#b10">[11]</ref>.</p><p>NCA segmentation in medical images faces the problem of high VRAM consumption during training. Our proposed M3D-NCA described in Sect. 2.1 solves this problem by performing segmentation on different scales of the image and using patches during training. In Sect. 2.3 we introduce a score that indicates segmentation quality by utilizing the variance of NCAs during inference.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">M3D-NCA Training Pipeline</head><p>Our core design principle for M3D-NCA is to minimize the VRAM requirements. Images larger than 100 × 100, can quickly exceed 40 GB of VRAM, using a naive implementation of NCA, especially for three-dimensional configurations.</p><p>The training of M3D-NCA operates on different scales of the input image where the same model architecture m is applied, as illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>. The input image is first downscaled by the factor d multiplied by the number of layers n. If we consider a setup with an input size of 320 × 320 × 24, a downscale factor of d = 2, and n = 3, the image is downscaled to 40 × 40 × 3. As d and n exponentially decrease the image size, big images become manageable. On this smallest scale, our first NCA model m 1 , which is constructed from our core architecture (Sect. 2.2), is iterated over for s steps, initializing the segmentation on the smallest scale. The output of this model gets upscaled by factor d and appended with the according higher resolution image patch. Then, a random patch is selected of size 40 × 40 × 3, which the next model m 2 iterates over another s times. We repeat this patchification step n -1 times until we reach the level with the highest resolution. We then perform the dice focal loss over the last remaining patch and the according ground truth patch. Changing the downscaling factor d and the number of layers n allows us to precisely control the VRAM required for training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Batch Duplication:</head><p>Training NCA models is inherently more unstable than classical machine learning models like the UNet, due to two main factors. First, stochastic cell activation can result in significant jumps in the loss trajectory, especially in the beginning of the training. Second, patchification in M3D-NCA can cause serious fluctuations in the loss function, especially with three or more layers, thus it may never converge properly.</p><p>The solution to this problem is to duplicate the batch input, meaning that the same input images are multiple times in each batch. While this limits the number of images per stack, it greatly improves convergence stability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Pseudo Ensemble:</head><p>The stochasticity of NCAs, caused by the random activation of cells gives them an inherent way of predicting multiple valid segmentation masks. We utilize this property by executing the trained model 10 times on the same data sample and then averaging over the outputs. We visualize the variance between several predictions in Fig. <ref type="figure" target="#fig_2">3</ref>. Once the model is trained, inference can be performed directly on the fullscale image. This is possible due to the one-cell architecture of NCAs, which allows them to be replicated across any image size, even after training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">M3D-NCA Core Architecture</head><p>The core architecture of M3D-NCA is optimized for simplicity. First, a convolution with a kernel size k is performed, which is appended with the identity of the current cell state of depth c resulting in state vector v of length 2 * c. v thus contains information about the surrounding cells and the knowledge stored in the cell. v is then passed into a dense layer of size h, followed by a 3D BatchNorm layer and a ReLU. In the last step, another Dense layer is applied, which has the output size c, resulting in the output being of the same size as the input. Now the cell update can be performed, which adds the model's output to the previous state. Performing a full execution of the model requires it to be applied s times. In the standard configuration, the core NCA sets the hyperparameters to k = 7 for the first layer, and k = 3 for all the following ones. c = 16 and h = 64 results in a model size of 12480 parameters. The bigger k in the first level allows the model to detect low-frequency features, and c and h are chosen to limit VRAM requirements. The steps s are determined per level by s = max(width, height, depth)/((k -1)/2), allowing the model to communicate once across the whole image.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Inherent Quality Control</head><p>The variance observed in the derived segmentation masks serves as a quantifiable indicator of the predicted segmentation. We expect that a higher variance value indicates data that is further away from our training domain and consequently may lead to poorer segmentation accuracy. Nevertheless, relying solely on this number is problematic, as the score obtained is affected by the size of the segmentation mask. To address this issue, we normalize the metric by dividing the sum of the standard deviation by the number of segmentation pixels.</p><p>The NCA quality metric (NQM) where v is an image volume and v i are N = 10 different predictions of M3D-NCA for v is defined as follows: We calculate the relation between Dice and NQM by running a linear regression on the training dataset, which has been enriched with spike artifacts to extend the variance range. Using the regression, we derive the detection threshold for a given Dice value (e.g., Dice &gt; 0.8). In clinical practice, this value would be based on the task and utility.</p><formula xml:id="formula_0">NQM = s∈SD (s) m∈µ (m) , SD = N i=1 (v i -µ) 2 N , µ = N i=1 v i N (1)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head><p>The evaluation of the proposed M3D-NCA and baselines is performed on hippocampus (198 patients, ∼ 35×50×35) and prostate (32 patients, ∼ 320×320× 20) datasets from the medical segmentation decathlon (medicaldecathlon.com) <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b20">21]</ref>. All experiments use the same 70% training, and 30% test split and are trained on an Nvidia RTX 3090Ti and an Intel Core i7-12700. We use the standard configuration of the UNet <ref type="bibr" target="#b13">[14]</ref>, Segmentation Models Pytorch <ref type="bibr" target="#b7">[8]</ref> and nnUNet <ref type="bibr" target="#b8">[9]</ref> packages for the implementation in PyTorch <ref type="bibr" target="#b12">[13]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Comparison and Ablation</head><p>Our results in Fig. <ref type="figure" target="#fig_3">4</ref> show that despite their compactness, M3D-NCA performs comparably to much larger UNet models. UNet-style models instead tend to underperform when parameter constraints are imposed. While an advanced training strategy, such as the auto ML pipeline nnUNet, can alleviate this problem, it involves millions of parameters and requires a minimum of 4 GB of VRAM <ref type="bibr" target="#b8">[9]</ref>.</p><p>In contrast, our proposed M3D-NCA uses two orders of magnitude fewer parameters, reaching 90.5% and 82.9% Dice for hippocampus and prostate respectively. M3D-NCA outperforms all basic UNet-style models, falling short of the nnUNet by only 0.6% for hippocampus and 6.3% for prostate segmentation. Utilizing the 3D patient data enables M3D-NCA to outperform the 2D segmentation model Med-NCA in both cases by 2.4% and 1.1% Dice. The Seg-NCA <ref type="bibr" target="#b18">[19]</ref> is due to its one-level architecture limited to small input images of the size 64 × 64, which for prostate results in a performance difference of 12.8% to our proposed M3D-NCA and 5.4% for hippocampus. We execute M3D-NCA on a Raspberry Pi 4 Model B (2 GB RAM) to demonstrate its suitability on resource-constrained systems, as shown in Fig. <ref type="figure" target="#fig_4">5</ref>. Although our complete setup can be run on the Raspberry Pi 4, considerably larger images that exceed the device's 2 GB memory limit require further optimizations within the inference process. By asynchronously updating patches of the full image with an overlapping margin of (k -1)/2 we can circumvent this limitation while ensuring identical inference. The ablation study of M3D-NCA in Table <ref type="table" target="#tab_0">1</ref> shows the importance of batch duplication during training, especially for larger numbers of layers. Without batch duplication, performance drops by 1.8-7.9% Dice. Increasing the number of layers reduces VRAM requirements for larger datasets, but comes with a trade-off where each additional layer reduces segmentation performance by 2.7-5.5% (with the 4-layer setup, a kernel size of 5 is used on the first level, otherwise the downscaled image would be too small). The pseudo-ensemble setup improves the performance of our models by 0.5-1.3% and makes the results more stable. The qualitative evaluation of M3D-NCA, illustrated in Fig. <ref type="figure" target="#fig_5">6</ref>, shows that M3D-NCA produces accurate segmentations characterized by well-defined boundaries with no gaps or random pixels within the segmentation volume.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Automatic Quality Control</head><p>To evaluate how well M3D-NCA identifies failure cases through the NQM metric, we degrade the test data with artifacts using the TorchIO package <ref type="bibr" target="#b14">[15]</ref>. More precisely, we use noise (std = 0.5), spike (intensity = 5) and ghosting (num ghosts = 6 and intensity = 2.5) artifacts to force the model to collapse (prediction/metric pairs can be found in the supplementary). We effectively identify 94.6% and 50% of failure cases (below 80% Dice) for hippocampus and prostate segmentation, respectively, as shown in Fig. <ref type="figure" target="#fig_6">7</ref>. Although not all failure cases are identified for prostate, most false positives fall close to the threshold. Furthermore, the false negative rates of 4.6% (hippocampus) and 8.3% (prostate), highlights its value in identifying particularly poor segmentations. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We introduce M3D-NCA, a Neural Cellular Automata-based training pipeline for achieving high-quality 3D segmentation. Due to the small model size with under 13k parameters, M3D-NCA can be run on a Raspberry Pi 4 Model B (2 GB RAM). M3D-NCA solves the VRAM requirements for 3D inputs and the training instability issues that come along. In addition, we propose an NCA quality metric (NQM) that leverages the stochasticity of M3D-NCA to detect 50-94.6% of failure cases without additional overhead. Despite its small size, M3D-NCA outperforms UNet-style models and the 2D Med-NCA by 2% Dice on both datasets. This highlights the potential of M3D-NCAs for utilization in primary care facilities and conflict zones as a viable lightweight alternative.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. M3D-NCA is lightweight, with a parameter count of less than 13k and can be run on a Raspberry Pi 4 Model B (2 GB RAM). The stochasticity enables a pseudoensemble effect that improves prediction performance. This variance also allows the calculation of a score that indicates the quality of the predictions.</figDesc><graphic coords="2,46,80,63,86,330,58,60,85" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The n-level M3D-NCA architecture uses patchification and batch duplication during training.</figDesc><graphic coords="3,81,48,55,52,289,30,247,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Variance over 10 predictions on different samples of the hippocampus (left) and prostate dataset (right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Comparison of the Dice segmentation performance versus the number of parameters of NCA architectures, minimal UNets and the nnUNet (check supplementary for detailed numbers).</figDesc><graphic coords="6,85,74,64,73,267,40,167,23" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Example inference times of a 2-level M3D-NCA architecture across different image scales on a Raspberry Pi 4 Model B (2 GB RAM), where s defines the number of steps in each layer.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. Qualitative Results of M3D-NCA on hippocampus (left) and prostate (right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 7 .</head><label>7</label><figDesc>Fig. 7. The variance of NCAs during inference encapsulated in the NQM score indicates the quality of segmentation masks. In this example, the calculated threshold should detect predictions worse than 80% Dice. The distribution of FP/FN cases shows that most fall close to the threshold.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Ablation results of M3D-NCA on the prostate dataset.</figDesc><table><row><cell cols="4">Lay. Scale F. # Param. ↓ Standard</cell><cell>w/o Batch Dup. w/o Pseudo E.</cell></row><row><cell></cell><cell></cell><cell></cell><cell>Dice ↑</cell><cell>Dice ↑</cell><cell>Dice ↑</cell></row><row><cell>2</cell><cell>4</cell><cell>12480</cell><cell>0.829 ± 0</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>.051 0.811 ± 0.045 0.824 ± 0.051</head><label></label><figDesc></figDesc><table><row><cell>3</cell><cell>2</cell><cell>16192</cell><cell>0.802 ± 0.038 0.723 ± 0.103</cell><cell>0.789 ± 0.041</cell></row><row><cell>4</cell><cell>2</cell><cell>8880</cell><cell>0.747 ± 0.112 0.704 ± 0.211</cell><cell>0.734 ± 0.117</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1 17.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">An overview of machine learning within embedded and mobile devices-optimizations and applications</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Ajani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Imoize</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Atayero</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sensors</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">13</biblScope>
+			<biblScope unit="page">4412</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The medical segmentation decathlon</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Antonelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">How to improve access to medical imaging in low-and middleincome countries?</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Frija</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EClinicalMedicine</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="page">101034</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The fantastic combinations of Jhon Conway&apos;s new solitaire game</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gardner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">life. Sci. Am</title>
+		<imprint>
+			<biblScope unit="volume">223</biblScope>
+			<biblScope unit="page" from="20" to="123" />
+			<date type="published" when="1970">1970</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Cellular automata as convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Gilpin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">32402</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Distance-based detection of out-of-distribution silent failures for COVID-19 lung lesion segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>González</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102596</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<author>
+			<persName><forename type="first">P</forename><surname>Iakubovskii</surname></persName>
+		</author>
+		<ptr target="https://github.com/qubvel/segmentationmodels.pytorch" />
+		<title level="m">Segmentation models pyTorch</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">NNU-net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Improving quality of care in conflict settings: access and infrastructure are fundamental</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jaff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Leatherman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Tawfik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Qual. Health Care</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Med-NCA: robust and lightweight segmentation with neural cellular automata</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kalkhof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>González</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mukhopadhyay</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.03473</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Growing neural cellular automata</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mordvintsev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Randazzo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Niklasson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Levin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Distill</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">23</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">PyTorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">F</forename><surname>Perez-Garcia</surname></persName>
+		</author>
+		<idno type="DOI">10.5281/zenodo.3522306</idno>
+		<ptr target="https://doi.org/10.5281/zenodo.3522306" />
+		<title level="m">fepegar/unet: First published version of PyTorch U-Net</title>
+		<imprint>
+			<date type="published" when="2019-10">October 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Torchio: a python library for efficient loading, preprocessing, augmentation and patch-based sampling of medical images in deep learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Pérez-García</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sparks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cmpb.2021.106236</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S0169260721003102" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Programs Biomed</title>
+		<imprint>
+			<biblScope unit="page">106236</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Selfclassifying mnist digits</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Randazzo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mordvintsev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Niklasson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Levin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Greydanus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Distill</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="27" to="29" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Mobilenetv 2: inverted residuals and linear bottlenecks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sandler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhmoginov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4510" to="4520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sandler</surname></persName>
+		</author>
+		<title level="m">Image segmentation via cellular automata</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page">2008</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Very deep convolutional networks for large-scale image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Simonyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1409.1556</idno>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">A large annotated medical image dataset for the development and evaluation of segmentation algorithms</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Simpson</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.09063</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Efficientnet: rethinking model scaling for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6105" to="6114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

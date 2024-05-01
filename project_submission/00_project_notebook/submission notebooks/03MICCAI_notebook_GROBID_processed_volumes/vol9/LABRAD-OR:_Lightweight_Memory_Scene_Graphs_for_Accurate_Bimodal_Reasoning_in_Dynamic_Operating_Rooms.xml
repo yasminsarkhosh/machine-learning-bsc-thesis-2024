@@ -1,0 +1,894 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">LABRAD-OR: Lightweight Memory Scene Graphs for Accurate Bimodal Reasoning in Dynamic Operating Rooms</title>
+				<funder>
+					<orgName type="full">Felix Holm</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Stryker</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Ege</forename><surname>Özsoy</surname></persName>
+							<email>ege.oezsoy@tum.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technische Universität München</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tobias</forename><surname>Czempiel</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technische Universität München</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Felix</forename><surname>Holm</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technische Universität München</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chantal</forename><surname>Pellegrini</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technische Universität München</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Nassir</forename><surname>Navab</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Aided Medical Procedures</orgName>
+								<orgName type="institution">Technische Universität München</orgName>
+								<address>
+									<settlement>Munich</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">LABRAD-OR: Lightweight Memory Scene Graphs for Accurate Bimodal Reasoning in Dynamic Operating Rooms</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="302" to="311"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">94D33AF775210501423E1FCCAB3A407B</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_29</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Semantic Scene Graphs</term>
+					<term>Memory Scene Graphs</term>
+					<term>3D surgical scene Understanding</term>
+					<term>Temporal OR Understanding</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Modern surgeries are performed in complex and dynamic settings, including ever-changing interactions between medical staff, patients, and equipment. The holistic modeling of the operating room (OR) is, therefore, a challenging but essential task, with the potential to optimize the performance of surgical teams and aid in developing new surgical technologies to improve patient outcomes. The holistic representation of surgical scenes as semantic scene graphs (SGG), where entities are represented as nodes and relations between them as edges, is a promising direction for fine-grained semantic OR understanding. We propose, for the first time, the use of temporal information for more accurate and consistent holistic OR modeling. Specifically, we introduce memory scene graphs, where the scene graphs of previous time steps act as the temporal representation guiding the current prediction. We design an end-to-end architecture that intelligently fuses the temporal information of our lightweight memory scene graphs with the visual information from point clouds and images. We evaluate our method on the 4D-OR dataset and demonstrate that integrating temporality leads to more accurate and consistent results achieving an +5% increase and a new SOTA of 0.88 in macro F1. This work opens the path for representing the entire surgery history with memory scene graphs and improves the holistic understanding in the OR. Introducing scene graphs as memory representations can offer a valuable tool for many temporal understanding tasks. We will publish our code upon acceptance. The code is publicly available at https://github.com/egeozsoy/LABRAD-OR.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Surgical procedures are becoming increasingly complex, requiring intricate coordination between medical staff, patients, and equipment <ref type="bibr" target="#b12">[11,</ref><ref type="bibr" target="#b13">12]</ref>. Effective oper-Fig. <ref type="figure">1</ref>. Overview of our bimodal scene graph generation architecture. We use the visual information extracted from point clouds and images and temporal information represented as memory scene graphs resulting in more accurate and consistent predictions.</p><p>ating room (OR) management is critical for improving patient outcomes, optimizing surgical team performance, and developing new surgical technologies <ref type="bibr" target="#b11">[10]</ref>. Scene understanding, particularly in dynamic OR environments, is a challenging task that requires holistic and semantic modeling <ref type="bibr" target="#b12">[11,</ref><ref type="bibr" target="#b17">16]</ref>, where both the coarse and the fine-level activities and interactions are understood. While many recent works addressed different aspects of this understanding, such as surgical phase recognition <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b10">9,</ref><ref type="bibr" target="#b23">22]</ref>, action detection <ref type="bibr" target="#b15">[14,</ref><ref type="bibr" target="#b16">15]</ref>, or tool detection <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">7]</ref>, these approaches do not focus on holistic OR understanding. Most recently, Özsoy et al. <ref type="bibr" target="#b17">[16]</ref> proposed a new dataset, 4D-OR, and an approach for holistic OR modeling. They model the OR using semantic scene graphs, which summarize the entire scene at each timepoint, connecting the different entities with their semantic relationships. However, they did not propose remedies for challenges caused by occlusions and visual similarities of scenes observed at different moments of the intervention. In fact, they rely only on single timepoints for OR understanding, while temporal history is a rich information source that should be utilized for improving holistic OR modeling.</p><p>In endoscopic video analysis, using temporality has become standard practice <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b5">5,</ref><ref type="bibr" target="#b20">19,</ref><ref type="bibr" target="#b23">22]</ref>. For surgical workflow recognition in the OR, the use of temporality has been explored in previous studies showcasing their effectiveness <ref type="bibr" target="#b7">[6,</ref><ref type="bibr" target="#b14">13,</ref><ref type="bibr" target="#b19">18]</ref>. All of these methods utilize what we refer to as latent temporality, which is a non-interpretable, hidden feature representation. While some works utilize twostage architectures, where the temporal stage uses precomputed features from a single timepoint neural network, others use 3D(2D + time) methods, directly considering multiple timepoints <ref type="bibr" target="#b2">[3]</ref>.</p><p>Both of these approaches have some downsides. The two-stage approaches are not trained end-to-end, potentially limiting their performance. Additionally, certain design choices must be made regarding which feature from every timepoint should be used as a temporal summary. For scene graph generation, this can be challenging, as most SGG architectures work with representations per relation and not per scene. The end-to-end 3D methods, on the other hand, are computationally expensive both in training and inference and practical hardware limitations mean they can only effectively capture short-term context. Finally, these methods can only provide limited insight into which temporal information is the most useful.</p><p>In the computer vision community, multiple studies on scene understanding using scene graphs <ref type="bibr" target="#b25">[24,</ref><ref type="bibr" target="#b26">25]</ref> have been conducted. Ji et al. <ref type="bibr" target="#b9">[8]</ref> proposes Action Genome, a temporal scene graph dataset containing 10K videos. They demonstrate how scene graphs can be utilized to improve the action recognition performance of their model. While there have been some works <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b22">21]</ref> on using temporal visual information to enhance scene graph predictions, none consider the previous scene graph outputs as a temporal representation to enhance the future scene graph predictions.</p><p>In this paper, we propose LABRAD-OR(Lightweight Memory Scene Graphs for Accurate Bimodal ReAsoning in Dynamic Operating Rooms), a novel and lightweight approach for generating accurate and consistent scene graphs using the temporal information available in OR recordings. To this end, we introduce the concept of memory scene graphs, where, for the first time, the scene graphs serve as both the output and the input, integrating temporality into the scene graph generation. Our motivation behind using scene graphs to represent memory is twofold. First, by design, they summarize the most relevant information of a scene, and second, they are lightweight and interpretable, unlike a latent feature-based representation. We design an end-to-end architecture that fuses this temporal information with visual information. This bimodal approach not only leads to significantly higher scene graph generation accuracy than the state-of-the-art but also to better inter-timepoint consistency. Additionally, by choosing lightweight architectures to encode the memory scene graphs, we can integrate the entire temporal information, as human-interpretable scene graphs, with only 40% overhead. We show the effectiveness of our approach through experiments and ablation studies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>In this section, we introduce our memory scene graph-based temporal modeling approach (LABRAD-OR), a novel bimodal scene graph generation architecture for holistic OR understanding, where both the visual information, as well as the temporal information in the form of memory scene graphs, are utilized. Our architecture is visualized in Fig. <ref type="figure">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Single Timepoint Scene Graph Generation</head><p>We build up on the 4D-OR <ref type="bibr" target="#b17">[16]</ref> method, which uses a single timepoint for generating semantic scene graphs. The 4D-OR method extracts human and object poses and uses them to compute point cloud features for all object pairs. Additionally, image features are incorporated into the embedding to improve the recognition of details. These representations are then further processed to generate object and relation classes and are fused to generate a comprehensive scene graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Scene Graphs as Memory Representations</head><p>In this study, we investigate the potential of using scene graphs from previous timepoints, which we refer to as "memory scene graphs", to inform the current prediction. Unlike previous research that treated scene graphs only as the final output, we use them both as input and output. Scene graphs are particularly well-suited for encoding scene information, as they are low-dimensional and interpretable while capturing and summarizing complex semantics. To create a memory representation at a timepoint T, we use the predicted scene graphs from timepoints 0 to T-1 and employ a neural network to compute a feature representation. This generic approach allows us to easily fuse the scene graph memory with other modalities, such as images or point clouds.</p><p>Memory Modes: While our efficient memory representation allows us to look at all the previous timesteps, this formulation has two downsides. Surgical duration differs between procedures, and despite the efficiency of scene graphs, prolonged interventions can still be costly. Second, empirically we find that seeing the entire memory leads to prolonged training time and can cause overfitting. To address this, we propose four different memory modes, "All", "Short", "Long", and "LongShort". The entire surgical history is visible only in the "All" mode. In the "Short" mode, only the previous S scene graphs are utilized, while in the "Long" mode, every S.th scene graph is selected using striding. In "LongShort" mode, both "Long" and "Short" modes are combined. The reasoning behind this approach is that short-term context should be observed in detail, while longterm context can be viewed more sparsely. This reduces computational overhead compared to "All" and leads to better results with less overfitting, as observed empirically. The value of S is highly dependent on the dataset and the surgical procedures under analysis (Fig. <ref type="figure">2</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Architecture Design</head><p>We extract the visual information from point clouds and, optionally, images using a visual scene encoder, as described in Sect. 2.1. To integrate the temporal information, we convert each memory scene graph into a feature vector using a graph neural network. Then we use a Transformer block <ref type="bibr" target="#b24">[23]</ref> to summarize the feature vectors from the #T memory scene graphs into a single feature vector, which we refer to as the memory representation. Finally, this representation is concatenated with the visual information, forming a bimodal representation. Intuitively, this allows our architecture to consider both the long-term history, such as previous key surgical steps and the short-term history, such as what was just happening. Fig. <ref type="figure">2</ref>. Visualization of both the "Short" and "Long" memory attention while predicting for the timepoint t = 530. While "Short" attends naturally to the nearest scene graphs, "Long" seems to be concentrating on previous key moments of the surgery, such as "drilling", "sawing", "and hammering". The graphs are simplified for clarity. The shown "current scene graph" is the correct prediction of our model.</p><p>Memory Augmentations: While we use the predicted scene graphs from previous timepoints for inference, as these are not available during training, we use the ground truth scene graphs for training. However, training with ground truth scene graphs and evaluating with predicted scene graphs can decrease test performance, as the predicted scene graphs are imperfect. To increase our robustness towards this, we utilize memory augmentations during training. Concretely, we randomly replace part of either the short-term memory (timepoints closest to the timepoint of interest) or the long-term memory (timepoints further away from the timepoint of interest) with a special "UNKNOWN" token. Intuitively, this forces our model to rely on the remaining information and better deal with wrong predictions in the memory during inference.</p><p>Timepoint of Interest(ToI) Positional Ids: Transformers <ref type="bibr" target="#b24">[23]</ref> employ positional ids to encode the absolute location of each feature in a sequence. However, as we are more interested in the relative distance of the features, we introduce Timepoint of Interest(ToI) positional ids to encode the distance of every feature to the current timepoint T . This allows our network to assign meaning to the relative distance to other timepoint features rather than their absolute locations.</p><p>Multitask Learning: In the scene graph generation task, the visual and temporal information are used together. In practice, we found it valuable to introduce a secondary task, which can be solved only using temporal information. We propose the task of "main action recognition", where instead of the scene graph, only the interaction of the head surgeon to the patient is predicted, such as "sawing" or "drilling". During training, in addition to fusing the memory representation with the visual information, we use a fully connected layer to estimate the main action from the memory representation directly. Learning both scene graph generation and main action recognition tasks simultaneously gives a more direct signal to the memory encoder, resulting in faster training and improved performance.</p><p>Table <ref type="table">1</ref>. We compare our results to the current SOTA, 4D-OR, on the test set. We experimented with different hyperparameters and found that longer training can improve the 4D-OR results. We report both the original 4D-OR, and the longer trained results, indicated by †, and a latent-based temporality(LBT) baseline, and compare LABRAD-OR to them. All methods use both point clouds and images as visual input.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>4D-OR <ref type="bibr" target="#b17">[16]</ref> 4D-OR † <ref type="bibr" target="#b17">[16]</ref> LBT LABRAD-OR Macro F1 0.75 0.83 0.86 0.88</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset: We use the 4D-OR <ref type="bibr" target="#b17">[16]</ref> dataset following the official train, validation, and test splits. It comprises ten simulated knee surgeries recorded using six Kinect cameras at 1 fps. Both the 3D point cloud, as well as multiview images are provided for all 6734 scenes. Each scene additionally includes a semantic scene graph label, as well as clinical role labels for staff.</p><p>Model Training: Our architecture consists of two components implemented in PyTorch 1.10, a visual model and a memory model. For our visual model, we use the current SOTA model from 4D-OR <ref type="bibr" target="#b17">[16]</ref>, which uses Pointnet++ <ref type="bibr" target="#b18">[17]</ref> as the point cloud encoder, and EfficientNet-B5 <ref type="bibr" target="#b21">[20]</ref> as the image encoder. We could improve the original 4D-OR results through longer training than in the original code. As our memory model, we use a combination of Graphormer <ref type="bibr" target="#b27">[26]</ref>, to extract features from individual scene graphs and Transformers <ref type="bibr" target="#b24">[23]</ref>, to fuse the features into one memory representation. The visual scene encoder is initialized in all our experiments with the best-performing visual-only model weights.</p><p>We use the provided human and object pose predictions from 4D-OR and stick to their training setup and evaluation metrics. We use memory augmentations, timepoint of interest positional ids, end-to-end training, and multitask learning. The memory encoders are purposefully designed to be lightweight and fast. Therefore, we use a hidden dimension of 80 and only two layers. We use S, to control both the stride of the "Long" mode and the window size of the "Short" mode and set it to 5. The choice of S ensures we do not miss any phase, as all phases last longer than 5 timepoints while reducing the computational cost.</p><p>Unless otherwise specified, we use "LongShort" as memory mode and train all models until the validation performance converges.</p><p>Evaluation Metrics: We use the official evaluation metrics from 4D-OR for semantic scene graph generation and the role prediction downstream tasks. In both cases, a macro F1 over all the classes is computed. Further, we introduce a consistency metric, where first, for each timepoint, a set of predicates P t , such as {"assisting", "drilling", "cleaning"} is extracted from the scene graphs. Then, for two timepoints T and T -1, the intersection of union(IoU) between P t and P t-1 is computed. This is repeated for all pairs of adjacent timepoints in a sequence, and the IoU score is averaged over them to calculate the consistency score.</p><p>Table <ref type="table">2</ref>. We demonstrate the impact of temporal information on the consistency of our results. We compare only using the point cloud(PC), using images(Img) in addition to point clouds, and temporality(T). We also show the ground truth(GT) consistency score, which should be considered the ceiling for all methods.</p><p>Method PC PC+Img PC+T PC+Img+T GT Consistency 0.83 0.84 0.86 0.87 0.9 Fig. <ref type="figure">3</ref>. Qualitative example on the improvement of the scene graph consistency. For clarity, only the "main action" is shown, while only relying on the visual information (V) compared to also using our proposed SG memory (M).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results and Discussion</head><p>Scene Graph Generation. In Table <ref type="table">1</ref>, we compare our best-performing model LABRAD-OR against the previous SOTA on 4D-OR. We build a latent-based temporal baseline (LBT), which uses a mean of the pairwise relation features as representation per timepoint, which then gets processed analogously with a Transformer architecture. Overall, LABRAD-OR increases the F1 results for all predicates, significantly increasing SOTA from 0.75 F1 to 0.88 F1. We also show that LABRAD-OR improves the F1 score compared to both the longer trained 4D-OR and LBT by 5% and 2%, respectively, demonstrating both the value of temporality for holistic OR modeling as well as the effectiveness of memory scene graphs. Additionally, in Table <ref type="table">2</ref>, we show the consistency improvements achieved by using temporal information, from 0.84 to 0.87. Notably, a perfect consistency score is not 1.0, as the scene graph naturally changes over the surgery. Considering the ground truth consistency is at 0.9, LABRADOR-OR (0.87) exhibits superior consistency compared to the baselines without being excessively smooth.</p><p>A qualitative example of the improvement can be seen in Fig. <ref type="figure">3</ref>. While the visualonly model confuses "suturing" for "cleaning" or "touching", our LABRAD-OR model with memory scene graphs identifies all correctly "suturing".</p><p>Clinical Role Prediction. We also compare LABRAD-OR to 4D-OR on the downstream task of role prediction in Table <ref type="table" target="#tab_2">5</ref>, where the only difference between the two is the improved predicted scene graphs used as input for the downstream task. We improve the results by 4%, showing our improvements in scene graph generation also translate to downstream improvements.</p><p>Ablation Studies. We conduct multiple ablation studies to motivate our design choices. In Table <ref type="table" target="#tab_0">3</ref>, we demonstrate the effectiveness of the different components of our method and see that both memory augmentations and ToI positional ids are crucial and significantly contribute to the performance, whereas E2E and multitask have less but still measurable impact. We note that multitask learning also helps in stabilizing the training. In Table <ref type="table" target="#tab_1">4</ref>, we ablate the different memory modes, "Short", "Long", "LongShort", and "All", and find that the strided "Long" mode is the most important. Where the "Short" mode can often lead to insufficient contextual information, "All" can lead to overfitting. Both the "Long" and "LongShort" perform similarly and are more efficient than "All". We use "LongShort" as our default architecture to guarantee no short-term history is overseen. Comparing the "LongShort" F1 result of 0.87 when only using point clouds as visual input to 0.88 when using both point cloud and images, it can be seen that images still provide valuable information, but significantly less than for Özsoy et al. <ref type="bibr" target="#b17">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We propose LABRAD-OR, a novel lightweight approach based on human interpretable memory scene graphs. Our approach utilizes both the visual information from the current timepoint and the temporal information from the previous timepoints for accurate bimodal reasoning in dynamic operating rooms. Through experiments, we show that this leads to significantly improved accuracy and consistency in the predicted scene graphs and an increased score in the downstream task of role prediction. We believe LABRAD-OR offers the community an effective and efficient way of using temporal information for a holistic understanding of surgeries.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="2,56,46,53,84,339,49,154,87" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 3 .</head><label>3</label><figDesc>We do an ablation study on the impact of memory augmentations, Timepoint of interest (ToI) positional ids, endto-end training, and multitask learning by individually disabling them. The experiments use the "All" memory mode and take only point cloud as visual input.</figDesc><table><row><cell>Method</cell><cell>F1</cell></row><row><cell>All Techniques</cell><cell>0.86</cell></row><row><cell cols="2">w/o Memory Aug 0.82</cell></row><row><cell cols="2">w/o ToI Pos Ids 0.83</cell></row><row><cell>w/o E2E</cell><cell>0.84</cell></row><row><cell>w/o Multitask</cell><cell>0.85</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 4 .</head><label>4</label><figDesc>Ablation study on using different memory modes, affecting which temporal information is seen. All experiments use memory augmentations, Timepoint of Interest (ToI) positional ids, end-to-end training and multitask learning and only take point clouds as visual input.</figDesc><table><row><cell>All Short Long F1</cell></row><row><cell>0.86</cell></row><row><cell>0.85</cell></row><row><cell>0.87</cell></row><row><cell>0.87</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 5 .</head><label>5</label><figDesc>Comparison of LABRAD-OR and 4D-OR on the downstream task of role prediction.</figDesc><table><row><cell>Method</cell><cell cols="2">4D-OR [16] LABRAD-OR</cell></row><row><cell cols="2">Macro F1 0.85</cell><cell>0.89</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work has been partially supported by <rs type="funder">Stryker</rs>. The authors would like to thank <rs type="person">Carl Zeiss AG</rs> for their support of <rs type="funder">Felix Holm</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4_29.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Spatial-temporal transformer for dynamic scene graph generation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ackermann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Rosenhahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="16372" to="16382" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">TeCNO: surgical phase recognition with multi-stage temporal convolutional networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_33" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="343" to="352" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Surgical workflow recognition: from analysis of challenges to architectural study</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sharghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Paschali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mohareri</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25066-8_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25066-8_32" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision-ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Karlinsky</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Michaeli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Nishino</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="volume">13803</biblScope>
+			<biblScope unit="page" from="556" to="568" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Carts: causalitydriven robot tool segmentation from vision and kinematics data</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kazanzides</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Unberath</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="387" to="398" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1_37" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Trans-SVNet: accurate phase recognition from surgical videos via hybrid embedding aggregation transformer</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="593" to="603" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-1_57" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Multi-modal unsupervised pre-training for surgical operating room workflow analysis</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Jamal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mohareri</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_43</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1_43" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="453" to="463" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Kvasir-instrument: diagnostic and therapeutic tool segmentation dataset in gastrointestinal endoscopy</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jha</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-67835-7_19</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-67835-7_19" />
+	</analytic>
+	<monogr>
+		<title level="m">MMM 2021</title>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Lokoč</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12573</biblScope>
+			<biblScope unit="page" from="218" to="229" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Action genome: actions as compositions of spatio-temporal scene graphs</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Krishna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Niebles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="10236" to="10247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Multi-task recurrent convolutional network with correlation loss for surgical video analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page">101572</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Computer vision in the operating room: opportunities and caveats</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Kennedy-Metz</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMRB.2020.3040002</idno>
+		<ptr target="https://doi.org/10.1109/TMRB.2020.3040002" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Robot. Bionics</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="2" to="10" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Surgical process modelling: a review</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lalys</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="495" to="511" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Surgical data science for next-generation interventions</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="691" to="696" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Adaptation of surgical activity recognition models across operating rooms</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mottaghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sharghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yeung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mohareri</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_51</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1_51" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="530" to="540" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Recognition of instrument-tissue interactions in endoscopic videos via action triplets</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Nwoye</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_35</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_35" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="364" to="374" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Rendezvous: attention mechanisms for the recognition of surgical action triplets in endoscopic videos</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Nwoye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">102433</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">4D-or: semantic scene graphs for or domain modeling</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Özsoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Örnek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Eck</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Tombari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_45</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1_45" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="475" to="485" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Pointnet++: deep hierarchical feature learning on point sets in a metric space</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Automatic operating room surgical activity recognition for robot-assisted surgery</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sharghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Haugerud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Oh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mohareri</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-0_37" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="385" to="395" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Rendezvous in time: an attentionbased temporal fusion approach for surgical triplet recognition</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Nwoye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.16963</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Efficientnet: rethinking model scaling for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Le</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6105" to="6114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Target adaptive context aggregation for video scene graph generation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Teng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="13688" to="13697" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Endonet: a deep architecture for recognition tasks on laparoscopic videos</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shehata</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Mathelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="86" to="97" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Learning 3D semantic scene graphs from 3D indoor reconstructions</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wald</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Dhamo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Tombari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3961" to="3970" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Scene graph generation by iterative message passing</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Choy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5410" to="5419" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Do transformers really perform badly for graph representation?</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ying</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

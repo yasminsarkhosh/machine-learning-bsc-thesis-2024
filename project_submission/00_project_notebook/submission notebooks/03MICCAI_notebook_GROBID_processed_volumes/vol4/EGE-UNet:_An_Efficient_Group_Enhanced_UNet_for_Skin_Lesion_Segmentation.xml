@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">EGE-UNet: An Efficient Group Enhanced UNet for Skin Lesion Segmentation</title>
+				<funder ref="#_GX3aVqR">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jiacheng</forename><surname>Ruan</surname></persName>
+							<email>jackchenruan@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mingye</forename><surname>Xie</surname></persName>
+							<email>xiemingye@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jingsheng</forename><surname>Gao</surname></persName>
+							<email>gaojingsheng@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ting</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yuzhuo</forename><surname>Fu</surname></persName>
+							<email>yzfu@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">EGE-UNet: An Efficient Group Enhanced UNet for Skin Lesion Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="481" to="490"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">FCF59E649E3AC6BFAE45CCD507575CF3</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_46</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Medical image segmentation</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Transformer and its variants have been widely used for medical image segmentation. However, the large number of parameter and computational load of these models make them unsuitable for mobile health applications. To address this issue, we propose a more efficient approach, the Efficient Group Enhanced UNet (EGE-UNet). We incorporate a Group multi-axis Hadamard Product Attention module (GHPA) and a Group Aggregation Bridge module (GAB) in a lightweight manner. The GHPA groups input features and performs Hadamard Product Attention mechanism (HPA) on different axes to extract pathological information from diverse perspectives. The GAB effectively fuses multiscale information by grouping low-level features, high-level features, and a mask generated by the decoder at each stage. Comprehensive experiments on the ISIC2017 and ISIC2018 datasets demonstrate that EGE-UNet outperforms existing state-of-the-art methods. In short, compared to the TransFuse, our model achieves superior segmentation performance while reducing parameter and computation costs by 494x and 160x, respectively. Moreover, to our best knowledge, this is the first model with a parameter count limited to just 50KB. Our code is available at https://github.com/JCruan519/EGE-UNet.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Malignant melanoma is one of the most rapidly growing cancers in the world. As estimated by the American Cancer Society, there were approximately 100,350 new cases and over 6,500 deaths in 2020 <ref type="bibr" target="#b11">[14]</ref>. Thus, an automated skin lesion segmentation system is imperative, as it can assist medical professionals in swiftly identifying lesion areas and facilitating subsequent treatment processes. To enhance the segmentation performance, recent studies tend to employ modules with larger parameter and computational complexity, such as incorporating self-attention mechanisms of Vision Transformer (ViT) <ref type="bibr" target="#b4">[7]</ref>. For example, Swin-UNet <ref type="bibr" target="#b1">[4]</ref>, based on the Swin Transformer <ref type="bibr" target="#b8">[11]</ref>, leverages the feature extraction ability of self-attention mechanisms to improve segmentation performance.  <ref type="formula">b</ref>) respectively show the visualization of comparative experimental results on the ISIC2017 and ISIC2018 datasets. The X-axis represents the number of parameters (lower is better), while Y-axis represents mIoU (higher is better). The color depth represents computational complexity (GFLOPs, lighter is better). (Color figure online)</p><p>TransUNet <ref type="bibr" target="#b2">[5]</ref> has pioneered a serial fusion of CNN and ViT for medical image segmentation. TransFuse <ref type="bibr" target="#b23">[26]</ref> employs a dual-path structure, utilizing CNN and ViT to capture local and global information, respectively. UTNetV2 <ref type="bibr" target="#b5">[8]</ref> utilizes a hybrid hierarchical architecture, efficient bidirectional attention, and semantic maps to achieve global multi-scale feature fusion, combining the strengths of CNN and ViT. TransBTS <ref type="bibr" target="#b20">[23]</ref> introduces self-attention into brain tumor segmentation tasks and uses it to aggregate high-level information.</p><p>Prior works have enhanced performance by introducing intricate modules, but neglected the constraint of computational resources in real medical settings. Hence, there is an urgent need to design a low-parameter and low-computational load model for segmentation tasks in mobile healthcare. Recently, UNeXt <ref type="bibr" target="#b19">[22]</ref> has combined UNet <ref type="bibr" target="#b15">[18]</ref> and MLP <ref type="bibr" target="#b18">[21]</ref> to develop a lightweight model that attains superior performance, while diminishing parameter and computation. Furthermore, MALUNet <ref type="bibr" target="#b16">[19]</ref> has reduced the model size by declining the number of model channels and introducing multiple attention modules, resulting in better performance for skin lesion segmentation than UNeXt. However, while MALUNet greatly reduces the number of parameter and computation, its segmentation performance is still lower than some large models, such as Trans-Fuse. Therefore, in this study, we propose EGE-UNet, a lightweight skin lesion segmentation model that achieves state-of-the-art while significantly reducing parameter and computation costs. Additionally, to our best knowledge, this is the first work to reduce parameter to approximately 50KB.</p><p>To be specific, EGE-UNet leverages two key modules: the Group multi-axis Hadamard Product Attention module (GHPA) and Group Aggregation Bridge module (GAB). On the one hand, recent models based on ViT <ref type="bibr" target="#b4">[7]</ref> have shown promise, owing to the multi-head self-attention mechanism (MHSA). MHSA divides the input into multiple heads and calculates self-attention in each head, which allows the model to obtain information from diverse perspectives, integrate different knowledge, and improve performance. Nonetheless, the quadratic complexity of MHSA enormously increases the model's size. Therefore, we present the Hadamard Product Attention mechanism (HPA) with linear complexity. HPA employs a learnable weight and performs a hadamard product operation with the input to obtain the output. Subsequently, inspired by the multi-head mode in MHSA, we propose GHPA, which divides the input into different groups and performs HPA in each group. However, it is worth noting that we perform HPA on different axes in different groups, which helps to further obtain information from diverse perspectives. On the other hand, for GAB, since the size and shape of segmentation targets in medical images are inconsistent, it is essential to obtain multi-scale information <ref type="bibr" target="#b16">[19]</ref>. Therefore, GAB integrates high-level and low-level features with different sizes based on group aggregation, and additionally introduce mask information to assist feature fusion. Via combining the above two modules with UNet, we propose EGE-UNet, which achieves excellent segmentation performance with extremely low parameter and computation. Unlike previous approaches that focus solely on improving performance, our model also prioritizes usability in real-world environments. A clear comparison of EGE-UNet with others is shown in Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>In summary, our contributions are threefold: (1) GHPA and GAB are proposed, with the former efficiently acquiring and integrating multi-perspective information and the latter accepting features at different scales, along with an auxiliary mask for efficient multi-scale feature fusion. (2) We propose EGE-UNet, an extremely lightweight model designed for skin lesion segmentation.</p><p>(3) We conduct extensive experiments, which demonstrate the effectiveness of our methods in achieving state-of-the-art performance with significantly lower resource requirements.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">EGE-UNet</head><p>The Overall Architecture. EGE-UNet is illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>, which is built upon the U-Shape architecture consisting of symmetric encoder-decoder parts. We take encoder part as an example. The encoder is composed of six stages, each with channel numbers of {8, 16, 24, 32, 48, 64}. While the first three stages employ plain convolutions with a kernel size of 3, the last three stages utilize the proposed GHPA to extract representation information from diverse perspectives. In contrast to the simple skip connections in UNet, EGE-UNet incorporates GAB for each stage between the encoder and decoder. Furthermore, our model leverages deep supervision <ref type="bibr" target="#b24">[27]</ref> to generate mask predictions of varying scales, which are utilized for loss function and serve as one of the inputs to GAB. Via the integration of these advanced modules, EGE-UNet significantly reduces the parameter and computational load while enhancing the segmentation performance compared to prior approaches. Group Multi-axis Hadamard Product Attention Module. To overcome the quadratic complexity issue posed by MHSA, we propose HPA with linear complexity. Given an input x and a randomly initialized learnable tensor p, bilinear interpolation is first utilized to resize p to match the size of x. Then, we employ depth-wise separable convolution (DW) <ref type="bibr" target="#b7">[10,</ref><ref type="bibr" target="#b17">20]</ref> on p, followed by a hadamard product operation between x and p to obtain the output. However, utilizing simple HPA alone is insufficient to extract information from multiple perspectives, resulting in unsatisfactory results. Motivated by the multi-head mode in MHSA, we introduce GHPA based on HPA, as illustrated in Algorithm 1. We divide the input into four groups equally along the channel dimension and perform HPA on the height-width, channel-height, and channel-width axes for the first three groups, respectively. For the last group, we only use DW on the feature map. Finally, we concatenate the four groups along the channel dimension and apply another DW to integrate the information from different perspectives. Note that all kernel size employed in DW are 3.</p><p>Group Aggregation Bridge Module. The acquisition of multi-scale information is deemed pivotal for dense prediction tasks, such as medical image segmentation. Hence, as shown in Fig. <ref type="figure" target="#fig_2">3</ref>, we introduce GAB, which takes three inputs: low-level features, high-level features, and a mask. Firstly, depthwise separable convolution (DW) and bilinear interpolation are employed to adjust the size of high-level features, so as to match the size of low-level features. Secondly, we partition both feature maps into four groups along the channel dimension, and concatenate one group from the low-level features with one from the high-level features to obtain four groups of fused features. For each group of fused features, the mask is concatenated. Next, dilated convolutions <ref type="bibr" target="#b22">[25]</ref> with kernel size of 3 and different dilated rates of {1, 2, 5, 7} are applied to the different groups, in order to extract information at different scales. Finally, the four groups are concatenated along the channel dimension, followed by the application of a plain convolution with the kernel size of 1 to enable interaction among features at different scales.</p><p>Loss Function. In this study, since different GAB require different scales of mask information, deep supervision <ref type="bibr" target="#b24">[27]</ref> is employed to calculate the loss function for different stages, in order to generate more accurate mask information. Our loss function can be expressed as Eqs. (1) and (2). l i = Bce(y, ŷ) + Dice(y, ŷ)</p><p>(1)</p><formula xml:id="formula_0">L = 5 i=0 λ i × l i (2)</formula><p>where Bce and Dice represent binary cross entropy and dice loss. λ i is the weight for different stage. In this paper, we set λ i to 1, 0.5, 0.4, 0.3, 0.2, 0.1 from i = 0 to i = 5 by default.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Datasets and Implementation Details. To assess the efficacy of our model, we select two public skin lesion segmentation datasets, namely ISIC2017 [1,3] and ISIC2018 [2,6], containing 2150 and 2694 dermoscopy images, respectively. Consistent with prior research <ref type="bibr" target="#b16">[19]</ref>, we randomly partition the datasets into training and testing sets at a 7:3 ratio. EGE-UNet is developed by Pytorch <ref type="bibr" target="#b14">[17]</ref> framework. All experiments are performed on a single NVIDIA RTX A6000 GPU. The images are normalized and resized to 256 × 256. We apply various data augmentation, including horizontal flipping, vertical flipping, and random rotation. AdamW <ref type="bibr" target="#b10">[13]</ref> is utilized as the optimizer, initialized with a learning rate of 0.001 and the CosineAnnealingLR <ref type="bibr" target="#b9">[12]</ref> is employed as the scheduler with a maximum number of iterations of 50 and a minimum learning rate of 1e-5. A total of 300 epochs are trained with a batch size of 8. To evaluate our method, we employ Mean Intersection over Union (mIoU), Dice similarity score (DSC) as metrics, and we conduct 5 times and report the mean and standard deviation of the results for each dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Comparative Results. The comparative experimental results presented in</head><p>Table <ref type="table" target="#tab_0">1</ref> reveal that our EGE-UNet exhibits a comprehensive state-of-the-art performance on the ISIC2017 dataset. Specifically, in contrast to larger models, such as TransFuse, our model not only demonstrates superior performance, but also significantly curtails the number of parameter and computation by 494x and 160x, respectively. In comparison to other lightweight models, EGE-UNet surpasses UNeXt-S with a mIoU improvement of 1.55% and a DSC improvement of 0.97%, while exhibiting parameter and computation reductions of 17% and 72% of UNeXt-S. Furthermore, EGE-UNet outperforms MALUNet with a mIoU improvement of 1.03% and a DSC improvement of 0.64%, while reducing parameter and computation to 30% and 85% of MALUNet. For the ISIC2018 dataset, the performance of our model also outperforms that of the best-performing model. Besides, it is noteworthy that EGE-UNet is the first lightweight model reducing parameter to about 50KB with excellent segmentation performance.</p><p>Figure <ref type="figure" target="#fig_0">1</ref> presents a more clear visualization of the experimental findings and Fig. <ref type="figure" target="#fig_3">4</ref> shows some segmentation results.</p><p>Ablation Results. We conduct extensive ablation experiments to demonstrate the effectiveness of our proposed modules. The baseline utilized in our work is referenced from MALUNet <ref type="bibr" target="#b16">[19]</ref>, which employs a six-stage U-shaped architecture with symmetric encoder and decoder components. Each stage includes a plain convolution operation with a kernel size of 3, and the number of channels at each stage is set to {8, 16, 24, 32, 48, 64}. In Table <ref type="table" target="#tab_1">2</ref>(a), we conduct macro ablations on GHPA and GAB. Firstly, we replace the plain convolutions in the last three layers of baseline with GHPA. Due to the efficient multi-perspective feature acquisition of GHPA, it not only outperforms the baseline, but also greatly reduces the parameter and computation. Secondly, we substitute the skip-connection operation in baseline with GAB, resulting in further improved performance. Table 2(b) presents the ablations for GHPA. We replace the multiaxis grouping with single-branch and initialize the learnable tensors with only random values. It is evident that the removal of these two key designs leads to a marked drop. Table <ref type="table" target="#tab_1">2</ref>(c) illustrates the ablations for GAB. Initially, we omit the mask information, and mIoU metric even drops below 79%, thereby confirming once again the critical role of mask information in guiding feature fusion. Furthermore, we substitute the dilated convolutions in GAB with plain convolutions, which also leads to a reduction in performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions and Future Works</head><p>In this paper, we propose two advanced modules. Our GHPA uses a novel HPA mechanism to simplify the quadratic complexity of the self-attention to linear complexity. It also leverages grouping to fully capture information from different perspectives. Our GAB fuses low-level and high-level features and introduces a mask to integrate multi-scale information. Based on these modules, we propose EGE-UNet for skin lesion segmentation tasks. Experimental results demonstrate the effectiveness of our approach in achieving state-of-the-art performance with significantly lower resource requirements. We hope that our work can inspire further research on lightweight models for the medical image community.</p><p>Regarding limitations and future works, on the one hand, we mainly focus on how to greatly reduce the parameter and computation complexity while improving performance in this paper. Thus, we plan to deploy EGE-UNet in a real-world environment in the future work. On the other hand, EGE-UNet is currently designed only for the skin lesion segmentation task. Therefore, we will extend our lightweight design to other tasks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) and (b) respectively show the visualization of comparative experimental results on the ISIC2017 and ISIC2018 datasets. The X-axis represents the number of parameters (lower is better), while Y-axis represents mIoU (higher is better). The color depth represents computational complexity (GFLOPs, lighter is better). (Color figure online)</figDesc><graphic coords="2,41,79,53,93,340,27,170,77" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The overview of EGE-UNet.</figDesc><graphic coords="4,41,79,53,75,340,15,249,94" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The architecture of Group Aggregation Bridge module (GAB).</figDesc><graphic coords="5,61,47,54,38,329,89,178,33" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative comparisons on the ISIC2018 dataset.</figDesc><graphic coords="8,98,79,54,47,226,54,156,25" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparative experimental results on the ISIC2017 and ISIC2018 dataset.</figDesc><table><row><cell>Dataset Model</cell><cell cols="3">Params(M)↓ GFLOPs↓ mIoU(%)↑</cell><cell>DSC(%)↑</cell></row><row><cell>ISIC2017 UNet [18]</cell><cell>7.77</cell><cell>13.76</cell><cell>76.98</cell><cell>86.99</cell></row><row><cell>UTNetV2 [8]</cell><cell>12.80</cell><cell>15.50</cell><cell>77.35</cell><cell>87.23</cell></row><row><cell>TransFuse [26]</cell><cell>26.16</cell><cell>11.50</cell><cell>79.21</cell><cell>88.40</cell></row><row><cell>MobileViTv2 [15]</cell><cell>1.87</cell><cell>0.70</cell><cell>78.72</cell><cell>88.09</cell></row><row><cell>MobileNetv3 [9]</cell><cell>1.19</cell><cell>0.10</cell><cell>77.69</cell><cell>87.44</cell></row><row><cell>UNeXt-S [22]</cell><cell>0.32</cell><cell>0.10</cell><cell>78.26</cell><cell>87.80</cell></row><row><cell>MALUNet [19]</cell><cell>0.177</cell><cell>0.085</cell><cell>78.78</cell><cell>88.13</cell></row><row><cell cols="2">EGE-UNet (Ours) 0.053</cell><cell>0.072</cell><cell cols="2">79.81 ± 0.10 88.77 ± 0.06</cell></row><row><cell>ISIC2018 UNet [18]</cell><cell>7.77</cell><cell>13.76</cell><cell>77.86</cell><cell>87.55</cell></row><row><cell>UNet++ [27]</cell><cell>9.16</cell><cell>34.86</cell><cell>78.31</cell><cell>87.83</cell></row><row><cell>Att-UNet [16]</cell><cell>8.73</cell><cell>16.71</cell><cell>78.43</cell><cell>87.91</cell></row><row><cell>UTNetV2 [8]</cell><cell>12.80</cell><cell>15.50</cell><cell>78.97</cell><cell>88.25</cell></row><row><cell>SANet [24]</cell><cell>23.90</cell><cell>5.96</cell><cell>79.52</cell><cell>88.59</cell></row><row><cell>TransFuse [26]</cell><cell>26.16</cell><cell>11.50</cell><cell>80.63</cell><cell>89.27</cell></row><row><cell>MobileViTv2 [15]</cell><cell>1.87</cell><cell>0.70</cell><cell>79.88</cell><cell>88.81</cell></row><row><cell>MobileNetv3 [9]</cell><cell>1.19</cell><cell>0.10</cell><cell>78.55</cell><cell>87.98</cell></row><row><cell>UNeXt-S [22]</cell><cell>0.32</cell><cell>0.10</cell><cell>79.09</cell><cell>88.33</cell></row><row><cell>MALUNet [19]</cell><cell>0.177</cell><cell>0.085</cell><cell>80.25</cell><cell>89.04</cell></row><row><cell cols="2">EGE-UNet (Ours) 0.053</cell><cell>0.072</cell><cell cols="2">80.94 ± 0.11 89.46 ± 0.07</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation studies on the ISIC2017 dataset. (a) the macro ablation on two modules. (b) the micro ablation on GHPA. (c) the micro ablation on GAB.</figDesc><table><row><cell cols="2">Type Model</cell><cell cols="4">Params(M)↓ GFLOPs↓ mIoU(%)↑ DSC(%)↑</cell></row><row><cell>(a)</cell><cell>Baseline</cell><cell>0.107</cell><cell>0.076</cell><cell>76.30</cell><cell>86.56</cell></row><row><cell></cell><cell>Baseline + GHPA</cell><cell>0.034</cell><cell>0.058</cell><cell>78.82</cell><cell>88.16</cell></row><row><cell></cell><cell>Baseline + GAB</cell><cell>0.126</cell><cell>0.086</cell><cell>78.78</cell><cell>88.13</cell></row><row><cell>(b)</cell><cell>w/o multi-axis grouping</cell><cell>0.074</cell><cell>0.074</cell><cell>79.13</cell><cell>88.35</cell></row><row><cell></cell><cell cols="2">w/o DW for initialized tensor 0.050</cell><cell>0.072</cell><cell>79.03</cell><cell>88.29</cell></row><row><cell>(c)</cell><cell>w/o mask information</cell><cell>0.052</cell><cell>0.070</cell><cell>78.97</cell><cell>88.25</cell></row><row><cell></cell><cell cols="2">w/o dilation rate of Conv2d 0.053</cell><cell>0.072</cell><cell>79.11</cell><cell>88.34</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>• Light-weight model • mobile health This work was partially supported by the <rs type="funder">National Natural Science Foundation of China</rs> (Grant No. <rs type="grantNumber">61977045</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_GX3aVqR">
+					<idno type="grant-number">61977045</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Berseth</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1703.00523</idno>
+		<title level="m">ISIC 2017-skin lesion analysis towards melanoma detection</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Swin-unet: unet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2105.05537</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Transunet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Skin lesion analysis toward melanoma detection 2018: a challenge hosted by the international skin imaging collaboration (ISIC)</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Codella</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.03368</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<title level="m">An image is worth 16x16 words: transformers for image recognition at scale</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">A multi-scale transformer for medical image segmentation: architectures, model efficiency, and benchmarks</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Metaxas</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.00131</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Searching for mobilenetv3</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Howard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="1314" to="1324" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Howard</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1704.04861</idno>
+		<title level="m">Mobilenets: efficient convolutional neural networks for mobile vision applications</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10012" to="10022" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1608.03983</idno>
+		<title level="m">SGDR: stochastic gradient descent with warm restarts</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.05101</idno>
+		<title level="m">Decoupled weight decay regularization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Cancer statistics, 2020: report from national cancer registry programme</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mathur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">India. JCO Glob. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="1063" to="1075" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Separable self-attention for mobile vision transformers</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mehta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rastegari</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.02680</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">O</forename><surname>Oktay</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.03999</idno>
+		<title level="m">Attention U-Net: learning where to look for the pancreas</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Pytorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">MALUNet: a multi-attention and lightweight UNet for skin lesion segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ruan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE International Conference on Bioinformatics and Biomedicine (BIBM)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1150" to="1156" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Mobilenetv 2: inverted residuals and linear bottlenecks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sandler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhmoginov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4510" to="4520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">MLP-mixer: an all-MLP architecture for vision</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">O</forename><surname>Tolstikhin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="24261" to="24272" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">UNeXt: MLP-based rapid medical image segmentation network</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M J</forename><surname>Valanarasu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.04967</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">TransBTS: multimodal brain tumor segmentation using transformer</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_11</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-211" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="109" to="119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Shallow attention network for polyp segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cui</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_66</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-266" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="699" to="708" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Multi-scale context aggregation by dilated convolutions</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Koltun</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1511.07122</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">TransFuse: fusing transformers and CNNs for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Hu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_2</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-22" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="14" to="24" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">UNet++: a nested U-net architecture for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Rahman Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<editor>Stoyanov, D., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-030-00889-5_1</idno>
+		<idno>DLMIA/ML-CDS -2018</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-51" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="3" to="11" />
+			<date type="published" when="2018">2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

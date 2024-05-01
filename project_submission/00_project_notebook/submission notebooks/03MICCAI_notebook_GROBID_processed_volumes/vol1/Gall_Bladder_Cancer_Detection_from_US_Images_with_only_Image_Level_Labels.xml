@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Gall Bladder Cancer Detection from US Images with only Image Level Labels</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Soumen</forename><surname>Basu</surname></persName>
+							<email>soumen.basu@cse.iitd.ac.in</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ashish</forename><surname>Papanai</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mayank</forename><surname>Gupta</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Pankaj</forename><surname>Gupta</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Postgraduate Institute of Medical Education and Research</orgName>
+								<address>
+									<settlement>Chandigarh</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chetan</forename><surname>Arora</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Gall Bladder Cancer Detection from US Images with only Image Level Labels</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="206" to="215"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">75AEB5C52CB9B9923B87406813CA9A42</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_20</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Weakly Supervised Object Detection</term>
+					<term>Ultrasound</term>
+					<term>Gallbladder Cancer</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Automated detection of Gallbladder Cancer (GBC) from Ultrasound (US) images is an important problem, which has drawn increased interest from researchers. However, most of these works use difficult-to-acquire information such as bounding box annotations or additional US videos. In this paper, we focus on GBC detection using only image-level labels. Such annotation is usually available based on the diagnostic report of a patient, and do not require additional annotation effort from the physicians. However, our analysis reveals that it is difficult to train a standard image classification model for GBC detection. This is due to the low inter-class variance (a malignant region usually occupies only a small portion of a US image), high intra-class variance (due to the US sensor capturing a 2D slice of a 3D object leading to large viewpoint variations), and low training data availability. We posit that even when we have only the image level label, still formulating the problem as object detection (with bounding box output) helps a deep neural network (DNN) model focus on the relevant region of interest. Since no bounding box annotations is available for training, we pose the problem as weakly supervised object detection (WSOD). Motivated by the recent success of transformer models in object detection, we train one such model, DETR, using multi-instance-learning (MIL) with self-supervised instance selection to suit the WSOD task. Our proposed method demonstrates an improvement of AP and detection sensitivity over the SOTA transformer-based and CNN-based WSOD methods. Project page is at https://gbc-iitd.github.io/wsod-gbc.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>GBC is a deadly disease that is difficult to detect at an early stage <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b14">15]</ref>. Early diagnosis can significantly improve the survival rate <ref type="bibr" target="#b13">[14]</ref>. Non-ionizing radiation, low cost, and accessibility make US a popular non-invasive diagnostic modality for patients with suspected gall bladder (GB) afflictions. However, identifying signs of GBC from routine US imaging is challenging for radiologists <ref type="bibr" target="#b10">[11]</ref>. In recent years, automated GBC detection from US images has drawn increased interest <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5]</ref> due to its potential for improving diagnosis and treatment outcomes. Many of these works formulate the problem as an object detection, since training a image classification model for GBC detection seems challenging due to the reasons outlined in the abstract (also see Fig. <ref type="figure" target="#fig_0">1</ref>). Recently, GBCNet <ref type="bibr" target="#b2">[3]</ref>, a CNN-based model, achieved SOTA performance on classifying malignant GB from US images. GBCNet uses a two-stage pipeline consisting of object detection followed by classification, and requires bounding box annotations for GB as well as malignant regions for training. Such bounding box annotations surrounding the pathological regions are time-consuming and require an expert radiologist for annotation. This makes it expensive and non-viable for curating large datasets for training large DNN models. In another recent work, <ref type="bibr" target="#b4">[5]</ref> has exploited additional unlabeled video data for learning good representations for downstream GBC classification and obtained performance similar to <ref type="bibr" target="#b2">[3]</ref> using a ResNet50 <ref type="bibr" target="#b12">[13]</ref> classifier. The reliance of both SOTA techniques on additional annotations or data, limits their applicability. On the other hand, the image-level malignancy label is usually available at a low cost, as it can be obtained readily from the diagnostic report of a patient without additional effort from clinicians.</p><p>Instead of training a classification pipeline, we propose to solve an object detection problem, which involves predicting a bounding box for the malignancy. The motivation is that, running a classifier on a focused attention/ proposal region in an object detection pipeline would help tackle the low inter-class and high intra-class variations. However, since we only have image-level labels available, we formulate the problem as a Weakly Supervised Object Detection (WSOD) problem. As transformers are increasingly outshining CNNs due to their ability to aggregate focused cues from a large area <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b8">9]</ref>, we choose to use transformers in our model. However, in our initial experiments SOTA WSOD methods for transformers failed miserably. These methods primarily rely on training a classification pipeline and later generating activation heatmaps using attention and drawing a bounding box circumscribing the heatmaps <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref> to show localization. However, for GBC detection, this line of work is not helpful as we discussed earlier.</p><p>Inspired by the success of the Multiple Instance Learning (MIL) paradigm for weakly supervised training on medical imaging tasks <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b21">22]</ref>, we train a detection transformer, DETR, using the MIL paradigm for weakly supervised malignant region detection. In this, one generates region proposals for images, and then considers the images as bags and region proposals as instances to solve the instance classification (object detection) under the MIL constraints <ref type="bibr" target="#b7">[8]</ref>. At inference, we use the predicted instance labels to predict the bag labels. Our experiments validate the utility of this approach in circumventing the challenges in US images and detecting GBC accurately from US images using only image-level labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contributions:</head><p>The key contributions of this work are:</p><p>-We design a novel DETR variant based on MIL with self-supervised instance learning towards the weakly supervised disease detection and localization task in medical images. Although MIL and self-supervised instance learning has been used for CNNs <ref type="bibr" target="#b23">[24]</ref>, such a pipeline has not been used for transformerbased detection models. -We formulate the GBC classification problem as a weakly supervised object detection problem to mitigate the effect of low inter-class and large intra-class variances, and solve the difficult GBC detection problem on US images without using the costly and difficult to obtain additional annotation (bounding box) or video data. -Our method provides a strong baseline for weakly supervised GBC detection and localization in US images, which has not been tackled earlier. Further, to assess the generality of our method, we apply our method to Polyp detection from Colonoscopy images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Datasets</head><p>Gallbladder Cancer Detection in Ultrasound Images: We use the public GBC US dataset <ref type="bibr" target="#b2">[3]</ref> consisting of 1255 image samples from 218 patients. The dataset contains 990 non-malignant (171 patients) and 265 malignant (47 patients) GB images (see Fig. <ref type="figure" target="#fig_1">2</ref> for some sample images). The dataset contains image labels as well as bounding box annotations showing the malignant regions.</p><p>Note that, we use only the image labels for training. We report results on 5-fold cross-validation. We did the cross-validation splits at the patient level, and all images of any patient appeared either in the train or validation split. Polyp Detection in Colonoscopy Images: We use the publicly available Kvasir-SEG <ref type="bibr" target="#b16">[17]</ref> dataset consisting of 1000 white light colonoscopy images showing polyps (see Fig. <ref type="figure" target="#fig_1">2</ref>). Since Kvasir-SEG does not contain any control images, we add 600 non-polyp images randomly sampled from the PolypGen <ref type="bibr" target="#b0">[1]</ref> dataset.</p><p>Since the patient information is not available with the data, we use random stratified splitting for 5-fold cross-validation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Our Method</head><p>Revisiting DETR: The DETR <ref type="bibr" target="#b5">[6]</ref> architectures utilize a ResNet <ref type="bibr" target="#b12">[13]</ref> backbone to extract 2D convolutional features, which are then flattened and added with a positional encoding, and fed to the self-attention-based transformer encoder. The decoder uses cross-attention between learned object queries containing positional embedding, and encoder output to produce output embedding containing the class and localization information. The number of object queries, and the decoder output embeddings is set to 100 in DETR. Subsequently, a feed-forward network generates predictions for object bounding boxes with their corresponding labels and confidence scores.</p><p>Proposed Architecture: Fig. <ref type="figure" target="#fig_2">3</ref> gives an overview of our method. We use a COCO pre-trained class-agnostic DETR as proposal generator. The learned object queries contain the embedded positional information of the proposal. Classagnostic indicates that all object categories are considered as a single object class, as we are only interested in the object proposals. We then finetune a regular, class-aware DETR for the WSOD task. This class-aware DETR is initialized with the checkpoint of the class-agnostic DETR. The learned object queries from the class-agnostic DETR is frozen and shared with the WSOD DETR during finetuning to ensure that the class-aware DETR attends similar locations of the object proposals. The class-agnostic DETR branch is frozen during the finetuning phase. We finally use the MIL-based instance classification with the self-supervised instance learning over the finetuning branch. For GBC classification, if the model generates bounding boxes for the input image, then we predict the image to be malignant, since the only object present in the data is the cancer.</p><p>MIL Setup: The decoder of the fine-tuning DETR generates R d-dimensional output embeddings. Each embedding corresponds to a proposal generated by the class-agnostic DETR. We pass these embeddings as input to two branches with FC layers to obtain the matrices X c ∈ R R×Nc and X r ∈ R R×Nc , where R is the number of object queries (same as proposals) and N c is the number of object (disease) categories. Let σ(•) denote the softmax operation. We then generate the class-wise and detection-wise softmax matrices C ∈ R R×Nc and D ∈ R R×Nc , where C ij = σ((X c ) T j )i and D ij = σ(X r i )j, and X i denotes the i-th row of X. C provides classification probabilities of each proposal, and D provides the relative score of the proposals corresponding to each class. The two matrices are element-wise multiplied and summed over the proposal dimension to generate the image-level classification predictions, φ ∈ R Nc :</p><formula xml:id="formula_0">φ j = R i=1 C ij • D ij (1)</formula><p>Notice, φ j ∈ (0, 1) since C ij and D ij are normalized. Finally, the negative loglikelihood loss between the predicted labels, and image labels y ∈ R Nc is computed as the MIL loss:</p><formula xml:id="formula_1">L mil = - Nc i=1 [y i log φ i + (1 -y i ) log (1 -φ i )]<label>(2)</label></formula><p>The MIL classifier further suffers from overfitting to the distinctive classification features due to the mismatch of classification and detection probabilities <ref type="bibr" target="#b23">[24]</ref>.</p><p>To tackle this, we further use a self-supervised module to improve the instances.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Self-supervised Instance Learning:</head><p>Inspired by <ref type="bibr" target="#b23">[24]</ref>, we design a instance learning module with N r blocks in a self-supervised framework to refine the instance scores with instance-level supervision. Each block consists of an FC layer. A class-wise softmax is used to generate instance scores x n ∈ R R×(Nc+1) at n-th block. N c + 1 includes the background/ no-finding class. Instance supervision of each layer (n) is obtained from the scores of the previous layer (x (n-1) ). The instance supervision for the first layer is obtained from the MIL head. Suppose ŷn ∈ R R×(Nc+1) is the pseudo-labels of the instances. An instance (p j ) is labelled 1 if it overlaps with the highest-scoring instance by a chosen threshold. Otherwise, the instance is labeled 0 as defined in Eq. 3:</p><formula xml:id="formula_2">m n j = argmax i x (n-1) ij ; ŷn ij = 1, IoU(p j , p m n j ) ≥ τ 0, otherwise<label>(3)</label></formula><p>The loss over the instances is given by Eq. 4:</p><formula xml:id="formula_3">L ins = - 1 N r Nr n=1 1 R R i=1 Nc+1 j=1 w n i ŷn ij log x n ij (4)</formula><p>Here x n ij denotes the score of i-th instance for j-th class at layer n. Following <ref type="bibr" target="#b23">[24]</ref>, the loss weight</p><formula xml:id="formula_4">w n i = x (n-1) i m n j</formula><p>is applied to stabilize the loss. Assuming λ to be a scaling value, the overall loss function is given in Eq. 5:</p><formula xml:id="formula_5">L = L mil + λL ins (5)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head><p>Experimental Setup: We use a machine with Intel Xeon Gold 5218@2.30GHz processor and 8 Nvidia Tesla V100 GPUs for our experiments. The model is trained using SGD with LR 0.001 (for MIL head), weight decay 10 -6 , and momentum 0.9 for 100 epochs with batch size 32. The LR at backbone and transformer are 0.003, and 0.0003, respectively. We use a cosine annealing of the LR. Comparison with SOTA: Table <ref type="table" target="#tab_0">1</ref> shows the bounding box localization results of the WSOD task. Our method surpasses all latest SOTA WSOD techniques by 9 points, and establishes itself as a strong WSOD baseline for GBC localization in US images. Our method also achieves 7-point higher AP score for polyp detection. We present visualizations of the predicted bounding boxes in Fig. <ref type="figure" target="#fig_3">4</ref> which shows that the localization by our method is more precise and clinically relevant as compared to the baselines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Generality of the Method:</head><p>We assess the generality of our method by applying it to polyp detection on colonoscopy images. The applicability of our method on two different tasks -(1) GBC detection from US and (2) Polyp detection from Colonoscopy, indicates the generality of the method across modalities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Ablation Study:</head><p>We show the detection sensitivity to the self-supervised instance learning module in Table <ref type="table" target="#tab_1">2</ref> for two variants, (1) vanilla MIL head on DETR, and (2) MIL with self-supervised instance learning on DETR. Table <ref type="table" target="#tab_1">2</ref> shows the Average Precision and detection sensitivity for both diseases. The results establish the benefit of using the self-supervised instance learning. Other ablations related to the hyper-parameter sensitivity is given in Supplementary Fig. <ref type="figure" target="#fig_0">S1</ref>.</p><p>Classification Performance: We compare our model with the standard CNNbased and Transformer-based classifiers, SOTA WSOD-based classifiers, and SOTA classifiers using additional data or annotations (Table <ref type="table" target="#tab_2">3</ref>). Our method beats the SOTA weakly supervised techniques and achieves 1.2% higher sensitivity for GBC detection. The current SOTA GBC detection models require additional bound-  <ref type="bibr" target="#b24">[25]</ref> 0.829 ± 0.030 0.900 ± 0.040 0.875 ± 0.063 PVTv2 <ref type="bibr" target="#b25">[26]</ref> 0.824 ± 0.033 0.887 ± 0.057 0.894 ± 0.076 RadFormer <ref type="bibr" target="#b3">[4]</ref> 0.921 ± 0.062 0.961 ± 0.049 0.923 ± 0.062 Additional Data/ Annotation USCL <ref type="bibr" target="#b6">[7]</ref> 0.889 ± 0.047 0.895 ± 0.054 0.869 ± 0.097 US-UCL <ref type="bibr" target="#b4">[5]</ref> 0.920 ± 0.034 0.926 ± 0.043 0.900 ± 0.046 GBCNet <ref type="bibr" target="#b2">[3]</ref> 0.921 ± 0.029 0.967 ± 0.023 0.919 ± 0.063 Point-Beyond-Class <ref type="bibr" target="#b17">[18]</ref>  TS-CAM <ref type="bibr" target="#b9">[10]</ref> 0.704 ± 0.017 0.394 ± 0.042 0.891 ± 0.054 SCM <ref type="bibr" target="#b1">[2]</ref> 0.751 ± 0.026 0.523 ± 0.014 0.523 ± 0.016 OD-WSCL <ref type="bibr" target="#b20">[21]</ref> 0.805 ± 0.056 0.609 ± 0.076 0.923 ± 0.034 WS-DETR <ref type="bibr" target="#b18">[19]</ref> 0.857 ± 0.071 0.812 ± 0.088 0.882 ± 0.034 Point-Beyond-Class <ref type="bibr" target="#b17">[18]</ref> 0.953 ± 0.007 0.993 ± 0.004 0.924 ± 0.011 Ours 0.878 ± 0.067 0.785 ± 0.102 0.932 ± 0.022 ing box annotation <ref type="bibr" target="#b2">[3]</ref> or, US videos <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b6">7]</ref>. However, even without these additional annotations/ data, our method reaches 86.1% detection sensitivity. The results for polyp classification are reported in Table <ref type="table" target="#tab_3">4</ref>. Although our method has a slightly lower specificity, the sensitivity surpasses the baselines reported in literature <ref type="bibr" target="#b15">[16]</ref>, and the SOTA WSOD based baselines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>GBC is a difficult-to-detect disease that benefits greatly from early diagnosis. While automated GBC detection from US images has gained increasing interest from researchers, training a standard image classification model for this task is challenging due to the low inter-class variance and high intra-class variability of malignant regions. Current SOTA models for GBC detection require costly bounding box annotation of the pathological regions, or additional US video data, which limit their applicability. We proposed to formulate GBC detection as a weakly supervised object detection/ localization problem using a DETR with selfsupervised instance learning in a MIL framework. Our experiments show that the approach achieves competitive performance without requiring additional annotation or data. We hope that our technique will simplify the model training at the hospitals with easily available data locally, enhancing the applicability and impact of automated GBC detection.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) Low inter-class variability. The first two GBs show benign wall thickening, and the third one shows malignant thickening. However, the appearance of the GB in all three images is very similar. (b) High intra-class variability. All three images have been scanned from the same patient, but due to the sensor's scanning plane, the appearances change drastically.</figDesc><graphic coords="2,70,47,170,30,311,32,59,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Samples from the GBCU [3] and Kvasir-SEG [17] datasets. Four images from each of the disease and non-disease classes are shown on the left and right, respectively. Disease locations are shown by drawing bounding boxes.</figDesc><graphic coords="3,59,31,54,50,305,80,71,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Overview of the proposed Weakly Supervised DETR architecture. The location information in the object queries learned by the class-agnostic DETR ensures generation of high-quality proposals. The MIL framework uses the proposal embeddings generated at the class-aware branch.</figDesc><graphic coords="4,70,98,196,49,310,12,138,40" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative analysis of the predicted bounding boxes. Ground truths are in blue, and predictions are in green. We compare with SOTA WSOD techniques and our proposed method. Our method predicts much tighter bounding boxes that cover the clinically significant disease regions. (Color figure online)</figDesc><graphic coords="7,50,79,232,61,322,51,149,26" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Weakly supervised disease detection performance comparison of our method and SOTA baselines in GBC and Polyps. We report Average Precision at IoU 0.25 (AP25).</figDesc><table><row><cell>Method</cell><cell>GBC</cell><cell>Polyp</cell></row><row><cell></cell><cell>AP25</cell><cell>AP25</cell></row><row><cell>TS-CAM [10] (ICCV 2021)</cell><cell cols="2">0.024 ± 0.008 0.058 ± 0.015</cell></row><row><cell>SCM [2] (ECCV 2022)</cell><cell cols="2">0.013 ± 0.001 0.082 ± 0.036</cell></row><row><cell>OD-WSCL [21] (ECCV 2022)</cell><cell cols="2">0.482 ± 0.067 0.239 ± 0.032</cell></row><row><cell>WS-DETR [19] (WACV 2023)</cell><cell cols="2">0.520 ± 0.088 0.246 ± 0.023</cell></row><row><cell cols="3">Point-Beyond-Class [18] (MICCAI 2022) 0.531 ± 0.070 0.283 ± 0.022</cell></row><row><cell>Ours</cell><cell cols="2">0.628 ± 0.080 0.363 ± 0.052</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation study. Performance of MIL-framework variants on DETR. We compare the AP and detection sensitivity.</figDesc><table><row><cell>Design</cell><cell>GBC</cell><cell></cell><cell>Polyp</cell></row><row><cell></cell><cell>AP25</cell><cell>Sens.</cell><cell>AP25</cell><cell>Sens.</cell></row><row><cell>MIL + DETR</cell><cell cols="4">0.520 ± 0.088 0.833 ± 0.034 0.246 ± 0.023 0.882 ± 0.034</cell></row><row><cell cols="5">MIL + SSL + DETR (Ours) 0.628 ± 0.080 0.861 ± 0.089 0.363 ± 0.052 0.932 ± 0.022</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Performance comparison of our method and other SOTA methods in GBC classification. We report accuracy, specificity, and sensitivity.</figDesc><table><row><cell>Type</cell><cell>Method</cell><cell>Acc.</cell><cell>Spec.</cell><cell>Sens.</cell></row><row><cell>CNN Classifier</cell><cell>ResNet50 [13]</cell><cell cols="3">0.867 ± 0.031 0.926 ± 0.069 0.672 ± 0.147</cell></row><row><cell></cell><cell>InceptionV3 [23]</cell><cell cols="3">0.869 ± 0.039 0.913 ± 0.032 0.708 ± 0.078</cell></row><row><cell>Transformer Classifier</cell><cell>ViT [9]</cell><cell cols="3">0.803 ± 0.078 0.901 ± 0.050 0.860 ± 0.068</cell></row><row><cell></cell><cell>DEIT</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Comparison with SOTA WSOD baselines in classifying Polyps from Colonoscopy images.</figDesc><table><row><cell>0.929 ± 0.013 0.983 ± 0.042 0.731 ± 0.077</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0 20.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A multi-centre polyp detection and segmentation dataset for generalisability assessment</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ali</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Scientific Data</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">75</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Weakly supervised object localization via transformer with implicit spatial calibration</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20077-9_36</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20077-936" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="612" to="628" />
+		</imprint>
+		<respStmt>
+			<orgName>ECCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Surpassing the human accuracy: Detecting gallbladder cancer from USG images with curriculum learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arora</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20886" to="20896" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Radformer: transformers with global-local attention for interpretable and accurate gallbladder cancer detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="page">102676</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Unsupervised contrastive learning of image representations from ultrasound videos with hard negative mining</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Singla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arora</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_41</idno>
+		<idno>978-3-031-16440-8 41</idno>
+		<ptr target="https://doi.org/10.1007/" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="423" to="433" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Endto-end object detection with transformers</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Synnaeve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zagoruyko</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58452-8_13</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58452-813" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12346</biblScope>
+			<biblScope unit="page" from="213" to="229" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">USCL: pretraining deep ultrasound image diagnosis model through video contrastive representation learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87237-3_60</idno>
+		<idno>978-3-030-87237-3 60</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12908</biblScope>
+			<biblScope unit="page" from="627" to="637" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Solving the multiple instance problem with axis-parallel rectangles</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">G</forename><surname>Dietterich</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Lathrop</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lozano-Pérez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="31" to="71" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<title level="m">An image is worth 16x16 words: Transformers for image recognition at scale</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Ts-cam: Token semantic coupled attention map for weakly supervised object localization</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Gao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2886" to="2895" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Imaging-based algorithmic approach to gallbladder wall thickening</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">World J. Gastroenterol</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">40</biblScope>
+			<biblScope unit="page">6163</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Locally advanced gallbladder cancer: a review of the criteria and role of imaging</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Abdominal Radiol</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="998" to="1007" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Surgical outcome and prognostic factors in patients with gallbladder carcinoma</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">K</forename><surname>Hong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Hepato-Biliary-Pancreat. Surg</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="129" to="137" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Seer cancer statistics review, 1975-2014, national cancer institute</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Howlader</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1" to="12" />
+			<pubPlace>Bethesda, MD</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Real-time polyp detection, localization and segmentation in colonoscopy using deep learning</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="40496" to="40510" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Kvasir-SEG: a segmented polyp dataset</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jha</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-37734-2_37</idno>
+		<idno>978-3-030-37734-2 37</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MMM 2020</title>
+		<editor>
+			<persName><forename type="first">Y</forename><forename type="middle">M</forename><surname>Ro</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">11962</biblScope>
+			<biblScope unit="page" from="451" to="462" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Point beyond class: A benchmark for weakly semi-supervised abnormality localization in chest x-rays</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ji</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_24</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-824" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="249" to="260" />
+		</imprint>
+		<respStmt>
+			<orgName>MICCAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Scaling novel object detection with weakly supervised detection transformers</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Labonte</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vineet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Joshi</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<publisher>WACV</publisher>
+			<biblScope unit="page" from="85" to="96" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Transformer based multiple instance learning for weakly supervised histopathology image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Qian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_16</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-716" />
+	</analytic>
+	<monogr>
+		<title level="j">MICCAI</title>
+		<imprint>
+			<biblScope unit="page" from="160" to="170" />
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer Nature Switzerland Cham</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Object discovery via contrastive learning for weakly supervised object detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Seo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bae</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Sutherland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Noh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kim</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19821-2_18</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19821-218" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="312" to="329" />
+		</imprint>
+		<respStmt>
+			<orgName>ECCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Transmil: transformer based correlated multiple instance learning for whole slide image classification</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="2136" to="2147" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Rethinking the inception architecture for computer vision</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vanhoucke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shlens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wojna</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2818" to="2826" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Multiple instance detection network with online instance classifier refinement</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2843" to="2851" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Training data-efficient image transformers &amp; distillation through attention</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Douze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sablayrolles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jégou</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10347" to="10357" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Pvtv 2: Improved baselines with pyramid vision transformer</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

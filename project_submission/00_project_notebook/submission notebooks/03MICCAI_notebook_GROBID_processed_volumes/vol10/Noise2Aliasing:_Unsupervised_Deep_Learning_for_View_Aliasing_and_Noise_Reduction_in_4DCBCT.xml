@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Noise2Aliasing: Unsupervised Deep Learning for View Aliasing and Noise Reduction in 4DCBCT</title>
+				<funder>
+					<orgName type="full">Dutch Ministry of Health</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Dutch Cancer Society</orgName>
+				</funder>
+				<funder ref="#_X9jCgv7">
+					<orgName type="full">ROV</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Samuele</forename><surname>Papa</surname></persName>
+							<email>s.papa@nki.nl</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Amsterdam</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">The Netherlands Cancer Institute</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Efstratios</forename><surname>Gavves</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Amsterdam</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jan-Jakob</forename><surname>Sonke</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">The Netherlands Cancer Institute</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Noise2Aliasing: Unsupervised Deep Learning for View Aliasing and Noise Reduction in 4DCBCT</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="481" to="490"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EE951ECADE6777A4EE504ADDA3250219</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_46</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Medical Imaging</term>
+					<term>Adaptive Radiotherapy</term>
+					<term>4DCBCT</term>
+					<term>Deep Learning</term>
+					<term>Unsupervised Learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Respiratory Correlated Cone Beam Computed Tomography (4DCBCT) is a technique used to address respiratory motion artifacts that affect reconstruction quality, especially for the thorax and upperabdomen. 4DCBCT sorts the acquired projection images in multiple respiratory correlated bins. This technique results in the emergence of aliasing artifacts caused by the low number of projection images per bin, which severely impacts the image quality and limits downstream use. Previous attempts to address this problem relied on traditional algorithms, while only recently deep learning techniques are being employed.</p><p>In this work, we propose Noise2Aliasing, which reduces both viewaliasing and statistical noise present in 4DCBCT scans. Using a fundamental property of the FDK reconstruction algorithm, and prior results from the literature, we prove mathematically the ability of the method to work and specify the underlying assumptions.</p><p>We apply the method to a public dataset and to an in-house dataset and show that it matches the performance of a supervised approach and outperforms it when measurement noise is present in the data.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Radiotherapy (RT) is one of the cornerstones of cancer patients. It utilizes ionizing radiation to eradicate all cells of a tumor. The total radiation dose is typically divided over 3-30 daily fractions to optimize its effect. As the surrounding normal tissue is also sensitive to radiation, highly accurate delivery is vital. Image guided RT (IGRT) is a technique to capture the anatomy of the day using in room imaging in order to align the treatment beam with the tumor location <ref type="bibr" target="#b0">[1]</ref>. Cone Beam CT (CBCT) is the most widely used imaging modality for IGRT.</p><p>A major challenge especially for CBCT imaging of the thorax and upperabdomen is the respiratory motion that introduces blurring of the anatomy, reducing the localization accuracy and the sharpness of the image.</p><p>A technique used to alleviate motion artifacts is Respiratory Correlated CBCT (4DCBCT) <ref type="bibr" target="#b15">[16]</ref>. From the projections, it is possible to extract a respiratory signal <ref type="bibr" target="#b11">[12]</ref>, which indicates the position of the organs within the patient during breathing. With this, subsets of the projections can be defined to create reconstructions that resolve the motion. However, only 20 to 60 respiratory periods are imaged. This limits the number of projections available and results in view-aliasing <ref type="bibr" target="#b15">[16]</ref>. Additionally, the projections are affected by stochastic measurement noise caused by the finite imaging dose used, which further degrades the quality of the reconstruction even when all projections are used.</p><p>Several traditional methods based on iterative reconstruction algorithms and motion compensation techniques are used to reduce view-aliasing in 4DCBCTs <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15]</ref>. Although effective, these methods suffer from motion modeling uncertainty and prolonged reconstruction times.</p><p>Deep learning has been proposed as a way to address view-aliasing with accelerated reconstruction <ref type="bibr" target="#b5">[6]</ref>. However, the method cannot reduce measurement noise because it is still present in the images used as targets during training.</p><p>A different method, called Noise2Inverse, uses an unsupervised approach to reduce measurement noise in the traditional CT setting <ref type="bibr" target="#b3">[4]</ref>. There are two ways to apply it to 4DCBCT and both fail to reduce stochastic noise effectively. The first is to apply Noise2Inverse to each respiratory-correlated reconstruction. In this case, the method will struggle because of the very low number of projections that are available. The second is to apply Noise2Inverse directly to all the projections. In this case, the motion artifacts that blur the image will appear again, as Noise2Inverse requires averaging the sub-reconstructions to obtain a clean reconstruction.</p><p>We propose Noise2Aliasing to address these limitations. The method can be used to provably train models to reduce both view-aliasing artifacts and stochastic noise from 4DCBCTs in an unsupervised way. Training deep learning models for medical applications often needs new data. This was not the case for Noise2Aliasing, and historical clinical data sufficed for training.</p><p>We validated our method on publicly available data <ref type="bibr" target="#b14">[15]</ref> against a supervised approach <ref type="bibr" target="#b5">[6]</ref> and applied it to an internal clinical dataset of 30 lung cancer patients. We explore different dataset sizes to understand their effects on the reconstructed images.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Theoretical Background</head><p>In this section, we will introduce the concepts and the notation necessary to understand the method and the choices made during implementation.</p><p>Unsupervised noise reduction with Noise2Noise. Given input-target pairs x, y ∈ R we can define the regression problem in the one-dimensional setting as finding f * : R → R which satisfies the following:</p><formula xml:id="formula_0">f * = arg min f E x,y f (x) -y 2 2 ,<label>(1)</label></formula><p>which can be minimized point-wise <ref type="bibr" target="#b2">[3]</ref>, yielding:</p><formula xml:id="formula_1">f * (x) = E y|x [y|x] .<label>(2)</label></formula><p>In Noise2Noise <ref type="bibr" target="#b4">[5]</ref>, input-target pairs are two samples of the same image that only differ because of some independent mean-zero noise (x + δ 1 , x + δ 2 ) with</p><formula xml:id="formula_2">E δ2 [x + δ 2 |x + δ 1 ] = x.</formula><p>Then f * will recover the input image without any noise:</p><formula xml:id="formula_3">f * (x + δ 1 ) = E δ2 [x + δ 2 |x + δ 1 ] = x. (<label>3</label></formula><formula xml:id="formula_4">)</formula><p>Denoising for Tomography with Noise2Inverse. During a CT scan, a volume x is imaged by acquiring projections y = Ax using an x-ray source and a detector placed on the opposite side of the volume. The projections can then be used by an algorithm that computes a linear operator R to obtain an approximation of the original distribution of x-ray attenuation coefficients x = Ry. The algorithm can also operate on a subset of the projections. Let J = {1, 2, . . . } be the set of all projections and J ⊂ J , then xJ = R J y J is the reconstruction obtained using only projections y J . Let us now assume that the projections have some meanzero noise ỹi = y i + with E (ỹ i ) = y i . Then, in Noise2Inverse <ref type="bibr" target="#b3">[4]</ref> the results from Noise2Noise are extended to find a function f * which removes projection noise when trained using noisy reconstructions xJ = R J ỹJ = R J y J + R J = xJ + R J and the expected MSE as loss function. In particular, they find that the loss function can be decomposed in the following way:</p><formula xml:id="formula_5">L = E f (x J ) -xJ 2 2 = E f (x J ) -xJ 2 2 + E xJ -xJ 2 2 , (<label>4</label></formula><formula xml:id="formula_6">)</formula><p>where J is a random variable that picks subsets of projections at random and J is its complementary. Given Eq. 2, we observe that function f * which minimizes L is:</p><formula xml:id="formula_7">f * (x J ) = E J (x J |x J ).<label>(5)</label></formula><p>When using reconstructions from a subset of noisy projections as input and reconstructions from their complementary as its output, a neural network will learn to predict the expected reconstruction without the noise.</p><p>Property of Expectation over Subsets of Projections Using FDK. Now let J be a random variable that selects subsets of projections J ⊂ J at random such that each projection is selected at least once. Define R J : R D d ×|J| → R Dv to be the FDK reconstruction algorithm <ref type="bibr" target="#b1">[2]</ref> that reconstructs a volume of dimensionality D v from projections J each with dimensionality D d (geometrical details on the exact setup are not relevant). The FDK uses, as its fundamental step, the dual Radon transform <ref type="bibr" target="#b8">[9]</ref>, which is a weighted summation that can be written as an expectation. Then, the following holds:</p><formula xml:id="formula_8">x = R J y = E J∼J [R J y J ] = E J∼J [x J ] . (6)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Noise2Aliasing</head><p>Here, we propose Noise2Aliasing, an unsupervised method capable of reducing both view-aliasing and projection noise in 4DCBCTs. At the core of this method is the following proposition.</p><p>Proposition. Given the projection set J = {1, 2, . . . }, the FDK reconstruction algorithm R, and the noisy projections ỹ = Ax+ with mean-zero element-wise independent noise. Let J 1 , J 2 be two random variables that pick different subsets at random belonging to a partition of J , and</p><formula xml:id="formula_9">(x J1 = R J1 ỹJ1 , xJ2 = R J2 ỹJ2 ) ∈ D</formula><p>be the input-target pairs in dataset D of reconstructions using disjoint subsets of noisy projections. Let L be the expected MSE over D with respect to a function f : R Dv → R Dv and the previously-described input-target pairs. Then, we find that the function f * that minimizes L for any given J ∈ J will reconstruct the volume using all the projections and remove the noise :</p><formula xml:id="formula_10">f * (x J ) = x. (<label>7</label></formula><formula xml:id="formula_11">)</formula><p>Proof. The loss function L is defined in the following way:</p><formula xml:id="formula_12">L = E D f (x J2 ) -xJ1 2 2 . (<label>8</label></formula><formula xml:id="formula_13">)</formula><p>Additionally, J 1 , J 2 are disjoint, the noise is mean-zero element-wise, and we are using the FDK reconstruction algorithm which defines a linear operator R. These allow us to use Eq. 5 to find that the function f * that minimizes L is the following:</p><formula xml:id="formula_14">f * (x J ) = E J1,J2 (x J1 |x J2 = xJ ).<label>(9)</label></formula><p>This is sufficient to reduce stochastic noise but we need to further manipulate this expression to address view aliasing. Simplifying notation and using the properties of conditional expectations, we can write:</p><formula xml:id="formula_15">f * (z) = E j1∼J1 [E j2∼J2 (x j1 |x j2 = z)] ,<label>(10)</label></formula><p>now assume that xj1 is the clean reconstruction that is consistent with the observed noisy reconstruction z obtained from each disjoint subset j 2 , then:</p><formula xml:id="formula_16">f * (z) = E j1∼J1 (x j1 ).<label>(11)</label></formula><p>Finally, we use the property of the FDK from Eq. 6:</p><formula xml:id="formula_17">f * (z) = E j1∼J1 (x j1 ) = x. (<label>12</label></formula><formula xml:id="formula_18">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Design Choices Based on the Proposition</head><p>The proposition guided the choice of reconstruction method to be FDK and the design of the subset selection method from considerations that are now explained. Equation 12 holds true only when the same underlying clean reconstruction x can be determined from the noisy reconstruction using any subset from a partition of the projections J . This means that, in our dataset, we should have at our disposal reconstructions of the same underlying volume x using disjoint subsets of projections. In 4DCBCTs this is not the case, as separate respiratory phases are being reconstructed, where the organs are in different positions. We can address this problem by carefully choosing subsets of projections that result in respiratory-uncorrelated reconstructions. The reconstructions will display organs in their average position and, therefore, have the same underlying structure. When the projections are selected with the same sampling pattern as the one used in respiratory-correlated reconstructions, then the view-aliasing artifacts display will have the same pattern as the ones present in the 4DCBCTs.</p><p>Compared to previous work, to obtain the additional effect of reducing projection noise, the respiratory-uncorrelated reconstructions must use non-overlapping subsets of projections. Coincidentally, a previously proposed subset selection method utilized for supervised aliasing reduction fits all these requirements and will, therefore, be used in this work <ref type="bibr" target="#b3">[4]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>First, we used the SPARE Varian dataset to study whether Noise2Aliasing can match the performance of the supervised baseline and if it can outperform it when adding noise to the projections. Then, we use the internal dataset to explore the requirements for the method to be applied to an existing clinical dataset. These required around 64 GPU days on NVIDIA A100 GPUs.</p><p>Training of the model is done on 2D slices. The projections obtained during a scan are sub-sampled according to the pseudo-average subset selection method described in <ref type="bibr" target="#b5">[6]</ref> and then used to obtain 3D reconstructions. In Noise2Aliasing these are used for both input and target during training. Given two volumes (x, y), the training pairs (x i (k) , y i (k) ) are the same i-th slice along the k-th dimension of each volume chosen to be the axial plane.</p><p>The Datasets used in this study are two:</p><p>1. The SPARE Varian dataset was used to provide performance results on publicly available patient data. To more closely resemble normal respiratory motion per projection image, the 8 min scan has been used from each patient (five such scans are available in the dataset). Training is performed over 4 patients while 1 patient is used as a test set. The hyperparameters are optimized over the training dataset.</p><p>2. An internal dataset (IRB approved) of 30 lung cancer patients' 4DCBCTs from 2020 to 2022, originally used for IGRT, with 25 patients for training and 5 patients for testing. The scans are 4 min 205 • scans with 120keV source and 512 × 512 sized detector, using Elekta LINACs. The data were anonymized prior to analysis.</p><p>Projection Noise was added using the Poisson distribution to the SPARE Varian dataset to evaluate the ability of the unsupervised method to reduce it. Given a projected value of p and a photon count π (chosen to be 2500), the rate of the Poisson distribution is defined as πe -p and given a sample q from this distribution, then the new projected value is p =log q π .</p><p>The Architecture used in this work is the Mixed Scale Dense CNN (MSD) <ref type="bibr" target="#b7">[8]</ref>, the most successful architecture from Noise2Inverse <ref type="bibr" target="#b3">[4]</ref>. The MSD makes use of dilated convolutions to process features at all scales of the image. We use the MSD with depth 200 and width 1, Adam optimizer, MSE loss, a batch size of 16, and a learning rate of 0.0001.</p><p>The Baselines we compare against are two. The first is the traditional FDK obtained using RTK <ref type="bibr" target="#b12">[13]</ref>. The second is the supervised approach proposed by <ref type="bibr" target="#b5">[6]</ref>, where we replace the model with the MSD, for a fair comparison. In the supervised approach, the model is trained by using as input reconstructions obtained from subsets defined with pseudo-average subset selection while the targets use all of the projections available.</p><p>The Metrics used in this work are the Root Mean Squared Error (RMSE), Peak Signal-to-Noise Ratio (PSNR), and Structural Similarity Index Measure (SSIM) <ref type="bibr" target="#b16">[17]</ref> All the metrics are defined between the output of the neural network and a 3D (CB)CT scan. For the SPARE Varian dataset, we use the ROIs defined provided <ref type="bibr" target="#b14">[15]</ref> and used the 3D reconstruction using all the projections available as a ground truth. For the internal dataset, we deformed the planning CT to each of the phases reconstructed using the FDK algorithm and evaluate the metric over only the 4DCBCT volume boundaries.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Results and Discussion</head><p>SPARE Varian. Inference speed with the NVIDIA A100 GPU averages 600ms per volume made of 220 slices. From the qualitative evaluation of the methods in Fig. <ref type="figure" target="#fig_0">1</ref>, Noise2Aliasing matches the visual quality of the supervised approach on the low-noise dataset on both soft tissue and bones. The metrics in Table <ref type="table" target="#tab_0">1</ref> show mean and standard deviation across all phases for a single patient. In the lownoise setting, both supervised and Noise2Aliasing outperform FDK with very similar results, often within a single standard deviation. Noise2Aliasing successfully matches the performance of the supervised baseline.  Noisy SPARE Varian. From Fig. <ref type="figure" target="#fig_0">1</ref> and Table <ref type="table" target="#tab_0">1</ref>, the supervised approach reproduces the noise that was seen during training, while Noise2Aliasing manages to remove it consistently, outperforming the supervised approach, especially in the soft tissue area around the lungs, where the noise affects attenuation coefficients the most.</p><p>Noise2Aliasing is capable of reducing the artifacts present in reconstructions caused by stochastic noise in the projections used, outperforming the supervised baseline.</p><p>Internal Dataset. Noise2Alisting trained on 25 patients and tested on 5 achieved mean PSNR of 35.24 and SSIM of 0.91, while the clinical method achieved mean PSNR of 29.97 and 0.74 SSIM with p-value of 0.048 for the PSNR and 0.0015 for the SSIM, so Noise2Aliasing was significantly better according to both metrics. Additionally, from Fig. <ref type="figure" target="#fig_1">3</ref> we can see how the breathing extent is matched with sharp reconstruction of the diaphragm. Overall, using more patients results in better noise reduction and sharper reconstructions (see Fig. <ref type="figure">2</ref>), Fig. <ref type="figure">2</ref>. Reconstruction using Noise2Aliasing with different-sized datasets. With fewer patients, the model is more conservative and tends to keep more noise, but also smudges the interface between tissues and bones. With more patients, more of the view-aliasing is addressed, and the reconstruction is sharper, however, a few small anatomical structures tend to be suppressed by the model.</p><p>especially between fat tissue and skin and around the bones. However, the model also tends to remove small anatomical structures as high-frequency objects that cannot be distinguished from the noise.</p><p>When applied to a clinical dataset, Noise2Aliasing benefits from more patients being included in the dataset, however, qualitatively good performance is already achieved with 5 patients. No additional data collection was required and the method can be applied without major changes to the current clinical practice. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>We have presented Noise2Aliasing, a method to provably remove both viewaliasing and stochastic projection noise from 4DCBCTs using an unsupervised deep learning method. We have empirically demonstrated its performance on a publicly available dataset and on an internal clinical dataset. Noise2Aliasing outperforms a supervised approach when stochastic noise is present in the projections and matches its performance on a popular benchmark. Noise2Aliasing can be trained on existing historical datasets and does not require changing current clinical practices. The method removes noise more reliably when the dataset size is increased, however further analysis is required to establish a good quantitative measurement of this phenomenon. As future work, we plan to study Noise2Aliasing in the presence of changes in the breathing frequency and amplitude between patients and during a scan.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Qualitative comparison between methods using coronal view of the patient in the test set. Noise2Aliasing and the Supervised method produce very similar images in the low-noise case. With noisy data, the supervised method tends to re-create the noise seen during training.</figDesc><graphic coords="7,55,98,54,32,340,18,80,38" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Motion extent is accurately resolved by Noise2Aliasing when using 25 patients. On the left is the FDK, while on the right is the output of the model.</figDesc><graphic coords="8,41,79,377,60,340,21,71,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Metrics for the comparison between FDK, Supervised method, and Noise2Aliasing (N2A). Values are mean and std computed across all phases of patient 1 of the SPARE Varian dataset. The Planning Target Volume (PTV) ROI is less affected by noise compared to the whole Body, which is what causes the supervised model to outperform N2A in terms of PSNR and RMSE.</figDesc><table><row><cell></cell><cell cols="2">SSIM ↑ ×10 -2</cell><cell>PSNR ↑</cell><cell></cell><cell cols="2">RMSE ↓ (×10 -3 )</cell></row><row><cell>Noisy</cell><cell>Body</cell><cell>PTV</cell><cell>Body</cell><cell>PTV</cell><cell>Body</cell><cell>PTV</cell></row><row><cell>FDK</cell><cell cols="6">12.99 ± 2.1 25.31 ± 4.2 14.66 ± 1.0 13.83 ± 1.0 6.70 ± 0.8 5.51 ± 0.6</cell></row><row><cell cols="7">Supervised 59.76 ± 2.1 72.61 ± 2.7 22.20 ± 0.2 20.59 ± 0.4 2.80 ± 0.1 2.52 ± 0.1</cell></row><row><cell>N2A</cell><cell cols="6">64.90 ± 0.8 76.33 ± 1.4 22.31 ± 0.2 20.41 ± 0.4 2.76 ± 0.1 2.57 ± 0.1</cell></row><row><cell>Low-Noise</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>FDK</cell><cell cols="6">41.75 ± 2.1 56.77 ± 4.2 20.86 ± 1.0 19.09 ± 1.0 3.27 ± 0.8 2.99 ± 0.6</cell></row><row><cell cols="7">Supervised 67.49 ± 0.8 79.54 ± 2.3 22.68 ± 0.2 20.92 ± 0.5 2.65 ± 0.1 2.43 ± 0.1</cell></row><row><cell>N2A</cell><cell cols="6">67.13 ± 0.7 79.52 ± 2.0 22.50 ± 0.2 20.79 ± 0.5 2.70 ± 0.1 2.46 ± 0.1</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements and Disclosures. We thank <rs type="person">Celia Juan de la Cruz</rs>, <rs type="person">Nikita Moriakov</rs>, <rs type="person">Xander Staal</rs>, and <rs type="person">Jonathan Mason</rs> for helping during the development of this work. This work was funded by <rs type="funder">ROV</rs> with grant number <rs type="grantNumber">PPS2102</rs> and <rs type="institution">Elekta Oncology AB</rs> and was supported by an institutional grant of the <rs type="funder">Dutch Cancer Society</rs> and the <rs type="funder">Dutch Ministry of Health</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_X9jCgv7">
+					<idno type="grant-number">PPS2102</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 46.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Advances in image-guided radiation therapy</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Dawson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Jaffray</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="938" to="946" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Practical cone-beam algorithm</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Feldkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Davis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Kress</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Josa a</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="612" to="619" />
+			<date type="published" when="1984">1984</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hastie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tibshirani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Friedman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Friedman</surname></persName>
+		</author>
+		<title level="m">The Elements of Statistical Learning: Data Mining, Inference, and Prediction</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Noise2Inverse: self-supervised deep convolutional denoising for tomography</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Hendriksen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Pelt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Batenburg</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TCI.2020.3019647</idno>
+		<ptr target="https://doi.org/10.1109/TCI.2020.3019647" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Comput. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="1320" to="1335" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Noise2Noise: learning image restoration without clean data</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lehtinen</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 35th International Conference on Machine Learning</title>
+		<meeting>the 35th International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2018-07">July 2018</date>
+			<biblScope unit="page" from="2965" to="2974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Self-contained deep learningbased boosting of 4D cone-beam CT reconstruction</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Madesta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Sentker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Gauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Werner</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/mp.14441</idno>
+		<ptr target="https://doi.org/10.1002/mp.14441" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="5619" to="5631" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Motion-aware temporal regularization for improved 4d cone-beam computed tomography</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mory</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Janssens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rit</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">18</biblScope>
+			<biblScope unit="page">6856</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A mixed-scale dense convolutional neural network for image analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Pelt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Sethian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="254" to="259" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">An introduction to x-ray tomography and radon transforms</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">T</forename><surname>Quinto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Symposia in Applied Mathematics</title>
+		<meeting>Symposia in Applied Mathematics</meeting>
+		<imprint>
+			<date type="published" when="2006">2006</date>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page">1</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A novel digital tomosynthesis (DTS) reconstruction method using a deformation field map</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="3110" to="3115" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+	<note>Part1</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Data-driven respiratory motion compensation for four-dimensional cone-beam computed tomography (4D-CBCT) using GroupWise deformable registration</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Riblett</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Christensen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hugo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="4471" to="4482" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Quantification of the variability of diaphragm motion and implications for treatment margin construction</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Herk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zijp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Sonke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Radiat. Oncol. * Biol.* Phys</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="399" to="e407" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The reconstruction toolkit (RTK), an open-source cone-beam CT reconstruction toolkit based on the insight toolkit (ITK)</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">V</forename><surname>Oliva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Brousmiche</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Labarbe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sarrut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">C</forename><surname>Sharp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Phys. Conf. Ser</title>
+		<imprint>
+			<biblScope unit="volume">489</biblScope>
+			<biblScope unit="page">12079</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">On-the-fly motion-compensated cone-beam CT using an a priori model of the respiratory motion</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Wolthaus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Herk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Sonke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">6Part1</biblScope>
+			<biblScope unit="page" from="2283" to="2296" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Spare: sparse-view reconstruction challenge for 4d cone-beam CT from a 1-min scan</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Shieh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="3799" to="3811" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Respiratory correlated cone beam CT: respiratory correlated cone beam CT</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Sonke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zijp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Remeijer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Herk</surname></persName>
+		</author>
+		<idno type="DOI">10.1118/1.1869074</idno>
+		<ptr target="https://doi.org/10.1118/1.1869074" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1176" to="1186" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Image quality assessment: from error visibility to structural similarity</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Sheikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simoncelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="600" to="612" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">CortexMorph: Fast Cortical Thickness Estimation via Diffeomorphic Registration Using VoxelMorph</title>
+				<funder ref="#_9bnktxt">
+					<orgName type="full">Novartis Forschungsstiftung</orgName>
+				</funder>
+				<funder ref="#_zg4TF8E">
+					<orgName type="full">Swiss National Science Foundation</orgName>
+					<orgName type="abbreviated">SNSF</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Richard</forename><surname>Mckinley</surname></persName>
+							<email>richard.mckinley@insel.ch</email>
+						</author>
+						<author>
+							<persName><forename type="first">Christian</forename><surname>Rummel</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Support Center for Advanced Neuroimaging (SCAN)</orgName>
+								<orgName type="institution">University Institute of Diagnostic and Interventional Neuroradiology</orgName>
+								<address>
+									<settlement>Inselspital</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="institution">Bern University Hospital</orgName>
+								<address>
+									<settlement>Bern</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">CortexMorph: Fast Cortical Thickness Estimation via Diffeomorphic Registration Using VoxelMorph</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">1A6FFBD88CE9383D550CC5A48469938D</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-569.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>MRI</term>
+					<term>Morphometry</term>
+					<term>cortical thickness</term>
+					<term>Unsupervised image registration</term>
+					<term>Deep learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The thickness of the cortical band is linked to various neurological and psychiatric conditions, and is often estimated through surfacebased methods such as Freesurfer in MRI studies. The DiReCT method, which calculates cortical thickness using a diffeomorphic deformation of the gray-white matter interface towards the pial surface, offers an alternative to surface-based methods. Recent studies using a synthetic cortical thickness phantom have demonstrated that the combination of DiReCT and deep-learning-based segmentation is more sensitive to subvoxel cortical thinning than Freesurfer.</p><p>While anatomical segmentation of a T1-weighted image now takes seconds, existing implementations of DiReCT rely on iterative image registration methods which can take up to an hour per volume. On the other hand, learning-based deformable image registration methods like Voxel-Morph have been shown to be faster than classical methods while improving registration accuracy. This paper proposes CortexMorph, a new method that employs unsupervised deep learning to directly regress the deformation field needed for DiReCT. By combining CortexMorph with a deep-learningbased segmentation model, it is possible to estimate region-wise thickness in seconds from a T1-weighted image, while maintaining the ability to detect cortical atrophy. We validate this claim on the OASIS-3 dataset and the synthetic cortical thickness phantom of Rusak et al.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Cortical thickness (CTh) is a crucial biomarker of various neurological and psychiatric disorders, making it a primary focus in neuroimaging research. The cortex, a thin ribbon of grey matter at the outer surface of the cerebrum, plays a vital role in cognitive, sensory, and motor functions, and its thickness has been linked to a wide range of neurological and psychiatric conditions, including Alzheimer's disease, multiple sclerosis, schizophrenia, and depression, among others. Structural magnetic resonance imaging (MRI) is the primary modality used to investigate CTh, and numerous computational methods have been developed to estimate this thickness on the sub-millimeter scale. Among these, surface-based methods like Freesurfer <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6]</ref> have been widely used, but they are computationally intensive, making them less feasible for clinical applications. Optimizations based on Deep Learning have brought the running time for a modified Freesurfer pipeline down to one hour. <ref type="bibr" target="#b6">[7]</ref> The DiReCT method <ref type="bibr" target="#b3">[4]</ref> offers an alternative to surface-based morphometry methods, calculating CTh via a diffeomorphic deformation of the gray-white matter interface (GWI) towards the pial surface (the outer edge of the cortical band). The ANTs package of neuroimaging tools provides an implementation of DiReCT via the function KellyKapowski: for readablility we refer below to KellyKapowski with its default parameters as ANTs-DiReCT. The ANTs cortical thickness pipeline uses ANTs-DiReCT together with a three-class segmentation (grey matter, white matter, cerebrospinal fluid) provided by the Atropos segmentation method, taking between 4 and 15 h depending on the settings and available hardware <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b14">15]</ref>. A more recent version of ANTs provides a deep-learning based alternative to Atropos, giving comparable results to ANTs but accelerating the overall pipeline to approximately one hour, such that now the running time is dominated by the time needed to run ANTs-DiReCT <ref type="bibr" target="#b15">[16]</ref>. Meanwhile, Rebsamen et al. have shown that applying DiReCT to the output of a deep-learning-based segmentation model trained on Freesurfer segmentations (rather than Atropos) yields a CTh method which agrees strongly with Freesurfer, while having improved repeatability on repeated scans <ref type="bibr" target="#b11">[12]</ref>. Subsequently, a digital phantom using GAN-generated scans with simulated cortical atrophy showed that the method of Rebsamen et al. is more sensitive to cortical thinning than Freesurfer <ref type="bibr" target="#b12">[13]</ref>.</p><p>The long running time of methods for determining CTh remains a barrier to application in clinical routine: a running time of one hour, while a substantial improvement over Freesurfer and ANTs cortical thickness, is still far beyond the real-time processing desirable for on-demand cortical morphometry in clinical applications. In terms of both the speed and performance, VoxelMorph and related models are known to outperform classical deformable registration methods, suggesting that a DiReCT-style CTh algorithm based on unsupervised registration models may enable faster CTh estimation. <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b17">18]</ref> In this paper, we demonstrate that a VoxelMorph style model can be trained to produce a diffeomorphism taking the GWI to the pial surface, and that this model can be used to perform DiReCT-style CTh estimation in seconds. We trained the model on 320 segmentations derived from the IXI and ADNI datasets, and demonstrate excellent agreement with ANTs-DiReCT on the OASIS-3 dataset. Our model also shows improved performance on the digital CTh phantom of Rusak et al. <ref type="bibr" target="#b12">[13]</ref>.</p><p>Fig. <ref type="figure">1</ref>. End-to-end unsupervised architecture for DiReCT: velocity field z is regressed from WM and WM+GM segmentations, using a Unet. This velocity field is then integrated by seven scaling and squaring layers ( ) to yield forward and reverse deformation fields φz and φ-z, which are used to deform the input images in spatial transformer (ST) blocks. Components of the loss function are marked in orange.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">DiReCT Cortical Thickness Estimation</head><p>The estimation of CTh using the DiReCT method <ref type="bibr" target="#b3">[4]</ref> proceeds as follows: first a (partial volume) segmentation of the cortical white matter (WM) and cortical grey matter (GM) is obtained. Second, a forward deformation field φ mapping the white-matter (WM) image towards the WM+GM image is computed. This forward deformation field should be a diffeomorphism, in order that the deformation field is invertible and the topology of the inferred pial surface is the same as the GWI. Third, the diffeormorphism is inverted to obtain the reverse the deformation field, taking the pial surface towards the GWI. Finally, the CTh is determined by computing the magnitude of the reverse field at the GWI: specifically, at each voxel of WM adjacent to the GM. In ANTs-DiReCT, the forward transform (from WM to WM+GM) is calculated by a modified greedy algorithm, in which the WM surface is propagated iteratively in the direction of the surface normal until it reaches the outer GM surface or a predefined spatial prior maximum is reached. The approximate inverse field is then determined by numerical means using kernel based splines (as implemented in ITK).</p><p>The absence of a reliable gold-standard ground truth for CTh makes comparisons between methods difficult. This situation has recently been improved by the publication of a synthetic cortical atrophy phantom: a dataset generated using a GAN conditioned on subvoxel segmentations, consisting of 20 synthetic subjects with 19 induced sub-voxel atrophy levels per subject (ten evenly spaced atrophy levels from 0 to 0.1 mm, and a further nine evenly spaced atrophy levels from 0.1 mm to 1 mm). <ref type="bibr" target="#b12">[13]</ref> The purpose of this digital phantom is to explore the ability of CTh algorithms to resolve subtle changes of CTh. The paper of Rusak et al. analyzed the performance of several CTh methods on this dataset, finding that the DL+DiReCT method <ref type="bibr" target="#b11">[12]</ref> (which combines a deep network trained on Freesurfer annotations with ANTs-DiReCT) was the most sensitive to cortical atrophy and had the best agreement with the synthetically induced thinning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">CortexMorph: VoxelMorph for DiReCT</head><p>The original VoxelMorph architecture, introduced in <ref type="bibr" target="#b2">[3]</ref>, utilized a Unet architecture to directly regress a displacement field from a fixed brain image and a moving brain image. Application of a spatial transform layer allows the moving image to be transformed to the space of the fixed image, and compared using a differentiable similarity metric such as mean squared error or cross-correlation. Since the spatial transformation is also a differentiable operation, the network can be trained end-to-end. Later adaptations of the concept employed a regression of a stationary velocity field, with the deformation field being calculated via an integration layer: the principal advantage of this formulation is that integrating through a velocity field yields a diffeomorphism. <ref type="bibr" target="#b1">[2]</ref> Since diffeomorphic registration is required in the DiReCT method, we adopt this velocity-field form of VoxelMorph for our purposes.</p><p>The setup of our VoxelMorph architecture, CortexMorph, is detailed in Fig. <ref type="figure">1</ref>. The two inputs to the network are a partial volume segmentation of white matter (WM), and a partial volume segmentation of grey matter plus white matter (WM+GM). These are fed as entries into a Unet, the output of which is a velocity field z, which is then integrated using 7 steps of scaling and squaring to yield a displacement field φ z . This displacement field is then applied to the WM image to yield the deformed white matter volume WM•φ z . By integrating -z we obtain the reverse deformation field φ -z , which is applied to the WM+GM image to obtain a deformed volume (WM + GM) • φ -z . This simplifies the DiReCT method substantially: instead of needing to perform a numerical inversion of the deformation field, the reverse deformation field can be calculated directly. The deformed volumes are then compared using a loss function L to their nondeformed counterparts: both directions of deformation are weighted equally in the final objective function. To encourage smoothness, a discrete approximation of the squared gradient magnitude of the velocity field L smooth is added to the loss as a regularizer. <ref type="bibr" target="#b1">[2]</ref> As a result, our loss has the following form</p><formula xml:id="formula_0">L(WM, (WM + GM) • φ -z ) + L(WM + GM, WM • φ z ) + λL smooth (z) (1)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Data and WM/GM Segmentation</head><p>Training data and validation for our VoxelMorph model was derived from two publicly available sources: images from 200 randomly selected elderly individuals from the ADNI dataset <ref type="bibr" target="#b9">[10]</ref> and images from 200 randomly selected healthy adults from the IXI dataset (https://brain-development.org/ixi-dataset). From each of these datasets, 160 images were randomly chosen to serve as training data, yielding in total 320 training cases and 80 validation cases. For testing our pipeline, we use two sources different from the training/validation data: the well-known OASIS-3 dataset (2,643 scans of 1,038 subjects, acquired over &gt;10 years on three different Siemens scanners), and the CTh phantom of Rusak et al. <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b13">14]</ref> For WM/GM segmentation, we employed the DeepSCAN model <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>, which is available as part of DL+DiReCT (https://github.com/SCAN-NRAD/ DL-DiReCT), since this is already known to give high-quality CTh results when combined with ANTs-DiReCT. This model takes as input a T1-weighted image, performs resampling and skull-stripping if necessary (provided by HD-BET <ref type="bibr" target="#b8">[9]</ref>) and produces a partial volume segmentation P w of the white matter and P g of the cortex (the necessary inputs to the DiReCT algorithm) with 1mm isovoxel resolution. It also produces a cortical parcellation in the same space (necessary to calculate region-wise CTh measures). We applied this model to the training data, validation data, and the 400 synthetic MRI cases of the CTh phantom, both to produce ANTs-DiReCT CTh measurements and also as an input to our VoxelMorph models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Training and Model Selection</head><p>Our network was implemented and trained in Pytorch (1.13.1). We utilized a standard Unet (derived from the nnUnet framework <ref type="bibr" target="#b7">[8]</ref>) with 3 pooling steps and a feature depth of 24 features at each resolution. The spatial transformer/squaring and scaling layers/gradient magnitude loss were incorporated from the official VoxelMorph repository. For the loss function L we tested both L1 loss and mean squared error (MSE). We tested values of the smoothness parameter lambda between 0 and 0.05. The models were trained with the Adam optimizer, with a fixed learning rate of 10 -3 and weight decay 10 -5 . Patches of size 128 3 were used as training data in batches of size 2.</p><p>The training regime was fully unsupervised with respect to cortical thickness: neither the deformation fields yielded by ANTs-DiReCT nor the CTh results computed from those deformation fields were used in the objective function. Since we are interested in replacing the iterative implementation of DiReCT with a deep learning counterpart, we used the 80 validation examples for model selection, selecting the model which showed best agreement in mean global CTh with the results of ANTs-DiReCT. The metric for agreement chosen is intraclass correlation coefficient, specifically ICC(2,1) (the proportion of variation explained by the individual in a random effects model, assuming equal means of the two CTh measurement techniques), since this method is sensitive to both absolute agreement and relative consistency of the measured quantity. ICC was calculated using the python package Pingouin <ref type="bibr" target="#b16">[17]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Testing</head><p>The VoxelMorph model which agreed best with ANTs-DiReCT on the validation set was applied to segmentations of the OASIS-3 dataset, to confirm whether model selection on a small set of validation data would induce good agreement with ANTs-DiReCT on a much larger test set (metric, ICC(2,1)) and to the synthetic CTh phantom of Rusak et al., to determine whether the VoxelMorph model is able to distinguish subvoxel changes in CTh (metric, coefficient of determination (R 2 )).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Results</head><p>The best performing model on the validation set (in terms of agreement with DiReCT) was the model trained with MSE loss and a λ of 0.02. When used to measure mean global CTh, this model scored an ICC(2,1) of 0.91 (95% confidence interval [0.9, 0.92]) versus the mean global CTh yielded by ANTs-DiReCT on the OASIS-3 dataset. For comparison, on the same dataset the ICC between Freesurfer and the ANTs-DiReCT method was 0.50 ([95% confidence interval -0.08, 0.8]). A breakdown of the ICC by cortical subregion can be seen in Fig. <ref type="figure" target="#fig_0">2</ref>: these range from good agreement (entorhinal right, ICC = 0.87) to poor (caudalanteriorcingulate right, ICC = 0.26), depending on the region. However, ICC(2,1) is a measure of absolute agreement, as well as correlation: all regional Pearson correlation coefficients lie in a range [0.64-0.90] (see supplementary material for a region-wise plot of the Pearson correlation coefficients).  Performance of this model on the CTh digital phantom can be seen in Fig. <ref type="figure" target="#fig_1">3</ref>: agreement with the induced level of atrophy is high (metric: Coefficient of Determination between the induced and the measured level of atrophy, across all 20 synthetic subjects) in both the wide range of atrophy (up to 1mm) and the fine-grained narrower range of atrophy (up to 0.1mm), suggesting that the Vox-elMorph model is able to resolve small changes in CTh.</p><p>Calculating regional CTh took between 2.5 s and 6.4 s per subject (mean, 4.3 s, standard deviation 0.71 s) (Nvidia A6000 GP, Intel Xeon(R) W-11955M CPU).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>Our experiments suggest that the classical, iterative approach to cortical thickness estimation by diffeomorphic registration can be replaced with a VoxelMorph network, with ∼ 800 fold reduction in the time needed to calculate CTh from a partial volume segmentation of the cortical grey and white matter. Since such segmentations can also be obtained in a small number of seconds using a CNN or other deep neural network, we have demonstrated for the first time reliable CTh estimation running on a timeframe of seconds. This level of acceleration offers increased feasibility to evaluate CTh in the clinical setting. It would also enable the application of ensemble methods to provide multiple thickness measures for an individual: given an ensemble of, say, 15 segmentation methods, a plausible distribution of CTh values could be reported for each cortical subregion within one minute: this would allow better determination of the presence of cortical atrophy in an individual than is provided by point estimates. We are currently investigating the prospect of leveraging the velocity field to enable fast calculation of other morphometric labels such as grey-white matter contrast and cortical curvature: these too could be calculated with error bars via ensembling.</p><p>This work allows the fast calculation of diffeomorphisms for DiReCT on the GPU. We did not consider the possibility of directly implementing/accelerating the classical DiReCT algorithm on a GPU in this work. Elements of the ANTs-DiReCT pipeline implement multithreading, yielding for example a 20 min runtime with 4 threads: however, since some parts of the pipeline cannot be parallelized it is unlikely that iterative methods can approach the speed of direct regression by CNN.</p><p>Given the lack of a gold standard ground truth for CTh, it is necessary when studying a new definition of CTh to compare to an existing silver standard method: this would typically be Freesurfer, but recent results suggest that this may not be the optimal method when studying small differences in CTh. <ref type="bibr" target="#b12">[13]</ref> We have focused on comparison to the DL+DiReCT method for this study, since the results of this model on the CTh phantom are already reported and represent the state-of-the-art. For this reason, it made sense to use the outputs of the underlying CNN as inputs to our pipeline. However, the method we describe is general and could be applied to any highly performing segmentation method. Similarly, while we performed model selection to optimize agreement with the CTh values produced by Rebsamen et al., this optimization could easily be tuned to instead optimize agreement with Freesurfer. Alternatively, we could abandon agreement and instead select models based on consistency (given by a different variant of ICC) or Pearson correlation with a baseline model: this could lead to models which deviate from the baseline model but are better able to capture differences between patients or cohorts.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Region-wise performance of CortexMorph: ICC(2,1) of mean region-wise cortical thickness between CortexMorph and ANTs-DiReCT, using the segmentations generated by DeepSCAN on the OASIS-3 dataset.</figDesc><graphic coords="6,90,96,362,33,270,19,193,87" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Performance of ANTs-DiReCT and CortexMorph on the CTh phantom of Rusak et al., based on segmentations derived from DeepSCAN. Above: performance on the whole synthetic dataset, comprising twenty synthetic individuals, each with a baseline scan and 19 'follow-up' images with induced levels of uniform cortical atrophy. Measured atrophy is defined as the difference between the mean CTh as measured on the synthetic baseline scan and the mean CTh measured on the synthetic follow-up, averaged across the whole cortex. Below: The same data, but focused only on the range [0-0.1mm] of induced atrophy. R 2 denotes the coefficient of determination between the induced and measured atrophy levels.</figDesc><graphic coords="7,61,29,54,14,301,72,353,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="3,43,29,53,96,337,36,153,76" type="bitmap" /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by a <rs type="grantName">Freenovation grant</rs> from the <rs type="funder">Novartis Forschungsstiftung</rs>, and by the <rs type="funder">Swiss National Science Foundation (SNSF)</rs> under grant number <rs type="grantNumber">204593</rs> (ScanOMetrics).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_9bnktxt">
+					<orgName type="grant-name">Freenovation grant</orgName>
+				</org>
+				<org type="funding" xml:id="_zg4TF8E">
+					<idno type="grant-number">204593</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">An open source multivariate framework for n-tissue segmentation with evaluation on public data</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">B</forename><surname>Avants</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Tustison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Cook</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s12021-011-9109-y</idno>
+		<ptr target="https://doi.org/10.1007/s12021-011-9109-y" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuroinformatics</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="381" to="400" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Voxel-Morph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2019.2897538</idno>
+		<idno type="arXiv">arXiv:1809.05231</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2019.2897538" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of probabilistic diffeomorphic registration for images and surfaces</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2019.07.006</idno>
+		<ptr target="https://doi.org/10.1016/j.media.2019.07.006" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="226" to="236" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Registration based cortical thickness measurement</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">R</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">B</forename><surname>Avants</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Grossman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2008.12.016</idno>
+		<ptr target="https://doi.org/10.1016/j.neuroimage.2008.12.016" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="867" to="879" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">FreeSurfer</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2012.01.021</idno>
+		<idno>neuroimage.2012.01.021</idno>
+		<ptr target="https://doi.org/10.1016/j" />
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="774" to="781" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Measuring the thickness of the human cerebral cortex from magnetic resonance images</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Dale</surname></persName>
+		</author>
+		<idno type="DOI">10.1073/pnas.200033797</idno>
+		<ptr target="https://doi.org/10.1073/pnas.200033797" />
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">20</biblScope>
+			<biblScope unit="page" from="11050" to="11055" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">FastSurfer -a fast and accurate deep learning based neuroimaging pipeline</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Henschel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Conjeti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Estrada</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Diers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reuter</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.neuroimage.2020.117012</idno>
+		<ptr target="https://www.sciencedirect.com/science/article/pii/S1053811920304985" />
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">219</biblScope>
+			<biblScope unit="page">117012</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Automated brain extraction of multisequence MRI using artificial neural networks</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">17</biblScope>
+			<biblScope unit="page" from="4952" to="4964" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">The Alzheimer&apos;s disease neuroimaging initiative (ADNI): MRI methods</title>
+		<author>
+			<persName><forename type="first">Jack</forename><surname>Jr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename></persName>
+		</author>
+		<idno type="DOI">10.1002/jmri.21049</idno>
+		<ptr target="https://doi.org/10.1002/jmri.21049.https://onlinelibrary.wiley.com/doi/abs/10.1002/jmri.21049" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="685" to="691" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Few-shot brain segmentation from weakly labeled data with deep heteroscedastic multi-task networks</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mckinley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rebsamen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Meier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reyes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rummel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wiest</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1904.02436</idno>
+		<ptr target="https://arxiv.org/abs/1904.02436" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Direct cortical thickness estimation using deep learning-based anatomy segmentation and cortex parcellation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rebsamen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rummel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reyes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wiest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mckinley</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/hbm.25159</idno>
+		<ptr target="https://doi.org/10.1002/hbm.25159.https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.25159" />
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Quantifiable brain atrophy synthesis for benchmarking thickness estimation of cortical methods</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Rusak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">82</biblScope>
+			<biblScope unit="page">102576</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Synthetic brain MRI dataset for testing of cortical thickness estimation methods</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Rusak</surname></persName>
+		</author>
+		<idno type="DOI">10.25919/4ycc-fc11</idno>
+		<ptr target="https://data.csiro.au/collection/csiro" />
+		<imprint>
+			<biblScope unit="page" from="53241" to="53241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The ANTs cortical thickness processing pipeline</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Tustison</surname></persName>
+		</author>
+		<idno type="DOI">10.1117/12.2007128.full</idno>
+		<ptr target="https://doi.org/10.1117/12.2007128.https://www.spiedigitallibrary.org/conference-proceedings-of-spie/8672/86720K/The-ANTs-cortical-thickness-processing-pipeline/10.1117/12.2007128.full" />
+	</analytic>
+	<monogr>
+		<title level="m">Biomedical Applications in Molecular, Structural, and Functional Imaging</title>
+		<imprint>
+			<date type="published" when="2013">2013. 2013</date>
+			<biblScope unit="volume">8672</biblScope>
+			<biblScope unit="page" from="126" to="129" />
+		</imprint>
+	</monogr>
+	<note>SPIE</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">The ANTsX ecosystem for quantitative biological and medical imaging</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Tustison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">9068</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Pingouin: statistics in python</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vallat</surname></persName>
+		</author>
+		<idno type="DOI">10.21105/joss.01026</idno>
+		<ptr target="https://doi.org/10.21105/joss.01026" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Open Source Softw</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">31</biblScope>
+			<biblScope unit="page">1026</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A review of deep learning-based deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fonc.2022.1047215</idno>
+		<ptr target="https://www.frontiersin.org/articles/10.3389/fonc.2022.1047215" />
+	</analytic>
+	<monogr>
+		<title level="j">Front. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">1047215</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Physics-Informed Neural Networks for Tissue Elasticity Reconstruction in Magnetic Resonance Elastography</title>
+				<funder ref="#_tNJnxXT">
+					<orgName type="full">Pennsylvania Department of Health</orgName>
+				</funder>
+				<funder ref="#_CCab4Hb">
+					<orgName type="full">National Institutes of Health</orgName>
+				</funder>
+				<funder ref="#_GPvCRhZ #_t3MQwFy">
+					<orgName type="full">National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Matthew</forename><surname>Ragoza</surname></persName>
+							<idno type="ORCID">0000-0002-1412-4886</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Pittsburgh</orgName>
+								<address>
+									<postCode>15213</postCode>
+									<settlement>Pittsburgh</settlement>
+									<region>PA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Kayhan</forename><surname>Batmanghelich</surname></persName>
+							<idno type="ORCID">0000-0001-9893-9136</idno>
+							<affiliation key="aff1">
+								<orgName type="institution">Boston University</orgName>
+								<address>
+									<postCode>02215</postCode>
+									<settlement>Boston</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Physics-Informed Neural Networks for Tissue Elasticity Reconstruction in Magnetic Resonance Elastography</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="333" to="343"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">E1D031C4F2D6731C9082B624AB7C79B0</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_32</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Physics-informed learning</term>
+					<term>Magnetic resonance elastography</term>
+					<term>Elasticity reconstruction</term>
+					<term>Deep learning</term>
+					<term>Medical imaging</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Magnetic resonance elastography (MRE) is a medical imaging modality that non-invasively quantifies tissue stiffness (elasticity) and is commonly used for diagnosing liver fibrosis. Constructing an elasticity map of tissue requires solving an inverse problem involving a partial differential equation (PDE). Current numerical techniques to solve the inverse problem are noise-sensitive and require explicit specification of physical relationships. In this work, we apply physics-informed neural networks to solve the inverse problem of tissue elasticity reconstruction. Our method does not rely on numerical differentiation and can be extended to learn relevant correlations from anatomical images while respecting physical constraints. We evaluate our approach on simulated data and in vivo data from a cohort of patients with non-alcoholic fatty liver disease (NAFLD). Compared to numerical baselines, our method is more robust to noise and more accurate on realistic data, and its performance is further enhanced by incorporating anatomical information.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Tissue elasticity holds enormous diagnostic value for detecting pathological conditions such as liver fibrosis <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref> and can be mapped by an imaging procedure called magnetic resonance elastography (MRE). During MRE, a mechanical stress is applied to the region of interest and an image is captured of the resulting tissue deformation, then the elasticity is inferred by solving the inverse problem of a partial differential equation (PDE). However, conventional methods for elasticity reconstruction are sensitive to noise, do not incorporate anatomical information, and are often only evaluated on artificial data sets <ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref>. Elasticity reconstruction methods utilize a variety of numerical techniques and physical models <ref type="bibr" target="#b8">[9]</ref>. Algebraic Helmholtz inversion (AHI) makes simplifying assumptions that enable an algebraic solution to the governing equations <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5]</ref>. However, AHI relies on finite differences, which amplify noise. The finite element method (FEM) requires fewer physical assumptions and solves a variational formulation of the PDE <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b9">10]</ref>, making it more flexible and typically more robust than AHI. However, neither method uses anatomical images, which have been successfully used to predict elasticity with deep learning <ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b12">[13]</ref>.</p><p>Physics-informed neural networks (PINNs) are a recent deep learning framework that uses neural networks to solve PDEs <ref type="bibr" target="#b13">[14]</ref>. PINNs represent unknown function(s) in a boundary value problem as neural networks. The boundary conditions and PDE are treated as loss functions and the problem is solved using gradient-based optimization. PINNs have been applied to elasticity reconstruction in other contexts <ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref><ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref>, but evaluations have been limited to artificial data sets and prior work has not combined physics-informed learning with automated learning from anatomical MRI.</p><p>In this work, we develop a method for enhanced tissue elasticity reconstruction in MR elastography using physics-informed learning. We use PINNs to solve the equations of linear elasticity as an optimization problem for a given wave image. Our model simultaneously learns continuous representations of the measured displacement field and the latent elasticity field. We evaluate the method on a numerical simulation and on patient liver MRE data, where we demonstrate improved noise robustness and overall accuracy than AHI or FEM-based inversion. In addition, we show that augmenting our method with an anatomicallyinformed loss function further improves reconstruction quality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Background</head><p>Magnetic Resonance Elastography (MRE). An MRE procedure involves placing the patient in an MRI scanner and using a mechanical actuator to induce shear waves in the region of interest (Fig. <ref type="figure" target="#fig_0">1</ref>). A motion-encoding gradient (MEG) synchronizes with the mechanical vibration, causing phase shifts in the captured Table <ref type="table">1</ref>. Physical equations relating the displacement field u to the shear modulus of elasticity μ during a steady-state harmonic motion from the theory of linear elasticity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Assumptions Equation</head><formula xml:id="formula_0">Name ∇ • u = 0 ∇μ = 0 D(μ, u, x) = 0 general form ∇ • μ ∇u + ∇u + λ(∇ • u)I + ρω 2 u = 0 heterogeneous μ∇ 2 u + ∇u + ∇u ∇μ + ρω 2 u = 0 Helmholtz μ∇ 2 u + ρω 2 u = 0</formula><p>signal based on the tissue displacement <ref type="bibr" target="#b18">[19]</ref>. A wave image that encodes the full 3D displacement field can be acquired using MEGs in each dimension <ref type="bibr" target="#b0">[1]</ref>. Next, a map of tissue stiffness called an elastogram is recovered from the wave image by solving an inverse problem. This requires 1) choosing a physical model that relates the motion of an elastic body to its material properties, and 2) solving the governing equation(s) for the unknown material parameters.</p><p>Linear Elasticity. Physical models of MRE typically assume there is harmonic motion and a linear, isotropic stress-strain relation. Then tissue displacement is a complex vector field u : Ω → C 3 defined on spatial domain Ω ⊂ R 3 , and shear elasticity is characterized by the shear modulus, a complex scalar field μ :</p><formula xml:id="formula_1">Ω → C.</formula><p>The first equation of motion translates into the general form PDE shown in Table <ref type="table">1</ref>. The mass density ρ and actuator frequency ω are prescribed based on prior knowledge. The Lamé parameter λ can be ignored if we assume tissue is incompressible (∇•u = 0), reducing the PDE to the heterogeneous form. Finally, assuming that the shear modulus is locally homogeneous (∇μ = 0) simplifies the PDE into the Helmholtz equation. The empirical validity of the homogeneity assumption has been criticized <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21]</ref> and is explored in our experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Proposed Method</head><p>We use physics-informed neural networks (PINNs) to encode the solution space of the inverse problem. Our PINN framework (Fig. <ref type="figure" target="#fig_1">2</ref>) learns continuous representations of the displacement field u(x) and elastic modulus μ(x) while respecting a PDE from Table <ref type="table">1</ref>. We incorporate conventional MRI images by including an additional anatomically-informed loss function. In the following sections, we explain the PINN framework and how we incorporate the anatomical images.</p><p>Physics-Informed Neural Networks. We use a dual-network approach to reconstruct tissue elasticity with PINNs. First, we train a neural network û(x; θ u ) to learn a mapping from spatial coordinates x to displacement vectors u in the wave image by minimizing the mean squared error L wave . The continuous representation of the displacement field enables automatic spatial differentiation. Then, we train a second neural network μ(x; θ µ ) to map from spatial coordinates to the shear modulus μ by minimizing the residual of a PDE, defined by some differential operator D. The PINNs and their spatial derivatives are used to evaluate the differential operator, which is minimized as a loss function L P DE to recover the elasticity field. We combine the loss functions as follows:</p><formula xml:id="formula_2">L(θ u , θ µ ) = λ wave L wave (θ u ) + λ P DE L P DE (θ µ )</formula><p>We train PINNs using either the Helmholtz equation (PINN-HH) or the heterogeneous PDE (PINN-het) as the differential operator D in our experiments. The loss weight hyperparameters λ wave and λ P DE control the contribution of each loss function to the overall objective. We initialized λ P DE to a very low value and slowly stepped it up as the quality of û improved during training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Incorporating Anatomical Information.</head><p>Prior work has demonstrated that tissue elasticity can be accurately predicted from anatomical MRI <ref type="bibr" target="#b21">[22]</ref>. We include an additional output head â(x; θ µ ) from the elasticity PINN that predicts anatomical features a(x) at the corresponding position, as encoded in standard MRI imaging sequences. Then we introduce an additional loss function L anat to minimize the mean squared error between the predicted and true anatomical features. We explore how the relative weight of this loss function λ anat affects elasticity reconstruction performance in our in vivo experiments.</p><p>We designed our models based on the SIREN architecture, which uses sine activation functions to better represent high spatial frequencies <ref type="bibr" target="#b22">[23]</ref>. Both networks û and μ had five linear layers with 128 hidden units per layer and dense connections from all previous layer inputs. The first layer input was scaled by a hyperparameter ω 0 that biases the initial spatial frequency distribution. We employed the weight initialization scheme described in <ref type="bibr" target="#b22">[23]</ref> to improve training convergence. We also extended the input vector with polar coordinates when training on patient data. We trained all models for 100,000 total iterations with the Adam optimizer using PyTorch v1.12.1 and DeepXDE v1.5.1 <ref type="bibr" target="#b23">[24]</ref><ref type="bibr" target="#b24">[25]</ref><ref type="bibr" target="#b25">[26]</ref>. The code used for this work is available at https://github.com/batmanlab/MRE-PINN.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Related Work</head><p>Algebraic Helmholtz Inversion (AHI). One of the most common methods for elasticity reconstruction is algebraic inversion of the Helmholtz equation (AHI) <ref type="bibr" target="#b2">[3]</ref>. This approach assumes incompressibility and local homogeneity, uses finite differences to compute the Laplacian of the wave image, and then solves the Helmholtz equation as a linear system to estimate the shear modulus. Despite its simplicity, AHI has an established track record in both research and clinical settings <ref type="bibr" target="#b8">[9]</ref>. Filtering is often required to reduce the impact of noise on AHI <ref type="bibr" target="#b4">[5]</ref>. <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b9">10]</ref>. These use variational formulations to reduce the order of differentiation in the PDE. Then, they specify a mesh over the domain and represent unknown fields in terms of compact basis functions. This results in a linear system that can be solved for the elasticity coefficients either directly or iteratively <ref type="bibr" target="#b8">[9]</ref>. Direct FEM inversion is more efficient and accurate <ref type="bibr" target="#b20">[21]</ref>, though it depends more on data quality <ref type="bibr" target="#b7">[8]</ref>. We implemented direct FEM inversion of the Helmholtz equation (FEM-HH) and the heterogeneous PDE (FEM-het) with FEniCSx v0.5.1 <ref type="bibr" target="#b26">[27]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Finite Element Method (FEM). Many techniques have been introduced for elasticity reconstruction based on the finite element method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experiments and Results</head><p>We compare our methods (PINN-HH, PINN-het) to algebraic Helmholtz inversion (AHI) and direct FEM inversion (FEM-HH, FEM-het) on simulated data and liver data from a cohort of patients with NAFLD. We evaluate the overall reconstruction fidelity of each method and the impact of the homogeneity assumption. We assess their robustness to noise on the simulated data, and we study whether incorporating anatomical images enhances performance on patient liver data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Robustness to Noise on Simulated Data</head><p>We obtained a numerical FEM simulation of an elastic wave in an incompressible rectangular domain containing four stiff targets of decreasing size from the BIOQIC research group (described in <ref type="bibr">Barnhill et. al. 2018 [28]</ref>). Six wave fields were generated at frequencies ranging from 50-100 Hz in 10 Hz increments. We applied each reconstruction method to each single-frequency wave image after adding varying levels of Gaussian noise. Then we computed the contrast transfer efficiency (CTE) <ref type="bibr" target="#b28">[29]</ref> in each target region as the ratio between the targetbackground contrast in the predicted elastogram and the true contrast, where a CTE of 100% is ideal. We include functions to download the simulation data set in the project codebase. Fig. <ref type="figure">3</ref>. Reconstruction performance on simulated data. Figure <ref type="figure">3A</ref> shows the contrast transfer efficiency of each method in each target region of the simulation. Figure <ref type="figure">3B</ref> shows how the contrast is affected by the noise level in the wave image.</p><p>Experiment Results. Figure <ref type="figure">3A</ref> compares the CTE of each method in the different target regions of the simulation, which decrease in size from left to right. On target 1, AHI performs best with 98% CTE followed by FEM-HH and FEMhet with 109% and 88%. PINN-HH and PINN-het had 46% and 51% contrast on target 1. AHI also performed best on target 2, with 104% CTE. Next were PINN-het with 41% contrast and FEM-HH with 38%. PINN-het outperformed the other methods on target 3 with 22% CTE followed by FEM-HH with 11%. Only the two FEM methods appear to have decent contrast on target 4, though this seems to be a false positive due to background variance seen in Fig. <ref type="figure" target="#fig_2">4</ref>.</p><p>Figure <ref type="figure">3B</ref> shows the effect of wave image noise on the contrast transfer efficiency. The reconstruction quality decays at -50 db of noise for both FEM-HH (p = -1.7e-5) and FEM-het (p = 9.1e-6), each retaining less than 5% contrast. AHI is also sensitive to -50 dB of noise (p = 6.1e-4) but its performance drops more gradually. The contrast from PINN-HH does not decrease significantly until -20 dB (p = 8.8e-4) and PINN-het is insensitive until -10 dB (p = 4.8e-5). This indicates that PINNs are more robust to noise than AHI or direct FEM.</p><p>Figure <ref type="figure" target="#fig_2">4</ref> displays reconstructed elastograms from each method using the 90 Hz simulated wave image, displayed at far left, next to the ground truth. AHI produces the clearest boundaries between the targets and background. The two FEM methods contain high variability within homogeneous regions, though the heterogeneous PDE appears to decrease the variance. PINN-HH displays textural artifacts that reduce the resolution. PINN-het has fewer artifacts and better resolution of the smaller targets due to the lack of homogeneity assumption.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Incorporating Anatomical Information on Patient Data</head><p>For our next experiment, we obtained abdominal MRE from a study at the University of Pittsburgh Medical Center that included patients at least 18 years old who were diagnosed with non-alcoholic fatty liver disease (NAFLD) and underwent MRE between January 2016-2019 (demographic and image acquisition details can be found in Pollack et al. 2021 <ref type="bibr" target="#b21">[22]</ref>). 155 patients had high-quality elastography, wave images, and anatomical MRI sequences. The wave images contained only one real displacement component and we did not have ground truth elasticity, so we used proprietary elastograms collected during the study as the "gold standard." We registered MRI sequences (T1 pre in-phase, T1 pre water, T1 pre out-phase, T1 pre fat, and T2) to the MRE using SimpleITK v2.0.0 <ref type="bibr" target="#b29">[30]</ref> and incorporated them as the anatomical features a shown in Fig. <ref type="figure" target="#fig_1">2</ref>. Liver regions were segmented using a previously reported deep learning model <ref type="bibr" target="#b21">[22]</ref>.</p><p>We performed elasticity reconstruction on each of the 155 patient wave images using each method. We investigated the influence of anatomical information when training PINNs by varying the anatomical loss weight λ anat . Reconstruction fidelity was assessed using the Pearson correlation (R) between the predicted elasticity and the gold standard elasticity in the segmented liver regions.</p><p>Experiment Results. Figure <ref type="figure">5A</ref> shows correlation distributions between predicted and gold standard elasticity across the different patients. PINN-het had the highest median correlation and least variation between patients (median = 0.84, IQR = 0.04). PINN-HH came in second (median = 0.76, IQR = 0.05) while FEM-het came in third, but had the most variability (median = 0.74, IQR = 0.19). FEM-HH performed slightly worse than FEM-het, but was less variable (median = 0.70, IQR = 0.11). AHI performed the worst on in vivo data (median = 0.63, IQR = 0.12) and had the greatest number of low outliers. Fig. <ref type="figure">5</ref>. Reconstruction performance on in vivo liver data. Figure <ref type="figure">5A</ref> shows Pearson's correlations between predicted and gold standard elasticity across patients. Figure <ref type="figure">5B</ref> shows the effect of the anatomic loss weight on PINN elasticity reconstruction performance. Figure <ref type="figure">5B</ref> shows the effect of increasing the anatomic loss weight on PINN elasticity reconstruction quality. There was significant improvement in the correlation with the gold standard when the loss weight was increased from 0 to 1e-4 for both PINN-HH (p = 4.9e-56) and PINN-het (p = 3.0e-14), but no significant difference from increasing it further to 1e-2 for either method (PINN-HH: p = 0.51, PINN-het: p = 0.23). Raising the anatomic loss weight to 1e-4 increased the median correlation from 0.76 to 0.85 in PINN-HH and from 0.84 to 0.87 in PINN-het. This suggests that there is a synergistic effect from including physical constraints and anatomical imaging data in elasticity reconstruction.</p><p>Figure <ref type="figure" target="#fig_3">6</ref> displays reconstructed elastograms for three randomly selected patients. AHI, FEM-HH and FEM-het all tend to overestimate the stiffness and have artifacts around nulls in the wave image. In contrast, PINN-HH and PINNhet more closely resemble the gold standard elastography, especially in regions close to the clinical threshold for fibrosis <ref type="bibr" target="#b30">[31]</ref>. Furthermore, neither PINN reconstruction method shows signs of instabilities around wave amplitude nulls.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>PINNs have several clinically significant advantages over conventional methods for tissue elasticity reconstruction in MRE. They are more robust to noise, which is pervasive in real MRE data. Furthermore, they can leverage anatomical information from other MRI sequences that are standard practice to collect during an MRE exam, and doing so significantly improves reconstruction fidelity. Limitations of this work include the use of the incompressibility assumption to simplify the training framework, and the relatively poor contrast on simulated data. This underscores how accurate reconstruction on simulated data does not always translate to real data, and vice versa. In future work, we will evaluate PINNs for solving the general form of the PDE to investigate the effect of the incompressibility assumption. We will also extend to an operator learning framework in which the model learns to solve the PDE in a generalizable fashion without the need to retrain on each wave image. This would reduce the computation cost and enable further integration of physics-informed and data-driven learning.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. During MRE, a mechanical actuator induces shear waves while a motionencoding gradient captures the tissue deformation as a wave image. Then, an inverse problem is solved to reconstruct a map of tissue elasticity called an elastogram.</figDesc><graphic coords="2,47,31,71,87,329,20,63,52" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2.In our framework, one PINN learns to map from spatial coordinates to displacement vectors by fitting to the wave image, while another learns to recover the shear elasticity at the corresponding position by minimizing a PDE residual. The elasticity model can also predict anatomical MRI features that are correlated with elasticity. Note that the PINNs are trained to fit a set of images for a single patient/phantom and that n represents the number of (spatial coordinate, image value) pairs per batch.</figDesc><graphic coords="4,242,07,75,26,133,12,101,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Elasticity reconstruction examples on simulated data with no noise.</figDesc><graphic coords="7,58,98,61,73,316,12,55,84" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. Elasticity reconstruction examples for 3 patients from the NAFLD data set.</figDesc><graphic coords="8,55,29,62,18,304,96,128,32" type="bitmap" /></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements &amp; Data Use. This work was supported by the <rs type="funder">Pennsylvania Department of Health</rs> (grant number <rs type="grantNumber">41000873310</rs>), <rs type="funder">National Institutes of Health</rs> (grant number <rs type="grantNumber">R01HL141813</rs>), the <rs type="funder">National Science Foundation</rs> (grant number <rs type="grantNumber">1839332</rs>) and Tripod+X. This work used the Bridges-2 system, which is supported by <rs type="funder">NSF</rs> award number <rs type="grantNumber">OAC-1928147</rs> at the <rs type="institution">Pittsburgh Supercomputing Center (PSC)</rs>.</p><p>The patient MRE data was acquired by <rs type="person">Amir A. Borhani, MD</rs> while he was at <rs type="institution">University of Pittsburgh</rs>. We thank him for his collaboration and guidance during this project.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_tNJnxXT">
+					<idno type="grant-number">41000873310</idno>
+				</org>
+				<org type="funding" xml:id="_CCab4Hb">
+					<idno type="grant-number">R01HL141813</idno>
+				</org>
+				<org type="funding" xml:id="_GPvCRhZ">
+					<idno type="grant-number">1839332</idno>
+				</org>
+				<org type="funding" xml:id="_t3MQwFy">
+					<idno type="grant-number">OAC-1928147</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 32.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Magnetic resonance elastography: non-invasive mapping of tissue elasticity</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Manduca</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/s1361-8415(00)00039-6</idno>
+		<ptr target="https://doi.org/10.1016/s1361-8415(00" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="39" to="45" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Liver fibrosis: review of current imaging and MRI quantification techniques</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Petitclerc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sebastiani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gilbert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cloutier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1276" to="1295" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Complex-valued stiffness reconstruction for magnetic resonance elastography by algebraic inversion of the differential equation</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">E</forename><surname>Oliphant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Manduca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename><surname>Ehman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F</forename><surname>Greenleaf</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/1522-2594(200102)45:2&lt;299::aid-mrm1039&gt;3.0.co;2-o</idno>
+		<ptr target="https://doi.org/10.1002/1522-2594" />
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="299" to="310" />
+			<date type="published" when="2001">2001. 200102</date>
+		</imprint>
+	</monogr>
+	<note>2 299::aid-mrm1039 3.0.co;2-o</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Shear modulus reconstruction in dynamic elastography: time harmonic case</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">M</forename><surname>Maniatty</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/0031-9155/51/15/007</idno>
+		<ptr target="https://doi.org/10.1088/0031-9155/51/15/007" />
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page">3697</biblScope>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Algebraic Helmholtz inversion in planar magnetic resonance elastography</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Papazoglou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Hamhaber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sack</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/0031-9155/53/12/005</idno>
+		<ptr target="https://doi.org/10.1088/0031-9155/53/12/005" />
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="3147" to="3158" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Real-time solution of the finite element inverse problem of viscoelasticity</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Eskandari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rohling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Bell</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/0266-5611/27/8/085002</idno>
+		<ptr target="https://doi.org/10.1088/0266-5611/27/8/085002" />
+	</analytic>
+	<monogr>
+		<title level="j">Inverse Prob</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">85002</biblScope>
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Curlbased finite element reconstruction of the shear modulus without assuming local homogeneity: Time harmonic case</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Honarvar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sahebjavaher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sinkus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rohling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2013.2276060</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2013.2276060" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Tran. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2189" to="2199" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A comparison of direct and iterative finite element inversion techniques in dynamic elastography</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Honarvar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rohling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+		<idno type="DOI">10.1088/0031-9155/61/8/3026</idno>
+		<ptr target="https://doi.org/10.1088/0031-9155/61/8/3026" />
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="3026" to="3048" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Stiffness reconstruction methods for MR elastography</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fovargue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Nordsletten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sinkus</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/nbm.3935</idno>
+		<ptr target="https://doi.org/10.1002/nbm.3935" />
+	</analytic>
+	<monogr>
+		<title level="j">NMR Biomed</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page">3935</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Robust MR elastography stiffness quantification using a localized divergence free finite element reconstruction</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fovargue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kozerke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sinkus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Nordsletten</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="page" from="126" to="142" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Artificial neural networks for stiffness estimation in magnetic resonance elastography</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Manduca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Trzasko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Glaser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Iii</forename><surname>Huston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ehman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">L</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="351" to="360" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Dual objective approach using a convolutional neural network for magnetic resonance elastography</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Solamen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Amoh</surname></persName>
+		</author>
+		<idno>arXiv preprint: 1812.00441</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note>physics.med-ph</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A deep learning approach to the inverse problem of modulus identification in elasticity</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gao</surname></persName>
+		</author>
+		<idno type="DOI">10.1557/s43577-020-00006-y</idno>
+		<ptr target="https://doi.org/10.1557/s43577-020-00006-y" />
+	</analytic>
+	<monogr>
+		<title level="j">MRS Bull</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="19" to="25" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Physics-informed neural networks: a deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Raissi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Perdikaris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Karniadakis</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jcp.2018.10.045</idno>
+		<ptr target="https://doi.org/10.1016/j.jcp.2018.10.045" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Comput. Phys</title>
+		<imprint>
+			<biblScope unit="volume">378</biblScope>
+			<biblScope unit="page" from="686" to="707" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A physics-informed deep learning framework for inversion and surrogate modeling in solid mechanics</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Haghighat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Raissi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Moure</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Juanes</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cma.2021.113741</idno>
+		<ptr target="https://doi.org/10.1016/j.cma.2021.113741" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Methods Appl. Mech. Eng</title>
+		<imprint>
+			<biblScope unit="page">113741</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Karniadakis</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.2009.04525</idno>
+		<idno>arXiv preprint: 2009.04525 [cs.LG]</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.2009.04525" />
+		<title level="m">Physics-informed neural networks for nonhomogeneous material identification in elasticity imaging</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Measuring tissue elastic properties using physics based neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mallampati</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Almekkawy</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/LAUS53676.2021.9639231</idno>
+		<ptr target="https://doi.org/10.1109/LAUS53676.2021.9639231" />
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE UFFC Latin America Ultrasonics Symposium (LAUS)</title>
+		<meeting><address><addrLine>Gainesville</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1" to="4" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Elasticity imaging using physics-informed neural networks: spatial discovery of elastic modulus and Poisson&apos;s ratio</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kamali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sarabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Laksari</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.actbio.2022.11.024</idno>
+		<ptr target="https://doi.org/10.1016/j.actbio.2022.11.024" />
+	</analytic>
+	<monogr>
+		<title level="j">Acta Biomater</title>
+		<imprint>
+			<biblScope unit="volume">155</biblScope>
+			<biblScope unit="page" from="400" to="409" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Wymer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">P</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">F</forename><surname>Burke</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Iii</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">K</forename><surname>Bhatia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Phase-contrast MRI: physics, techniques, and clinical applications</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="122" to="140" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Elasticity reconstruction: beyond the assumption of local homogeneity</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sinkus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Daire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">E V</forename><surname>Beers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vilgrain</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.crme.2010.07.014</idno>
+		<ptr target="https://doi.org/10.1016/j.crme.2010.07.014" />
+	</analytic>
+	<monogr>
+		<title level="j">Comptes Rendus Mécanique</title>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="474" to="479" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Dynamic elastography with finite element-based inversion</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Honarvar</surname></persName>
+		</author>
+		<idno type="DOI">10.14288/1.0167683</idno>
+		<ptr target="https://doi.org/10.14288/1.0167683" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+		<respStmt>
+			<orgName>University of British Columbia</orgName>
+		</respStmt>
+	</monogr>
+	<note type="report_type">Ph.D. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Deep learning prediction of voxel-level liver stiffness in patients with nonalcoholic fatty liver disease</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">L</forename><surname>Pollack</surname></persName>
+		</author>
+		<idno type="DOI">10.1148/ryai.2021200274</idno>
+		<ptr target="https://doi.org/10.1148/ryai.2021200274" />
+	</analytic>
+	<monogr>
+		<title level="j">Radiology: AI</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Implicit neural representations with periodic activation functions</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Sitzmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N P</forename><surname>Martel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">W</forename><surname>Bergman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">B</forename><surname>Lindell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wetzstein</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 3rd International Conference Learning Representations</title>
+		<meeting>3rd International Conference Learning Representations</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">PyTorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advance Neural Information Processing System</title>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="8024" to="8035" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">DeepXDE: a deep learning library for solving differential equations</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Karniadakis</surname></persName>
+		</author>
+		<idno type="DOI">10.1137/19M1274067</idno>
+		<ptr target="https://doi.org/10.1137/19M1274067" />
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Rev</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="208" to="228" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Construction of arbitrary order finite element degree-of-freedom maps on polygonal and polyhedral cell meshes</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Scroggs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Dokken</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">N</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">N</forename><surname>Wells</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3524456</idno>
+		<ptr target="https://doi.org/10.1145/3524456" />
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Math. Softw</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Heterogeneous multifrequency direct inversion (HMDI) for magnetic resonance elastography with application to a clinical brain exam</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Barnhill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">J</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ariyurek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fehlner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Braun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sack</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2018.03.003</idno>
+		<ptr target="https://doi.org/10.1016/j.media.2018.03.003" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="180" to="188" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Fundamental limitations on the contrasttransfer efficiency in elastography: an analytic study</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Kallel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bertrand</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ophir</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/0301-5629(95)02079-9</idno>
+		<ptr target="https://doi.org/10.1016/0301-5629(95)02079-9" />
+	</analytic>
+	<monogr>
+		<title level="j">Ultrasound Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="463" to="470" />
+			<date type="published" when="1996">1996</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">The design of SimpleITK</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">C</forename><surname>Lowekamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ibáñez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Blezek</surname></persName>
+		</author>
+		<idno type="DOI">10.3389/fninf.2013.00045</idno>
+		<ptr target="https://doi.org/10.3389/fninf.2013.00045" />
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neuroinf</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">45</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Liver stiffness: a novel parameter for the diagnosis of liver disease</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mueller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Sandrin</surname></persName>
+		</author>
+		<idno type="DOI">10.2147/hmer.s7394</idno>
+		<ptr target="https://doi.org/10.2147/hmer.s7394" />
+	</analytic>
+	<monogr>
+		<title level="j">Hepat. Med</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="49" to="67" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

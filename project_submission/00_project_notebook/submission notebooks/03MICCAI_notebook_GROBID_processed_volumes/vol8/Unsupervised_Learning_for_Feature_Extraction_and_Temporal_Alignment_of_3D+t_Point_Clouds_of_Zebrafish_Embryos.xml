@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Unsupervised Learning for Feature Extraction and Temporal Alignment of 3D+t Point Clouds of Zebrafish Embryos</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhu</forename><surname>Chen</surname></persName>
+							<email>zhu.chen@lfb.rwth-aachen.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Imaging and Computer Vision</orgName>
+								<orgName type="institution">RWTH Aachen University</orgName>
+								<address>
+									<settlement>Aachen</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ina</forename><surname>Laube</surname></persName>
+							<email>ina.laube@lfb.rwth-aachen.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Imaging and Computer Vision</orgName>
+								<orgName type="institution">RWTH Aachen University</orgName>
+								<address>
+									<settlement>Aachen</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Johannes</forename><surname>Stegmaier</surname></persName>
+							<email>johannes.stegmaier@lfb.rwth-aachen.de</email>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Imaging and Computer Vision</orgName>
+								<orgName type="institution">RWTH Aachen University</orgName>
+								<address>
+									<settlement>Aachen</settlement>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Unsupervised Learning for Feature Extraction and Temporal Alignment of 3D+t Point Clouds of Zebrafish Embryos</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="603" to="612"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">C66AD8BB3C9F1ABEC8C0347817450327</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_58</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Embryo Development</term>
+					<term>Point Clouds</term>
+					<term>Unsupervised Learning</term>
+					<term>Autoencoder Z. Chen and I. Laube-Equal contrib.; funded by the German Research Foundation DFG (STE2802/1-1)</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Zebrafish are widely used in biomedical research and developmental stages of their embryos often need to be synchronized for further analysis. We present an unsupervised approach to extract descriptive features from 3D+t point clouds of zebrafish embryos and subsequently use those features to temporally align corresponding developmental stages. An autoencoder architecture is proposed to learn a descriptive representation of the point clouds and we designed a deep regression network for their temporal alignment. We achieve a high alignment accuracy with an average mismatch of only 3.83 min over an experimental duration of 5.3 h. As a fully-unsupervised approach, there is no manual labeling effort required and unlike manual analyses the method easily scales. Besides, the alignment without human annotation of the data also avoids any influence caused by subjective bias.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Zebrafish are widely used model organisms in many experiments due to their fully-sequenced genome, easy genetic manipulation, high fecundity, external fertilization, rapid development and nearly transparent embryos <ref type="bibr" target="#b2">[3]</ref>. The spatiotemporal resolution of modern light-sheet microscopes allows imaging the embryonic development at the single-cell level <ref type="bibr" target="#b3">[4]</ref>. Fluorescently labeled nuclei can be detected, segmented and tracked in these data sets and the extracted 3D+t point clouds can be used for analyzing the development of a single embryo in unprecedented detail <ref type="bibr" target="#b3">[4]</ref>. In many experiments, an important task is to compare the level of growth between different individuals, especially the research on mutants and the growth under particular conditions like pollution and exposure to potentially harmful chemicals <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6]</ref>. Thus, automatically obtaining an accurate temporal alignment that synchronizes the developmental stages of two or more individuals is an important component of such comparative analyses.</p><p>Existing approaches are mostly based on the automatic alignment of manually identified landmarks or operate in the image domain. However, to the best of our knowledge there is no approach available yet to obtain a spatiotemporal alignment of 3D+t point clouds of biological specimens in an automatic and unsupervised fashion. In <ref type="bibr" target="#b4">[5]</ref>, the authors generate sets of landmarks based on the deformation of embryos, and the landmarks are paired to generate the temporal registration between two sequences of embryos. Michelin et al. <ref type="bibr" target="#b12">[13]</ref> formulate the temporal alignment problem as an image-to-sequence registration applicable to more complex organisms like the floral meristem. The method introduced in <ref type="bibr" target="#b13">[14]</ref> pairs the 3D images of ascidian embryos by finding the symmetry plane and by computing the transformation that optimizes the cell-to-cell mapping. In <ref type="bibr" target="#b14">[15]</ref>, landmarks of multiple mouse embryos are manually identified and subsequently used to automatically obtain a spatiotemporal alignment with their custom-made Tardis method. In the past couple of years, deep neural networks emerged as a powerful approach to learn descriptive representations of images and point clouds that can be flexibly used for various tasks. The authors of <ref type="bibr" target="#b1">[2]</ref> use an image-based convolutional neural network and a PointNet-based <ref type="bibr" target="#b7">[8]</ref> architecture in a supervised fashion to obtain an automatic staging of zebrafish embryos.</p><p>In this work, we present a deep learning-based method for the temporal alignment of 3D+t point clouds of developing embryos. Firstly, an autoencoder is employed to extract descriptive features from the point clouds of each time frame. As an autoencoder designed explicitly for point clouds, FoldingNet <ref type="bibr" target="#b0">[1]</ref> is used as the basic architecture and we propose several modifications to improve its applicability to point cloud data of developing organisms. As the next step, the extracted latent features of the autoencoder are used in a regression network to temporally align different embryos. The final output are pairwisely aligned time frames of two different 3D+t point clouds. We show that the autoencoder learns discriminative and descriptive feature vectors that allow to recover the temporal ordering of different time frames. In addition to quantitatively assessing the alignment accuracy of the regression network, we demonstrate the effectiveness of the latent features by visualizing the reconstructed 3D point clouds and lowdimensional representations obtained with t-SNE <ref type="bibr" target="#b6">[7]</ref>. Being a fully-automatic and unsupervised approach, our method does not require any time-consuming human labeling effort and additionally avoids any subjective biases.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>Our method is based on the FoldingNet <ref type="bibr" target="#b0">[1]</ref> as the point cloud feature extractor. Several modifications are added to both the network and the loss function. The temporal alignment is realized with a regression network using the latent features and a subsequent consistency-check is used as a postprocessing to further improve the results. Finally, we introduce a new method to synthesize validation data sets with known ground truth from a set of unlabeled embryo point clouds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Autoencoder</head><p>FoldingNet: FoldingNet is an autoencoder specifically designed for 3D point clouds <ref type="bibr" target="#b0">[1]</ref>. In the encoder, a k-nearest-neighbor graph is built and the local information of each sub-region is extracted using the graph layers. A global maxpooling operation is applied to the local features to obtain the one-dimensional latent feature vector in the bottleneck layer. As a symmetric function, the pooling operation adds permutation invariance to cope with the disorderliness of point clouds. In the decoder, the feature vector is duplicated and concatenated with a fixed grid of points. The latent features lead to the deformation of the point grid in a 3-layer multi-layer perceptron (MLP) and a 3D structure is constructed. With a second folding operation, more details are rebuilt and the input is reconstructed. Unlike the original FoldingNet <ref type="bibr" target="#b0">[1]</ref>, we use a spherical template (M evenly distributed 3D points on a spherical surface) instead of a planar template, which provides a better initialization for reconstructing spherical objects from the learned representations. Since the shape of the embryos varies from a hemisphere to an ellipsoid during development, the spherical template simplifies the folding operation and improves the reconstruction quality in combination with the Modified Chamfer Distance loss (see next section).</p><p>Modified Chamfer Distance: The Chamfer Distance (CD) is one of the most widely used similarity measures for point clouds and is used as the loss function of FoldingNet. The discrepancy between two point clouds is calculated as the sum of the distances between the closest pairs of points as follows:</p><formula xml:id="formula_0">L CD (S in , S out ) = 1 |S in | p∈Sin min q∈Sout p -q 2 + 1 |S out | q∈Sout min p∈Sin q -p 2 , (1)</formula><p>where S in , S out are the input and reconstructed point clouds, respectively. However, this approach does not consider the local density distribution since all points are treated independently. In this work, we introduce the Modified Chamfer Distance (MCD), in which the point-to-region distance replaces the pointto-point distance. The new loss is the summation of the k-nearest-neighbors of each point in the target point cloud and defined as:</p><formula xml:id="formula_1">L MCD (S in , S out ) = 1 |S in | p∈Sin 1 k k i min qi∈Sout d(p, q i ) + 1 |S out | q∈Sout 1 k k j min pj ∈Sin d(q, p j ), (<label>2</label></formula><formula xml:id="formula_2">)</formula><p>where d is the Euclidean distance between a point p and its respective nearest neighbor q i . As the embryos grow, the density distribution changes significantly in different parts. The utilized data set <ref type="bibr" target="#b3">[4]</ref> is spatially prealigned such that the animal and vegetal pole align with the y-axis and the prospective dorsal part with the positive x-axis. During epiboly, the embryo grows from a hemisphere to a complete sphere in the negative y-direction. As development progresses into the bud stage, density increases in the direction of the positive x-axis and thus the center of gravity moves to the right. We found that a FoldingNet trained with MCD consistently yielded more accurate reconstructions and alignment results compared to CD (Suppl. Fig. <ref type="figure" target="#fig_0">1</ref>, Suppl. Fig. <ref type="figure">6</ref>). In Fig. <ref type="figure" target="#fig_0">1</ref>, the input and the reconstructed point clouds of an embryo from the hold-out test set are visualized using ParaView <ref type="bibr" target="#b8">[9]</ref> to qualitatively illustrate the effectiveness of the FoldingNet that was trained with the MCD loss.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Regression Network</head><p>The features extracted by the autoencoder are used to generate the temporal alignment of different embryos. We select one embryo as the reference and train an MLP regression network that maps autoencoder-generated feature vectors to frame numbers. The regression MLP consists of a sequence of fully-connected layers with ReLU activation. The input is a latent feature vector with length 256. In each dense layer, the size of the vector is reduced by a factor of two. The penultimate layer converts the 8-dimensional vector directly to the output node. The mean squared error is utilized as the loss function to compare the output to the ground truth: the sequence of time frame indices from 1 to 370. To temporally synchronize a new embryo with the reference, we present extracted features of all its frames to the trained regression network and generate a new index sequence. The desired alignment result is obtained by comparing the generated sequence with the reference embryo (Fig. <ref type="figure" target="#fig_1">2</ref>). Postprocessing: By definition, the sequence of time frame indices must be monotonically increasing. However, since the alignment results are generated from the point cloud of each time frame individually, the relationship between the time points in the sequence is not considered. So the generated sequences are not guaranteed to be monotonically increasing. We use a simple postprocessing strategy to generate monotonically increasing and more accurate alignment results. For an aligned sequence with oscillations, we generate its monotonically increasing upper and lower boundaries, and the desired result is obtained by calculating the mean values of those boundaries (Suppl. Fig. <ref type="figure" target="#fig_3">3</ref>).</p><p>3 Experimental Results and Discussions</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Data Sets and Evaluation</head><p>The data set used in this work was published in <ref type="bibr" target="#b3">[4]</ref> and consists of four wild-type zebrafish embryos that were imaged from 4.7 to 10.0 hpf (hours post fertilization) with one minute time intervals. Each embryo is represented as a 3D point cloud and has 370 time frames. The staging of these data sets was performed at a single time point (10 hpf) and the 370 preceding frames were selected irrespective of potential developmental differences. We thus only know that the temporal windows of the four embryos largely overlap but do not have frameaccurate annotations of the actual developmental time (see <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b11">12]</ref> for details).</p><p>To simplify the training approach, a fixed number of points is randomly chosen from each point cloud using the PyTorch Geometric library <ref type="bibr" target="#b9">[10]</ref> and we use the data loader implemented in the PyTorch 3D Points library <ref type="bibr" target="#b10">[11]</ref>. We choose 4096 points since the size of the original point clouds ranges from 4160 to 19794. For improved generalizability and orientation invariance of the FoldingNet-based autoencoder, the point clouds are randomly rotated between 0 and 360 • along each axis as data augmentation. For additional augmentation, we generated randomized synthetic variants of the four embryos as described in <ref type="bibr" target="#b1">[2]</ref>. Since there are no labeled data to evaluate the temporal alignment results, we introduce a new method to artificially generate ground truth for validation by randomly varying the speed of development of a selected embryo (sin, cos, Gaussian, and linear-based stretching/compression of the time axis with interpolated/skipped intermediate frames). A Gaussian-distributed point jitter (μ = 0, σ 2 = 5) is applied to the shifted embryos to make them substantially differ from the originals.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experimental Settings</head><p>The FoldingNet-based autoencoder is implemented with PyTorch Lightning. The number of neighbors is set to 16 in the KNN-graph layers and to 20 in the MCD. The autoencoder is trained with an initial learning rate of 0.0001 for 250 epochs and a batch size of 1. At each iteration, the embryo from a single time frame with the size 4096 × 3 is given to the network and the encoder converts it to a 1D codeword of length 256, which is the latent feature vector.</p><p>For network training with the four wild-type embryos, we use a 4-fold crossvalidation scheme with three embryos for training and one for testing in each fold. The regression network is trained for 700 epochs with a learning rate of 0.00001. The hyperparameters of the regression network are determined empirically based on the convergence of the training loss, since there is no validation or test set available. The temporal alignment is validated with the embryo from the test set to make the result independent from training the autoencoder and the embryo is aligned to its shifted variants. To reduce the influence of randomness, we repeat the alignment of each test embryo three times and take the average value of all experiments of the four embryos.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Experimental Results</head><p>Temporal Alignment Results: The resulting alignment with different shifting methods is depicted in Fig. <ref type="figure" target="#fig_3">3</ref>. In Fig. <ref type="figure" target="#fig_3">3</ref>(a) and Fig. <ref type="figure" target="#fig_3">3</ref>(b), a cosine-and sine-shifted embryo is aligned to the original one, where the cosine-based temporal shifting lets the embryo develop faster at the beginning and then slow down while the sine-based shifting is defined contrarily. In Fig. <ref type="figure" target="#fig_3">3</ref>(c), a Gaussian-distributed random difference is added to the shifted embryo. Furthermore, Fig. <ref type="figure" target="#fig_3">3(d</ref>) illustrates an embryo that develops approximately three times faster than the original one. The alignment error is defined as the average number of mismatched indices, which is the difference between the sequence of the aligned indices and the ground truth in the x-direction. As a result, an average mismatch of only 3.83 min in a total developmental period of 5.3 h is achieved (Table <ref type="table" target="#tab_0">1</ref>). Impact of Spatial Transformations: In the previous experiments, the embryos to be aligned were generated by changing the development speed and by scattering the points to make them different from the original ones. However, the embryos to be aligned in real applications could be located and oriented differently in space. Thus, we add some data augmentation for the alignment network to increase its rotation invariance. The point clouds are randomly rotated between ±20 • along each axis. Moreover, the shifted embryos to be aligned are rotated between ±15 • . The average alignment error obtained for rotated embryos is 3.48 min (Suppl. Fig. <ref type="figure" target="#fig_4">4</ref>). However, a larger variance can be observed, which indicates that rotation can have an impact on the alignment accuracy in some cases. Since the overall accuracy is still high, however, our approach proofs to be robust for aligning embryos with slightly varying orientations. In addition to the orientation, embryos may also be positioned differently in the sample chamber. To potentially improve the translation invariance, we tested if centering all point clouds at the origin of the coordinate axes before inputting them to the alignment network has a positive effect (Suppl. Fig. <ref type="figure">5</ref>). Although centering makes the approach invariant to spatial translation, we find that the alignment accuracy is reduced (aligned sequences have a more significant variance, and the average error increases to 5.74 min). We hypothesize that the relative displacement of the point cloud's centroid to the origin of the coordinate system (which is removed by centering) may play an important role in determining the developmental stage and the level of completion of the epiboly phase. An overview of obtained alignment results is provided in Table <ref type="table" target="#tab_0">1</ref>.</p><p>Visualizing the Learned Representation: To confirm that the autoencoders actually learned a representation suitable for temporal alignment, we visualize a chronologically color-coded scatter plot of the learned 256-dimensional feature vectors of all 370 time frames using the t-SNE algorithm <ref type="bibr" target="#b6">[7]</ref> (Fig. <ref type="figure" target="#fig_4">4</ref>). The original features are clustered to a narrow band and the color changes smoothly as the index increases, which indicates that different time frames are well distinguishable using the representation learned by the autoencoder. When the point clouds are rotated and centered, the projections of the feature vectors become more dispersed as illustrated in Fig. <ref type="figure" target="#fig_4">4</ref>(b) and 4(c). Nevertheless, the color changes smoothly and the features are suitable for distinguishing different time frames. This is in line with the observed increased variance for the temporal alignment results with maintained good average alignment accuracy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work we present a fully-unsupervised approach to temporally align 3D+t point clouds of zebrafish embryos. A FoldingNet-based autoencoder is implemented to extract low-dimensional descriptive features from large-scaled 3D+t point clouds of embryonic development. Several modifications are made to the network and the loss function to improve their applicability for this application.</p><p>The embryos are temporally aligned by applying a regression network to the features extracted by the autoencoder. A postprocessing method is designed to provide consistent and accurate alignments. As no frame-accurate ground truth</p><p>is available yet, we assess the effectiveness of our method via a 4-fold cross validation and a synthetically generated ground truth. An average mismatch of only 3.83 min in a developmental period of 5.3 h is achieved. Finally, we performed several ablation studies to show the impact of rotation and spatial translation of the point clouds to the alignment results. By aligning embryos with different spatial locations and deflected central axis, a relatively small error rate of 5.74 min can still be achieved. According to feedback from a biological expert the achievable manual alignment accuracy is on the order of 30 min and potentially exhibits intra-and inter-rater variabilities. As the first unsupervised method designed for the automatic spatiotemporal alignment of 3D+t point clouds, our method achieves high accuracy and eradicates the need for any human interaction. This will particularly help to minimize human effort, to speedup experimental analysis and to avoid any subjective biases.</p><p>In future works, our approach could be applied to more data sets and other model organisms with different scales and development periods to further validate its applicability. We're currently conducting an extensive effort to obtain frame-accurate manual labels from multiple raters in a randomized study, to better assess the actual performance that we can expect under real-world conditions including intra-and inter-rater variability. In the long term, we envision an iteratively optimized spatiotemporal average model of multiple wild-type embryos to finally obtain a 3D+t reference atlas that can be used to precisely analyze developmental differences of corresponding anatomical regions across experiments.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Comparison of raw 3D point clouds (left sub-panels) and the reconstructions of our modified FoldingNet that was trained with MCD and the spherical point template (right sub-panels). Shape and density distribution of the reconstructions are nicely preserved, i.e., the learned representation successfully condenses the properties of the input point clouds (see Suppl.Fig. 2 for additional examples).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2</head><label>2</label><figDesc>Fig. 1. Comparison of raw 3D point clouds (left sub-panels) and the reconstructions of our modified FoldingNet that was trained with MCD and the spherical point template (right sub-panels). Shape and density distribution of the reconstructions are nicely preserved, i.e., the learned representation successfully condenses the properties of the input point clouds (see Suppl.Fig. 2 for additional examples).</figDesc><graphic coords="4,53,31,330,50,317,56,70,00" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The temporal alignment network is trained with a baseline embryo and learns to map each feature vector to the corresponding reference frame index (left). The trained network is then applied to feature vectors of a new embryo and the predicted frame index sequence indicates how the embryo should be aligned to the reference (right).</figDesc><graphic coords="5,58,98,182,87,334,48,88,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Alignment results of the embryos with different shifting methods. The black line indicates the average result of all experiments and the area shaded in gray represents the variance. The alignment error is calculated as the average number of mismatched time frame indices. (Color figure online)</figDesc><graphic coords="7,58,98,133,46,334,48,91,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Visualization of the feature vectors using the t-SNE algorithm. The color-code represents the time frame index and changes smoothly as the time increases.</figDesc><graphic coords="8,77,79,201,89,268,36,99,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Results of the average temporal alignment errors in minutes.</figDesc><table><row><cell>Shifting Method</cell><cell cols="4">Cosine Sine Gaussian Faster Average</cell></row><row><cell>Scattering</cell><cell>3.72</cell><cell>4.34 5.23</cell><cell>2.02</cell><cell>3.83</cell></row><row><cell>Scattering + Rot</cell><cell>3.90</cell><cell>2.89 5.00</cell><cell>2.13</cell><cell>3.48</cell></row><row><cell cols="2">Scattering + Rot. + Cent 7.16</cell><cell>5.64 7.38</cell><cell>2.78</cell><cell>5.74</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3_58.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">FoldingNet: point cloud auto-encoder via deep grid deformation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="206" to="215" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Towards automatic embryo staging in 3D+t microscopy images using convolutional neural networks and PointNets</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Traub</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Stegmaier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Simulation and Synthesis in Medical Imaging</title>
+		<imprint>
+			<biblScope unit="page" from="153" to="163" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The use of zebrafish (Danio rerio) as biomedical models</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Teame</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Anim. Front</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="68" to="77" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">An ensemble-averaged, cell density-based digital model of zebrafish embryo development derived from light-sheet microscopy data with single-cell resolution</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Y</forename><surname>Kobitski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">8601</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Spatio-temporal registration of embryo images</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Guignard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Godin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">M</forename><surname>Fiuza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hufnagel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lemaire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Malandain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 11th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2014">2014. 2014</date>
+			<biblScope unit="page" from="778" to="781" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A digital framework to build, visualize and analyze a gene expression atlas with cellular resolution in zebrafish early embryogenesis</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Castro-González</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Comput. Biol</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Visualizing data using t-SNE</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2579" to="2605" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">PointNet: deep learning on point sets for 3D classification and segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="652" to="660" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">ParaView: An End-User Tool for Large-Data Visualization</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ahrens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Geveci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Law</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Visualization Handbook</title>
+		<imprint>
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Fast graph representation learning with PyTorch geometric</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Lenssen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICLR 2019 Workshop on Representation Learning on Graphs and Manifolds</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Torch-Points3D: a modular multi-task framework for reproducible deep learning on 3D point clouds</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chaton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chaulet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Horache</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Landrieu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">EmbryoMiner: a new framework for interactive knowledge discovery in large-scale cell tracking data of developing embryos</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Comput. Biol</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Spatio-temporal registration of 3D microscopy image sequences of arabidopsis floral meristems</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Michelin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 13th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2016">2016. 2016</date>
+			<biblScope unit="page" from="1127" to="1130" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Cell pairings for ascidian embryo registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Michelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Guignard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">M</forename><surname>Fiuza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lemaire</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Godine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Malandain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 12th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+			<biblScope unit="page" from="298" to="301" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">In Toto imaging and reconstruction of post-implantation mouse development at the single-cell level</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcdole</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell</title>
+		<imprint>
+			<biblScope unit="volume">175</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="859" to="876" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

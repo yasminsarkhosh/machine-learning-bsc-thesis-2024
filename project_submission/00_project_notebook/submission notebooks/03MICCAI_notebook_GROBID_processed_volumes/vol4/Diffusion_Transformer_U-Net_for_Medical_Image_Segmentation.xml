@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Diffusion Transformer U-Net for Medical Image Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">G</forename><forename type="middle">Jignesh</forename><surname>Chowdary</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Zhaozheng</forename><surname>Yin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Stony Brook University</orgName>
+								<address>
+									<settlement>Stony Brook</settlement>
+									<region>NY</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Diffusion Transformer U-Net for Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="622" to="631"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">C73BB8065F3DC932417601780C996BE2</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_59</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Diffusion model</term>
+					<term>Transformer</term>
+					<term>U-Net</term>
+					<term>Medical Image Segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Diffusion model has shown its power on various generation tasks. When applying the diffusion model in medical image segmentation, there are a few roadblocks to remove: the semantic features required for the conditioning of the diffusion process are not well aligned with the noise embedding; and the U-Net backbone employed in these diffusion models is not sensitive to contextual information that is essential during the reverse diffusion process for accurate pixel-level segmentation.</p><p>To overcome these limitations, we present a cross-attention module to enhance the conditioning from source images, and a transformer based U-Net with multi-sized windows for the extraction of various scales of contextual information. Evaluated on five benchmark datasets with different imaging modalities including Kvasir-Seg, CVC Clinic DB, ISIC 2017, ISIC 2018, and Refuge, our diffusion transformer U-Net achieves great generalization ability and outperforms all the state-of-the-art models on these datasets.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Deep Learning (DL) methods like Convolutional Neural Networks (CNN) and Vision-Transformers (ViT) have been applied to medical image segmentation <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b16">17]</ref> with good performance. However, these DL methods have some inherent limitations on their network architectures. For example, CNNs are capable of extracting local features but not direct global features, whereas ViTs employ a fixed window which limit their capability to extract fine contextual details that are necessary for accurate pixel-level segmentation.</p><p>Recently, Denoising Diffusion Probabilistic Model (DDPM) <ref type="bibr" target="#b8">[9]</ref> shows great performance in various conditional and unconditional generation tasks, and it is also applied to medical image segmentation <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b23">24]</ref>. Despite of the success, there are a few shortcomings to overcome: <ref type="bibr" target="#b0">(1)</ref> The semantic embedding extracted from the source image is not well aligned with the noise embedding in the diffusion process, leading to poor conditioning and subpar performance; and (2) The U-Net backbone in these DDPM-based methods is not sensitive to various scales of contextual information during the reverse diffusion (denoising) process, observed in CNNs and ViTs as well.</p><p>Motivated by the underlined limitations, we propose a Diffusion Transformer U-Net, with the following contributions:</p><p>-A conditional diffusion model with forward and backward processes is proposed to train segmentation networks. In the backward denoising process, the feature embedding of a noise image is aligned with that of the conditional source image by a new cross-attention module. Then, it is denoised into a segmentation mask of the source image by the segmentation network. -A transformer-based U-Net with multi-sized windows, named as MT U-Net, is designed to extract both pixel-level and global contextual features for achieving good segmentation performance. -The MT U-Net trained by the diffusion model has a great generalization capability on various imaging modalities, and outperforms all the current state-of-the-art on five benchmark datasets including polyp segmentation from colonoscopy images <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b9">10]</ref>, skin lesion segmentation from dermoscopy images <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5]</ref>, and optic-cup segmentation from retinal fundus images <ref type="bibr" target="#b13">[14]</ref>. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Diffusion Model</head><p>The diffusion has two processes (Fig. <ref type="figure" target="#fig_0">1</ref>): forward and reverse. In the forward process, the ground truth M 0 is transformed into noisy ground truth M T by gradually adding Gaussian noise through T time steps. In the reverse process, first, the source image I and noise map Mt+1 pass through an encoder E (two residual-inception blocks <ref type="bibr" target="#b17">[18]</ref>) to obtain embedding f I ∈ R h×w×c1 and f M ∈ R h×w×c2 (subscripts I and M denote image and map), where h, w and c 1 (c 2 ) are the height, width and channels of the embeddings, respectively. Then, the two embeddings are aligned by a Cross-Attention (CA) module in the feature space. The aligned feature map is given as a noisy input to MT U-Net to recover Mt . This reverse process iterates from t = T -1 till t = 0 (i.e., the initial Mt+1 when t = T -1, MT , is set as M T , and M0 is recovered eventually, which is expected to be identical to the ground truth M 0 ). Figure <ref type="figure" target="#fig_1">2</ref> presents the architecture of our CA module, which is used to align f M and f I in order to improve the conditioning of the diffusion model. First, f M and f I are divided into patches and flattened to vectors by a Patch Encoding (PE) layer. Then, the position information of patches is obtained using a Position Encoding layer (PoE), and is added to the original patch embeddings for preserving their positional information. The dimensions of the two positionbuilt-in patch embeddings are aligned using Linear Projection (LP) layers, and are normalized by a Layer Normalization (LN), denoting the output after the two LN's as f p M ∈ R d and f p I ∈ R d (d-dim feature vectors of patches). Thirdly, we use a Self-Attention for efficient feature fusion:</p><formula xml:id="formula_0">SA = Sof tmax( QK √ d )V<label>(1)</label></formula><p>where f p M is the query (Q), the concatenation of f p M and f p I is the key (K) and value (V ). denotes the transpose. Fourthly, following <ref type="bibr" target="#b19">[20]</ref>, we encode the output of L SA by a Layer Normalization (LN) and a two-layered Multi-Layer Perceptron (MLP) for extracting more contextual information. An auxiliary connection (residual) is used to enhance the information propagation. Lastly, we apply a Reshape (RS) layer to reshape and assemble the patches into the same size as f M .  These patches, along with the time embedding are flattened into a D × 1 dimension linear embedding using a Linear Embedding layer. Then positional information obtained from the PoE is added to the linear embedding before passing through the four Encoder blocks. Each Encoder block consists of a Multi-sized Transformer (MT) module and a Patch Merging layer, except the last encoder block which only contains the MT module. The MT module extracts multiscale contextual features (to be elaborated later), and the Patch Merging layer down-samples the feature maps. With the inspiration from U-Net <ref type="bibr" target="#b14">[15]</ref>, a skip connection is employed for using the multi-scale contextual information from the encoder to overcome the loss of spatial information during down-sampling. Similar to the Encoder block, each Decoder block consists of an MT module and a patch-expanding layer, except the first decoder block which only contains the MT module. The patch-expanding layer performs the up-sampling, and reshaping operation on feature maps. Finally, we employ a Linear Projection layer to obtain the pixel-level predictions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Multi-sized Transformer U-Net (MT U-Net)</head><p>The proposed Multi-sized Transformer (MT) module (Fig. <ref type="figure" target="#fig_3">3(b)</ref>) is different from the conventional transformer <ref type="bibr" target="#b5">[6]</ref>. The MT module consists of two parts: multi-sized window and shifted-window. The multi-sized window part extracts multi-scale contextual information, and the shifted-window part enriches the extracted information. The multi-sized window part has K parallel branches, with each branch consisting of a Layer Normalization (LN), multi-head Self-Attention (SA), auxiliary connection (residual), and a Multi-layer perceptron (MLP) with two layers followed by the GELU activation function. The window size used in the multi-head self-attention is varied to extract multi-scale contextual features. The output of these individual branches is combined, and is sent to the shifted-window part. The shifted-window part has a structure similar to the individual branch in the multi-sized window, but it uses shifting windows in the self attention (SW-SA).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Training and Inference</head><p>During training, a source image and its segmentation ground truth map are given as input to the diffusion model. The diffusion model is trained using the noise prediction loss (L Noise ) <ref type="bibr" target="#b11">[12]</ref> and cross-entropy loss (L CE ).</p><formula xml:id="formula_1">L T OT AL = L Noise (M t , Mt ) + L CE (M t , Mt )<label>(2)</label></formula><p>During inference, a noise image sampled from the Gaussian distribution, along with the testing image, is given as the input to the reverse process.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and Evaluation Metrics</head><p>To evaluate the effectiveness and generalization ability of the proposed method, different medical image segmentation tasks are tested, including: (1) Polyp segmentation from colonoscopy images (Kvasir-SEG (KSEG) <ref type="bibr" target="#b9">[10]</ref>, CVC-Clinic DB (CVC) <ref type="bibr" target="#b0">[1]</ref>), (2) Skin lesion segmentation from dermoscopy images (ISIC 2017 (IS17') <ref type="bibr" target="#b4">[5]</ref>, ISIC 2018 (IS18') <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b18">19]</ref>), and (3) Optic-cup segmentation from retinal fundus images (REFUGE (REF) <ref type="bibr" target="#b13">[14]</ref>). Dice Coefficient (DC) and Intersection over Union (IoU) are used as evaluation metrics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>The number of branches in the MT module is set to 3 by cross-validation, with window sizes as 4, 8, and 16 respectively. The diffusion transformer U-Net is trained for 40, 000 iterations using SGD optimizer with a momentum of 0.6, with a batch size of 16, and the learning rate is set to 0.0005. In the diffusion, we use a linear noise scheduler with T = 1000 steps. For fair comparisons with the recent diffusion-based segmentation models <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b23">24]</ref>, during inference an average ensemble of 25 predictions is considered as the final prediction. All the experiments are conducted using a NVIDIA Tesla V-100 GPU with 32 GB RAM.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Performance Comparison</head><p>First, we quantitatively compare our method with several well-known U-Net and/or Transformer-related segmentation models, including U-Net <ref type="bibr" target="#b14">[15]</ref>, U-Net++ <ref type="bibr" target="#b25">[26]</ref>, Attention U-Net <ref type="bibr" target="#b12">[13]</ref>, Swin U-Net <ref type="bibr" target="#b1">[2]</ref>, Trans U-Net <ref type="bibr" target="#b2">[3]</ref>, and Seg-Former <ref type="bibr" target="#b24">[25]</ref>. With their source codes, these models are trained, and evaluated on the experiment datasets. For fair comparisons, all models use the same experimental protocol for each dataset. The quantitative results are shown in Table <ref type="table" target="#tab_0">1</ref>.  Our Diffusion Transformer U-Net outperforms all other U-Net or Transformer related models on the five datasets with various imaging modalities, validating its effectiveness and generalization capability. Secondly, we qualitatively compare our Diffusion Transformer U-Net with other U-Net or Transformer related models. From the randomly sampled testing images in Fig. <ref type="figure" target="#fig_4">4</ref>, we observe that the other models produce either oversegmented (e.g., Trans U-Net, SegFormer) or under-segmented results (e.g., U- Net, U-Net++, Attention U-Net, Swin U-Net), and our segmentation masks are closest to the ground truth, demonstrating the effectiveness of our method. Lastly, we compare our Diffusion Transformer U-Net with all the latest best models on the five datasets, as summarized in Table <ref type="table" target="#tab_1">2</ref>. The results from cited methods are copied from their papers directly, except for MedSegDiff, and MedSegDiff-V2. These two approaches are re-trained, and evaluated on the REF dataset. Note, since some methods use different experiment protocols on the IS18' dataset. For fair comparisons, we train/cross-validate/test our method using two different protocols, and compare ours with other methods with the same protocol. As shown in Table <ref type="table" target="#tab_1">2</ref>, our method consistently outperforms all the current best models on these five datasets, which again verifies its effectiveness and superiority.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Ablation Study</head><p>We perform a set of ablation studies to evaluate the contribution of each module in our Diffusion Transformer U-Net, as shown in Table <ref type="table" target="#tab_2">3:</ref> -The original U-Net <ref type="bibr" target="#b14">[15]</ref> is used as a baseline (row 1 in Table <ref type="table" target="#tab_2">3</ref>). -Using our diffusion model with the CA module (row 3), the performance is further improved, compared to the basic concatenation operation (row 2), which validates the contribution of the CA model for aligning feature embeddings during the denoising process of the diffusion model. -Using our diffusion model with the CA module, we add the basic transformer units <ref type="bibr" target="#b5">[6]</ref> without the multi-sized window into the U-Net (row 4). This also increases the segmentation performance, compared to row 3, which demonstrates that transformers can help the U-Net on segmentation. -Based on the model from row 4, we add multi-sized windows into the transformer (i.e., our Diffusion Transformer U-Net, row 5). This gives the highest performance, compared to other configurations in the ablation studies.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>A Diffusion Transformer U-Net is proposed for medical image segmentation. Instead of a standard U-Net in the diffusion model, we propose a transformer based U-Net with multi-sized windows for enhancing the contextual information extraction and reconstruction. We also design a cross-attention module to align feature embeddings, providing a better conditioning from the source image to the diffusion model. The evaluation on various datasets of different modalities shows the effectiveness and generalization ability of the proposed method.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Diffusion model with Cross-Attention (CA) to train the MT U-Net.</figDesc><graphic coords="2,55,98,307,76,340,18,98,65" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Architecture of the Cross-Attention (CA) module.</figDesc><graphic coords="3,41,79,54,11,340,21,150,58" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 (</head><label>3</label><figDesc>Figure 3(a) presents the architecture of our MT U-Net, with the encoding and decoding parts. The encoding part consists of a Patch Partitioning layer, a Linear Embedding layer, a PoE and four Encoder blocks. The Patch Partitioning layer splits the input into non-overlapping patches with a patch size of 2 × 2.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Architecture of the proposed MT U-Net, and the MT module. The time step embedding is not presented in the figure for clarity.</figDesc><graphic coords="4,55,98,53,96,340,15,171,76" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative comparison with SOTA approaches on KSEG [10], CVC [1], IS18' [4, 19], IS17' [5], and REF [14] datasets. The blue contours represent the ground truth, and the green contours represent the predicted results.</figDesc><graphic coords="6,55,98,227,63,340,18,220,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with state-of-the-art methods related to U-Net and/or Transformers. '80 : 10 : 10' (data split on training:validation:testing) experimental protocol is employed on KSEG, CVC, IS18'; respective default splits are used on REF, and IS17'.</figDesc><table><row><cell cols="2">Metric Datasets</cell><cell>Models</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell cols="7">U-Net [15] U-Net ++ [26] Attention U-Net [13] Swin U-Net [2] Trans U-Net [3] SegFormer [25] Ours</cell></row><row><cell>DC</cell><cell cols="2">KSEG [10] 0.775</cell><cell>0.786</cell><cell>0.798</cell><cell>0.867</cell><cell>0.889</cell><cell>0.905</cell><cell>0.946</cell></row><row><cell></cell><cell>CVC [1]</cell><cell>0.856</cell><cell>0.874</cell><cell>0.887</cell><cell>0.914</cell><cell>0.920</cell><cell>0.931</cell><cell>0.954</cell></row><row><cell></cell><cell cols="2">IS18' [4, 19] 0.813</cell><cell>0.833</cell><cell>0.844</cell><cell>0.869</cell><cell>0.904</cell><cell>0.914</cell><cell>0.931</cell></row><row><cell></cell><cell>IS17' [5]</cell><cell>0.794</cell><cell>0.814</cell><cell>0.815</cell><cell>0.851</cell><cell>0.873</cell><cell>0.884</cell><cell>0.935</cell></row><row><cell></cell><cell>REF [14]</cell><cell>0.769</cell><cell>0.779</cell><cell>0.792</cell><cell>0.815</cell><cell>0.821</cell><cell>0.843</cell><cell>0.887</cell></row><row><cell>IoU</cell><cell cols="2">KSEG [10] 0.714</cell><cell>0.725</cell><cell>0.752</cell><cell>0.854</cell><cell>0.863</cell><cell>0.874</cell><cell>0.916</cell></row><row><cell></cell><cell>CVC [1]</cell><cell>0.805</cell><cell>0.821</cell><cell>0.845</cell><cell>0.874</cell><cell>0.889</cell><cell>0.905</cell><cell>0.920</cell></row><row><cell></cell><cell cols="2">IS18' [4, 19] 0.691</cell><cell>0.703</cell><cell>0.732</cell><cell>0.813</cell><cell>0.821</cell><cell>0.847</cell><cell>0.879</cell></row><row><cell></cell><cell>IS17' [5]</cell><cell>0.659</cell><cell>0.663</cell><cell>0.682</cell><cell>0.721</cell><cell>0.745</cell><cell>0.768</cell><cell>0.801</cell></row><row><cell></cell><cell>REF [14]</cell><cell>0.692</cell><cell>0.701</cell><cell>0.714</cell><cell>0.746</cell><cell>0.774</cell><cell>0.796</cell><cell>0.815</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison with SOTA results. '-': No results reported. '*': number of images.</figDesc><table><row><cell>Dataset</cell><cell>Models</cell><cell cols="3">Publication, Year Experimental protocol DC</cell><cell>IoU</cell></row><row><cell cols="2">KSEG [10] MSRF-Net [17]</cell><cell cols="2">IEEE JBHI, 2022 80:10:10</cell><cell cols="2">0.921 0.891</cell></row><row><cell></cell><cell>Li-SegPNet [16]</cell><cell cols="2">IEEE TBE, 2022 80:10:10</cell><cell cols="2">0.905 0.828</cell></row><row><cell></cell><cell>SSFormer [21]</cell><cell>MICCAI, 2022</cell><cell>80:10:10</cell><cell cols="2">0.935 0.890</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>80:10:10</cell><cell cols="2">0.946 0.916</cell></row><row><cell>CVC [1]</cell><cell>MSRF-Net [17]</cell><cell cols="2">IEEE JBHI, 2022 80:10:10</cell><cell cols="2">0.942 0.904</cell></row><row><cell></cell><cell>Li-SegPNet [16]</cell><cell cols="2">IEEE TBE, 2022 80:10:10</cell><cell cols="2">0.925 0.860</cell></row><row><cell></cell><cell>SSFormer [21]</cell><cell>MICCAI, 2022</cell><cell>80:10:10</cell><cell cols="2">0.944 0.899</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>80:10:10</cell><cell cols="2">0.954 0.920</cell></row><row><cell cols="2">IS18' [4, 19] MSRF-Net [17]</cell><cell cols="2">IEEE JBHI, 2022 80:10:10</cell><cell cols="2">0.882 0.837</cell></row><row><cell></cell><cell>FAT-Net [22]</cell><cell>MedIA, 2022</cell><cell>1815*,259*,520*</cell><cell cols="2">0.890 0.820</cell></row><row><cell></cell><cell>HiFormer [8]</cell><cell>WACV, 2023</cell><cell>1815*,259*,520*</cell><cell cols="2">0.910 -</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>1815*,259*,520*</cell><cell cols="2">0.924 0.843</cell></row><row><cell></cell><cell></cell><cell></cell><cell>80:10:10</cell><cell cols="2">0.931 0.879</cell></row><row><cell>IS17' [5]</cell><cell>FAT-Net [22]</cell><cell>MedIA, 2022</cell><cell>Default split</cell><cell cols="2">0.850 0.765</cell></row><row><cell></cell><cell>HiFormer [8]</cell><cell>WACV, 2023</cell><cell>Default split</cell><cell cols="2">0.925 -</cell></row><row><cell></cell><cell>ConTrans [11]</cell><cell>MICCAI, 2022</cell><cell>Default split</cell><cell cols="2">0.875 -</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>Default split</cell><cell cols="2">0.935 0.801</cell></row><row><cell>REF [14]</cell><cell>MedSegDiff [23]</cell><cell>Arxiv, 2022</cell><cell>Default Split</cell><cell cols="2">0.863 0.782</cell></row><row><cell></cell><cell cols="2">MedSegDiff-V2 [24] Arxiv, 2023</cell><cell>Default Split</cell><cell cols="2">0.859 0.796</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>Default Split</cell><cell cols="2">0.887 0.815</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation on KSEG<ref type="bibr" target="#b9">[10]</ref>, CVC<ref type="bibr" target="#b0">[1]</ref>, IS18'<ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b18">19]</ref>, IS17'<ref type="bibr" target="#b4">[5]</ref>, and REF<ref type="bibr" target="#b13">[14]</ref>.</figDesc><table><row><cell cols="6">U-Net Diff CA Vanila Trans MT IoU</cell><cell>DC</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">KSEG CVC IS17' IS18' REF KSEG CVC IS17' IS18' REF</cell></row><row><cell>✓</cell><cell>✗</cell><cell>✗</cell><cell>✗</cell><cell>✗</cell><cell cols="2">0.714 0.805 0.659 0.691 0.692 0.775 0.856 0.794 0.813 0.769</cell></row><row><cell>✓</cell><cell>✓</cell><cell>✗</cell><cell>✗</cell><cell>✗</cell><cell cols="2">0.843 0.842 0.734 0.801 0.732 0.873 0.879 0.853 0.885 0.815</cell></row><row><cell>✓</cell><cell>✓</cell><cell cols="2">✓ ✗</cell><cell>✗</cell><cell cols="2">0.875 0.875 0.763 0.841 0.763 0.905 0.932 0.889 0.901 0.831</cell></row><row><cell>✓</cell><cell>✓</cell><cell cols="2">✓ ✓</cell><cell>✗</cell><cell cols="2">0.889 0.894 0.784 0.863 0.782 0.921 0.939 0.914 0.913 0.847</cell></row><row><cell>✓</cell><cell>✓</cell><cell cols="2">✓ ✗</cell><cell>✓</cell><cell cols="2">0.916 0.920 0.801 0.879 0.815 0.946 0.954 0.935 0.931 0.887</cell></row><row><cell cols="7">-We replace the Cross-Attention (CA) in our diffusion model by a simple</cell></row><row><cell></cell><cell cols="6">concatenation operation, and apply this simplified diffusion model to train</cell></row><row><cell></cell><cell cols="6">the U-Net. Even this simplified diffusion model (row 2) can boost the U-Net</cell></row><row><cell></cell><cell cols="6">performance in row 1, showing the effectiveness of diffusion.</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43901-8 59.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Wm-dova maps for accurate polyp highlighting in colonoscopy: validation vs. saliency maps from physicians</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bernal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">J</forename><surname>Sánchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Fernández-Esparrach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Vilariño</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Med. Imaging Graph</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="99" to="111" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Swin-unet: Unet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-25066-8_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-25066-89" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022, Part III</title>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="205" to="218" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Transunet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Skin lesion analysis toward melanoma detection 2018: a challenge hosted by the international skin imaging collaboration (ISIC)</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Codella</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.03368</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Skin lesion analysis toward melanoma detection: a challenge at the 2017 international symposium on biomedical imaging (ISBI), hosted by the international skin imaging collaboration (isic)</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Codella</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<title level="m">An image is worth 16x16 words: transformers for image recognition at scale</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Ca-net: comprehensive attention convolutional neural networks for explainable medical image segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="699" to="711" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Hiformer: hierarchical multi-scale representations using transformers for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Heidari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="6202" to="6212" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Kvasir-SEG: a segmented polyp dataset</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jha</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-37734-2_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-37734-237" />
+	</analytic>
+	<monogr>
+		<title level="m">MMM 2020</title>
+		<editor>
+			<persName><forename type="first">W</forename><surname>De Neve</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">11962</biblScope>
+			<biblScope unit="page" from="451" to="462" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Contrans: improving transformer with convolutional attention for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Lu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-929" />
+	</analytic>
+	<monogr>
+		<title level="m">th International Conference</title>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="297" to="307" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part V</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Improved denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Nichol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8162" to="8171" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">O</forename><surname>Oktay</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.03999</idno>
+		<title level="m">Attention u-net: Learning where to look for the pancreas</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Refuge challenge: a unified framework for evaluating automated methods for glaucoma assessment from fundus photographs</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">I</forename><surname>Orlando</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page">101570</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">18th International Conference</title>
+		<meeting><address><addrLine>Munich, Germany; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015-10-05">2015. October 5-9, 2015. 2015</date>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III 18</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Li-segpnet: encoder-decoder mode lightweight segmentation network for colorectal polyps analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gautam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Maji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">B</forename><surname>Pachori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">K</forename><surname>Balabantaray</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Biomed. Eng</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Msrf-net: a multi-scale residual fusion network for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="2252" to="2263" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Inception-v4, inception-resnet and the impact of residual connections on learning</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vanhoucke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Alemi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">31</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">The ham10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tschandl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosendahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kittler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Scientific data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Attention is all you need. Advances in neural information processing systems</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Polosukhin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Stepwise feature fusion: Local guides global</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">September 18-22, 2022. 2022</date>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="110" to="120" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Fat-net: feature adaptive transformers for automated skin lesion segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">102327</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.00611</idno>
+		<title level="m">Medsegdiff: medical image segmentation with diffusion probabilistic model</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Medsegdiff-v2: diffusion based medical image segmentation with transformer</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2301.11798</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Segformer: simple and efficient design for semantic segmentation with transformers</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Anandkumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Alvarez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="12077" to="12090" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Unet++: redesigning skip connections to exploit multiscale features in image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M R</forename><surname>Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1856" to="1867" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

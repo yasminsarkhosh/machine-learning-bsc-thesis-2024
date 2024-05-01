@@ -1,0 +1,754 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Scale Federated Learning for Label Set Mismatch in Medical Image Classification</title>
+				<funder ref="#_Rxt8pPF">
+					<orgName type="full">Shenzhen Science and Technology Innovation Committee Fund</orgName>
+				</funder>
+				<funder ref="#_7DtR4Vv">
+					<orgName type="full">Hong Kong Innovation and Technology Fund</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zhipeng</forename><surname>Deng</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Luyang</forename><surname>Luo</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hao</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Chemical and Biological Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Scale Federated Learning for Label Set Mismatch in Medical Image Classification</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">C0EDF8149E42671499E89DC9384568C0</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-112.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:01+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Federated Learning • Label Set Mismatch</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Federated learning (FL) has been introduced to the healthcare domain as a decentralized learning paradigm that allows multiple parties to train a model collaboratively without privacy leakage. However, most previous studies have assumed that every client holds an identical label set. In reality, medical specialists tend to annotate only diseases within their area of expertise or interest. This implies that label sets in each client can be different and even disjoint. In this paper, we propose the framework FedLSM to solve the problem of Label Set Mismatch. FedLSM adopts different training strategies on data with different uncertainty levels to efficiently utilize unlabeled or partially labeled data as well as class-wise adaptive aggregation in the classification layer to avoid inaccurate aggregation when clients have missing labels. We evaluated FedLSM on two public real-world medical image datasets, including chest X-ray (CXR) diagnosis with 112,120 CXR images and skin lesion diagnosis with 10,015 dermoscopy images, and showed that it significantly outperformed other state-of-the-art FL algorithms. The code can be found at https://github.com/dzp2095/FedLSM.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Federated learning (FL) <ref type="bibr" target="#b15">[15]</ref> is an emerging decentralized learning paradigm that enables multiple parties to collaboratively train a model without sharing private data. FL was initially developed for edge devices, and it has been extended to medical image analysis to protect clinical data <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b21">21]</ref>. Non-identically independently distributed (Non-IID) data among clients is one of the most frequently stated problems with FL <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b7">[7]</ref><ref type="bibr" target="#b8">[8]</ref><ref type="bibr" target="#b9">[9]</ref>. However, most studies of non-IID FL assumed that each client owns an identical label set, which does not reflect real-world scenarios where classes of interest could vary among clients. In the medical field, for instance, datasets from different centers (e.g., hospitals) are generally annotated based on their respective domains or interests. As a result, the label sets of different centers can be non-identical, which we refer to as label set mismatch.</p><p>To this end, we propose to solve this challenging yet common scenario where each client holds different or even disjoint annotated label sets. We consider not only single-label classification but also multi-label classification where partial labels exist, making this problem setting more general and challenging. Specifically, each client has data of locally identified classes and locally unknown classes. Although locally identified classes differ among clients, the union of identified classes in all clients covers locally unknown classes in each client (Fig. <ref type="figure" target="#fig_0">1</ref>). There are few studies directly related to the label set mismatch scenario. The previous attempts were either limited in scope or have not achieved satisfactory results. For instance, FedRS <ref type="bibr" target="#b10">[10]</ref> assumed that each client only owns locally identified classes. FedPU <ref type="bibr" target="#b11">[11]</ref> assumed that each client owns labels of locally identified classes and unlabeled data of all classes but it was not applicable to multi-label classification. FPSL <ref type="bibr" target="#b1">[2]</ref> was designed for federated partially supervised learning which only targets multi-label classification. Over and above that, FedRS and FedPU tried to solve this problem only through local updating and ignored the server aggregation process in FL, leading to unsatisfactory performance. FPSL used bi-level optimization in the local training, which is only effective when the data is very limited. Federated semi-supervised learning (FedSemi) <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b22">22]</ref> is another related field, but almost all of them assumed that some annotated clients <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b12">12]</ref> or a server <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b22">22]</ref> own labels of all classes. However, in real-world scenarios, especially in the healthcare domain, each client may only annotate data of specific classes within their domains and interests.</p><p>In this paper, we present FedLSM, a framework that aims to solve Label Set Mismatch and is designed for both single-label and multi-label classification tasks. FedLSM relies on pseudo labeling on unlabeled or partially labeled samples, but pseudo labeling methods could lead to incorrect pseudo labels and ignorance of samples with relatively lower confidence. To address these issues, we evaluate the uncertainty of each sample using entropy and conduct pseudo labeling only on data with relatively lower uncertainty. We also apply MixUp <ref type="bibr" target="#b23">[23]</ref> between data with low and high uncertainty and propose an adaptive weighted averaging for the classification layer that considers the client class-wise data numbers. We validated our propose method on two real-world tasks, including Chest X-ray (CXR) <ref type="bibr" target="#b13">[13,</ref><ref type="bibr" target="#b14">14]</ref> diagnosis (multi-label classification) and skin lesion diagnosis <ref type="bibr" target="#b0">[1]</ref> (single-label classification). Extensive experiments demonstrate that our method outperforms a number of state-of-the-art FL methods, holding promise in tackling the label set mismatch problem under federated learning. We followed the common FL scenario, where there are K clients and one central server. Each client owns a locally-identified class set I k and a locally-unknown class set U k . Although I k and U k can vary among clients and may even be disjoint, all clients share an identical class set as:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Problem Setting</head><formula xml:id="formula_0">C = I k ∪ U k , k = 1, 2, ..., K.</formula><p>(</p><p>Despite the fact that each client only identifies a subset of the class set C, the union of locally identified class sets equals C, which can be formulated as:</p><formula xml:id="formula_2">C = I 1 ∪ I 2 ... ∪ I K .</formula><p>(</p><formula xml:id="formula_3">)<label>2</label></formula><p>The local dataset of client k is denoted as</p><formula xml:id="formula_4">D k = {(x i , y i )} n k i=1</formula><p>, where n k denotes the number of data, x i is the i -th input image, and</p><formula xml:id="formula_5">y i = [y i 1 , ..., y i c , ..., y i M ] is the i -th label vector, M is the number of classes in C and y i c refers to the label of class c. Notably, if c ∈ I k , y i c ∈ {0, 1}. If c ∈ U k , y i c is set to 0.</formula><p>For subsequent illustration, we denote the backbone model as</p><formula xml:id="formula_6">f (•) = f Ψ (f θ (•))</formula><p>, where f θ (•) refers to the feature extractor with parameters θ and f Ψ refers to the last classification layer with parameters Ψ = {ψ c } M c=1 . Adopting the terminology from previous studies <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b17">17]</ref>, we refer to Ψ as proxies and ψ c as c-th proxy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Overview of FedLSM</head><p>Our proposed framework is presented in Fig. <ref type="figure" target="#fig_1">2</ref>. As depicted in Fig. <ref type="figure" target="#fig_1">2</ref>(a), we evaluate the uncertainty of each sample in the local dataset D k using the global model f (•) and split it into three subsets based on the uncertainty level. The low and medium uncertainty subsets are used for pseudo labeling-based training, while the low and high uncertainty subsets are combined by MixUp <ref type="bibr" target="#b23">[23]</ref> to efficiently utilize uncertain data that might be ignored in pseudo labeling. The estimated disease distribution q k c on client k is calculated using the existing labels and pseudo labels. After local training, each client sends its estimated disease distribution q k and model weight f k (•) to the central server. The feature extractors Θ are aggregated using FedAvg <ref type="bibr" target="#b15">[15]</ref> while proxies Ψ are aggregated using our proposed adaptive weighted averaging with the help of q k .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Local Model Training Uncertainty Estimation (UE).</head><p>We use the global model to evaluate the uncertainty of each sample in the local dataset by calculating its entropy <ref type="bibr" target="#b16">[16]</ref>. The calculation of entropy in single-label classification is defined as:</p><formula xml:id="formula_7">H(x i ) = - c P (y = c|x i )log(P (y = c|x i ))<label>(3)</label></formula><p>where P (y = c|x i ) refers to the predicted probability for a given class c and input x i . The calculation of entropy in multi-label classification is similar to . We use the weakly-augmented version (i.e., slightly modified via rotations, shifts, or flips) of x i to generate pseudo labels on locally unknown classes by the teacher model. The loss L I k applied on locally identified class set I k is cross-entropy, and the loss applied on the locally unknown class set U k of k -th client in single-label classification can be formulated as:</p><formula xml:id="formula_8">L U k = - 1 N U k NU k i=1 c∈U k 1(f g,c (α(x i )) ≥ τ )ŷ i c logf k,c (A(x) i ) (<label>4</label></formula><formula xml:id="formula_9">)</formula><p>where </p><formula xml:id="formula_10">N</formula><formula xml:id="formula_11">L U k = - 1 N C NC i=1 c∈U k [1(f g,c (α(x i )) ≥ τ p )ŷ i c log(f k,c (A(x i ))) + 1(f g,c (α(x i )) ≤ τ n )(1 -ŷi c )log(1 -f k,c (A(x i )))]<label>(5)</label></formula><p>where τ p and τ n are the confidence threshold for positive and negative labels, N C is the number of data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Uncertain Data Enhancing (UDE).</head><p>The pseudo label filtering mechanism makes it difficult to acquire pseudo-labels for uncertain data, which results in their inability to contribute to the training process. To overcome this limitation, we propose to MixUp <ref type="bibr" target="#b23">[23]</ref> dataset with lowest entropy (confident) D l k and dataset with highest entropy as (uncertain) D h k to generate softer label ỹ and input x as</p><formula xml:id="formula_12">x =λx l + (1 -λ)x h ỹ =λy l + (1 -λ)y h (<label>6)</label></formula><p>, where x l ∈ D l k and x h ∈ D h k , and y l and y h are their corresponding labels or pseudo labels, respectively. We generate pseudo labels for uncertain data (x h , y h ) with a relatively smaller confidence threshold. The UDE loss function L UDE is cross-entropy loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Overall Loss Function. The complete loss function is defined as:</head><formula xml:id="formula_13">L = L I k + L U k + λL UDE ,</formula><p>where λ is a hyperparameter to balance different objectives.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Server Model Aggregation</head><p>After local training, the server will collect all the client models and aggregate them into a global model. In the r -th round, the aggregation of the feature extractors {θ k } K k=1 is given by:</p><formula xml:id="formula_14">θ r+1 ← K k n k n θ r k , where n = K k n k .</formula><p>Adaptive Weighted Proxy Aggregation (AWPA). As analyzed in <ref type="bibr" target="#b10">[10]</ref>, due to the missing labels of locally unknown class set U k on k -th client, the corresponding proxies {ψ k,c } c∈U k are inaccurate and will further cause error accumulation during model aggregation. FedRS <ref type="bibr" target="#b10">[10]</ref> and FedPU <ref type="bibr" target="#b11">[11]</ref> both seek to solve this problem only through local training while we use pseudo labels and the existing labels to indicate the contribution of aggregation of proxies as: <ref type="bibr" target="#b7">(7)</ref> where q k c refers to the number of training data of the c-th class on the k -th client. During training, if c ∈ U k , q k c is estimated by the number of pseudo labels as</p><formula xml:id="formula_15">ψ r+1 c ← K k=1 q k c K j=1 q j c ψ r k,c</formula><formula xml:id="formula_16">q k c = n k i=1 ŷi c .</formula><p>The weighting number of each client is modulated in an adaptive way through the pseudo labeling process in each round.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We evaluated our method on two real-world medical image classification tasks, including the CXR diagnosis (multi-label) and skin lesion diagnosis (singlelabel).</p><p>Task 1) NIH CXR Diagnosis. We conducted CXR diagnosis with NIH ChestX-ray14 dataset <ref type="bibr" target="#b20">[20]</ref>, which contains 112,120 frontal-view CXR images from 32,717 patients. NIH CXR diagnosis is a multi-label classification task and each image is annotated with 14 possible abnormalities (positive or negative).</p><p>Task 2) ISIC2018 Skin Lesion Diagnosis. We conducted skin lesion diagnosis with HAM10000 <ref type="bibr" target="#b19">[19]</ref>, which contains 10,015 dermoscopy images. ISIC2018 skin lesion diagnosis is a single-label multi-class classification task where seven exclusive skin lesion sub-types are considered.</p><p>Training, validation and testing sets for both datasets were divided into 7:1:2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experiment Setup</head><p>FL Setting. We randomly divided the training set into k client training sets and randomly select s classes as locally identified classes on each client. We set the number of clients k = 8, the number of classes s = 3 for Task 1 and k = 5, s = 3 for Task 2. Please find the detail of the datasets in the supplementary materials. Data Augmentation and Preprocessing. The images in Task 1 were resized to 320×320, while in Task 2, they were resized to 224×224. For all experiments, weak augmentation refered to horizontal flip, and strong augmentation included a combination of random flip, rotation, translation, scaling and one of the blur transformations in gaussian blur, gaussian noise and median blur. Evaluation Metrics. For Task 1, we adopted AUC to evaluate the performance of each disease. For task 2, we reported macro average of AUC, Accuracy, F1, Precision and Recall of each disease. All the results are averaged over 3 runs. Implementation Details. We used DenseNet121 <ref type="bibr" target="#b2">[3]</ref> as the backbone for all the tasks. The network was optimized by Adam optimizer where the momentum terms were set to 0.9 and 0.99. The total batch size was 64 with 4 generated samples using UDE. In task 1, we used the weighted binary cross-entropy as in FPSL <ref type="bibr" target="#b1">[2]</ref>. The local training iterations were 200 and 30 for Task 1 and Task 2, respectively, while the total communication rounds were 50 for both tasks. Please find more detailed hyperparameter settings in the supplementary material. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison with State-of-the-Arts and Ablation Study</head><p>We compared our method with recent state-of-the-art (SOTA) non-IID FL methods, including FedProx <ref type="bibr" target="#b8">[8]</ref>, which applied L 2 regularization, and MOON <ref type="bibr" target="#b7">[7]</ref>,</p><p>which introduced contrastive learning. We also compared with other SOTA non-IID FL methods that shared a similar setting with ours, including FedRS <ref type="bibr" target="#b10">[10]</ref>, which restricted proxy updates of missing classes, FedPU <ref type="bibr" target="#b11">[11]</ref>, which added a misclassification loss, and FPSL <ref type="bibr" target="#b1">[2]</ref>, which adopted task-dependent model aggregation. Additionally, we compared with FedSemi methods that can be easily translated into the label set mismatch scenario including FSSL <ref type="bibr" target="#b22">[22]</ref> and FedAvg with FixMatch <ref type="bibr" target="#b18">[18]</ref>. For our evaluation, we used FedAvg with 100% labeled data as the benchmark and FedAvg trained with the same setting as the lower bound. The quantitative results for the two tasks are presented in Table <ref type="table" target="#tab_1">1</ref> and<ref type="table" target="#tab_2">Table 2</ref>. To ensure a fair comparison, we adopted the task-dependent model aggregation proposed in FPSL <ref type="bibr" target="#b1">[2]</ref> in most of the compared FL methods, with the exception of FedRS and FedPU which are specifically designed for the similar scenario with us. Our proposed FedLSM achieves the best performance on almost all metrics. Notably, the improvement over the second-best method is 1.5% for average AUC on Task 1 and 6.1% for F1-score on Task 2. Ablation Study. We conducted ablation studies to assess the effectiveness of the primary components of our FedLSM framework. As depicted in Table <ref type="table" target="#tab_3">3</ref>, the performance drops significantly without UE or UDE. On the other hand, the adoption of AWPA boosts the performance by 0.7% in AUC for Task 1, 3.7% in F1-score, and 5.3% in recall for Task 2. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>AUC Accuracy F1 Precision Recall</head><p>FedAvg with 100% labeled data 0.977 0.889 0.809 0.743 0.800 FedAvg <ref type="bibr" target="#b15">[15]</ref> 0.927 0.810 0.576 0.721 0.622 FedAvg* <ref type="bibr" target="#b15">[15]</ref> 0.949 0.817 0.620 0.753 0.597 FedProx* <ref type="bibr" target="#b8">[8]</ref> 0.952 0.820 0.630 0.768 0.612 MOON* <ref type="bibr" target="#b7">[7]</ref> 0.948 0.826 0.652 0.755 0.620 FedPU <ref type="bibr" target="#b11">[11]</ref> 0.927 0.796 0.550 0.699 0.570 FedRS <ref type="bibr" target="#b10">[10]</ref> 0.926 0.800 0.577 0.716 0.597 FPSL <ref type="bibr" target="#b1">[2]</ref> 0.952 0.825 0.638 0.728 0.613 FedAvg* + FixMatch <ref type="bibr" target="#b18">[18]</ref> 0.940 0.789 0.564 0.681 0.541 FSSL* <ref type="bibr" target="#b22">[22]</ref> 0 </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We present an effective framework FedLSM to tackle the issue of label set mismatch in FL. To alleviate the impact of missing labels, we leverage uncertainty estimation to partition the data into distinct uncertainty levels. Then, we apply pseudo labeling to confident data and uncertain data enhancing to uncertain data. In the server aggregation phase, we use adaptive weighted proxies averaging on the classification layer, where averaging weights are dynamically adjusted every round. Our FedLSM demonstrates notable effectiveness in both CXR diagnosis (multilabel classification) and ISIC2018 skin lesion diagnosis (single-label classification) tasks, holding promise in tackling the label set mismatch problem under federated learning.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of the Label Set Mismatch problem. Each node (client) has its own identified class set, which can differ from other nodes. The label in the box represents the correct complete label, while the label in the red text represents the partial label actually assigned to the image.</figDesc><graphic coords="2,70,47,217,55,311,47,130,99" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of the FedLSM framework. (a) Client training details, including uncertainty estimation (UE) and different training strategies for data with different uncertainty levels. The estimated disease distribution (EDD) is calculated using existing labels and pseudo labels. (b) Overview of the proposed scenario and FL paradigm, where each client has non-identical missing labels. EDD represents each client's contribution to each proxy in the adaptive classification layer aggregation.</figDesc><graphic coords="3,54,81,307,55,314,38,215,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>U k denotes the number of unlabeled data, f k,c (•) is the predicted probability for class c of the student model on k -th client, α(•) and A(•) refer to weak and strong augmentation respectively, f g,c (α(x i )) is the predicted probability of class c on the weakly augmented version of x i by the teacher model, ŷi = argmax(f g,c (α(x i )) is the pseudo label and τ is the threshold used to filter unconfident pseudo label. Specifically, the teacher model and student model both are initialized from the global model, while the teacher model is updated using exponential moving average (EMA) with the weights of the student model during training. Likewise, the loss function L I k in multi-label classification is binary cross entropy and L U k is:</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>single-label classification where we only consider U k and normalize the result to [0, 1]. After calculating the entropy, we empirically determine n h k and n l k and group the data with top-n h k highest entropy as uncertain dataset D h k , top-n l k lowest entropy as confident dataset D l k , and the rest as D m k . Pseudo Labeling. After local models are trained and aggregated on the central server, the resulting global model can identify the entire class set C. Thereafter, we can use pseudo labeling-based method to leverage partially labeled or unlabeled data in D l k ∪ D m k</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Comparison</figDesc><table><row><cell>Disease</cell><cell>Methods</cell><cell>(a)</cell><cell>(b)</cell><cell>(c)</cell><cell>(d)</cell><cell>(e)</cell><cell>(f)</cell><cell>(g)</cell><cell>(h)</cell><cell>(i)</cell><cell>Ours</cell></row><row><cell cols="2">Consolidation</cell><cell cols="10">0.750 0.682 0.724 0.716 0.718 0.685 0.709 0.730 0.713 0.727</cell></row><row><cell cols="2">Pneumonia</cell><cell cols="10">0.717 0.695 0.684 0.707 0.700 0.685 0.711 0.699 0.706 0.700</cell></row><row><cell cols="2">Effusion</cell><cell cols="10">0.828 0.710 0.750 0.766 0.760 0.732 0.773 0.800 0.759 0.804</cell></row><row><cell cols="2">Emphysema</cell><cell cols="10">0.913 0.717 0.842 0.842 0.877 0.644 0.837 0.813 0.705 0.901</cell></row><row><cell cols="2">Edema</cell><cell cols="10">0.849 0.765 0.814 0.811 0.817 0.756 0.813 0.815 0.805 0.833</cell></row><row><cell cols="2">Atelectasis</cell><cell cols="10">0.776 0.634 0.721 0.716 0.722 0.660 0.712 0.741 0.682 0.757</cell></row><row><cell cols="2">Nodule</cell><cell cols="10">0.768 0.707 0.722 0.729 0.720 0.685 0.716 0.735 0.695 0.742</cell></row><row><cell cols="2">Mass</cell><cell cols="10">0.820 0.686 0.725 0.723 0.736 0.670 0.704 0.767 0.682 0.775</cell></row><row><cell cols="2">Thickening</cell><cell cols="10">0.775 0.726 0.732 0.737 0.740 0.720 0.725 0.745 0.726 0.755</cell></row><row><cell cols="2">Cardiomegaly</cell><cell cols="10">0.877 0.750 0.830 0.840 0.841 0.707 0.820 0.858 0.794 0.846</cell></row><row><cell cols="2">Fibrosis</cell><cell cols="10">0.817 0.760 0.766 0.772 0.780 0.750 0.775 0.776 0.790 0.804</cell></row><row><cell cols="2">Hernia</cell><cell cols="10">0.850 0.623 0.840 0.886 0.873 0.609 0.870 0.865 0.837 0.884</cell></row><row><cell cols="2">Pneumothorax</cell><cell cols="10">0.865 0.790 0.818 0.805 0.836 0.761 0.809 0.836 0.766 0.858</cell></row><row><cell cols="2">Infiltration</cell><cell cols="10">0.696 0.695 0.687 0.678 0.689 0.682 0.672 0.680 0.700 0.680</cell></row><row><cell cols="2">Average AUC</cell><cell cols="10">0.807 0.710 0.760 0.766 0.772 0.697 0.760 0.776 0.740 0.791</cell></row></table><note><p><p><p><p><p><p><p><p><p><p><p><p><p><p><p><p><p><p><p>with state-of-the-art methods on NIH CXR diagnosis. (a) FedAvg with 100% labeled data (b) FedAvg</p><ref type="bibr" target="#b15">[15]</ref> </p>(c) FedAvg*</p><ref type="bibr" target="#b15">[15]</ref> </p>(d) FedProx*</p><ref type="bibr" target="#b8">[8]</ref> </p>(e) MOON*</p><ref type="bibr" target="#b7">[7]</ref> </p>(f ) FedRS</p><ref type="bibr" target="#b10">[10]</ref> </p>(g) FPSL</p><ref type="bibr" target="#b1">[2]</ref> </p>(h) FedAvg-FixMatch*</p><ref type="bibr" target="#b18">[18]</ref> </p>(i) FSSL*</p><ref type="bibr" target="#b22">[22]</ref></p>. * denotes the use of task-dependent model aggregation in FPSL</p><ref type="bibr" target="#b1">[2]</ref></p>.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Comparison with state-of-the-art methods on ISIC2018 Skin Lesion diagnosis.* denotes the use of task-dependent model aggregation in FPSL<ref type="bibr" target="#b1">[2]</ref>.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Ablation studies in terms of major components on task 1 and task 2.* denotes the use of masked aggregation of proxies.</figDesc><table><row><cell></cell><cell>.939 0.807</cell><cell>0.608 0.740</cell><cell>0.580</cell></row><row><cell>Ours</cell><cell>0.960 0.846</cell><cell>0.713 0.763</cell><cell>0.699</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">Hong Kong Innovation and Technology Fund</rs> (Project No. <rs type="grantNumber">ITS/028/21FP</rs>) and <rs type="funder">Shenzhen Science and Technology Innovation Committee Fund</rs> (Project No. <rs type="grantNumber">SGDX20210823103201011</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_7DtR4Vv">
+					<idno type="grant-number">ITS/028/21FP</idno>
+				</org>
+				<org type="funding" xml:id="_Rxt8pPF">
+					<idno type="grant-number">SGDX20210823103201011</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">FedPerl: semi-supervised peer learning for skin lesion classification</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bdair</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Albarqouni</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-432" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Cotin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Essert</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="336" to="346" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Federated partially supervised learning with limited decentralized medical images</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kampffmeyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Voiculescu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Densely connected convolutional networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="4700" to="4708" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Federated semi-supervised learning with inter-client consistency &amp; disjoint learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Jeong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yoon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Hwang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2006.12097</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Harmofl: harmonizing local and global drifts in federated learning on heterogeneous medical images</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="1087" to="1095" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Dynamic bank learning for semi-supervised federated image diagnosis with class imbalance</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2022">September 18-22, 2022</date>
+			<biblScope unit="volume">2022</biblScope>
+			<biblScope unit="page" from="196" to="206" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part III</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_19</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-819" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Model-contrastive federated learning</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10713" to="10722" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Federated optimization in heterogeneous networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Mach. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="429" to="450" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.07623</idno>
+		<title level="m">Fedbn: federated learning on non-iid features via local batch normalization</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Fedrs: federated learning with restricted softmax for label distribution non-iid data</title>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">C</forename><surname>Zhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery &amp; Data Mining</title>
+		<meeting>the 27th ACM SIGKDD Conference on Knowledge Discovery &amp; Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="995" to="1005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Federated learning with positive and unlabeled data</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Lin</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="13344" to="13355" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Federated semi-supervised medical image classification via inter-client relation matching</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Cotin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Essert</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page">31</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Oxnet: omni-supervised thoracic disease detection from chest x-rays</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Pheng</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2104.03218</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Deep mining external imperfect data for chest x-ray disease screening</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3583" to="3594" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Communicationefficient learning of deep networks from decentralized data</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mcmahan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ramage</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hampson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Arcas</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence and Statistics</title>
+		<imprint>
+			<biblScope unit="page" from="1273" to="1282" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Robinson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Entropy and uncertainty</title>
+		<imprint>
+			<date type="published" when="2008">2008</date>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="493" to="506" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Prototypical networks for few-shot learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Snell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Swersky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zemel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Fixmatch: simplifying semi-supervised learning with consistency and confidence</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sohn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="596" to="608" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The ham10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tschandl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Rosendahl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kittler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Chestx-ray8: hospital-scale chest x-ray database and benchmarks on weakly-supervised classification and localization of common thorax diseases</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bagheri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2097" to="2106" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Closing the generalization gap of cross-silo federated medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20866" to="20875" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Federated semi-supervised learning for covid region segmentation in chest CT using multi-national data from china, italy, japan</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Myronenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Harmon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Turkbey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Turkbey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">101992</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N</forename><surname>Dauphin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lopez-Paz</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1710.09412</idno>
+		<title level="m">mixup: beyond empirical risk minimization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

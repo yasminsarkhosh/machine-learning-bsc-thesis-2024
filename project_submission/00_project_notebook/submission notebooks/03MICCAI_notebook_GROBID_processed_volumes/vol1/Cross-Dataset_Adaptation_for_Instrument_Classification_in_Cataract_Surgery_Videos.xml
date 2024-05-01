@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Cross-Dataset Adaptation for Instrument Classification in Cataract Surgery Videos</title>
+				<funder ref="#_u8zVVcX">
+					<orgName type="full">National Institutes of Health, USA</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jay</forename><forename type="middle">N</forename><surname>Paranjape</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">The Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shameema</forename><surname>Sikder</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Wilmer Eye Institute</orgName>
+								<orgName type="institution">The Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Malone Center for Engineering in Healthcare</orgName>
+								<orgName type="institution">The Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vishal</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">The Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">S</forename><surname>Swaroop Vedula</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Malone Center for Engineering in Healthcare</orgName>
+								<orgName type="institution">The Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Cross-Dataset Adaptation for Instrument Classification in Cataract Surgery Videos</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">7C1D26129CCC1954B229485C591BD79C</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-070.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Surgical Tool Classification</term>
+					<term>Unsupervised Domain Adaptation</term>
+					<term>Cataract Surgery</term>
+					<term>Surgical Data Science</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Surgical tool presence detection is an important part of the intra-operative and post-operative analysis of a surgery. State-of-the-art models, which perform this task well on a particular dataset, however, perform poorly when tested on another dataset. This occurs due to a significant domain shift between the datasets resulting from the use of different tools, sensors, data resolution etc. In this paper, we highlight this domain shift in the commonly performed cataract surgery and propose a novel end-to-end Unsupervised Domain Adaptation (UDA) method called the Barlow Adaptor that addresses the problem of distribution shift without requiring any labels from another domain. In addition, we introduce a novel loss called the Barlow Feature Alignment Loss (BFAL) which aligns features across different domains while reducing redundancy and the need for higher batch sizes, thus improving cross-dataset performance. The use of BFAL is a novel approach to address the challenge of domain shift in cataract surgery data. Extensive experiments are conducted on two cataract surgery datasets and it is shown that the proposed method outperforms the state-of-the-art UDA methods by 6%. The code can be found at https://github.com/JayParanjape/Barlow-Adaptor.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Surgical instrument identification and classification are critical to deliver several priorities in surgical data science <ref type="bibr" target="#b20">[21]</ref>. Various deep learning methods have been developed to classify instruments in surgical videos using data routinely generated in institutions <ref type="bibr" target="#b1">[2]</ref>. However, differences in image capture systems and protocols lead to nontrivial dataset shifts, causing a significant drop in performance of the deep learning methods when tested on new datasets <ref type="bibr" target="#b12">[13]</ref>. Using cataract surgery as an example, Fig. <ref type="figure">1</ref> illustrates the drop in accuracy of existing methods to classify instruments when trained on one dataset and tested on another dataset <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b27">28]</ref>. Cataract surgery is one of the most common procedures <ref type="bibr" target="#b17">[18]</ref>, and methods to develop generalizable networks will enable clinically useful applications.</p><p>Fig. <ref type="figure">1</ref>. Dataset shift between the CATARACTS dataset (CAT) <ref type="bibr" target="#b5">[6]</ref> and D99 <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b8">9]</ref> dataset. Results for models trained on one dataset and tested on another show a significant drop in performance.</p><p>Domain adaptation methods aim to attempt to mitigate the drop in algorithm performance across domains <ref type="bibr" target="#b12">[13]</ref>. Unsupervised Domain Adaptation (UDA) methods are particularly useful when the source dataset is labeled and the target dataset is unlabeled. In this paper, we describe a novel end-to-end UDA method, which we call the Barlow Adaptor, and its application for instrument classification in video images from cataract surgery. We define a novel loss function called the Barlow Feature Alignment Loss (BFAL) that aligns the features learnt by the model between the source and target domains, without requiring any labeled target data. It encourages the model to learn non-redundant features that are domain agnostic and thus tackles the problem of UDA. BFAL can be added as an add-on to existing methods with minimal code changes. The contributions of our paper are threefold:</p><p>1. We define a novel loss for feature alignment called BFAL that doesn't require large batch sizes and encourages learning non-redundant, domain agnostic features. 2. We use BFAL to generate an end-to-end system called the Barlow Adaptor that performs UDA. We evaluate the effectiveness of this method and compare it with existing UDA methods for instrument classification in cataract surgery images. 3. We motivate new research on methods for generalizable deep learning models for surgical instrument classification using cataract surgery as the test-bed.</p><p>Our work proposes a solution to the problem of lack of generalizability of deep learning models that was identified in previous literature on cataract surgery instrument classification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Instrument Identification in Cataract Surgery Video Images. The motivation for instrument identification is its utility in downstream tasks such as activity localization and skill assessment <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b21">22]</ref>. The current state-of-the-art instrument identification method called Deep-Phase <ref type="bibr" target="#b27">[28]</ref> uses a ResNet architecture to identify instruments and then to identify steps in the procedure. However, a recent study has shown that while these methods work well on one dataset, there is a significant drop in performance when tested on a different dataset <ref type="bibr" target="#b15">[16]</ref>. Our analyses reiterate similar findings on drop in performance (Fig. <ref type="figure">1</ref>) and highlight the effect of domain shift between data from different institutions even for the same procedure.</p><p>Unsupervised Domain Adaptation. UDA is a special case of domain adaptation, where a model has access to annotated training data from a source domain and unannotated data from a target domain <ref type="bibr" target="#b12">[13]</ref>. Various methods have been proposed in the literature to perform UDA. One line of research involves aligning the feature distributions between the source and target domains. Maximum Mean Discrepancy (MMD) is commonly used as a distance metric between the source and target distributions <ref type="bibr" target="#b14">[15]</ref>. Other UDA methods use a convolutional neural network (CNN) to generate features and then use MMD as an additional loss to align distributions <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b26">27]</ref>. While MMD is a first-order statistic, Deep CORAL <ref type="bibr" target="#b16">[17]</ref> penalizes the difference in the second-order covariance between the source and target distributions. Our method uses feature alignment by enforcing a stricter loss function during training.</p><p>Another line of research for UDA involves adversarial training. Domain Adaptive Neural Network (DANN) <ref type="bibr" target="#b4">[5]</ref> involves a minimax game, in which one network minimizes the cross entropy loss for classification in the source domain, while the other maximizes the cross entropy loss for domain classification. Few recent methods generate pseudo labels on the target domain and then train the network on them. One such method is Source Hypothesis Transfer (SHOT) <ref type="bibr" target="#b9">[10]</ref>, which performs source-free domain adaptation by further performing information maximization on the target domain predictions. While CNN-based methods are widely popular for UDA, there are also methods which make use of the recently proposed Vision Transformer (ViT) <ref type="bibr" target="#b3">[4]</ref>, along with an ensemble of the above described UDA based losses. A recent approach called Cross Domain Transformer (CDTrans) uses cross-domain attention to produce pseudo labels for training that was evaluated in various datasets <ref type="bibr" target="#b23">[24]</ref>. Our proposed loss function is effective for both CNN and ViT-based backbones.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Proposed Method</head><p>In the UDA task, we are given n s observations from the source domain D S . Each of these observations is in the form of a tuple (x s , y s ), where x s denotes an image from the source training data and y s denotes the corresponding label, which is the instrument index present in the image. In addition, we are given n t observations from the target domain D T . Each of these can be represented by x t , which represents the image from the target training data. However, there are no labels present for the target domain during training. The goal of UDA is to predict the labels y t for the target domain data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Barlow Feature Alignment Loss (BFAL).</head><p>We introduce a novel loss, which encourages features between the source and target to be similar to each other while reducing the redundancy between the learnt features. BFAL works on pairs of feature projections of the source and target. More specifically, let f s ∈ R BXD and f t ∈ R BXD be the features corresponding to the source and target domain, respectively. Here B represents the batch size and D represents the feature dimension. Similar to <ref type="bibr" target="#b25">[26]</ref>, we project these features into a P dimensional space using a fully connected layer called the Projector, followed by a batch normalization to whiten the projections. Let the resultant projections be denoted by p s ∈ R BXP for the source and p t ∈ R BXP for the target domains. Next, we compute the correlation matrix C 1 ∈ R P XP . Each element of C 1 is computed as follows</p><formula xml:id="formula_0">C ij 1 = B b=1 p bi s p bj t B b=1 (p bi s ) 2 B b=1 (p bj t ) 2 . (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>Finally, the BFAL is computed using the L2 loss between the elements of C 1 and the identity matrix I as follows</p><formula xml:id="formula_2">L BF A = P i=1 (1 -C ii 1 ) 2 f eature alignment + μ P i=1 j =i (C ij 1 ) 2 redundancy reduction , (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where μ is a constant. Intuitively, the first term of the loss function can be thought of as a feature alignment term since we push the diagonal elements in the covariance matrix towards 1. In other words, we encourage the feature projections between the source and target to be perfectly correlated. On the other hand, by pushing the off-diagonal elements to 0, we decorrelate different components of the projections. Hence, this term can be considered a redundancy reduction term, since we are pushing each feature vector component to be independent of one another. BFAL is inspired by a recent technique in self-supervised learning, called the Barlow Twins <ref type="bibr" target="#b25">[26]</ref>, where the authors show the effectiveness of such a formulation at lower batch sizes. In our experiments, we observe that even keeping a batch size of 16 gave good results over other existing methods. Furthermore, BFAL does not require large amounts of data to converge. Barlow Adaptor. We propose an end-to-end method that utilizes data from the labeled source domain and the unlabeled target domain. The architecture corresponding to our method is shown in Fig. <ref type="figure" target="#fig_0">2</ref>.</p><p>There are two main sub-parts of the architecture -the Feature Extractor F , and the Source Classifier C. First, we divide the training images randomly into batches of pairs {x s , x t } and apply F on them, which gives us the features extracted from these sets of images. For the Feature Detector, we show the effectiveness of our novel loss using ViT and ResNet50 both of which have been pre-trained on ImageNet. The features obtained are denoted as f s and f t for the source and target domains, respectively. Next, we apply C on these features to get logits for the classification task. The source classifier is a feed forward neural network, which is initialized from scratch. These logits are used, along with the source labels y s to compute the source cross entropy loss as</p><formula xml:id="formula_4">L CE = -1 B B b=1 M m=1 y bm s log(p bm s )</formula><p>, where M represents the number of classes, B represents the total minibatches, while m and b represent their respective indices.</p><p>The features f s and f t are further used to compute the Correlation Alignment(CORAL) loss and the BFAL, which enforce the feature extractor to align its weights so as to learn features that are domain agnostic as well as nonredundant. The BFAL is calculated as mentioned in the previous subsection. The CORAL loss is computed as depicted in Eq. 4, following the UDA method Deep CORAL <ref type="bibr" target="#b16">[17]</ref>. While the BFAL focuses on reducing redundancy, CORAL works by aligning the distributions between the source and target domain data. This is achieved by taking the difference between the covariance matrices of the source and target features -f s and f t respectively. The final loss is the weighted sum of the three individual losses as follows:</p><formula xml:id="formula_5">L f inal = L CE + λ(L CORAL + L BF A ),<label>(3)</label></formula><p>where</p><formula xml:id="formula_6">L CORAL = 1 4D 2 C s -C t 2 F , C s = 1 B -1 (f T s f s ) - 1 B (1 T f s ) T (1 T f s ),<label>(4)</label></formula><formula xml:id="formula_7">C t = 1 B -1 (f T t f t ) - 1 B (1 T f t ) T (1 T f t ). (<label>5</label></formula><formula xml:id="formula_8">)</formula><p>Each of these three losses plays a different role in the UDA task. The cross entropy loss encourages the model to learn discriminative features between images with different instruments. The CORAL loss pushes the features between the source and target towards having a similar distribution. Finally, the BFAL tries to make the features between the source and the target non-redundant and same. BFAL is a stricter loss than CORAL as it forces features to not only have the same distribution but also be equal. Further, it also differs from CORAL in learning independent features as it explicitly penalizes non-zero non-diagonal entries in the correlation matrix. While using BFAL alone gives good results, using it in addition to CORAL gives slightly better results empirically. We note these observations in our ablation studies. Between the cross entropy loss and the BFAL, an adversarial game is played where the former makes the features more discriminative and the latter tries to make them equal. The optimal features thus learnt are different in aspects required to identify instruments but are equal for any domain-related aspect. This property of the Barlow Adaptor is especially useful for surgical domains where the background has similar characteristics for most of the images within a domain. For example, for cataract surgery images, the position of the pupil or the presence of blood during the usage of certain instruments might be used by the model for classification along with the instrument features. These features depend highly upon the surgical procedures and the skill of the surgeon, thus making them highly domain-specific and possibly unavailable in the target domain. Using BFAL during training attempts to prevent the model from learning such features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head><p>We evaluate the proposed UDA method for the task of instrument classification using two cataract surgery image datasets. In our experiments, one dataset is used as the source domain and the other is used as the target domain. We use micro and macro accuracies as our evaluation metrics. Micro accuracy denotes the number of correctly classified observations divided by the total number of observations. In contrast, macro accuracy denotes the average of the classwise accuracies and is effective in evaluating classes with less number of samples. Datasets. The first dataset we use is CATARACTS <ref type="bibr" target="#b5">[6]</ref>, which consists of 50 videos with framewise annotations available for 21 surgical instruments. The dataset is divided into 25 training videos and 25 testing videos. We separate 5 videos from the training set and use them as the validation set for our experiments. The second dataset is called D99 in this work <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b8">9]</ref>, which consists of 105 videos of cataract surgery with annotations for 25 surgical instruments. Of the 105 videos, we use 65 videos for training, 10 for validation and 30 for testing. We observe a significant distribution shift between the two datasets as seen in Fig. <ref type="figure">1</ref>. This is caused by several factors such as lighting, camera resolution, and differences in instruments used for the same steps. For our experiments in this work, we use 14 classes of instruments that are common to both datasets. Table <ref type="table" target="#tab_0">1</ref> shows a mapping of instruments between the two datasets. For each dataset, we normalize the images using the means and standard deviations calculated from the respective training images. In addition, we resize all images to 224 × 224 size and apply random horizontal flipping with a probability of 0.5 before passing them to the model.</p><p>Experimental Setup. We train the Barlow Adaptor for multi-class classification with the above-mentioned 14 classes in Pytorch. For the Resnet50 backbone, we use weights pretrained on Imagenet <ref type="bibr" target="#b13">[14]</ref> for initialization. For the ViT backbone, we use the base-224 class of weights from the TIMM library <ref type="bibr" target="#b22">[23]</ref>. The Source Classifier C and the Projector P are randomly initialized. We use the validation sets to select the hyperparameters for the models. Based on these empirical results, we choose λ from Eq. 3 to be 0.001 and μ from Eq. 2 to be 0.0039. We use SGD as the optimizer with momentum of 0.9 and a batch size of 16. We start the training with a learning rate of 0.001 and reduce it by a factor of 0.33 every 20 epochs. The entire setup is trained with a single NVIDIA Quatro RTX 8000 GPU. We use the same set of hyperparameters for the CNN and ViT backbones in both datasets.</p><p>Results. Table <ref type="table" target="#tab_1">2</ref> shows results comparing the performance of the Barlow Adaptor with recent UDA methods. We highlight the effect of domain shift by comparing the source-only models and the target-only models, where we observe a significant drop of 27% and 43% in macro accuracy for the CATARACTS dataset and the D99 dataset, respectively. Using the Barlow Adaptor, we observe an increase in macro accuracy by 7.2% over the source only model. Similarly, we observe an increase in macro accuracy of 9% with the Barlow Adaptor when the source is CATARACTS and the target is the D99 dataset compared with the source only model. Furthermore, estimates of macro and micro accuracy are larger with the Barlow Adaptor than those with other existing methods. Finally, improved accuracy with the Barlow Adaptor is seen with both ResNet and ViT backbones.</p><p>Ablation Study. We tested the performance gain due to each part of the Barlow Adaptor. Specifically, the Barlow Adaptor has CORAL loss and BFAL as its two major feature alignment losses. We remove one component at a time and observe a decrease in performance with both ResNet and ViT backbones (Table <ref type="table" target="#tab_2">3</ref>). This shows that each loss has a part to play in domain adaptation. Further ablations are included in the supplementary material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>Domain shift between datasets of cataract surgery images limits generalizability of deep learning methods for surgical instrument classification. We address this limitation using an end-to-end UDA method called the Barlow Adaptor. As part of this method, we introduce a novel loss function for feature alignment called the BFAL. Our evaluation of the method shows larger improvements in classification performance compared with other state-of-the-art methods for UDA. BFAL is an independent module and can be readily integrated into other methods as well. BFAL can be easily extended to other network layers and architectures as it only takes pairs of features as inputs.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Architecture corresponding to the Barlow Adaptor. Training occurs using pairs of images from the source and target domain. They are fed into the feature extractor, which generates features used for the CORAL loss. Further, a projector network P projects the features into a P dimensional space. These are then used to calculate the Barlow Feature Alignment Loss. One branch from the source features goes into the source classifier network that is used to compute the cross entropy loss with the labeled source data. [Backprop = backpropagation; src = source dataset, tgt = target dataset]</figDesc><graphic coords="5,55,98,54,17,340,18,154,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Mapping of surgical tools between CATARACTS(L) and D99(R)</figDesc><table><row><cell>CATARACTS</cell><cell>D99</cell><cell>CATARACTS</cell><cell>D99</cell></row><row><cell>Secondary Incision Knife</cell><cell>Paracentesis Blade</cell><cell>Bonn Forceps</cell><cell>0.12 Forceps</cell></row><row><cell>Charleux Cannula</cell><cell cols="2">Anterior Chamber Cannula Irrigation</cell><cell>Irrigation</cell></row><row><cell>Capsulorhexis Forceps</cell><cell>Utrata Forceps</cell><cell>Cotton</cell><cell>Weckcell Sponge</cell></row><row><cell cols="2">Hydrodissection Cannula Hydrodissection Cannula</cell><cell cols="2">Implant Injector IOL Injector</cell></row><row><cell cols="2">Phacoemulsifier Handpiece Phaco Handpiece</cell><cell>Suture Needle</cell><cell>Suture</cell></row><row><cell cols="2">Capsulorhexis Cystotome Cystotome</cell><cell>Needle Holder</cell><cell>Needle Driver</cell></row><row><cell>Primary Incision Knife</cell><cell>Keratome</cell><cell cols="2">Micromanipulator Chopper</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Macro and micro accuracies for cross domain tool classification. Here, sourceonly denotes models that have only been trained on one domain and tested on the other. Similarly, target-only denotes models that have been trained on the test domain and thus act as an upper bound. Deep CORAL<ref type="bibr" target="#b16">[17]</ref> is similar to using CORAL with ResNet backbone, so we don't list the latter separately. Here, CAT represents the CATARACTS dataset.</figDesc><table><row><cell></cell><cell cols="2">D99 → CAT</cell><cell cols="2">CAT → D99</cell></row><row><cell>Method</cell><cell cols="4">Macro Acc Micro Acc Macro Acc Micro Acc</cell></row><row><cell>Source Only (ResNet50 backbone)</cell><cell>27.9%</cell><cell>14.9%</cell><cell>14.25%</cell><cell>16.9%</cell></row><row><cell>MMD with ResNet50 backbone [15]</cell><cell>32.2%</cell><cell>15.9%</cell><cell>20.6%</cell><cell>24.3%</cell></row><row><cell>Source Only (ViT backbone)</cell><cell>30.43%</cell><cell>14.14%</cell><cell>13.99%</cell><cell>17.11%</cell></row><row><cell>MMD with ViT backbone [15]</cell><cell>31.32%</cell><cell>13.81%</cell><cell>16.42%</cell><cell>20%</cell></row><row><cell>CORAL with ViT backbone [17]</cell><cell>28.7%</cell><cell>16.5%</cell><cell>15.38%</cell><cell>18.5</cell></row><row><cell>DANN [5]</cell><cell>22.4%</cell><cell>11.6%</cell><cell>16.7%</cell><cell>19.5%</cell></row><row><cell>Deep CORAL [17]</cell><cell>32.8%</cell><cell>14%</cell><cell>18.6%</cell><cell>22</cell></row><row><cell>CDTrans [24]</cell><cell>29.1%</cell><cell>14.7%</cell><cell>20.9%</cell><cell>24.7%</cell></row><row><cell cols="2">Barlow Adaptor with ResNet50 (Ours) 35.1%</cell><cell>17.1%</cell><cell>24.62%</cell><cell>28.13%</cell></row><row><cell>Barlow Adaptor with ViT (Ours)</cell><cell>31.91%</cell><cell>12.81%</cell><cell>17.35%</cell><cell>20.8%</cell></row><row><cell>Target Only (ResNet50)</cell><cell>55%</cell><cell>67.2%</cell><cell>57%</cell><cell>62.2%</cell></row><row><cell>Target Only (ViT)</cell><cell>49.80%</cell><cell>66.33%</cell><cell>56.43%</cell><cell>60.46%</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Findings from ablation studies to evaluate the Barlow Adaptor. Here, Source Only is the case where neither CORAL nor BFAL is used. We use Macro Accuracy for comparison. Here, CAT represents the CATARACTS dataset.</figDesc><table><row><cell></cell><cell cols="2">ViT Feature Extractor</cell><cell cols="2">ResNet50 Feature Extractor</cell></row><row><cell>Method</cell><cell cols="4">D99 → CAT CAT → D99 D99 → CAT CAT → D99</cell></row><row><cell>Source Only(L CE )</cell><cell>30.43%</cell><cell>16.7%</cell><cell>27.9%</cell><cell>14.9%</cell></row><row><cell cols="2">Only CORAL(L CORAL ) 28.7%</cell><cell>15.38%</cell><cell>32.8%</cell><cell>18.6%</cell></row><row><cell>Only BFAL(L BF A )</cell><cell>29.8%</cell><cell>17.01%</cell><cell>32.3%</cell><cell>24.46%</cell></row><row><cell cols="2">Barlow Adaptor (Eq. 3) 32.1%</cell><cell>17.35%</cell><cell>35.1%</cell><cell>24.62%</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This research was supported by a grant from the <rs type="funder">National Institutes of Health, USA</rs>; <rs type="grantNumber">R01EY033065</rs>. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_u8zVVcX">
+					<idno type="grant-number">R01EY033065</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Distribution-matching embedding for visual domain adaptation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Baktashmotlagh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harandi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Salzmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="3760" to="3789" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Vision-based and marker-less surgical tool detection and tracking: a review of the literature</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Bouget</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Allan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Jannin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="633" to="654" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><surname>Demir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Schieber</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Weise</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Maier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<title level="m">Deep learning in surgical workflow analysis: a review</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">An image is worth 16×16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Unsupervised domain adaptation by backpropagation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ganin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lempitsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 32nd International Conference on International Conference on Machine Learning, ICML 2015</title>
+		<meeting>the 32nd International Conference on International Conference on Machine Learning, ICML 2015</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="1180" to="1189" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Cataracts: challenge on automatic tool annotation for cataract surgery</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Hajj</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="page" from="24" to="41" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Video-based assessment of intraoperative surgical skill</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput.-Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1801" to="1811" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Evolution and applications of artificial intelligence to cataract surgery</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Josef</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>James</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Michael</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ophthalmol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">100164</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Objective assessment of intraoperative technical skill in capsulorhexis using videos of cataract surgery</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>O'brien</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zafar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sikder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Vedula</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput.-Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1097" to="1105" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Do we really need to access the source data? source hypothesis transfer for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 37th International Conference on Machine Learning</title>
+		<editor>
+			<persName><forename type="first">H</forename><forename type="middle">D</forename><surname>Iii</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Singh</surname></persName>
+		</editor>
+		<meeting>the 37th International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">119</biblScope>
+			<biblScope unit="page" from="6028" to="6039" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Transfer feature learning with joint distribution adaptation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2013 IEEE International Conference on Computer Vision</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="2200" to="2207" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Domain adaptation via transfer component analysis</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">W</forename><surname>Tsang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Kwok</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="199" to="210" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Visual domain adaptation: a survey of recent advances</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Gopalan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chellappa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Signal Process. Maga</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="53" to="69" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">ImageNet large scale visual recognition challenge</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Russakovsky</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11263-015-0816-y</idno>
+		<ptr target="https://doi.org/10.1007/s11263-015-0816-y" />
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Vision</title>
+		<imprint>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="252" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">A kernel method for the two-sample-problem</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schölkopf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Platt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="page" from="513" to="520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Evaluating the generalization performance of instrument classification in cataract surgery videos</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Sokolova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schoeffmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Taschwer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Putzgruber-Adamitsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>El-Shabrawi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-37734-2_51</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-37734-251" />
+	</analytic>
+	<monogr>
+		<title level="m">MMM 2020</title>
+		<editor>
+			<persName><forename type="first">Y</forename><forename type="middle">M</forename><surname>Ro</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">11962</biblScope>
+			<biblScope unit="page" from="626" to="636" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Deep CORAL: correlation alignment for deep domain adaptation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Saenko</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="443" to="450" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">S</forename><surname>Trikha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Turnbull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Morris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hossain</surname></persName>
+		</author>
+		<title level="m">The journey to femtosecond laser-assisted cataract surgery: new beginnings or a false dawn? Eye</title>
+		<meeting><address><addrLine>London, England</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page">27</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Endonet: a deep architecture for recognition tasks on laparoscopic videos</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shehata</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Mathelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="86" to="97" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tzeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hoffman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Saenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<title level="m">Deep domain confusion: maximizing for domain invariance</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Artificial intelligence methods and artificial intelligence-enabled metrics for surgical education: a multidisciplinary consensus</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Vedula</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Coll. Surg</title>
+		<imprint>
+			<biblScope unit="volume">234</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1181" to="1192" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Computer vision in surgery</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Ward</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Surgery</title>
+		<imprint>
+			<biblScope unit="volume">169</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1253" to="1256" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">R</forename><surname>Wightman</surname></persName>
+		</author>
+		<ptr target="https://github.com/rwightman/pytorch-image-models" />
+		<title level="m">Pytorch image models</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Cdtrans: cross-domain transformer for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Mind the class weight bias: Weighted maximum mean discrepancy for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zuo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="945" to="954" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Barlow twins: self-supervised learning via redundancy reduction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zbontar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Deny</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Cross domain distribution adaptation via kernel mapping</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Zhong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2009">2009. 2009</date>
+			<biblScope unit="page" from="1027" to="1036" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Deepphase: surgical phase recognition in cataracts videos</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Zisimopoulos</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

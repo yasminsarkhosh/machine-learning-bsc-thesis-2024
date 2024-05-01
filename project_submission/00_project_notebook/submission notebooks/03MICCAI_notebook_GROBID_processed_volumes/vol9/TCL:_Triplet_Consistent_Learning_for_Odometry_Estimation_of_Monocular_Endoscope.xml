@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">TCL: Triplet Consistent Learning for Odometry Estimation of Monocular Endoscope</title>
+				<funder ref="#_kTW946H #_8bGCkHM">
+					<orgName type="full">Open Funding of Zhejiang Laboratory</orgName>
+				</funder>
+				<funder ref="#_KJZFTHy #_8Tq8cyu">
+					<orgName type="full">Shanghai Municipal of Science and Technology Project</orgName>
+				</funder>
+				<funder ref="#_5CUgDkb">
+					<orgName type="full">NSFC</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Hao</forename><surname>Yue</surname></persName>
+							<email>yuehao6@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Image Processing and Pattern Recognition</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Automation</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Institute of Medical Robotics</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yun</forename><surname>Gu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Institute of Image Processing and Pattern Recognition</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Automation</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Institute of Medical Robotics</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">TCL: Triplet Consistent Learning for Odometry Estimation of Monocular Endoscope</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">6C0E2AEEB94CB4991011BE5BD8F81597</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-414.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Self-supervised monocular pose estimation</term>
+					<term>Endoscopic images</term>
+					<term>Data augmentation</term>
+					<term>Appearance inconsistency</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The depth and pose estimations from monocular images are essential for computer-aided navigation. Since the ground truth of depth and pose are difficult to obtain, the unsupervised training method has a broad prospect in endoscopic scenes. However, endoscopic datasets lack sufficient diversity of visual variations, and appearance inconsistency is also frequently observed in image triplets. In this paper, we propose a triplet-consistency-learning framework (TCL) consisting of two modules: Geometric Consistency module(GC) and Appearance Inconsistency module(AiC). To enrich the diversity of endoscopic datasets, the GC module generates synthesis triplets and enforces geometric consistency via specific losses. To reduce the appearance inconsistency in the image triplets, the AiC module introduces a tripletmasking strategy to act on photometric loss. TCL can be easily embedded into various unsupervised methods without adding extra model parameters. Experiments on public datasets demonstrate that TCL effectively improves the accuracy of unsupervised methods even with limited number of training samples. Code is available at https://github.com/ EndoluminalSurgicalVision-IMR/TCL.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The technical advances in endoscopes have extended the diagnostic and therapeutic value of endoluminal interventions in a wide range of clinical applications. Due to the restricted field of view, it is challenging to control the flexible endoscopes inside the lumen. Therefore, the development of navigation systems, which locates the position of the end-tip of endoscopes and enables the depth-wise visualization, is essential to assisting the endoluminal interventions. A typical task is to visualize the depth-wise information and estimate the six-degree-of-freedom (6DoF) pose of endoscopic camera based on monocular imaging. Due to the clinical limitations, the ground truth of depth and pose trajectory of endoscope imaging is difficult to acquire. Previous works jointly estimated the depth and the pose via the unsupervised frameworks <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b16">17]</ref>. The main idea is modeling the differences of video frames with the Structure-from-Motion (SfM) mechanisms. In this framework <ref type="bibr" target="#b16">[17]</ref>, the image triplet, including a specific frame (i.e. target frame) and its temporal neighborhood (i.e. reference frames), is fed into the model to estimate the pose and depth. The model is optimized by minimizing the warping loss between the target frame and reference frames. Following the basic SfM method <ref type="bibr" target="#b16">[17]</ref>, scale-consistency <ref type="bibr" target="#b1">[2]</ref>, auto-masking <ref type="bibr" target="#b4">[5]</ref>, cost-volume <ref type="bibr" target="#b13">[14]</ref> and optical flows <ref type="bibr" target="#b14">[15]</ref> are also introduced to further improve the performance. These methods have also been applied to endoscopic scenarios with specific designs of attention modules <ref type="bibr" target="#b9">[10]</ref> and priors from sparse depth <ref type="bibr" target="#b7">[8]</ref>. Although the performance of SfM methods is promising, the intrinsic challenges of endoscopic data still require further consideration.</p><p>The first issue is the insufficient visual diversity of endoscopic datasets. Compared with the large-scaled KITTI dataset <ref type="bibr" target="#b3">[4]</ref> for general vision tasks, the collection of endoscopic datasets is challenged by the limited freedom of instruments and the scenarios. In this case, the visual variations of lumen structures and texture appearances cannot be fully explored. While road datasets mostly exhibit 3DOF motion(2DOF translation and 1DOF rotation in the road plane), endoscopy involves 6DOF motion within 3D anatomical structures. Therefore, SfM algorithms for endoscopic imaging are designed to estimate complicated trajectories with limited data diversity. General data augmentation methods, including random flipping and cropping, cannot generate synthesis with sufficient variance of camera views, and the realistic camera motion cannot be fully guaranteed. Recent works have tried to mimic the camera motion to improve the diversity of samples. For example, PDA <ref type="bibr" target="#b15">[16]</ref> generated new samples for supervised depth estimation, and 3DCC <ref type="bibr" target="#b5">[6]</ref> used synthetic samples to test the robustness of the models. However, the perspective view synthesis for unsupervised SfM framework, especially the transformation on image triplets is still underexplored.</p><p>The second issue is the appearance inconsistency in image triplets. Due to the complicated environment of endoluminal structures, the illumination changes, motion blurness and specular artefacts are frequently observed in endoscopy images. The appearance-inconsistent area may generate substantial photometric losses even in the well-aligned adjacent frames. These photometric losses caused by the inconsistent appearance impede the training process and remain unable to optimize. To handle this problem, AF-SfMLearner <ref type="bibr" target="#b11">[12]</ref> adopted the flow network to predict appearance flow to correct inconsistency between consecutive frames. RNNSLAM <ref type="bibr" target="#b8">[9]</ref> used an encoder network to predict masks with supervised HSV signals from the original images. Consequently, these methods adopted auxiliary modules to handle the visual inconsistency, involving more parameters to learn.</p><p>In this paper, we propose a triplet-consistency-learning framework (TCL) for unsupervised depth and pose estimation of monocular endoscopes. To improve the visual diversity of image triplets, the perspective view synthesis is introduced, considering the geometric consistency of camera motion. Specifically, the depthconsistency and pose-consistency are preserved via specific losses. To reduce the appearance inconsistency in the image triplets, a triplet-masking strategy is proposed by measuring the differences between the triplet-level and the framelevel representations. The proposed framework does not involve additional model parameters, which can be easily embedded into previous SfM methods. Experiments on public datasets demonstrate that TCL can effectively improve the accuracy of depth and pose estimation even with small amounts of training samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Unsupervised SfM with Triplet Consistency Learning</head><p>Unsupervised SfM Method. The unsupervised SfM methods adopt Depth-Net and PoseNet to predict the depth and the pose, respectively. With depth and pose prediction, the reference frames I ri (i = 0, 1) are warped to the warped frames I ti (i = 0, 1). The photometric loss, denoted by L P , is introduced to measure the differences between I ti (i = 0, 1) and the target frame I t . The loss can be implemented by L 1 norm <ref type="bibr" target="#b16">[17]</ref> and further improved with SSIM metrics <ref type="bibr" target="#b12">[13]</ref>.</p><p>In addition to L P , auxiliary regularization loss functions, such as depth map smoothing loss <ref type="bibr" target="#b4">[5]</ref> and depth scale consistency loss <ref type="bibr" target="#b1">[2]</ref>, are also introduced to improve the performance. In this work, these regularization terms are denoted by L Reg . Therefore, the final loss functions L of unsupervised methods can be summarized as follows:</p><formula xml:id="formula_0">L = L P + L Reg (1)</formula><p>Previous unsupervised methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b16">17]</ref> have achieved excellent results on realistic road datasets such as KITTI dataset <ref type="bibr" target="#b3">[4]</ref>. However, endoscopic datasets lack sufficient diversity of visual variations, and appearance inconsistency is also frequently observed in image triplets. Therefore, the unsupervised SfM methods based on L p require further considerations to address the issues above.</p><p>Framework Architecture. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, we propose a tripletconsistency-learning framework (TCL) based on unsupervised SfM with image triplets. TCL can be easily embedded into SfM variants without adding model parameters. To enrich the diversity of endoscopic samples, the Geometric Consistency module (GC) performs the perspective view synthesis method to generate synthesis triplets. Additionally, we introduce the Depth Consistent Loss L dc and the Pose Consistent Loss L pc to preserve the depth-consistency and the poseconsistency between raw and synthesis triplets. To reduce the affect of appearance inconsistency in the triplet, we propose Appearance Inconsistency module (AiC) where the Triplet Masks of reference frames are generated to reduce the inconsistent warping in the photometric loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Learning with Geometric Consistency</head><p>Since the general data augmentation methods cannot generate synthesis with sufficient variance of camera views, 3DCC <ref type="bibr" target="#b5">[6]</ref> and PDA <ref type="bibr" target="#b15">[16]</ref> mimic the camera motion to generate the samples by applying perspective view synthesis. However, raw and novel samples are used separately in the previous works. To enrich the diversity of endoscopic datasets, we perform the synthesis on triplets. Furthermore, the loss functions are introduced to preserve the depth-consistency and the pose-consistency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Synthesis Triplet Generation.</head><p>The perspective view synthesis method aims to warp the original image I to generate a new image I . The warping process is based on the camera intrinsic matrix K, the depth map D of the original image and perturbation pose P 0 . For any point q in I, its depth value is denoted as z in D. The corresponding point q on the new image I is calculated by Eq.( <ref type="formula">2</ref>):</p><formula xml:id="formula_1">q ∼ KP 0 zK -1 q (2)</formula><p>Given the depth maps generated from a pre-trained model, we perform perspective view synthesis with the same pose transformation P 0 on the three frames of raw triplet respectively. </p><formula xml:id="formula_2">L dc = |D t -D t | (3)</formula><p>Pose Consistent Loss. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, the inner pose predictions of the adjacent frames of the raw and synthesis triplet are P tri (i = 0, 1) and P tri (i = 0, 1). Since the three frames of the synthesis triplet are warped from the same pose perturbation P 0 , the inner poses of the synthesis triplet remain the same as the raw triplet. To preserve inner pose-consistency between raw and synthesis triplets, we propose Pose Consistent Loss L pc , defined as the weighted L1 loss function of the inner pose prediction of the raw and synthesis triplets. Specifically, we use the translational t tri , t tri ∈ R 3×1 (i = 0, 1) and rotational R tri , R tri ∈ R 3×3 (i = 0, 1) components of the pose transformation matrix to calculate L pc . We weight the translation component by λ pt , Pose Consistent Loss is written as Eq.( <ref type="formula" target="#formula_3">4</ref>).</p><formula xml:id="formula_3">L pc = i=0,1 (|R tri -R tri | + λ pt |t tri -t tri |)<label>(4)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Learning with Appearance Inconsistency</head><p>The complicated environment of endoluminal structures may cause appearance inconsistency in image triplets, leading to the misalignment of reference and target frames. Previous works <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b11">12]</ref> proposed auxiliary modules to handle the appearance inconsistency, involving more parameters of models. Since the movement of camera is normally slow, the same appearance inconsistency is unlikely to exist multiple times within an endoscopic image triplet. Therefore, we can measure the differences between the triplet-level and the frame-level representations to eliminate the appearance inconsistency.</p><p>Specifically, for the selected triplet [ I r0 , I t , I r1 ], two warped frames [ I t0 , I t1 ] are generated from two reference frames. To obtain the frame-level representations, we used the encoder of DepthNet to extract the feature maps of the three frames [ I t0 , I t , I t1 ] respectively. The feature maps are upsampled to the size of the original image, denoted by [F r0 , F t , F r1 ]. As in Eq.( <ref type="formula" target="#formula_4">5</ref>), the triplet-level representations F R are generated by the weighted aggregation of the feature maps, which is dominated by the feature of the target frame with weight λ t . To measure the differences between the triplet-level and the frame-level representations, we calculate feature difference maps Df i (i = 0, 1) by weighting direct subtraction and SSIM similarity <ref type="bibr" target="#b12">[13]</ref> with weight λ sub . The Triplet Mask of each reference frame is generated by reverse normalizing the difference map to <ref type="bibr">[β, 1]</ref>.</p><formula xml:id="formula_4">F R = λ t F t + 1 2 (1 -λ t )(F r0 + F r1 ) Df i = λ sub N (0,1) (|F R -F ri |) + (1 -λ sub )N (0,1) (|1 -SSIM(F R , F ri )|), (i = 0, 1) MT i = N (β,1) (1 -Df i ), (i = 0, 1)<label>(5)</label></formula><p>where N (a,b) (•) normalizes the input to the range [a, b].</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Overall Loss</head><p>The final loss of TCL L t is formulated as follows:</p><formula xml:id="formula_5">L t = MT L P + L Reg + λ d L dc + λ p L pc (<label>6</label></formula><formula xml:id="formula_6">)</formula><p>where denotes that the Triplet Mask MT i (i = 0, 1) is applied to the photometric loss calculation of the two reference frames respectively. The final photometric loss is obtained by averaging the photometric losses of the two reference frames after applying MT i (i = 0, 1). λ d , λ p are weights of L dc and L pc . Since the early adoption of L dc and L pc may lead to overfitting, the DepthNet and PoseNet are warmed up with N w epochs before adding the two loss functions. The synthesis method may inherently generate invalid (black) areas in the augmented samples. This arises from the single-image-based augmentation process, which lacks the additional information to fill the new areas generated from the viewpoint transformation. The invalid regions should be masked in the related loss functions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset and Implementation Details. The public datasets, including SCARED <ref type="bibr" target="#b0">[1]</ref> with ground truth of both depth and pose and SERV-CT <ref type="bibr" target="#b2">[3]</ref> with only depth ground truth, were used to evaluate the proposed method. Following the settings in <ref type="bibr" target="#b11">[12]</ref>, we trained on SCARED and tested on SCARED and SERV-CT. The depth metrics (Abs Rel, Sq Rel, RMSE, RMSE log and δ), and pose metrics (ATE, t RP E , r RP E ) were used to measure the difference of predictions and the ground truth<ref type="foot" target="#foot_0">1</ref> . ATE is noted as the weighted average of the RMSE of sub-trajectories, and the rest metrics are noted as Mean ± Standard Deviation of error. We implemented networks using PyTorch <ref type="bibr" target="#b10">[11]</ref> and trained the networks on 1 NVIDIA RTX 3090 GPU with Adam <ref type="bibr" target="#b6">[7]</ref> for 100 epochs with a learning rate of 1e -4 , dropped by a scale factor of 10 after 10 epochs. Given the SCARED dataset, we divided 5/2/2 subsets for training/validation/testing. We finally obtained ∼ 8k frames for training. The batch size was 12 and all images were downsampled to 256 × 320. λ pt , λ t , λ sub , β, λ d , λ p , N w in the loss function were empirically set to 1, 0.5, 0.2, 0.5, 0.001, 0.5, 5 which were tuned on validation set. For more details of the experiments, please refer to the supplementary material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results.</head><p>To evaluate the effectiveness of the proposed method, TCL was applied to MonoDepth2 <ref type="bibr" target="#b4">[5]</ref> and SC-SfMLearner <ref type="bibr" target="#b1">[2]</ref> by exactly using the same architectures of DepthNet and PoseNet. For comparisons, SfMLearner <ref type="bibr" target="#b16">[17]</ref>, Mon-oDepth2 <ref type="bibr" target="#b4">[5]</ref>, AF-SfMLearner <ref type="bibr" target="#b11">[12]</ref>, SC-SfMLearner <ref type="bibr" target="#b1">[2]</ref> and Endo-SfMLearner <ref type="bibr" target="#b9">[10]</ref> were adopted as baseline methods. Specifically, AF-SfMLearner improved the MonoDepth2 by predicting the appearance flow, while Endo-SfMLearner is the alternative of SC-SfMLearner with better model architectures.</p><p>Table <ref type="table" target="#tab_1">1</ref> presents the quantitative results on SCARED and SERV-CT. After TCL is applied to the series baselines(MonoDepth2 and SC-SfMLearner), most depth and pose metrics are significantly improved, and most metrics achieve the best performance in their series. Our method not only outperforms the series baseline on SERV-CT, but also achieves all the best values of the MonoDepth2-Based and SC-SfMLearner-Based series. For visualization and further ablations, we present the results of TCL applied to MonoDepth2, which is denoted as Ours below. Figure <ref type="figure" target="#fig_1">2</ref>(a) presents the comparisons of the depth prediction. In the first image, our method predicts the depth most accurately. In the second image, the ground truth reveals that the dark area in the upper right corner is closer, and only our method accurately predicts this area, resulting in a detailed and accurate full-image depth map. Despite the improvement, our prediction results still remain inaccurate compared to the ground truths. Figure <ref type="figure" target="#fig_1">2</ref>(b) visualizes the trajectory and the projection on three planes. Our predicted trajectory is the closest to the ground truth compared with baselines. The SfMlearner predicts almost all trajectories as straight lines, a phenomenon also observed in <ref type="bibr" target="#b9">[10]</ref>, in which case a low r RP E metric is ineffective.</p><p>Ablations on Proposed Modules. We introduce two proposed modules to the baseline (MonoDepth2) separately. We additionally propose a simple version of AiC that computes Triplet Masks directly using two reference frames without warping, denoted as AiC*. From Table <ref type="table">2</ref>, GC and AiC can significantly improve the effect of the baseline when introduced separately. AiC outperforms AiC* as the warping process can provide greater benefits for pixel-level alignment. Figure <ref type="figure">3</ref>(a) intuitively demonstrates the effect of the proposed Triplet Mask(AiC), which effectively covers pixels with apparent appearance inconsistency between reference and target frames.</p><p>Ablations on Different Dataset Amounts. To verify the effect of our proposed method on different amounts of training and validation sets, we utilize the main depth metric RMSE and pose metric ATE for comparison. In Fig. <ref type="figure">3(b)</ref>, our method achieves significant improvements over MonoDepth2 with different dataset amounts. The performance of our approach is almost optimal for depth and pose at 11k and 8k training samples, respectively. Therefore, our proposed framework has the potential to effectively enhance the performance of various unsupervised SfM methods, even with limited training data.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We present a triplet-consistency-learning framework (TCL) to improve the effect of monocular endoscopy unsupervised depth and pose estimation. The GC module generates synthesis triplets to increase the diversity of the endoscopic samples. Furthermore, we constrain the depth and pose consistency using two loss functions. The AiC module generates Triplet Mask(MT) based on the triplet information. MT can effectively mask the appearance inconsistency in the triplet, which leads to more efficient training of the photometric loss. Extensive experiments demonstrate the effectiveness of TCL, which can be easily embedded into various SfM methods without additional model parameters.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overview of the proposed triplet-consistency-learning framework (TCL) with two modules: Geometric Consistency module(GC) and Appearance Inconsistency module(AiC). The GC module utilizes the Perspective View Synthesis technique to produce Synthesis Triplets, while enforcing geometric consistency through the Depth Consistent Loss L dc and the Pose Consistent Loss Lpc. The AiC module generates Triplet Masks based on the Warped Triplet to apply to the photometric loss Lp. TCL can be easily embedded into unsupervised SfM methods without adding extra model parameters.</figDesc><graphic coords="2,56,46,125,66,339,43,87,04" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Qualitative depth and pose results on the SCARED dataset.</figDesc><graphic coords="8,56,46,286,10,339,43,192,43" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Table 2 .Fig. 3 .</head><label>23</label><figDesc>Fig. 3. Qualitative results of Triplet Mask and ablation results on different dataset amounts.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Figure1illustrates that the depth prediction of raw target frame I t is D t , and the depth prediction of synthesis target frame I t is D t . The relative pose between the raw and synthesis triplets is randomly generated as P 0 . With P 0 , we can warp the depth prediction D t to D t . To preserve depthconsistency between target frames of raw and synthesis triplet, we propose the Depth Consistent Loss function L dc , defined as the L1 loss function of D t and D t , written as</figDesc><table /><note><p>Then we obtain the synthesis triplet [I r0 , I t , I r1 ]. Selected triplet [ I r0 , I t , I r1 ] is randomly selected from raw and synthesis triplets as the unsupervised training triplet to calculate L in Eq.(1). Depth Consistent Loss.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results on the SCARED and SERV-CT Dataset. The best results among all methods are in bold. The best results among each series are underlined. tRP E (mm)↓ rRP E (deg)↓ Abs Rel↓ Sq Rel↓ RMSE↓ RMSE log↓ δ &lt; 1.25 ↑ δ &lt; 1.25 2 ↑ δ &lt; 1.25 3 ↑</figDesc><table><row><cell>Series</cell><cell>Methods</cell><cell cols="2">SCARED Dataset</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>Pose Metrics</cell><cell></cell><cell></cell><cell>Depth Metrics</cell><cell></cell></row><row><cell></cell><cell cols="2">ATE(mm)↓ SfMLearner 6.308</cell><cell>0.356±0.16</cell><cell cols="4">0.217±0.12 0.472±0.07 7.870±3.32 14.024±5.55 0.499±0.05</cell><cell>0.365±0.10 0.636±0.10 0.810±0.06</cell></row><row><cell>MonoDepth2-Based</cell><cell>MonoDepth2</cell><cell>4.848</cell><cell>0.479±0.20</cell><cell>0.459±0.22</cell><cell cols="3">0.454±0.06 7.311±2.87 13.583±5.02 0.487±0.05</cell><cell>0.368±0.10 0.650±0.11 0.818±0.06</cell></row><row><cell></cell><cell>AF-SfMLearner</cell><cell>3.506</cell><cell cols="2">0.161±0.10 0.265±0.14</cell><cell cols="3">0.446±0.06 7.153±3.02 13.517±5.16 0.481±0.05</cell><cell>0.371±0.10 0.651±0.11 0.825±0.06</cell></row><row><cell></cell><cell>MonoDepth2+Ours</cell><cell>3.110</cell><cell cols="2">0.161±0.11 0.250±0.15</cell><cell cols="3">0.446±0.06 7.185±3.30 13.405±5.20 0.480±0.05</cell><cell>0.373±0.11 0.655±0.12 0.828±0.06</cell></row><row><cell cols="2">SC-SfMLearner-Based SC-SfMLearner</cell><cell>4.743</cell><cell>0.478±0.21</cell><cell>0.466±0.24</cell><cell cols="3">0.442±0.06 7.044±2.96 13.580±5.42 0.479±0.04</cell><cell>0.368±0.11 0.650±0.12 0.826±0.06</cell></row><row><cell></cell><cell>Endo-SfMLearner</cell><cell>5.013</cell><cell>0.494±0.22</cell><cell>0.461±0.24</cell><cell cols="3">0.438±0.06 6.969±3.24 13.592±5.46 0.478±0.05</cell><cell>0.365±0.10 0.650±0.11 0.826±0.06</cell></row><row><cell></cell><cell cols="2">SC-SfMLearner+Ours 4.601</cell><cell>0.490±0.22</cell><cell>0.464±0.24</cell><cell cols="3">0.437±0.05 6.865±2.93 13.471±5.32 0.475±0.04 0.368±0.11 0.653±0.12 0.831±0.05</cell></row><row><cell>Series</cell><cell>Methods</cell><cell cols="2">SERV-CT Dataset</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>Pose Metrics</cell><cell></cell><cell></cell><cell>Depth Metrics</cell><cell></cell></row><row><cell></cell><cell></cell><cell cols="4">ATE(mm)↓ tRP E (mm)↓ rRP E (deg)↓ Abs Rel↓ Sq Rel↓</cell><cell>RMSE↓</cell><cell>RMSE log↓ δ &lt; 1.25 ↑ δ &lt; 1.25 2 ↑ δ &lt; 1.25 3 ↑</cell></row><row><cell></cell><cell>SfMLearner</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.114±0.04 2.005±1.42 12.632±6.35 0.149±0.05</cell><cell>0.864±0.12 0.985±0.02 1.000±0.00</cell></row><row><cell>MonoDepth2-Based</cell><cell>MonoDepth2</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.124±0.03 2.298±1.38 13.639±5.78 0.165±0.04</cell><cell>0.843±0.10 0.976±0.04 0.998±0.01</cell></row><row><cell></cell><cell>AF-SfMLearner</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.115±0.04 2.101±1.56 13.136±6.74 0.156±0.05</cell><cell>0.860±0.10 0.979±0.03 0.998±0.01</cell></row><row><cell></cell><cell>MonoDepth2+Ours</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.103±0.03 1.694±1.25 11.711±5.89 0.139±0.04 0.886±0.09 0.986±0.02 1.000±0.00</cell></row><row><cell cols="2">SC-SfMLearner-Based SC-SfMLearner</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.113±0.04 2.417±2.21 13.719±8.34 0.177±0.08</cell><cell>0.872±0.09 0.959±0.05 0.980±0.03</cell></row><row><cell></cell><cell>Endo-SfMLearner</cell><cell>-</cell><cell>-</cell><cell>-</cell><cell cols="3">0.133±0.05 3.295±2.88 15.974±9.23 0.224±0.10</cell><cell>0.829±0.11 0.928±0.07 0.961±0.05</cell></row><row><cell></cell><cell cols="2">SC-SfMLearner+Ours -</cell><cell>-</cell><cell>-</cell><cell cols="3">0.103±0.04 1.868±1.50 12.199±6.71 0.150±0.06</cell><cell>0.888±0.09 0.970±0.04 0.996±0.01</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>The detailed implementations of the metrics can be found in<ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref>.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work is supported in part by the <rs type="funder">Open Funding of Zhejiang Laboratory</rs> under Grant <rs type="grantNumber">2021KH0AB03</rs>, in part by the <rs type="programName">Shanghai Sailing Program</rs> under Grant <rs type="grantNumber">20YF1420800</rs>, and inpart by <rs type="funder">NSFC</rs> under Grant <rs type="grantNumber">62003208</rs>, and in part by <rs type="funder">Shanghai Municipal of Science and Technology Project</rs>, under Grant <rs type="grantNumber">20JC1419500</rs> and Grant <rs type="grantNumber">20DZ2220400</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_kTW946H">
+					<idno type="grant-number">2021KH0AB03</idno>
+					<orgName type="program" subtype="full">Shanghai Sailing Program</orgName>
+				</org>
+				<org type="funding" xml:id="_8bGCkHM">
+					<idno type="grant-number">20YF1420800</idno>
+				</org>
+				<org type="funding" xml:id="_5CUgDkb">
+					<idno type="grant-number">62003208</idno>
+				</org>
+				<org type="funding" xml:id="_KJZFTHy">
+					<idno type="grant-number">20JC1419500</idno>
+				</org>
+				<org type="funding" xml:id="_8Tq8cyu">
+					<idno type="grant-number">20DZ2220400</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Allan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2101.01133</idno>
+		<title level="m">Stereo correspondence and reconstruction of endoscopic data challenge</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Unsupervised scale-consistent depth learning from video</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Bian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Vision</title>
+		<imprint>
+			<biblScope unit="volume">129</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2548" to="2564" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">SERV-CT: a disparity dataset from cone-beam CT for validation of endoscopic 3D reconstruction</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Edwards</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Psychogyios</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">102302</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Vision meets robotics: the kitti dataset</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Geiger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Lenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Stiller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Urtasun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Robot. Res. (IJRR)</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="1231" to="1237" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Digging into selfsupervised monocular depth estimation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Godard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mac Aodha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Firman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Brostow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="3828" to="3838" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">3D common corruptions and data augmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">F</forename><surname>Kar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yeo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Atanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zamir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="18963" to="18974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Dense depth estimation in monocular endoscopy with self-supervised learning methods</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1438" to="1447" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">RNNSLAM: reconstructing the 3D colon to visualize missing regions during a colonoscopy</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">102100</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">EndoSLAM dataset and an unsupervised monocular visual odometry and depth estimation approach for endoscopic videos</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">B</forename><surname>Ozyoruk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page">102058</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+		<title level="m">Automatic differentiation in pytorch</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Self-supervised monocular depth and ego-motion estimation in endoscopy: appearance flow to the rescue</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="page">102338</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Image quality assessment: from error visibility to structural similarity</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Bovik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">R</forename><surname>Sheikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">P</forename><surname>Simoncelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="600" to="612" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The temporal opportunist: self-supervised multi-frame monocular depth</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Watson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">M</forename><surname>Aodha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Prisacariu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Firman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision and Pattern Recognition (CVPR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Towards better generalization: joint depthpose learning without posenet</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9151" to="9161" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Camera pose matters: improving depth prediction by mitigating pose distribution bias</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fowlkes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="15759" to="15768" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning of depth and ego-motion from video</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Snavely</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Lowe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1851" to="1858" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

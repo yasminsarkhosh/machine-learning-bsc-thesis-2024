@@ -1,0 +1,1188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">3D Mitochondria Instance Segmentation with Spatio-Temporal Transformers</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Omkar</forename><surname>Thawakar</surname></persName>
+							<email>omkar.thawakar@mbzuai.ac.ae</email>
+							<affiliation key="aff0">
+								<orgName type="institution">MBZUAI</orgName>
+								<address>
+									<settlement>Masdar City</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Rao</forename><forename type="middle">Muhammad</forename><surname>Anwer</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">MBZUAI</orgName>
+								<address>
+									<settlement>Masdar City</settlement>
+									<country key="AE">UAE</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Aalto University</orgName>
+								<address>
+									<settlement>Espoo</settlement>
+									<country key="FI">Finland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jorma</forename><surname>Laaksonen</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Aalto University</orgName>
+								<address>
+									<settlement>Espoo</settlement>
+									<country key="FI">Finland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Orly</forename><surname>Reiner</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Weizmann Institute of Science</orgName>
+								<address>
+									<settlement>Rehovot</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mubarak</forename><surname>Shah</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="institution">University of Central Florida</orgName>
+								<address>
+									<settlement>Orlando</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fahad</forename><forename type="middle">Shahbaz</forename><surname>Khan</surname></persName>
+						</author>
+						<title level="a" type="main">3D Mitochondria Instance Segmentation with Spatio-Temporal Transformers</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="613" to="623"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">9B35F1D33B97DC20CA30CB54C74695F4</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_59</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Electron Microscopy</term>
+					<term>Mitochondria instance segmentation</term>
+					<term>Spatio-Temporal Transformer</term>
+					<term>Hybrid CNN-Transformers</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Accurate 3D mitochondria instance segmentation in electron microscopy (EM) is a challenging problem and serves as a prerequisite to empirically analyze their distributions and morphology. Most existing approaches employ 3D convolutions to obtain representative features. However, these convolution-based approaches struggle to effectively capture long-range dependencies in the volume mitochondria data, due to their limited local receptive field. To address this, we propose a hybrid encoder-decoder framework based on a split spatio-temporal attention module that efficiently computes spatial and temporal self-attentions in parallel, which are later fused through a deformable convolution. Further, we introduce a semantic foreground-background adversarial loss during training that aids in delineating the region of mitochondria instances from the background clutter. Our extensive experiments on three benchmarks, Lucchi, MitoEM-R and MitoEM-H, reveal the benefits of the proposed contributions achieving state-of-the-art results on all three datasets. Our code and models are available at https://github.com/ OmkarThawakar/STT-UNET.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Mitochondria are membrane-bound organelles that generate the primary energy required to power the cell activities, thereby crucial for metabolism. Mitochondrial dysfunction, which occurs when mitochondria are not functioning properly has been witnessed as a major factor in numerous diseases, including noncommunicable chronic diseases (e.g, cardiovascular and cancer), metabolic (e.g, obesity) and neurodegenerative (e.g, Alzheimer and Parkinson) disorders <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b24">25]</ref>. Electron microscopy (EM) images are typically utilized to reveal the corresponding 3D geometry and size of mitochondria at a nanometer scale, thereby facilitating basic biological research at finer scales. Therefore, automatic instance segmentation of mitochondria is desired, since manually segmenting from a large amount of data is particularly laborious and demanding. However, automatic 3D mitochondria instance segmentation is a challenging task, since complete shape of mitochondria can be sophisticated and multiple instances can also experience entanglement with each other resulting in unclear boundaries. Here, we look into the problem of accurate 3D mitochondria instance segmentation.</p><p>Earlier works on mitochondria segmentation employ standard image processing and machine learning methods <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b32">33]</ref>. Recent approaches address <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b25">26]</ref> this problem by leveraging either 2D or 3D deep convolutional neural network (CNNs) architectures. These existing CNN-based approaches can be roughly categorized <ref type="bibr" target="#b36">[36]</ref> into bottom-up <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b27">28]</ref> and top-down <ref type="bibr" target="#b11">[12]</ref>. In case of bottom-up mitochondria instance segmentation approaches, a binary segmentation mask, an affinity map or a binary mask with boundary instances is computed typically using a 3D U-Net <ref type="bibr" target="#b4">[5]</ref>, followed by a post-processing step to distinguish the different instances. On the other hand, top-down methods typically rely on techniques such as Mask R-CNN <ref type="bibr" target="#b6">[7]</ref> for segmentation. However, Mask R-CNN based approaches struggle due to undefined bounding-box scale in EM data volume.</p><p>When designing a attention-based framework for 3D mitochondria instance segmentation, a straightforward way is to compute joint spatio-temporal selfattention where all pairwise interactions are modelled between all spatiotemporal tokens. However, such a joint spatio-temporal attention computation is computation and memory intensive as the number of tokens increases linearly with the number of input slices in the volume. In this work, we look into an alternative way to compute spatio-temporal attention that captures long-range global contextual relationships without significantly increasing the computational complexity. Our contributions are as follows:</p><p>-We propose a hybrid CNN-transformers based encoder-decoder framework, named STT-UNET. The focus of our design is the introduction of a split spatio-temporal attention (SST) module that captures long-range dependencies within the cubic volume of human and rat mitochondria samples. The SST module independently computes spatial and temporal self-attentions in parallel, which are then later fused through a deformable convolution. -To accurately delineate the region of mitochondria instances from the cluttered background, we further introduce a semantic foreground-background (FG-BG) adversarial loss during the training that aids in learning improved instance-level features. -We conduct experiments on three commonly used benchmarks: Lucchi <ref type="bibr" target="#b19">[20]</ref>,</p><p>MitoEM-R <ref type="bibr" target="#b36">[36]</ref> and MitoEM-H <ref type="bibr" target="#b36">[36]</ref>. Our STT-UNET achieves state-of-the-art Fig. <ref type="figure">1</ref>. Qualitative 3D instance segmentation comparison between the recent Res-UNET <ref type="bibr" target="#b15">[16]</ref> and our proposed STT-UNET approach on the example input regions from MitoEM-H and MitoEM-R validation sets. Here, we present the corresponding segmentation predictions of the baseline and our approach along with the ground truth.</p><p>Our STT-UNET approach achieves superior segmentation performance by accurately segmenting 16% more cell instances in these examples, compared to Res-UNET-R.</p><p>segmentation performance on all three datasets. On Lucchi test set, our STT-UNET outperforms the recent <ref type="bibr" target="#b3">[4]</ref> with an absolute gain of 3.0% in terms of Jaccard-index coefficient. On MitoEM-H val. set, STT-UNET achieves AP-75 score of 0.842 and outperforms the recent 3D Res-UNET <ref type="bibr" target="#b15">[16]</ref> by 3.0%.</p><p>Figure <ref type="figure">1</ref> shows a qualitative comparison between our STT-UNET and 3D Res-UNET <ref type="bibr" target="#b15">[16]</ref> on examples from MitoEM-R and MitoEM-H datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Most recent approaches for 3D mitochondria instance segmentation utilize convolution based designs within the "U-shaped" 3D encoder-decoder architecture.</p><p>In such an architecture, the encoder aims to generate a low-dimensional representation of the 3D data by gradually performing the downsampling of the extracted features. On the other hand, the decoder performs upsampling of these extracted feature representations to the input resolution for segmentation prediction. Although such a CNN-based designs <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b33">34]</ref> has achieved promising segmentation results compared to traditional methods, they struggle to effectively capture long-range dependencies due to their limited local receptive field. Inspired from success in natural language processing <ref type="bibr" target="#b31">[32]</ref>, recently vision transformers (ViTs) <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b30">31]</ref> have been successfully utilized in different computer vision problems due to their capabilities at modelling long-range dependencies and enabling the model to attend to all the elements in the input sequence. The core component in ViTs is the self-attention mechanism that that learns the relationships between sequence elements by performing relevance estimation of one item to other items. The other attention such as <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b28">29,</ref><ref type="bibr" target="#b34">35]</ref> have demonstrated remarkable efficacy in effectively managing volumetric data.</p><p>Inspired by ViTs <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b18">19]</ref> and based on the observation that attention-based vision transformers architectures are an intuitive design choice for modelling long-range global contextual relationships in volume data, we investigate designing a CNNtransformers based framework for the task of 3D mitochondria instance segmentation.</p><p>3 Method</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Baseline Framework</head><p>We base our approach on the recent Res-UNET <ref type="bibr" target="#b15">[16]</ref>, which utilizes encoderdecoder structure of 3D UNET <ref type="bibr" target="#b33">[34]</ref> with skip-connections between encoder and decoder. Here, 3D input patch of mitochondria volume (32 × 320 × 320) is taken from the entire volume of (400 × 4096 × 4096). The input volume is denoised using an interpolation network adapted for medical images <ref type="bibr" target="#b8">[9]</ref>. The denoised volume is then processed utilizing an encoder-decoder structure containing residual anisotropic convolution blocks (ACB). The ACB contains three layers of 3D convolutions with kernels (1</p><formula xml:id="formula_0">× 3 × 3), (3 × 3 × 3), (3 × 3 × 3)</formula><p>having skip connections between first and third layers. The decoder outputs semantic mask and instance boundary, which are then post-processed using connected component labelling to generate final instance masks. We refer to <ref type="bibr" target="#b15">[16]</ref> for more details.</p><p>Limitations: As discussed above, the recent Res-UNET approach utilizes 3D convolutions to handle the volumetric input data. However, 3D convolutions are designed to encode short-range spatio-temporal feature information and struggle to model global contextual dependencies that extend beyond the designated receptive field. In contrast, the self-attention mechanism within the vision transformers possesses the capabilities to effectively encode both local and global long-range dependencies by directly performing a comparison of feature activations at all the space-time locations. In this way, self-attention mechanism goes much beyond the receptive field of the conventional convolutional filters. While self-attention has been shown to be beneficial when combined with convolutional layers for different medical imaging tasks, to the best of our knowledge, no previous attempt to design spatio-temporal self-attention as an exclusive building block for the problem of 3D mitochondria instance segmentation exists in literature. Next, we present our approach that effectively utilizes an efficient spatiotemporal attention mechanism for 3D mitochondria instance segmentation.  with split spatio-temporal attention and an instance segmentation block. The denoising module alleviates the segmentation faults caused by anomalies in the EM images, as in the baseline. The denoising is performed by convolving the current frame with two adjacent frames using predicted kernels, thereby generating the resultant frame by adding the convolution outputs. The resulting denoised output is then processed by our transformer based encoder-decoder with split spatio-temporal attention to generate the semantic masks. Consequently, these semantic masks are post-processed by an instance segmentation module using a connected component labelling scheme, thereby generating the final instancelevel segmentation output prediction. To further enhance the semantic segmentation quality with cluttered background we introduced semantic adversarial loss which leads to improved semantic segmentation in noisy background.</p><p>Split Spatio-Temporal Attention based Encoder-Decoder: Our STT-UNET framework comprises four encoder and three decoder layers. Within each layer, we introduce a split spatio-temporal attention-based (SST) module, Fig. <ref type="figure" target="#fig_0">2</ref>(b), that strives to capture long-range dependencies within the cubic volume of human and rat samples. Instead of the memory expensive joint spatiotemporal representation, our SST module splits the attention computation into a spatial and a temporal parallel stream. The spatial attention refines the instance level features from input features along the spatial dimensions, whereas the temporal attention effectively learns the inter-dependencies between the input volume. </p><formula xml:id="formula_1">X s = sof tmax( Q s K T s √ d k )V s (<label>1</label></formula><formula xml:id="formula_2">)</formula><formula xml:id="formula_3">X t = sof tmax( Q tp K T tp √ d k )V tp (2)</formula><p>where, X s is spatial attention map, X t is temporal attention map and d k is dimension of Q s and K s . To fuse spatial and temporal attention maps, X s and X t , we employ deformable convolution. The deformable convolution generates offsets according to temporal attention map X t and by using these offsets the spatial attention map X s is aligned. The deformable fusion is given as,</p><formula xml:id="formula_4">X = C c=1 kn∈R W (k n ) • X s (k 0 + k n + ΔK n ) (3)</formula><p>where, C is no of channels, X is spatially aligned attention map with respect to X t . W is the weight matrix of kernels, X s is spatial attention map, k 0 is starting position of kernel, k n is enumerating along all the positions in kernel size of R and ΔK n is the offset sampled from temporal attention map X t . We empirically observe that fusing spatial and temporal features through a deformable convolution, instead of concatenation through a conv. layer or addition, leads to better performance. The resulting spatio-temporal features of decoder are then input to instance segmentation block to generate final instance masks, as in baseline.</p><p>Semantic FG-BG Adversarial Loss: As discussed earlier, a common challenge in mitochondria instance segmentation is to accurately delineate the region of mitochondria instances from the cluttered background. To address this, we introduce a semantic foreground-background (FG-BG) adversarial loss during the training to enhance the FG-BG separability. Here, we introduce the auxiliary discriminator network D with two layers of 3D convolutions with stride 2 during the training as shown in Fig. <ref type="figure" target="#fig_1">2(c</ref>). The discriminator takes the input volume I along with the corresponding mask as an input. Here, the mask M is obtained either from the ground truth or predictions, such that all mitochondria instances within a frame are marked as foreground. While the discriminator D attempts to distinguish between ground truth and predicted masks (M gt and M pred , respectively), the model Ψ learns to output semantic mask such that the predicted masks M pred are close to ground truth M gt . Let F gt = CONCAT(I, M gt ) and F pr = CONCAT(I, M pred ) denote the real and fake input, respectively, to the discriminator D. Similar to <ref type="bibr" target="#b10">[11]</ref>, the adversarial loss is then given by,</p><formula xml:id="formula_5">L fg-bg = min Ψ max D Ψ[log D(F gt )] + Ψ[log(1 -D(F pr ))] + λ 1 Ψ[D(F gt ) -D(F pr )]<label>(4)</label></formula><p>Consequently, the overall loss for training is:</p><formula xml:id="formula_6">L = L BCE + λ • L fg-bg ,</formula><p>Where, L BCE is BCE loss, λ = 0.5 and L fg-bg is semantic adversarial loss. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>Dataset: We evaluate our approach on three datasets: MitoEM-R <ref type="bibr" target="#b36">[36]</ref>, MitoEM-H <ref type="bibr" target="#b36">[36]</ref> and Lucchi <ref type="bibr" target="#b21">[22]</ref>. The MitoEM <ref type="bibr" target="#b36">[36]</ref> is a dense mitochondria instance segmentation dataset from ISBI 2021 challenge. The dataset consists of 2 EM image volumes (30 μm 3 ) of resolution of 8 × 8 × 30 nm, from rat tissues (MitoEM-R) and human tissue (MitoEM-H) samples, respectively. Each volume has 1000 grayscale images of resolution (4096 × 4096) of mitochondria, out of which train set has 400, validation set contains 100 and test set has 500 images. Lucchi <ref type="bibr" target="#b21">[22]</ref> is a sparse mitochondria semantic segmentation dataset with training and test volume size of 165 × 1024 × 768.</p><p>Implementation Details: We implement our approach using Pytorch1.9 <ref type="bibr" target="#b26">[27]</ref> (rcom env) and models are trained using 2 AMD MI250X GPUs. During training of MitoEM, for the fair comparison, we adopt same data augmentation technique from <ref type="bibr" target="#b36">[36]</ref>. The 3D patch of size (32×320×320) is input to the model and trained using batch size of 2. The model is optimized by Adam optimizer with learning rate of 1e -4 . Unlike baseline <ref type="bibr" target="#b15">[16]</ref>, we do not follow multi-scale training and perform single stage training for 200k iterations. For Lucchi, we follow training details of <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b36">36]</ref> for semantic segmentation. For fair comparison with previous works, we use the same evaluation metrics as in the literature for both datasets. We use 3D AP-75 metric <ref type="bibr" target="#b36">[36]</ref> for MitoEM-R and MitoEM-H datasets. For Lucchi, we use jaccard-index coefficient (Jaccard) and dice similarity coefficient (DSC).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Results</head><p>State-of-the-Art Comparison: Table <ref type="table" target="#tab_1">1</ref> shows the comparison on MitoEm-R and MitoEM-H validation sets. Our STT-UNET achieves state-of-the-art performance on both sets. Compared to the recent <ref type="bibr" target="#b15">[16]</ref>, our STT-UNET achieves an absolute gains of 4.1% and 2.9% on MitoEM-R and MitoEM-H validation sets, respectively. Note that <ref type="bibr" target="#b15">[16]</ref> employs two decoders for MitoEM-H. In contrast, we utilize only a single decoder for both MitoEM-H and MitoEM-R sets, while still achieving improved segmentation performance. Fig <ref type="figure" target="#fig_2">3</ref> presents the segmentation predictions of our approach on example input regions from the validation set.</p><p>Our approach achieves promising segmentation results despite the noise in the input samples.    Ablation Study: Table <ref type="table" target="#tab_4">3</ref> shows a baseline comparison when progressively integrating our contributions: SST module and semantic foreground-background adversarial loss. The introduction of SST module improves performance from 0.921 to 0.941 with a gain of 2.7%. The performance is further improved by 1%, when introducing our semantic foreground-background adversarial loss. Our final approach achieves absolute gains of 3.7% and 2.6% over the baseline on MitoEM-R and MitoEM-H, respectively. We also compare our approach with other attention mechanism in literature such as divided space-time attention <ref type="bibr" target="#b0">[1]</ref> and axial attention <ref type="bibr" target="#b34">[35]</ref> with our method achieving favorable results with gain of 0.9% and 1.1%, respectively likely due to computing spatial and temporal in parallel and later fusing them through a deformable convolution. Further, we compare our approach with <ref type="bibr" target="#b15">[16]</ref> on MitoEM-v2 test set achieving a gain of 4% on MitoEM-R, where the postprocessing from <ref type="bibr" target="#b17">[18]</ref> is used to differentiate the mitochondria instances for both methods. Table <ref type="table" target="#tab_5">4</ref> shows ablation study with feature fusion strategies in our SST module: addition, concat and deformable-conv. The best results are obtained with deformable-conv on both datasets. For encoding spatial and temporal information, we analyze two design choices with SST module: cascaded and split, as shown in Table <ref type="table" target="#tab_6">5</ref>. The best results are obtained using our split design choice (row 3) with spatial and temporal information encoded in parallel and later combined. We also evaluate with different input volumes: 4,8,16,32. We observe best results are obtained when using 32 input volume.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We propose a hybrid CNN-transformers based encoder-decoder approach for 3D mitochorndia instance segmentation. We introduce a split spatio-temporal attention (SST) module to capture long-range dependencies within the cubic volume of human and rat mitochondria samples. The SST module computes spatial and temporal attention in parallel, which are later fused. Further, we introduce a semantic adversarial loss for better delineation of mitochondria instances from background. Experiments on three datasets demonstrate the effectiveness of our approach, leading to state-of-the-art segmentation performance.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>3. 2</head><label>2</label><figDesc>Figure 2(a) presents the overall architecture of the proposed hybrid transformers-CNN based 3D mitochondria instance segmentation approach, named STT-UNET. It comprises a denoising module, transformer based encoder-decoder</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. (a)Overall architecture of our STT-UNET framework for 3D mitochondria instance segmentation. A 3D volume patch of mitochondria is first pre-processed using the interpolation network. The resulting reconstructed volume is then fed to our split spatio-temporal attention based encoder-decoder to generate the semantic-level mitochondria segmentation masks. The focus of our design is the introduction of split spatiotemporal attention (SST) module within the encoder-decoder. (b) The SST module first computes spatial and temporal attentions independently, which are later combined through a deformable convolution. Consequently, the semantic masks from the decoder are then input to the instance segmentation module to generate the final instance masks. The entire framework is trained using the standard BCE loss (LBCE) and our semantic foreground-background (FG-BG) adversarial loss (L fg-bg ). (c) The L fg-bg loss improves the instance-level features, thereby aiding in the better separability of the region of mitochondria instances from the cluttered background.</figDesc><graphic coords="5,58,98,54,44,334,48,198,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative 3D instance segmentation results of our STT-UNET on the example input regions from MitoEM-H and MitoEM-R val sets. Our STT-UNET achieves promising results on these input examples containing noise.</figDesc><graphic coords="8,44,79,303,80,334,48,148,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="3,58,98,53,90,334,48,173,80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>The resulting spatial and temporal attention representations are combined through a deformable convolution, thereby generating spatio-temporal features. As shown inFig 2(b), the normalized 3D input volume of denoised features X of size (T × H × W × C) where T is volume size, (H × W ) is spatial dimension of volume and C is number of channels. The spatial and temporal attention blocks project X through linear layer to generate Q s , K s , V s and Q t , K t , V t . In temporal attention Q t , K t , V t is permuted to generate Q tp , K tp , V tp for temporal dot product. The spatial and temporal attention is defined as,</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>State-of-the-art comparison in terms of AP on Mit-EM-R and MitoEM-H validation sets. Best results are in bold.</figDesc><table><row><cell>Methods</cell><cell cols="2">MitoEM-R MitoEM-H</cell></row><row><cell>Wei [36]</cell><cell>0.521</cell><cell>0.605</cell></row><row><cell>Nightingale [24]</cell><cell>0.715</cell><cell>0.625</cell></row><row><cell>Li [17]</cell><cell>0.890</cell><cell>0.787</cell></row><row><cell>Chen [16]</cell><cell>0.917</cell><cell>0.82</cell></row><row><cell>STT-UNET (Ours)</cell><cell>0.958</cell><cell>0.849</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>State-of-the-art comparison in terms of Jaccard and DSC on Lucchi test set. Best results are in bold.</figDesc><table><row><cell>Methods</cell><cell cols="2">Jaccard DSC</cell></row><row><cell>Yuan [37]</cell><cell>0.865</cell><cell>0.927</cell></row><row><cell>Casser [2]</cell><cell>0.890</cell><cell>0.942</cell></row><row><cell>Res-UNET-R [16]</cell><cell>0.895</cell><cell>0.945</cell></row><row><cell cols="2">Res-UNET-R + MRDA [4] 0.897</cell><cell>0.946</cell></row><row><cell>STT-UNET (Ours)</cell><cell cols="2">0.913 0.962</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2</head><label>2</label><figDesc></figDesc><table /><note><p>presents the comparison on Lucchi test set. Our method sets a new state-of-the-art on this dataset in terms of both Jaccard and DSC.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 3 .</head><label>3</label><figDesc>Baseline performance comparison.</figDesc><table><row><cell cols="3">Methods MitoEM-R MitoEM-H</cell></row><row><cell>Baseline</cell><cell>0.921</cell><cell>0.823</cell></row><row><cell>+ SST</cell><cell>0.948</cell><cell>0.839</cell></row><row><cell>+ Lfg-bg</cell><cell>0.958</cell><cell>0.849</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5"><head>Table 4 .</head><label>4</label><figDesc>Ablation study on the impact of feature fusion.</figDesc><table><row><cell cols="3">Feature Fusion MitoEM-R MitoEM-H</cell></row><row><cell>addition</cell><cell>0.950</cell><cell>0.841</cell></row><row><cell>concat</cell><cell>0.952</cell><cell>0.842</cell></row><row><cell>def-conv</cell><cell>0.958</cell><cell>0.849</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6"><head>Table 5 .</head><label>5</label><figDesc>Ablation study on the impact of design choice.</figDesc><table><row><cell>Deisgn choice</cell><cell cols="2">MitoEM-R MitoEM-H</cell></row><row><cell>spatial</cell><cell>0.914</cell><cell>0.812</cell></row><row><cell>spatial-temporal</cell><cell>0.922</cell><cell>0.817</cell></row><row><cell>temporal-spatial</cell><cell>0.937</cell><cell>0.832</cell></row><row><cell>spatial|temporal</cell><cell>0.958</cell><cell>0.849</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Is space-time attention all you need for video understanding?</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bertasius</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Torresani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Fast mitochondria detection for connectomics</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Casser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pfister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Haehn</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="111" to="120" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">DCAN: deep contour-aware networks for accurate gland segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2487" to="2496" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mask rearranging data augmentation for 3D mitochondria segmentation</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xiong</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8_4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page" from="36" to="46" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">3D U-Net: learning dense volumetric segmentation from sparse annotation</title>
+		<author>
+			<persName><forename type="first">Ö</forename><surname>Çiçek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Abdulkadir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Lienkamp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46723-8_49</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46723-8_49" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2016</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Joskowicz</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Unal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Wells</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9901</biblScope>
+			<biblScope unit="page" from="424" to="432" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">An image is worth 16x16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Mask R-CNN</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gkioxari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2961" to="2969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Axial attention in multidimensional transformers</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kalchbrenner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Weissenborn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Salimans</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1912.12180</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Learning to restore ssTEM images from deformation and corruption</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-66415-2_26</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-66415-2_26" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Bartoli</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Fusiello</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12535</biblScope>
+			<biblScope unit="page" from="394" to="410" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">CCNet: criss-cross attention for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision (ICCV</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Image-to-image translation with conditional adversarial networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<publisher>CVPR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">High-precision automated reconstruction of neurons with flood-filling networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Januszewski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Meth</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="605" to="610" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Transformers in vision: a survey</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Naseer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hayat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Zamir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Comput. Surv. (CSUR)</title>
+		<imprint>
+			<biblScope unit="issue">10s</biblScope>
+			<biblScope unit="page" from="1" to="41" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Seung</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1706.00120</idno>
+		<title level="m">Superhuman accuracy on the SNEMI3D connectomics challenge</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xiong</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2104.07961</idno>
+		<title level="m">Advanced deep networks for 3D mitochondria instance segmentation</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Advanced deep networks for 3D mitochondria instance segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE 19th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="5" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Contrastive learning for mitochondria segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 43rd Annual International Conference of the IEEE Engineering in Medicine &amp; Biology Society (EMBC)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3496" to="3500" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lichtman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pfister</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.05754</idno>
+		<title level="m">PyTorch connectomics: a scalable and flexible segmentation framework for EM connectomics</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Swin transformer: hierarchical vision transformer using shifted windows</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Structured image segmentation using kernelized features</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lucchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-33709-3_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-33709-3_29" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2012</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Fitzgibbon</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Lazebnik</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Perona</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Sato</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Schmid</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2012">2012</date>
+			<biblScope unit="volume">7573</biblScope>
+			<biblScope unit="page" from="400" to="413" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Learning structured models for segmentation of 2-D and 3-D imagery</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lucchi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1096" to="1110" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Supervoxel-based segmentation of mitochondria in EM image stacks with learned shape features</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lucchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Achanta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Knott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="474" to="486" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Mitochondria: more than just a powerhouse</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">M</forename><surname>Mcbride</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Neuspiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wasiak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Biol</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">14</biblScope>
+			<biblScope unit="page" from="551" to="R560" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Automatic instance segmentation of mitochondria in electron microscopy data</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Nightingale</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>De Folter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Spiers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Strange</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Collinson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">L</forename><surname>Jones</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BioRxiv</title>
+		<imprint>
+			<biblScope unit="page" from="2021" to="2025" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Mitochondria: in sickness and in health</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nunnari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Suomalainen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cell</title>
+		<imprint>
+			<biblScope unit="volume">148</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1145" to="1159" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Mitochondria segmentation in electron microscopy volumes using deep convolutional neural network</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Oztel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yolcu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ersoy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>White</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bunyak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE International Conference on Bioinformatics and Biomedicine (BIBM)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1195" to="1200" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">PyTorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">UNETR++: delving into efficient and accurate 3d medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shaker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Maaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rasheed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">S</forename><surname>Khan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2212.04497</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shamshad</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2201.09873</idno>
+		<title level="m">Transformers in medical imaging: a survey</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Training data-efficient image transformers &amp; distillation through attention</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Douze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sablayrolles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jégou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Segmentation fusion for connectomics</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vazquez-Reina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gelbart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lichtman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Miller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Pfister</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2011 International Conference on Computer Vision</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="177" to="184" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Macgillivray</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Macnaught</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Newby</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.04341</idno>
+		<title level="m">A two-stage 3D UNet framework for multi-class segmentation on full resolution image</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Axial-DeepLab: stand-alone axial-attention for panoptic segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Green</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yuille</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L.-C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12349</biblScope>
+			<biblScope unit="page" from="108" to="126" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58548-8_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58548-8_7" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">MitoEM dataset: large-scale 3D mitochondria instance segmentation from EM images</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wei</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59722-1_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59722-1_7" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12265</biblScope>
+			<biblScope unit="page" from="66" to="76" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">EM-Net: centerline-aware mitochondria segmentation in EM images via hierarchical view-ensemble convolutional network</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Peng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 IEEE 17th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1219" to="1222" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">DHC: Dual-Debiased Heterogeneous Co-training Framework for Class-Imbalanced Semi-supervised Medical Image Segmentation</title>
+				<funder>
+					<orgName type="full">Beijing Institute of Collaborative Innovation</orgName>
+					<orgName type="abbreviated">BICI</orgName>
+				</funder>
+				<funder ref="#_Y6vrXEX">
+					<orgName type="full">Hong Kong Innovation and Technology Commission</orgName>
+				</funder>
+				<funder ref="#_cRgcF4A #_Zx2yWv3">
+					<orgName type="full">Foshan HKUST</orgName>
+				</funder>
+				<funder ref="#_XUWKxH3">
+					<orgName type="full">HKUST</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Haonan</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic and Computer Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaomeng</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic and Computer Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Hong Kong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">DHC: Dual-Debiased Heterogeneous Co-training Framework for Class-Imbalanced Semi-supervised Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="582" to="591"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">AABAD187F3E18F087368F542A5D4E03B</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_56</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Semi-supervised learning</term>
+					<term>Class imbalance</term>
+					<term>3D medical image segmentation</term>
+					<term>CT image</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The volume-wise labeling of 3D medical images is expertisedemanded and time-consuming; hence semi-supervised learning (SSL) is highly desirable for training with limited labeled data. Imbalanced class distribution is a severe problem that bottlenecks the real-world application of these methods but was not addressed much. Aiming to solve this issue, we present a novel Dual-debiased Heterogeneous Cotraining (DHC) framework for semi-supervised 3D medical image segmentation. Specifically, we propose two loss weighting strategies, namely Distribution-aware Debiased Weighting (DistDW) and Difficulty-aware Debiased Weighting (DiffDW), which leverage the pseudo labels dynamically to guide the model to solve data and learning biases. The framework improves significantly by co-training these two diverse and accurate sub-models. We also introduce more representative benchmarks for classimbalanced semi-supervised medical image segmentation, which can fully demonstrate the efficacy of the class-imbalance designs. Experiments show that our proposed framework brings significant improvements by using pseudo labels for debiasing and alleviating the class imbalance problem. More importantly, our method outperforms the state-of-theart SSL methods, demonstrating the potential of our framework for the more challenging SSL setting. Code and models are available at: https://github.com/xmed-lab/DHC.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The shortage of labeled data is a significant challenge in medical image segmentation, as acquiring large amounts of labeled data is expensive and requires specialized knowledge. This shortage limits the performance of existing segmentation  models. To address this issue, researchers have proposed various semi-supervised learning (SSL) techniques that incorporate both labeled and unlabeled data to train models for both natural <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b15">15,</ref><ref type="bibr" target="#b16">16]</ref> and medical images <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b11">11,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b18">[18]</ref><ref type="bibr" target="#b19">[19]</ref><ref type="bibr" target="#b20">[20]</ref><ref type="bibr" target="#b21">[21]</ref>. However, most of these methods do not consider the class imbalance issue, which is common in medical image datasets. For example, multi-organ segmentation from CT scans requires to segment esophagus, right adrenal gland, left adrenal gland, etc., where the class ratio is quite imbalanced; see Fig <ref type="figure" target="#fig_0">1(a)</ref>. As for liver tumor segmentation from CT scans, usually the ratio for liver and tumor is larger than 16:1.</p><p>Recently, some researchers proposed class-imbalanced semi-supervised methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b9">10]</ref> and demonstrated substantial advances in medical image segmentation tasks. Concretely, Basak et al. <ref type="bibr" target="#b0">[1]</ref> introduced a robust class-wise sampling strategy to address the learning bias by maintaining performance indicators on the fly and using fuzzy fusion to dynamically obtain the class-wise sampling rates. However, the proposed indicators can not model the difficulty well, and the benefits may be overestimated due to the non-representative datasets used (Fig. <ref type="figure" target="#fig_0">1</ref>(a)). Lin et al. <ref type="bibr" target="#b9">[10]</ref> proposed CLD to address the data bias by weighting the overall loss function based on the voxel number of each class. However, this method fails due to the easily over-fitted CPS (Cross Pseudo Supervision) <ref type="bibr" target="#b3">[4]</ref> baseline, ignoring unlabeled data in weight estimation and the fixed class-aware weights.</p><p>In this work, we explore the importance of heterogeneity in solving the over-fitting problem of CPS (Fig. <ref type="figure" target="#fig_1">2</ref>) and propose a novel DHC (Dual-debiased Heterogeneous Co-training) framework with two distinct dynamic weighting strategies leveraging both labeled and unlabeled data, to tackle the class imbalance issues and drawbacks of the CPS baseline model. The key idea of heterogeneous co-training is that individual learners in an ensemble model should be both accurate and diverse, as stated in the error-ambiguity decomposition <ref type="bibr" target="#b7">[8]</ref>.</p><p>To achieve this, we propose DistDW (Distribution-aware Debiased Weighting) and DiffDW (Diff iculty-aware Debiased Weighting) strategies to guide the two sub-models to tackle different biases, leading to heterogeneous learning directions. Specifically, DistDW solves the data bias by calculating the imbalance ratio with the unlabeled data and forcing the model to focus on extreme minority classes through careful function design. Then, after observing the inconsistency between the imbalance degrees and the performances (see Fig. <ref type="figure" target="#fig_0">1(b</ref>)), DiffDW is designed to solve the learning bias. We use the labeled samples and the corresponding labels to measure the learning difficulty from learning speed and Dice value aspects and slow down the speeds of the easier classes by setting smaller weights. DistDW and DiffDW are diverse and have complementary properties (Fig. <ref type="figure" target="#fig_0">1(c</ref>)), which satisfies the design ethos of a heterogeneous framework.</p><p>The key contributions of our work can be summarized as follows: 1) we first state the homogeneity issue of CPS and improve it with a novel dual-debiased heterogeneous co-training framework targeting the class imbalance issue; 2) we propose two novel weighting strategies, DistDW and DiffDW, which effectively solve two critical issues of SSL: data and learning biases; 3) we introduce two public datasets, Synapse <ref type="bibr" target="#b8">[9]</ref> and AMOS <ref type="bibr" target="#b6">[7]</ref>, as new benchmarks for class-imbalanced semi-supervised medical image segmentation. These datasets include sufficient classes and significant imbalance ratios (&gt; 500 : 1), making them ideal for evaluating the effectiveness of class-imbalance-targeted algorithm designs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>Figure <ref type="figure" target="#fig_2">3</ref> shows the overall framework of the proposed DHC framework. DHC leverages the benefits of combining two diverse and accurate sub-models with two distinct learning objectives: alleviating data bias and learning bias. To achieve this, we propose two dynamic loss weighting strategies, DistDW (Distributionaware Debiased Weighting) and DiffDW (Difficulty-aware Debiased Weighting), to guide the training of the two sub-models. DistDW and DiffDW demonstrate complementary properties. Thus, by incorporating multiple perspectives and sources of information with DistDW and DiffDW, the overall framework reduces over-fitting and enhances the generalization capability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Heterogeneous Co-training Framework with Consistency Supervision</head><p>Assume that the whole dataset consists of N L labeled samples {(x l i , y i )} NL i=1 and N U unlabeled samples {x u i } NU i=1 , where x i ∈ R D×H×W is the input volume and y i ∈ R K×D×H×W is the ground-truth annotation with K classes (including background). The two sub-models of DHC complement each other by minimizing the following objective functions with two diverse and accurate weighting strategies:</p><formula xml:id="formula_0">L s = 1 N L 1 K NL i=0 [W dif f i L s (p A i , y i ) + W dist i L s (p B i , y i )]<label>(1)</label></formula><formula xml:id="formula_1">L u = 1 N L + N U 1 K NL+NU i=0 [W dif f i L u (p A i , ŷB i ) + W dist i L u (p B i , ŷA i )]<label>(2)</label></formula><p>where p</p><formula xml:id="formula_2">(•) i</formula><p>is the output probability map and ŷ(• <ref type="figure">y</ref>) is the supervised cross entropy loss function to supervise the output of labeled data, and</p><formula xml:id="formula_3">) i = argmax{p (•) i,k } K k=0 is the pseudo label of i th sample. L s (x, y) = L CE (x,</formula><formula xml:id="formula_4">L u (x, y) = 1 2 [L CE (x, y) + L Dice (x, y)]</formula><p>is the unsupervised loss function to measure the prediction consistency of two models by taking the same input volume x i . Note that both labeled and unlabeled data are used to compute the unsupervised loss. Finally, we can obtain the total loss: L total = L s + λL u , we empirically set λ as 0.1 and follow <ref type="bibr" target="#b9">[10]</ref> to use the epoch-dependent Gaussian ramp-up strategy to gradually enlarge the ratio of unsupervised loss. W dif f i and W dist i are the dynamic class-wise loss weights obtained by the proposed weighting strategies, which will be introduced next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Distribution-aware Debiased Weighting (DistDW)</head><p>To mitigate the data distribution bias, we propose a simple yet efficient reweighing strategy, DistDW. DistDW combines the benefits of the SimiS <ref type="bibr" target="#b2">[3]</ref>, which eliminate the weight of the largest majority class, while preserving the distinctive weights of the minority classes (Fig. <ref type="figure" target="#fig_3">4(c)</ref>). The proposed strategy rebalances the learning process by forcing the model to focus more on the minority classes. Specifically, we utilize the class-wise distribution of the unlabeled pseudo labels p u by counting the number of voxels for each category, denoted as N k , k = 0, ..., K. We construct the weighting coeffcient for k th category as follows:</p><formula xml:id="formula_5">w k = log(P k ) max{log(P i )} K i=0 , P k = max{N i } K i=0 N k , k = 0, 1, ..., K<label>(3)</label></formula><formula xml:id="formula_6">W dist t ← βW dist t-1 + (1 -β)W dist t , W dist t = [w 1 , w 2 , ..., w K ] (<label>4</label></formula><formula xml:id="formula_7">)</formula><p>where β is the momentum parameter, set to 0.99 experimentally.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Difficulty-aware Debiased Weighting (DiffDW)</head><p>After analyzing the proposed DistDW, we found that some classes with many samples present significant learning difficulties. For instance, despite having the second highest number of voxels, the stomach class has a much lower Dice score than the aorta class, which has only 20% of the voxels of the stomach (Fig. <ref type="figure" target="#fig_0">1(b)</ref>). Blindly forcing the model to prioritize minority classes may further exacerbate the learning bias, as some challenging classes may not be learned to an adequate extent. To alleviate this problem, we design DiffDW to force the model to focus on the most difficult classes (i.e. the classes learned slower and with worse performances) rather than the minority classes. The difficulty is modeled in two ways: learning speed and performance. We use Population Stability Index <ref type="bibr" target="#b5">[6]</ref> to measure the learning speed of each class after the t th iteration:</p><formula xml:id="formula_8">du k,t = t t-τ I( ≤ 0)ln( λ k,t λ k,t-1 ), dl k,t = t t-τ I( &gt; 0)ln( λ k,t λ k,t-1 )<label>(5)</label></formula><p>where λ k denotes the Dice score of k th class in t th iteration and = λ k,t -λ k,t-1 . du k,t and dl k,t denote classes not learned and learned after the t th iteration. I(•) is the indicator function. τ is the number accumulation iterations and set to 50 empirically. Then, we define the difficulty of k th class after t th iteration as</p><formula xml:id="formula_9">d k,t = du k,t + dl k,t +</formula><p>, where is a smoothing item with minimal value. The classes learned faster have smaller d k,t , the corresponding weights in the loss function will be smaller to slow down the learn speed. After several iterations, the training process will be stable, and the difficulties of all classes defined above will be similar. Thus, we also accumulate 1λ k,t for τ iterations to obtain the reversed Dice weight w λ k,t and weight d k,t . In this case, classes with lower Dice scores will have larger weights in the loss function, which forces the model to pay more attention to these classes. The overall difficulty-aware weight of k th class is defined as:</p><formula xml:id="formula_10">w dif f k = w λ k,t • (d k,t ) α .</formula><p>α is empirically set to 1  5 in the experiments to alleviate outliers. The difficulty-aware weights for all classes are</p><formula xml:id="formula_11">W dif f t = [w 1 , w 2 , ..., w K ].</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset and Implementation Details. We introduce two new benchmarks on the Synapse <ref type="bibr" target="#b8">[9]</ref> and AMOS <ref type="bibr" target="#b6">[7]</ref> datasets for class-imbalanced semi-supervised medical image segmentation. The Synapse dataset has 13 foreground classes, including spleen (Sp), right kidney (RK), left kidney (LK), gallbladder (Ga), esophagus (Es), liver(Li), stomach(St), aorta (Ao), inferior vena cava (IVC), portal &amp; splenic veins (PSV), pancreas (Pa), right adrenal gland (RAG), left adrenal gland (LAG) with one background and 30 axial contrast-enhanced abdominal CT scans. We randomly split them as 20, 4 and 6 scans for training, validation, and testing, respectively. Compared with Synapse, the AMOS dataset excludes PSV but adds three new classes: duodenum(Du), bladder(Bl) and prostate/uterus(P/U). 360 scans are divided into 216, 24 and 120 scans for training, validation, and testing. We ran experiments on Synapse three times with different seeds to eliminate the effect of randomness due to the limited samples. More training details are in the supplementary material.</p><p>Comparison with State-of-the-Art Methods. We compare our method with several state-of-the-art semi-supervised segmentation methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b11">11,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b21">21]</ref>. Moreover, simply extending the state-of-the-art semi-supervised classification methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b15">15,</ref><ref type="bibr" target="#b17">17]</ref>, including class-imbalanced designs <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b17">17]</ref> to segmentation, is a straightforward solution to our task. Therefore, we extend these methods to segmentation with CPS as the baseline. As shown in Table <ref type="table" target="#tab_0">1</ref> and<ref type="table" target="#tab_1">2</ref>, the general semi-supervised methods which do not consider the class imbalance problem fail to capture effective features of the minority classes and lead to terrible performances (colored with red). The methods considered the class imbalance problem have better results on some smaller minority classes such as gallbladder, portal &amp; splenic veins and etc. However, they still fail in some minority classes (Es, RAG, and LAG) since this task is highly imbalanced. Our proposed DHC outperforms these methods, especially in those classes with very few samples. Note that our method performs better than the fully-supervised method for the RAG segmentation. Furthermore, our method outperforms SOTA methods on   Synapse by larger margins than the AMOS dataset, demonstrating the more prominent stability and effectiveness of the proposed DHC framework in scenarios with a severe lack of data. Visualization results in Fig. <ref type="figure" target="#fig_5">5</ref> show our method performs better on minority classes which are pointed with green arrows. More results on datasets with different labeled ratios can be found in the supplementary material.  Ablation Study. To validate the effectiveness of the proposed DHC framework and the two learning strategies, DistDW and DiffDW, we conduct ablation experiments, as shown in Table <ref type="table" target="#tab_2">3</ref>. DistDW ('DistDW-DistDW') alleviates the bias of baseline on majority classes and thus segments the minority classes (RA, LA, ES, etc.) very well. However, it has unsatisfactory results on the spleen and stomach, which are difficult classes but down-weighted due to the larger voxel numbers. DiffDW ('DiffDW-DiffDW') shows complementary results with DistDW, it has better results on difficult classes (e.g. , stomach since it is hollow inside). When combining these two weighting strategies in a heterogeneous cotraining way ('DiffDW-DistDW', namely DHC), the Dice score has 5.12%, 5.6% and 13.78% increase compared with DistDW, DiffDW, and the CPS baseline. These results highlight the efficacy of incorporating heterogeneous information in avoiding over-fitting and enhancing the performance of the CPS baseline.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This work proposes a novel Dual-debiased Heterogeneous Co-training framework for class-imbalanced semi-supervised segmentation. We are the first to state the homogeneity issue of CPS and solve it intuitively in a heterogeneous way. To achieve it, we propose two diverse and accurate weighting strategies: DistDW for eliminating the data bias of majority classes and DiffDW for eliminating the learning bias of well-performed classes. By combining the complementary properties of DistDW and DiffDW, the overall framework can learn both the minority classes and the difficult classes well in a balanced way. Extensive experiments show that the proposed framework brings significant improvements over the baseline and outperforms previous SSL methods considerably.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) Foreground classes distributions in Synapse dataset. (b) Comparison of the ranks of proportions and Dice value of proposed DistDW of each class. (c) Comparison between number of voxels and Dice value of each class, values of x-axis are the difference of Dice values between DiffDW and DistDW models.</figDesc><graphic coords="2,72,48,246,02,307,48,71,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Illustration of the homogeneity problem of CPS and the effectiveness of using heterogeneous framework.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Overview of the proposed dual-debiased heterogeneous co-training framework.</figDesc><graphic coords="4,56,46,54,38,339,28,113,32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. The weight curves of four weighting strategies. SimiS(b) solved the overweighting issue of the largest majority class (black curve) in CReST(a) but resulted in similar weights for other classes. DistDW solves the above issues. Besides, DiffDW assigns higher weights to difficult classes, such as the stomach, which has minimum weights when using other methods. (Color figure online)</figDesc><graphic coords="5,42,30,53,99,339,40,91,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>et al. [1] † 33.24±0.6 43.78±2.5 57.4 53.8 48.5 46.9 ] † 41.07±1.2 32.15±3.3 62.0 66.0 59.3 61.5 0.0 89.0 31.7 62.8 49.4 28.6 18.5 0.0 5.0 DHC (ours) 48.61±0.9 10.71±2.6 62.8 69.5 59.2 66.0 13.2 85.2 36.9 67.9 61.5 37.0 30.9 31.4 10.6 † we implement semi-supervised segmentation methods on our dataset.we extend semi-supervised classification methods to segmentation with CPS as the baseline.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Qualitative comparison between DHC and the SOTA methods on 20% labeled Synapse dataset. The green arrows indicate the some minority classes being segmented. (Color figure online)</figDesc><graphic coords="7,49,29,274,58,325,12,188,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative comparison between DHC and SOTA SSL segmentation methods on 20% labeled Synapse dataset. 'General' or 'Imbalance' indicates whether the methods consider the class imbalance issue or not. Results of 3-times repeated experiments are reported in the 'mean±std' format. Best results are boldfaced, and 2 nd best results are underlined.</figDesc><table><row><cell>Methods</cell><cell></cell><cell cols="2">Avg. Dice Avg. ASD Average Dice of Each Class</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell>Sp</cell><cell>RK LK Ga Es</cell><cell>Li</cell><cell>St</cell><cell>Ao</cell><cell>IVC PSV PA RAG LAG</cell></row><row><cell></cell><cell>V-Net (fully)</cell><cell cols="5">62.09±1.2 10.28±3.9 84.6 77.2 73.8 73.3 38.2 94.6 68.4 72.1 71.2 58.2 48.5 17.9 29.0</cell></row><row><cell>General</cell><cell>UA-MT [21]  †</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Quantitative comparison between DHC and SOTA SSL segmentation methods on 5% labeled AMOS dataset. † we implement semi-supervised segmentation methods on our dataset.we extend semi-supervised classification methods to segmentation with CPS as the baseline.</figDesc><table><row><cell>Methods</cell><cell></cell><cell cols="4">Avg. Dice Avg. ASD Average Dice of Each Class</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell>Sp</cell><cell>RK LK Ga Es</cell><cell>Li</cell><cell>St</cell><cell>Ao</cell><cell>IVC PA RAG LAG Du Bl</cell><cell>P/U</cell></row><row><cell></cell><cell>V-Net (fully)</cell><cell>76.50</cell><cell>2.01</cell><cell cols="6">92.2 92.2 93.3 65.5 70.3 95.3 82.4 91.4 85.0 74.9 58.6 58.1 65.6 64.4 58.3</cell></row><row><cell>General</cell><cell>UA-MT [21]  †</cell><cell>42.16</cell><cell>15.48</cell><cell cols="6">59.8 64.9 64.0 35.3 34.1 77.7 37.8 61.0 46.0 33.3 26.9 12.3 18.1 29.7 31.6</cell></row><row><cell></cell><cell>URPC [11]  †</cell><cell>44.93</cell><cell>27.44</cell><cell cols="2">67.0 64.2 67.2 36.1 0.0</cell><cell cols="4">83.1 45.5 67.4 54.4 46.7 0.0</cell><cell>29.4 35.2 44.5 33.2</cell></row><row><cell></cell><cell>CPS [4]  †</cell><cell>41.08</cell><cell>20.37</cell><cell cols="6">56.1 60.3 59.4 33.3 25.4 73.8 32.4 65.7 52.1 31.1 25.5 6.2</cell><cell>18.4 40.7 35.8</cell></row><row><cell></cell><cell>SS-Net [19]  †</cell><cell>33.88</cell><cell>54.72</cell><cell cols="2">65.4 68.3 69.9 37.8 0.0</cell><cell cols="4">75.1 33.2 68.0 56.6 33.5 0.0</cell><cell>0.0</cell><cell>0.0</cell><cell>0.2</cell><cell>0.2</cell></row><row><cell></cell><cell>DST [2]</cell><cell>41.44</cell><cell>21.12</cell><cell cols="6">58.9 63.3 63.8 37.7 29.6 74.6 36.1 66.1 49.9 32.8 13.5 5.5</cell><cell>17.6 39.1 33.1</cell></row><row><cell></cell><cell>DePL [15]</cell><cell>41.97</cell><cell>20.42</cell><cell cols="6">55.7 62.4 57.7 36.6 31.3 68.4 33.9 65.6 51.9 30.2 23.3 10.2 20.9 43.9 37.7</cell></row><row><cell cols="2">Imbalance Adsh [5]</cell><cell>40.33</cell><cell>24.53</cell><cell cols="6">56.0 63.6 57.3 34.7 25.7 73.9 30.7 65.7 51.9 27.1 20.2 0.0</cell><cell>18.6 43.5 35.9</cell></row><row><cell></cell><cell>CReST [17]</cell><cell>46.55</cell><cell>14.62</cell><cell cols="6">66.5 64.2 65.4 36.0 32.2 77.8 43.6 68.5 52.9 40.3 24.7 19.5 26.5 43.9 36.4</cell></row><row><cell></cell><cell>SimiS [3]</cell><cell>47.27</cell><cell>11.51</cell><cell cols="6">77.4 72.5 68.7 32.1 14.7 86.6 46.3 74.6 54.2 41.6 24.4 17.9 21.9 47.9 28.2</cell></row><row><cell></cell><cell cols="2">Basak et al. [1]  † 38.73</cell><cell>31.76</cell><cell cols="2">68.8 59.0 54.2 29.0 0.0</cell><cell cols="4">83.7 39.3 61.7 52.1 34.6 0.0</cell><cell>0.0</cell><cell>26.8 45.7 26.2</cell></row><row><cell></cell><cell>CLD [10]  †</cell><cell>46.10</cell><cell>15.86</cell><cell cols="6">67.2 68.5 71.4 41.0 21.0 76.1 42.4 69.8 52.1 37.9 24.7 23.4 22.7 38.1 35.2</cell></row><row><cell></cell><cell>DHC (ours)</cell><cell>49.53</cell><cell>13.89</cell><cell cols="6">68.1 69.6 71.1 42.3 37.0 76.8 43.8 70.8 57.4 43.2 27.0 28.7 29.1 41.4 36.7</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Ablation study on 20% labeled Synapse dataset. The first four rows show the effectiveness of our proposed methods; the last four rows verify the importance of the heterogeneous design by combining our proposed modules with the existing classimbalance methods, and serve as detailed results of the 3 rd and 4 th columns in Fig.2.</figDesc><table><row><cell>ModelA-ModelB</cell><cell>Avg. Dice</cell><cell>Avg. ASD</cell><cell cols="2">Average Dice of Each Class</cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell>Sp</cell><cell>RK LK Ga Es</cell><cell>Li</cell><cell>St</cell><cell>Ao</cell><cell>IVC PSV Pa</cell><cell>RAG LAG</cell></row><row><cell>Org-Org (CPS)</cell><cell cols="4">33.55±3.65 41.21±9.08 62.8 55.2 45.4 35.9 0.0</cell><cell cols="3">91.1 31.3 41.9 49.2 8.8</cell><cell>14.5 0.0</cell><cell>0.0</cell></row><row><cell>DistDW-DistDW</cell><cell cols="7">43.41±1.46 17.39±1.93 56.1 66.7 60.2 40.3 23.5 75.7 10.3 70.1 61.2 30.4 26.4 32.2 11.2</cell></row><row><cell>DiffDW-DiffDW</cell><cell>42.75±0.6</cell><cell cols="3">18.64±5.17 71.9 65.7 49.8 58.9 6.7</cell><cell cols="3">88.3 32.0 59.5 51.8 29.0 13.4 22.6 6.2</cell></row><row><cell cols="8">DiffDW-DistDW 48.61±0.91 10.71±2.62 62.8 69.5 59.2 66.0 13.2 85.2 36.9 67.9 61.5 37.0 30.9 31.4 10.6</cell></row><row><cell>DistDW-CReST</cell><cell cols="7">45.61±2.98 21.58±3.89 68.7 70.5 58.6 60.0 12.4 79.7 31.5 60.9 58.3 30.7 29.0 27.4 5.3</cell></row><row><cell>DistDW-SimiS</cell><cell cols="4">41.92±2.52 30.29±4.49 70.3 68.9 63.6 56.2 3.1</cell><cell cols="3">77.0 14.0 75.4 57.1 26.8 27.5 3.3</cell><cell>1.7</cell></row><row><cell>DiffDW-CReST</cell><cell>46.52±1.5</cell><cell>19.47±2.1</cell><cell cols="2">59.5 64.6 60.1 67.3 0.0</cell><cell cols="3">87.2 34.4 65.5 60.4 31.9 28.5 30.6 14.8</cell></row><row><cell>DiffDW-SimiS</cell><cell>43.85±0.5</cell><cell>32.55±1.4</cell><cell cols="2">73.5 70.2 54.9 69.7 0.0</cell><cell cols="3">89.4 41.1 67.5 51.8 34.8 16.7 0.6</cell><cell>0.0</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported in part by a grant from <rs type="funder">Hong Kong Innovation and Technology Commission</rs> (Project no. <rs type="grantNumber">ITS/030/21</rs>) and in part by a research grant from <rs type="funder">Beijing Institute of Collaborative Innovation (BICI)</rs> under collaboration with <rs type="funder">HKUST</rs> under Grant <rs type="grantNumber">HCIC-004</rs> and in part by grants from <rs type="funder">Foshan HKUST</rs> Projects under Grants <rs type="grantNumber">FSUST21-HKUST10E</rs> and <rs type="grantNumber">FSUST21-HKUST11E</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Y6vrXEX">
+					<idno type="grant-number">ITS/030/21</idno>
+				</org>
+				<org type="funding" xml:id="_XUWKxH3">
+					<idno type="grant-number">HCIC-004</idno>
+				</org>
+				<org type="funding" xml:id="_cRgcF4A">
+					<idno type="grant-number">FSUST21-HKUST10E</idno>
+				</org>
+				<org type="funding" xml:id="_Zx2yWv3">
+					<idno type="grant-number">FSUST21-HKUST11E</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1 56.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Addressing class imbalance in semi-supervised image segmentation: a study on cardiac mri</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Basak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ghosal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sarkar</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-122" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="224" to="233" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Debiased self-training for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Long</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="32424" to="32437" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">An embarrassingly simple baseline for imbalanced semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.11086</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Semi-supervised semantic segmentation with cross pseudo supervision</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2613" to="2622" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Class-imbalanced semi-supervised learning with adaptive thresholding</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">F</forename><surname>Li</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="8082" to="8094" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">An invariant form for the prior probability in estimation problems</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jeffreys</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Royal Soc. Lond. Ser. A. Math. Phys. Sci</title>
+		<imprint>
+			<biblScope unit="volume">186</biblScope>
+			<biblScope unit="page" from="453" to="461" />
+			<date type="published" when="1007">1007. 1946</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Amos: a large-scale abdominal multi-organ benchmark for versatile medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.08023</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Neural network ensembles, cross validation, and active learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krogh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vedelsby</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="1994">1994</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">B</forename><surname>Landman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Igelsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Langerak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Klein</surname></persName>
+		</author>
+		<idno type="DOI">10.7303/syn3193805</idno>
+		<ptr target="https://doi.org/10.7303/syn3193805" />
+		<title level="m">miccai multi-atlas labeling beyond the cranial vault-workshop and challenge</title>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Calibrating label distribution for classimbalanced barely-supervised knee segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="109" to="118" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_11</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-111" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Efficient semi-supervised gross target volume of nasopharyngeal carcinoma segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-330" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="318" to="329" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Fixmatch: simplifying semi-supervised learning with consistency and confidence</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sohn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="596" to="608" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="1" to="10" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Rethinking bayesian deep learning methods for semisupervised volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lukasiewicz</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="182" to="190" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Debiased learning from naturally imbalanced pseudo-labels</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">X</forename><surname>Yu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="14647" to="14657" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Semi-supervised semantic segmentation using unreliable pseudolabels</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="4248" to="4257" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Crest: a class-rebalancing self-training framework for imbalanced semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Sohn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mellina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Yuille</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10857" to="10866" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Cross-patch dense contrastive learning for semi-supervised segmentation of cellular nuclei in histopathologic images</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Qin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11666" to="11675" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Exploring smoothness and class-separation for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-94" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="34" to="43" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Momentum contrastive voxel-wise representation learning for semi-supervised volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>You</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Staib</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Duncan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16440-8_61</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16440-8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13434</biblScope>
+			<biblScope unit="page">61</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Uncertainty-aware self-ensembling model for semi-supervised 3D left atrium segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-867" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="605" to="613" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

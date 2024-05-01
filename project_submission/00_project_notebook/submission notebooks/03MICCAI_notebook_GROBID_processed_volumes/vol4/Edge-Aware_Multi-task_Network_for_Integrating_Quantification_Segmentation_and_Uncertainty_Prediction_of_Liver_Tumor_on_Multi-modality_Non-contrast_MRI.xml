@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Edge-Aware Multi-task Network for Integrating Quantification Segmentation and Uncertainty Prediction of Liver Tumor on Multi-modality Non-contrast MRI</title>
+				<funder>
+					<orgName type="full">Natural Sciences and Engineering Research Council of Canada</orgName>
+					<orgName type="abbreviated">NSERC</orgName>
+				</funder>
+				<funder ref="#_uQxsDN7">
+					<orgName type="full">TMU</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><roleName>Qinmin</roleName><forename type="first">Xiaojiao</forename><surname>Xiao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">Toronto Metropolitan University</orgName>
+								<address>
+									<settlement>Toronto</settlement>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Qinmin</forename><forename type="middle">Vivian</forename><surname>Hu</surname></persName>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Guanghui</forename><surname>Wang</surname></persName>
+							<email>wangcs@torontomu.ca</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">Toronto Metropolitan University</orgName>
+								<address>
+									<settlement>Toronto</settlement>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Edge-Aware Multi-task Network for Integrating Quantification Segmentation and Uncertainty Prediction of Liver Tumor on Multi-modality Non-contrast MRI</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="652" to="661"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">BDFB03FC3DD51DA5B747438A695A1850</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_62</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Segmentation</term>
+					<term>Quantification</term>
+					<term>Liver tumor</term>
+					<term>Multi-modality</term>
+					<term>Uncertainty</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Simultaneous multi-index quantification, segmentation, and uncertainty estimation of liver tumors on multi-modality non-contrast magnetic resonance imaging (NCMRI) are crucial for accurate diagnosis. However, existing methods lack an effective mechanism for multimodality NCMRI fusion and accurate boundary information capture, making these tasks challenging. To address these issues, this paper proposes a unified framework, namely edge-aware multi-task network (EaMtNet), to associate multi-index quantification, segmentation, and uncertainty of liver tumors on the multi-modality NCMRI. The EaMt-Net employs two parallel CNN encoders and the Sobel filters to extract local features and edge maps, respectively. The newly designed edgeaware feature aggregation module (EaFA) is used for feature fusion and selection, making the network edge-aware by capturing long-range dependency between feature and edge maps. Multi-tasking leverages prediction discrepancy to estimate uncertainty and improve segmentation and quantification performance. Extensive experiments are performed on multimodality NCMRI with 250 clinical subjects. The proposed model outperforms the state-of-the-art by a large margin, achieving a dice similarity coefficient of 90.01 ± 1.23 and a mean absolute error of 2.72 ± 0.58 mm for MD. The results demonstrate the potential of EaMtNet as a reliable clinical-aided tool for medical image analysis.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Simultaneous multi-index quantification (i.e., max diameter (MD), center point coordinates (X o , Y o ), and Area), segmentation, and uncertainty prediction of liver tumor have essential significance for the prognosis and treatment of patients <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b15">16]</ref>. In clinical settings, segmentation and quantitation are manually performed by the clinicians through visually analyzing the contrast-enhanced MRI images (CEMRI) <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b17">18]</ref>. However, as shown in Fig. <ref type="figure">1</ref>(b), Contrast-enhanced Fig. <ref type="figure">1</ref>. Our method integrates segmentation and quantification of liver tumor using multi-modality NCMRI, which has the advantages of avoiding contrast agent injection, mutual promotion of multi-task, and reliability and stability. MRI (CEMRI) has the drawbacks of being toxic, expensive, and time-consuming due to the need for contrast agents (CA) to be injected <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4]</ref>. Moreover, manually annotating medical images is a laborious and tedious process that requires human expertise, making it manpower-intensive, subjective, and prone to variation <ref type="bibr" target="#b13">[14]</ref>. Therefore, it is desirable to provide a reliable and stable tool for simultaneous segmentation, quantification, and uncertainty analysis, without requiring the use of contrast agents, as shown in Fig. <ref type="figure">1(a)</ref>.</p><p>Recently, an increasing number of works have been attempted on liver tumor segmentation or quantification <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b29">30]</ref>. As shown in Fig. <ref type="figure">1(c</ref>), the work <ref type="bibr" target="#b25">[26]</ref> attempted to use the T2FS for liver tumor segmentation, while it ignored the complementary information between multi-modality NCMRI of T2FS and DWI. In particular, there is evidence that diffusion-weighted imaging (DWI) helps to improve the detection sensitivity of focal lesions as these lesions typically have higher cell density and microstructure heterogeneity <ref type="bibr" target="#b19">[20]</ref>. The study in <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b29">30]</ref> attempted to quantify the multi-index of liver tumor, however, the approach is limited to using multi-phase CEMRI that requires the injection of CA. In addition, all these works are limited to a single task and ignore the constraints and mutual promotion between multi-tasks. Available evidence suggests that uncertainty information regarding segmentation results is important as it guides clinical decisions and helps understand the reliability of the provided segmentation. However, current research on liver tumors tends to overlook this vital task.</p><p>To the best of our knowledge, although many works focus on the simultaneous quantization, segmentation, and uncertainty in medical images (i.e., heart <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b26">27]</ref>, kidney <ref type="bibr" target="#b16">[17]</ref>, polyp <ref type="bibr" target="#b12">[13]</ref>). No attempt has been made to automatically liver tumor multi-task via integrating multi-modality NCMRI due to the following challenges: <ref type="bibr" target="#b0">(1)</ref> The lack of an effective multi-modality MRI fusion mechanism. Because the imaging characteristics between T2FS and DWI have significant differences (i.e., T2FS is good at anatomy structure information while DWI is good at location information of lesions <ref type="bibr" target="#b28">[29]</ref>). <ref type="bibr" target="#b1">(2)</ref> The lack of strategy for capturing the accurate boundary information of liver tumors. Due to the lack of contrast agent injection, the boundary of the lesion may appear blurred or even invisible in a single NCMRI, making it challenging to accurately capture tumor boundaries <ref type="bibr" target="#b28">[29]</ref>. <ref type="bibr" target="#b2">(3)</ref> The lack of an associated multi-task framework. Because segmentation and uncertainty involve pixel-level classification, whereas quantification tasks involve image-level regression <ref type="bibr" target="#b10">[11]</ref>. This makes it challenging to integrate and optimize the complementary information between multi-tasks.</p><p>In this study, we propose an edge-aware multi-task network (EaMtNet) that integrates the multi-index quantification (i.e., center point, max-diameter (MD), and Area), segmentation, and uncertainty. Our basic assumption is that the model should capture the long-range dependency of features between multimodality and enhance the boundary information for quantification, segmentation, and uncertainty of liver tumors. The two parallel CNN encoders first extract local feature maps of multi-modality NCMRI. Meanwhile, to enhance the weight of tumor boundary information, the Sobel filters are employed to extract edge maps that are fed into edge-aware feature aggregation (EaFA) as prior knowledge. Then, the EaFA module is designed to select and fuse the information of multi-modality, making our EaMtNet edge-aware by capturing the long-range dependency of features maps and edge maps. Lastly, the proposed method estimates segmentation, uncertainty prediction, and multi-index quantification simultaneously by combining multi-task and cross-task joint loss.</p><p>The contributions of this work mainly include: (1) For the first time, multiindex quantification, segmentation, and uncertainty of the liver tumor on multimodality NCMRI are achieved simultaneously, providing a time-saving, reliable, and stable clinical tool. (2) The edge information extracted by the Sobel filter enhances the weight of the tumor boundary by connecting the local feature as prior knowledge. (3) The novel EaFA module makes our EaMtNet edge-aware by capturing the long-range dependency of features maps and edge maps for feature fusion. The source code will be available on the author's website.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>The EaMtNet employs an innovative approach for simultaneous tumor multiindex quantification, segmentation, and uncertainty prediction on multimodality NCMRI. As shown in Fig. <ref type="figure" target="#fig_0">2</ref>, the EaMtNet inputs multi-modality NCMRI of T2FS and DWI for capturing the feature and outputs the multiindex quantification, segmentation, and uncertainty. Specifically, the proposed approach mainly consists of three steps: 1) The CNN encoders for capturing feature maps and the Sobel filters for extracting edge maps (Sect. 2.1); 2) The edge-aware feature aggregation (EaFA) for multi-modality feature selection and fusion via capturing the long-distance dependence (Sect. 2.2); and 3) Multi-task prediction module (Sect. 2.3).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">CNN Encoder for Feature Extraction</head><p>In Step 1 of Fig. <ref type="figure" target="#fig_0">2</ref>, the multi-modality NCMRI (i.e., χ i T 2 ∈ R H×W , χ i DW I ∈ R H×W ) are fed into two parallel encoders and the Sobel filter to extract the feature maps (i.e., g i T 2 ∈ R H×W ×N , g i DW I ∈ R H×W ×N ) and the corresponding edge maps (i.e., edge i T 2 ∈ R H×W , edge i DW I ∈ R H×W ) respectively. Specifically, EaMtNet employs UNet as the backbone for segmentation because the CNN encoder has excellent capabilities in low-range semantic information extraction <ref type="bibr" target="#b14">[15]</ref>. The two parallel CNN encoders have the same architecture where each encoder contains three shallow convolutional network blocks to capture features of adjacent slices. Each conv block consists of a convolutional layer, batch normalization, ReLU, and non-overlapping subsampling. At the same time, EaMt-Net utilizes the boundary information extracted by the Sobel filter <ref type="bibr" target="#b18">[19]</ref> as prior knowledge to enhance the weight of tumor edge information to increase the awareness of the boundary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Edge-Aware Feature Aggregation(EaFA) for Multi-modality Feature Selection and Fusion</head><p>In Step 2 of the proposed model, the feature maps (i.e., g i T 2 , g i DW I ) and the edge maps (i.e., edge i T 2 , edge i DW I ) are fed into EaFA for multi-modality feature fusion with edge-aware. In particular, the EaFA makes the EaMtNet edge-aware by using the Transformer to capture the long-range dependency of feature maps and edge maps. Specifically, the feature maps and edge maps are first flattened to the 1D sequence corresponding to X 1D ∈ R N ×P 2 and E 1D ∈ R 2×Q 2 , respectively. Where N = 2 × C means the channel number C of the last convolutional layer from the two parallel encoders. (P, P ) and (Q, Q) represent the resolution of each feature map and each edge map, respectively. On the basis of the 1D sequence, to make the feature fusion with edge awareness, the operation of position encoding is performed not only on feature maps but also on edge maps. The yielded embeddings Z ∈ R N ×P 2 +2×Q 2 can serve as the input sequence length for the multi-head attention layer in Transformer. The following operations in our EaFA are similar to the traditional Transformer <ref type="bibr" target="#b21">[22]</ref>. After the three cascade Transformer layers, the EaFA yields the fusion feature vector F for multi-task prediction. The specific computation of the self-attention matrix and multi-head attention are defined below <ref type="bibr" target="#b21">[22]</ref>:</p><formula xml:id="formula_0">Attention(Q, K, V) = sof tmax( QK T √ d k )(V)<label>(1)</label></formula><formula xml:id="formula_1">MultiHead(Q, K, V) = Concat(head 1 , ..., head h )W O (<label>2</label></formula><formula xml:id="formula_2">)</formula><formula xml:id="formula_3">head i = Attention(QW Q i , KW O i , VW V i )<label>(3)</label></formula><p>where query Q, key K, and value V are all vectors of the flattened 1D sequences of X 1D and E 1D . W O i is the projection matrix, and 1</p><formula xml:id="formula_4">√ d k</formula><p>is the scaling factor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Multi-task Prediction</head><p>In Step 3 of Fig. <ref type="figure" target="#fig_0">2</ref>, the EaMtNet outputs the multi-modality quantification ŷQ (i.e., MD, X o , Y o and Area), segmentation result ŷs and uncertainty map ûi . Specifically, for the quantification path, ŷQ is directly obtained by performing a linear layer to the feature F from EaFA. For the segmentation and uncertainty path, the output feature F from EaFA is first reshaped into a 2D feature map F out . Then, to scale up to higher-resolution images, a 1 × 1 convolution layer is employed to change the channel number of F out for feeding into the decoder. After upsampling by the CNN decoder, EaMtNet predicts the segmentation result ŷs with H × W and uncertainty map ûi with H × W . The CNN decoder contains three shallow deconv blocks, which consist of deconv layer, batch normalization, and ReLU. Inspired by <ref type="bibr" target="#b23">[24]</ref>, we select the entropy map as our uncertainty measure. Given the prediction probability after softmax, the entropy map is computed as follows:</p><formula xml:id="formula_5">H[x] = - K i=1 z i (x) * log 2 (z i (x))<label>(4)</label></formula><p>where z i is the probability of pixel x belonging to category i. When a pixel has high entropy, it means that the network is uncertain about its classification. Therefore, pixels with high entropy are more likely to be misclassified. In other words, its entropy will decrease when the network is confident in a pixel's label.</p><p>Under the constraints of uncertainty, the EaMtNet can effectively rectify the errors in tumor segmentation because the uncertainty estimation can avoid overconfidence and erroneous quantification <ref type="bibr" target="#b22">[23]</ref>. Moreover, the EaMtNet novelly make represent different tasks in a unified framework, leading to beneficial interactions. Thus, the quantification performance is improved through backpropagation by the joint loss function L multi-task . The function comprises segmentation loss L seg and quantification loss L qua , where the loss function L seg is utilized for optimizing tumor segmentation, and L qua is utilized for optimization of multi-index quantification. It can be defined as:</p><formula xml:id="formula_6">L Dice = 2 N i y i ŷs S i y i 2 + N i ŷ2 s (<label>5</label></formula><formula xml:id="formula_7">)</formula><formula xml:id="formula_8">L qua ŷi task , y i task = i=1 y i task -ŷi task (<label>6</label></formula><formula xml:id="formula_9">)</formula><p>where ŷs represents the prediction, and y i represents the ground truth label. The sum is performed on S pixels, ŷi task represents the predicted multi-index value, and y i task represents the ground truth of multi-index value, task ∈ {MD, X, Y , Area}.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results and Discussion</head><p>For the first time, EaMtNet has achieved high performance with the dice similarity coefficient (DSC) up to 90.01 ± 1.23%, and the mean absolute error (MAE) of the MD, X o , Y o and Area are down to 2.72 ± 0.58 mm,1.87±0.76 mm, 2.14 ± 0.93 mm and 15.76 ± 8.02 cm 2 , respectively.</p><p>Dataset and Configuration. An axial dataset includes 250 distinct subjects, each underwent initial standard clinical liver MRI protocol examinations with corresponding pre-contrast images (T2FS [4mm]) and DWI [4mm]) was collected. The ground truth was reviewed by two abdominal radiologists with 10 and 22 years of experience in liver imaging, respectively. If any interpretations demonstrated discrepancies between the reviewers, they would re-evaluate the examinations together and reach a consensus. To align the paired images of T2 and DWI produced at different times. We set the T2 as the target image and the DWI as the source image to perform the pre-processing of non-rigid registration between T2 and DWI by using the Demons non-rigid registration method. It has been widely used in the field of medical image registration since it was proposed by Thirion <ref type="bibr" target="#b20">[21]</ref>. We perform the Demons non-rigid registration on an open-source toolbox DIRART using Matlab 2017b.</p><p>Inspired by the work <ref type="bibr" target="#b21">[22]</ref>, we set the scaling factor d k to 64 in equation <ref type="bibr" target="#b0">(1)</ref>. All experiments were assessed with a 5-fold cross-validation test. To quantitatively evaluate the segmentation results, we calculated the dice coefficient scores (DSC) metric that measures the overlapping between the segmentation prediction and ground truth <ref type="bibr" target="#b11">[12]</ref>. To quantitatively evaluate the quantification results,  we calculated the mean absolute error (MAE). Our EaMtNet was implemented using Ubuntu 18.04 platform, Python v3.6, PyTorch v0.4.0, and running on two NVIDIA GTX 3090Ti GPUs.</p><p>Accurate Segmentation. The segmentation performance of EaMtNet has been validated and compared with three state-of-the-art (SOTA) segmentation methods (TransUNet <ref type="bibr" target="#b0">[1]</ref>, UNet <ref type="bibr" target="#b14">[15]</ref>, and UNet++ <ref type="bibr" target="#b30">[31]</ref>). Furthermore, to ensure consistency in input modality, the channel number of the first convolution layer in the three comparison methods is set to 2. The visual examples of liver tumors are shown in Fig. <ref type="figure" target="#fig_1">3</ref>, it is evident that our proposed EaMtNet outperforms the three SOTA methods. Some quantitative analysis results are shown in Table <ref type="table" target="#tab_0">1</ref> and Table <ref type="table" target="#tab_1">2</ref>, our network achieves high performance with the DSC of 90.01 ± 1.23% (5.39% higher than the second-best). The results demonstrate that edge-aware, multi-modality fusion, and uncertainty prediction are essential for segmentation.</p><p>Ablation Study. To verify the contributions of edge-aware feature aggregation (EaFA) and uncertainty, we performed ablation study and compared and performance of different networks. First, we removed the EaFA and used concatenate, meaning we removed fusion multi-modality (No-EaFA). Then, we removed the uncertainty task (No-Uncertainty). The quantitative analysis results of these ablation studies are shown in Table <ref type="table" target="#tab_0">1</ref>. Our method exhibits high performance in both segmentation and quantification, indicating that each component of the EaMtNet plays a vital role in liver tumor segmentation and quantification.</p><p>Performance Comparison with State-of-the-Art. The EaMtNet has been validated and compared with three SOTA segmentation methods and two SOTA quantification methods (i.e., ResNet-50 <ref type="bibr" target="#b6">[7]</ref> and DenseNet <ref type="bibr" target="#b7">[8]</ref>). Furthermore, the channel number of the first convolution layer in the two quantification comparison methods is set to 2 to ensure the consistency of input modalities. The visual segmentation results are shown in Fig. <ref type="figure" target="#fig_1">3</ref>. Moreover, the quantitative results (as shown in Table <ref type="table" target="#tab_1">2</ref>) corresponding to the visualization results (i.e., Fig. <ref type="figure" target="#fig_1">3</ref>) obtained from the existing experiments further demonstrate that our method outperforms the three SOTA methods. Specifically, compared with the second-best approach, the DSC is boosted from 84.62 ± 1.45% to 90.01 ± 1.23%. The quantitative analysis results are shown in Table <ref type="table" target="#tab_2">3</ref>. It is evident that our method outperforms the two SOTA methods with a large margin in all metrics, owing to the proposed multi-modality fusing and multi-task association.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we have proposed an EaMtNet for the simultaneous segmentation and multi-index quantification of liver tumors on multi-modality NCMRI. The new EaFA enhances edge awareness by utilizing boundary information as prior knowledge while capturing the long-range dependency of features to improve feature selection and fusion. Additionally, multi-task leverages the prediction discrepancy to estimate uncertainty, thereby improving segmentation and quantification performance. Extensive experiments have demonstrated the proposed model outperforms the SOTA methods in terms of DSC and MAE, with great potential to be a diagnostic tool for doctors.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of the EaMtNet. It mainly consists of three steps: 1) CNN encoders for extracting local features of multi-modality NCMRI; 2) EaFA for enhancing multimodality NCMRI feature selection and fusion; and 3) Multi-task prediction.</figDesc><graphic coords="4,55,98,54,23,340,15,156,49" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The comparison of segmentation results between the proposed EaMtNet and three SOTA methods. The results show that our network yields high performance.</figDesc><graphic coords="7,41,79,54,59,340,21,154,12" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0"><head></head><label></label><figDesc></figDesc><graphic coords="2,55,98,54,08,340,15,191,62" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Segmentation and quantification performance of the EaMtNet under different configurations. DSC is used to evaluate the segmentation performance. MAE is used to evaluate the quantification performance. ± 1.92 3.49 ± 0.94 2.51 ± 1.43 3.12 ± 1.84 28.55 ± 9.75 No-Uncertainty 88.37 ± 2.71 3.25 ± 0.77 2.36 ± 0.92 2.78 ± 1.18 24.15 ± 9.19</figDesc><table><row><cell>DSC(%)</cell><cell>MD(mm) Xo(mm)</cell><cell>Yo(mm)</cell><cell>Area(cm 2 )</cell></row><row><cell cols="4">No-EaFA 85.82 Our method 90.01 ± 1.23 2.72 ± 0.58 1.87 ± 0.76 2.14 ± 0.93 15.76 ± 8.02</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>The quantitative evaluation of segmentation. DSC is used to evaluate the performance of our EaMtNet and three SOTA methods.</figDesc><table><row><cell>UNet</cell><cell>UNet++</cell><cell>TransUNet Our method</cell></row><row><cell cols="3">DSC(%) 76.59 ± 1.86 80.97 ± 2.37 84.62 ± 1.45 90.01 ± 1.23</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>The quantitative evaluation of the multi-index quantification. The criteria of MAE is used to evaluate the performance of our EaMtNet and two SOTA methods.</figDesc><table><row><cell></cell><cell>MD(mm) X(mm)</cell><cell>Y(mm)</cell><cell>Area(cm 2 )</cell></row><row><cell>ResNet-50</cell><cell cols="3">6.24 ± 2.81 3.15 ± 1.25 3.38 ± 1.27 31.32 ± 8.47</cell></row><row><cell>DenseNet</cell><cell cols="3">4.85 ± 1.67 2.73 ± 0.89 2.95 ± 1.15 25.37 ± 7.63</cell></row><row><cell cols="4">Our method 2.72 ± 0.58 1.87 ± 0.76 2.14 ± 0.93 15.76 ± 8.02</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work is partly supported by the <rs type="funder">Natural Sciences and Engineering Research Council of Canada (NSERC)</rs> and <rs type="funder">TMU</rs> <rs type="grantName">FOS Postdoctoral Fellowship</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_uQxsDN7">
+					<orgName type="grant-name">FOS Postdoctoral Fellowship</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Transunet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Mr imaging of diffuse liver disease</title>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">M</forename><surname>Danet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Semelka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Braga</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clinics</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="67" to="87" />
+			<date type="published" when="2003">2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Direct segmentation-based full quantification for left ventricle via deep multi-task regression learning network</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="942" to="948" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Hepatic MRI for fat quantitation: its relationship to fat morphology, diagnosis, and ultrasound</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fishbein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Clin. Gastroenterol</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="619" to="625" />
+			<date type="published" when="2005">2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">K-net: integrate left ventricle segmentation and direct quantification of paired echo sequence</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1690" to="1702" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Assessment of liver tumor response to therapy: role of quantitative imaging</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">D</forename><surname>Gonzalez-Guindalini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiographics</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1781" to="1800" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Densely connected convolutional networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="4700" to="4708" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Supervoxel based method for multi-atlas segmentation of brain MR images</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">175</biblScope>
+			<biblScope unit="page" from="201" to="214" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Hepatocellular carcinoma: diagnostic performance of multidetector CT and MR imaging-a systematic review and meta-analysis</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiology</title>
+		<imprint>
+			<biblScope unit="volume">275</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="97" to="109" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Commensal correlation network between segmentation and direct area estimation for bi-ventricle quantification</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page">101591</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">V-net: fully convolutional neural networks for volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Ahmadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Fourth International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2016">2016. 2016</date>
+			<biblScope unit="page" from="565" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Fuzzynet: a fuzzy attention module for polyp segmentation</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">B</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>In: NeurIPS&apos;22 Workshop</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Liver fibrosis: review of current imaging and MRI quantification techniques</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Petitclerc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sebastiani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gilbert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cloutier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1276" to="1295" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">MR in the diagnosis and monitoring of multiple sclerosis: an overview</title>
+		<author>
+			<persName><forename type="first">À</forename><surname>Rovira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>León</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. J. Radiol</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="409" to="414" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">MB-FSGAN: joint segmentation and quantification of kidney tumor on CT by the multi-branch feature sharing generative adversarial network</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ruan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="page">101721</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Consensus report from the 6th international forum for liver MRI using gadoxetic acid</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Sirlin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="516" to="529" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A 3x3 isotropic gradient operator for image processing</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sobel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Feldman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Stanford Artificial Project in pp</title>
+		<imprint>
+			<date type="published" when="1968">1968</date>
+			<biblScope unit="page" from="271" to="272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Diffusion MRI of cancer: from low to high b-values</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Magn. Reson. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="23" to="40" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Non-rigid matching using demons</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Thirion</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings CVPR IEEE Computer Society Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>CVPR IEEE Computer Society Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="1996">1996</date>
+			<biblScope unit="page" from="245" to="251" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Aleatoric uncertainty estimation with test-time augmentation for medical image segmentation with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aertsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deprest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="page" from="34" to="45" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Gated convolutional neural network for semantic segmentation in high-resolution images</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Pan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Remote Sens</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">446</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Task relevance driven adversarial learning for simultaneous detection, size grading, and quantification of hepatocellular carcinoma via integrating multi-modality mri</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page">102554</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Radiomics-guided GAN for segmentation of liver tumor without contrast agents</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">T</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">G</forename><surname>Kazihise</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">-F</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Peters</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">M</forename><surname>Staib</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Essert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-T</forename></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_27</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_27" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Khan</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="237" to="245" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Segmentation and quantification of infarction without contrast agents via spatiotemporal generative adversarial learning</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Howey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ohorodnyk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Roth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page">101568</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Weakly-supervised teacher-student network for liver tumor segmentation from non-enhanced images</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">102005</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">United adversarial learning for liver tumor segmentation and detection of multi-modality non-contrast MRI</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">102154</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">mfTrans-Net: quantitative measurement of hepatocellular carcinoma via multi-function transformer regression network</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-3_8" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Cotin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Essert</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="75" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Unet++: redesigning skip connections to exploit multiscale features in image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M R</forename><surname>Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1856" to="1867" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

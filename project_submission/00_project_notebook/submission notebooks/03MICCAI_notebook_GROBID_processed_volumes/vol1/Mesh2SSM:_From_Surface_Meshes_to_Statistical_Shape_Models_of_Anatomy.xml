@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Mesh2SSM: From Surface Meshes to Statistical Shape Models of Anatomy</title>
+				<funder ref="#_UwwsqKV #_PACa6pb #_WcEDyX2">
+					<orgName type="full">National Institutes of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Krithika</forename><surname>Iyer</surname></persName>
+							<email>krithika.iyer@utah.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Kahlert School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shireen</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+							<email>shireen@sci.utah.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Scientific Computing and Imaging Institute</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Kahlert School of Computing</orgName>
+								<orgName type="institution">University of Utah</orgName>
+								<address>
+									<settlement>Salt Lake City</settlement>
+									<region>UT</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Mesh2SSM: From Surface Meshes to Statistical Shape Models of Anatomy</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="615" to="625"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">4C6DE525AF30D8C7A49CB6164354E3E9</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_59</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:03+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Statistical Shape Modeling</term>
+					<term>Representation Learning</term>
+					<term>Point Distribution Models</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Statistical shape modeling is the computational process of discovering significant shape parameters from segmented anatomies captured by medical images (such as MRI and CT scans), which can fully describe subject-specific anatomy in the context of a population. The presence of substantial non-linear variability in human anatomy often makes the traditional shape modeling process challenging. Deep learning techniques can learn complex non-linear representations of shapes and generate statistical shape models that are more faithful to the underlying population-level variability. However, existing deep learning models still have limitations and require established/optimized shape models for training. We propose Mesh2SSM, a new approach that leverages unsupervised, permutation-invariant representation learning to estimate how to deform a template point cloud to subject-specific meshes, forming a correspondence-based shape model. Mesh2SSM can also learn a population-specific template, reducing any bias due to template selection. The proposed method operates directly on meshes and is computationally efficient, making it an attractive alternative to traditional and deep learning-based SSM approaches.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Statistical shape modeling (SSM) is a powerful tool in medical image analysis and computational anatomy to quantify and study the variability of anatomical structures within populations. SSM has shown great promise in medical research, particularly in diagnosis <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b22">23]</ref>, pathology detection <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b24">25]</ref>, and treatment planning <ref type="bibr" target="#b26">[27]</ref>. SSM has enabled researchers to better understand the underlying biological processes, leading to the development of more accurate and personalized diagnostic and treatment plans <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b16">17]</ref>.</p><p>Over the years, several SSM approaches have been developed that implicitly represent the shapes (deformation fields <ref type="bibr" target="#b7">[8]</ref>, level set methods <ref type="bibr" target="#b21">[22]</ref>) or explicitly represent them as a ordered set of landmarks or correspondence points (aka point distribution models, PDMs). Here, we focus on the automated construction of PDMs because, compared to deformation fields, point correspondences are easier to interpret by clinicians, are computationally efficient for large datasets, and less sensitive to noise and outliers than deformation fields <ref type="bibr" target="#b4">[5]</ref>.</p><p>SSM performance depends on the underlying process used to generate shape correspondences and the quality of the input data. Various correspondence generation methods exist, including non-optimized landmark estimation and parametric and non-parametric correspondence optimization. Non-optimized methods manually label a reference shape and warp the annotated landmarks using registration techniques <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b17">18]</ref>. Parametric methods use fixed geometrical bases to establish correspondences <ref type="bibr" target="#b25">[26]</ref>, while group-wise non-parametric approaches find correspondences by considering the variability of the entire cohort during the optimization process. Examples of non-parametric methods include particlebased optimization <ref type="bibr" target="#b3">[4]</ref> and Minimum Description Length (MDL) <ref type="bibr" target="#b6">[7]</ref>.</p><p>Traditional SSM methods assume that population variability follows a Gaussian distribution, which implies that a linear combination of training shapes can express unseen shapes. However, anatomical variability can be far more complex than this linear approximation, in which case nonlinear variations normally exist (e.g., bending fingers, soft tissue deformations, and vertebrae with different types). Furthermore, conventional SSM pipelines are computationally intensive, where inferring PDMs on new samples entail an optimization process. Deep learning-based approaches for SSM have emerged as a promising avenue to overcoming these limitations. Deep learning models can learn complex nonlinear representations of the shapes, which can be used to generate shape models. Moreover, they can efficiently perform inference on new samples without computation overhead or re-optimization. Recent works such as FlowSSM <ref type="bibr" target="#b14">[15]</ref>, ShapeFlow <ref type="bibr" target="#b10">[11]</ref>, DeepSSM <ref type="bibr" target="#b1">[2]</ref>, and VIB-DeepSSM <ref type="bibr" target="#b0">[1]</ref> have incorporated deep learning to generate shape models. FlowSSM <ref type="bibr" target="#b14">[15]</ref> and ShapeFlow <ref type="bibr" target="#b10">[11]</ref> operate on surface meshes and use neural networks to parameterize the deformations field between two shapes in a low dimensional latent space and rely on an encoderfree setup. Encoder-free methods randomly initialize the latent representations for each sample that are then optimized to produce the optimal deformations. One major caveat of an encoder-free setup is that inference on new meshes is no longer straightforward; the latent representation has to be re-optimized for every new sample. On the other hand, DeepSSM <ref type="bibr" target="#b1">[2]</ref>, TL-DeepSSM <ref type="bibr" target="#b1">[2]</ref>, and VIB-DeepSSM <ref type="bibr" target="#b0">[1]</ref> learn the PDM directly from unsegmented CT/MRI images, and hence alleviate the need for PDM optimization given new samples and can bypass anatomy segmentation by operating directly on unsegmented images. However, these methods rely on supervised losses and require volumetric images, segmented images, and established/optimized PDMs for training. This reliance on supervised losses introduces linearity assumptions in generating ground truth PDMs. TL-DeepSSM <ref type="bibr" target="#b1">[2]</ref>, a variant of DeepSSM <ref type="bibr" target="#b1">[2]</ref>, differs from the others by not utilizing PCA scores as shape descriptors. Instead, it adopts an established correspondence model hence, similar to the vanilla DeepSSM <ref type="bibr" target="#b1">[2]</ref> learns a linear model.</p><p>In this paper, we introduce Mesh2SSM<ref type="foot" target="#foot_0">1</ref> , a deep learning method that addresses the limitations of traditional and deep learning-based SSM approaches. Mesh2SSM leverages unsupervised, permutation-invariant representation learning to learn the low dimensional nonlinear shape descriptor directly from mesh data and uses the learned features to generate a correspondence model of the population. Mesh2SSM also includes an analysis network that operates on the learned correspondences to obtain a data-driven template point cloud (i.e., template point cloud), which can replace the initial template, and hence reducing the bias that could arise from template selection. Furthermore, the learned representation of meshes can be used for predicting related quantities that rely on shape. Our main contributions are:</p><p>1. We introduce Mesh2SSM, a fully unsupervised correspondence generation deep learning framework that operates directly on meshes. Mesh2SSM uses an autoencoder to extract the shape descriptor of the mesh and uses this descriptor to transform a template point cloud using IM-Net <ref type="bibr" target="#b5">[6]</ref>. 2. The proposed method uses an autoencoder that combines geodesic distance features and EdgeConv <ref type="bibr" target="#b28">[28]</ref> (dynamic graph convolution neural network) to extract meaningful feature representation of each mesh that is permutationinvariant. 3. Mesh2SSM also includes a variational autoencoder (VAE) <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b20">21]</ref> operating on the learned correspondence points and trained end-to-end with correspondence generation network. This VAE branch serves two purposes: (a) serves as a shape analysis module for the non-linear shape variations and (b) learns a data-specific template from the latent space of the correspondences that is fed back to the correspondence generation network.</p><p>To motivate the need for the mesh feature encoder and study the effect of the template selection, we considered the box-bump dataset, a synthetic dataset of 3D shapes of boxes with a moving bump. In Fig. <ref type="figure" target="#fig_0">1</ref>, we compare Mesh2SSM (sans the VAE analysis branch) with FlowSMM <ref type="bibr" target="#b14">[15]</ref> since this approach is the closest to Mesh2SSM. We performed experiments with three templates: medoid, sphere, and box without the bump. Although both methods show some sensitivity to the choice of template, FlowSSM is more sensitive toward the choice of the template than Mesh2SSM. Moreover, FlowSSM fails to identify the correct mode of variation, the horizontal movement of the bump as the primary variation, which can also be inferred by comparing the compactness curves in Fig. <ref type="figure" target="#fig_0">1</ref>.c. Mesh2SSM performs best when the template is a medoid shape, which makes the case for learning a data-specific template. Since Mesh2SSM model uses an autoencoder, inference on unseen meshes only requires a single forward pass (1 s per sample); FlowSSM requires re-optimization, increasing the inference time drastically and require a convergence criteria to determine the best number of iterations per sample (0.15 s for one iterations per sample).  <ref type="bibr" target="#b14">[15]</ref> with three templates: sphere, box without a bump, and medoid shape. FlowSSM fails to capture the horizontal movement as the primary mode of variation. (c) The compactness curves for both models with different templates. The overview of the proposed pipeline is provided in Fig. <ref type="figure" target="#fig_1">2</ref>. This section provides a brief description of each module.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Correspondence Generation</head><p>Given a set of N aligned surface meshes X = {X 1 , X 2 , ...X N }, each mesh X i = (V i , E i ), where V i and E i represent the vertices and edge connectivity, respectively. The goal of the model is to predict a set C i of M 3D correspondence points that fully describe each surface X i and are anatomically consistent across all meshes. This goal is achieved by learning a low dimensional representation of the surface mesh z m ∈ R L using the mesh autoencoder and then z m is used to transform the template point cloud via the implicit field decoder (IM-Net) <ref type="bibr" target="#b5">[6]</ref>. The network optimization is driven primarily by point-set to point-set two-way Chamfer distance between the learned correspondence point sets C i and the vertex locations V i of the original meshes. To ensure that the encoder learns useful features for the task, we regularize the optimization using the vertex reconstruction loss of the autoencoder between the input V i and the predicted Vi . The correspondence loss function is given by:</p><formula xml:id="formula_0">L C = N i=1 L L2Chamf er (V i , C i ) + αL L1Chamf er (V i , C i ) + γL MSE (V i , Vi ) (1)</formula><p>where α, γ are the hyperparameters. We consider a combination of L 1 and L 2 two-way Chamfer distance for numerical stability as the magnitude of L 2 loss can be low over epochs and L 1 can compensate for it. The correspondence generation uses two networks:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Mesh Autoencoder (M-AE):</head><p>We use EdgeConv <ref type="bibr" target="#b28">[28]</ref> blocks, which are dynamic graph convolution neural network (DGCNN) blocks in the encoder and decoder to capture local geometric features of the mesh. The model takes vertices as input, computes an edge feature set of size k (using nearest neighbors) for each vertex at an EdgeConv layer, and aggregates features within each set to compute EdgeConv responses. The output features of the last EdgeConv layer are then globally aggregated to form a 1D global descriptor z m i of the mesh. The first EdgeConv block uses geodesic distance on the surface of the mesh to calculate the k features. The dynamic feature creation property of EdgeConv and the global pooling make this autoencoder permutation invariant.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Implicit Field Decoder (IM-NET):</head><p>The IM-NET <ref type="bibr" target="#b5">[6]</ref> architecture consists of fully connected layers with non-linearity and skip-layer connections. This network enforces the notion of correspondence across the samples. The network takes in two inputs, the latent representation of the mesh z m and a template point cloud (a set of unordered points). IM-NET estimates the deformation of each point in the template required to deform the template to each sample, conditioned on z m . Based on the learned deformation, IM-NET directly produces the resultant displaced template point without the computational complexity of the deformation fields. Correspondence is established since the same template is deformed to all the samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Analysis</head><p>The Mesh2SSM model also consists of an analysis branch that acts as a shape analysis module to capture non-linear shape variations identified by the learned correspondences {C i } N i=1 and also learns a data-informed template from the latent space of correspondences to be fed back into the correspondence generation network during training. This branch uses one network module:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Shape Variation Autoencoder (SP-VAE):</head><p>The VAE <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b20">21]</ref> is a latent variable model parameterized by an encoder φ, decoder θ, and the prior p(z p ) ∼ N (0, I). The encoder maps the shape represented by the learned correspondence points C to the latent space and the decoder reconstructs the correspondences from the latent representation z p . By capturing the underlying structure of the PDM through a low-dimensional representation, SP-VAE allows for the estimation of the mean shape of the learned correspondences. The SP-VAE is trained using the loss function given by:</p><formula xml:id="formula_1">L(θ, φ) = -E q φ (z p i |Ci) [log p θ (C i |z p i )] + KL(q φ (z p i |C i )||p(z p i ))<label>(2)</label></formula><p>The main difference between M-AE and a SP-VAE lies in the input and output representations they handle. SP-VAE operates directly on sets of landmarks or correspondences, aiding in the analysis of shape models. It takes a set of correspondences describing a shape as input and aims to learn a compressed latent representation of the shape. Importantly, the SP-VAE maintains the same ordering of correspondences at the input and output, so it does not use permutation-invariant layers or operations like pooling.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Training</head><p>We begin with a burn-in stage, where only the correspondence generation module is trained while the analysis module is frozen. After the burn-in stage, alternate optimization of the correspondence and analysis module begins. During the alternate optimization phase, we generate the data-informed template from the latent space of SP-VAE at regular intervals. The learned data-informed template is used in the correspondence generation module in the subsequent epochs. For the learned template, we sample 500 samples from the prior p(z p ) ∼ N (0, I) and pass it through the decoder of SP-VAE to get the reconstructed correspondence point set. The mean template is defined by taking the average of these generated samples. Inference with unseen meshes is straight forward; the meshes are passed through the mesh encoder and IM-NET of the correspondence generation module to get the predicted correspondences. All hyperparameters and network architecture details are mentioned in the supplementary material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Discussion</head><p>Dataset: We use the publicly available Decath-Pancreas dataset of 273 segmentations from patients who underwent pancreatic mass resection <ref type="bibr" target="#b23">[24]</ref>. The shapes of the pancreas are highly variable and have thin structures, making it a good candidate for non-linear SSM analysis. The segmentations were isotropically resampled, smoothed, centered, and converted to meshes with roughly 2000 vertices. Although the DGCNN mesh autoencoder used in Mesh2SSM does not require the same number of vertices, uniformity across the dataset makes it computationally efficient; hence, we pad the smallest mesh by randomly repeating the vertices (akin to padding image for convolutions). The samples were randomly divided, with 218 used for training, 26 for validation, and 27 for testing. FlowSSM <ref type="bibr" target="#b14">[15]</ref> with two templates: sphere, medoid. The color map and arrows show the signed distance and direction from the mean shape.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Results</head><p>We perform experiments with two templates: sphere and medoid. We compare the performance of FlowSSM <ref type="bibr" target="#b14">[15]</ref> with Mesh2SSM with the template feedback loop. For Mesh2SSM template, we use 256 points uniformly spread across the surface of the sample. Mesh2SSM and FlowSSM do not have a equivalent latent space for comparison of the shape models, hence, we consider the deformed mesh vertices of FlowSSM as correspondences and perform PCA analysis. Figure <ref type="figure" target="#fig_2">3</ref> shows the top three PCA modes of variations identified by Mesh2SSM and FlowSSM. Similar to the observations made box-bump dataset, FlowSSM is affected by the choice of the template, and the modes of variation differ as the template changes. On the other hand, PDM predicted by Mesh2SSM identifies the same primary modes consistently. Pancreatic cancer mainly presents itself on the head of the structure <ref type="bibr" target="#b19">[20]</ref> and for the Decath dataset, we can see the first mode identifies the change in the shape of the head. We evaluate the models based on compactness, generalization, and specificity. Compactness measures  the ability of the model to reconstruct new shape instances with fewer parameters using PCA explained variance. Generalization measures the average surface distance between all test shapes and their reconstructions, and specificity measures the distance between randomly generated PCA samples. Figure <ref type="figure" target="#fig_3">4</ref>.a shows the metrics for the pancreas dataset. Mesh2SSM outperforms FlowSSM in all three metrics, despite using only 256 correspondence points compared to FlowSSM's ∼2000 vertices. Mesh2SSM correspondence generation module efficiently parameterizes the surface of the pancreas with a minimum number of parameters. Mesh2SSM template, shown in Fig. <ref type="figure" target="#fig_3">4</ref>.b, becomes more detailed as optimization continues, regardless of the starting template. The model can learn correct deformations in the correspondence generation module and identify the correct mean shape in the latent space of SP-VAE in the analysis module. Using the analysis module of Mesh2SSM, we visualized the top three modes of variation identified by sorting the latent dimensions of SP-VAE based on the standard deviations of the latent embeddings of the training dataset. Variations are generated by perturbing the latent representation of a sample in three directions, resulting in non-linear modes such as changes in the size and shape of the pancreas head and narrowing of the neck and body. This is shown in Fig. <ref type="figure" target="#fig_3">4</ref>.c for MeshSSM model with medoid starting template. The distance metrics for the reconstructions of the testing samples were also computed. The results of the metrics are summarized in Table <ref type="table" target="#tab_0">1</ref>. The calculation involved the L 1 Chamfer loss between the predicted points (correspondences in the case of Mesh2SSM and the deformed mesh vertices in the case of FlowSSM) and the original mesh vertices. Additionally, the surface to surface distance of the mesh reconstructions (using the correspondences in Mesh2SSM and deformed meshes in FlowSSM) was included. For the pancreas dataset with the medoid as the initial template, Mesh2SSM with the template feedback produced more precise models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Limitations and Future Scope</head><p>As SSM is included a part of diagnostic clinical support systems, it is crucial to address the drawbacks of the models. Like most deep learning models, performance of Mesh2SSM could be affected by small dataset size, and it can produce overconfident estimates. An augmentation scheme and a layer uncertainty calibration are could improve its usability in medical scenarios. Additionally, enforcing disentanglement in the latent space of SP-VAE can make the analysis module interpretable and allow for effective non-linear shape analysis by clinicians.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>The paper presents a new systematic approach of generating non-linear statistical shape models using deep learning directly from meshes, which overcomes the limitations of traditional SSM and current deep learning approaches. The use of an autoencoder for meaningful feature extraction of meshes to learn the PDM provides a versatile and scalable framework for SSM. Incorporating template feedback loop via VAE <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b20">21]</ref> analysis module helps in mitigating bias and capturing non-linear characteristics of the data. The method is demonstrated to have superior performance in identifying shape variations using fewer parameters on synthetic and clinical datasets. To conclude, our method of generating highly accurate and detailed models of complex anatomical structures with reduced computational complexity has the potential to establish statistical shape modeling from non-invasive imaging as a powerful diagnostic tool.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Top two PCA modes of variations identified by (a) Mesh2SSM and (b) FlowSSM<ref type="bibr" target="#b14">[15]</ref> with three templates: sphere, box without a bump, and medoid shape. FlowSSM fails to capture the horizontal movement as the primary mode of variation. (c) The compactness curves for both models with different templates.</figDesc><graphic coords="4,47,31,53,93,329,44,130,78" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Mesh2SSM: Architecture and loss of the proposed method.</figDesc><graphic coords="4,46,29,301,34,331,09,125,02" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Top three PCA modes of variations identified by (a) Mesh2SSM and (b)FlowSSM<ref type="bibr" target="#b14">[15]</ref> with two templates: sphere, medoid. The color map and arrows show the signed distance and direction from the mean shape.</figDesc><graphic coords="7,78,48,160,22,295,24,177,79" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. (a) Shape statistics of pancreas dataset: compactness (higher is better), generalization (lower is better), and specificity (lower is better). (b) Mesh2SSM Learned template across epochs for pancreas dataset. (c) Non-linear modes of variations identified by Mesh2SSM.</figDesc><graphic coords="8,72,30,54,38,279,25,103,33" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Distance metrics (measured in mm) of the testing samples and their reconstructions for the pancreas dataset</figDesc><table><row><cell>Metrics</cell><cell>Mesh2SSM</cell><cell></cell><cell>FlowSSM [15]</cell></row><row><cell></cell><cell>Template</cell><cell></cell><cell></cell></row><row><cell></cell><cell>Medoid</cell><cell>Sphere</cell><cell>Medoid</cell><cell>Sphere</cell></row><row><cell>L1 Chamfer</cell><cell cols="4">0.033 ± 0.002 0.035 ± 0.002 0.391 ± 0.162 1.91 ± 0.687</cell></row><row><cell cols="5">Surface-to-Surface 2.378 ± 0.7325 5.436 ± 2.232 5.918 ± 2.026 4.918 ± 1.925</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Sourcecode: https://github.com/iyerkrithika21/mesh2SSM</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2023" xml:id="foot_1"><p></p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by the <rs type="funder">National Institutes of Health</rs> under grant numbers <rs type="grantNumber">NIBIB-U24EB029011</rs>, <rs type="grantNumber">NIAMS-R01AR076120</rs>, and <rs type="grantNumber">NHLBI-R01HL135568</rs>. We thank the <rs type="institution">University of Utah Division of Cardiovascular Medicine</rs> for providing left atrium MRI scans and segmentations from the Atrial Fibrillation projects and the <rs type="institution">ShapeWorks team</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_UwwsqKV">
+					<idno type="grant-number">NIBIB-U24EB029011</idno>
+				</org>
+				<org type="funding" xml:id="_PACa6pb">
+					<idno type="grant-number">NIAMS-R01AR076120</idno>
+				</org>
+				<org type="funding" xml:id="_WcEDyX2">
+					<idno type="grant-number">NHLBI-R01HL135568</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0 59.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">From images to probabilistic anatomical shapes: a deep variational bottleneck approach</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Adams</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_46</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page">46</biblScope>
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">DeepSSM: a deep learning framework for statistical shape modeling from raw images</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bhalodia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kavan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Whitaker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-04747-4_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-04747-423" />
+	</analytic>
+	<monogr>
+		<title level="m">Shape in Medical Imaging: International Workshop, ShapeMI 2018, Held in Conjunction with MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Reuter</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Wachinger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Paniagua</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Lüthi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Egger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Granada, Spain; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018-09-20">20 September 2018. 2018</date>
+			<biblScope unit="volume">11167</biblScope>
+			<biblScope unit="page" from="244" to="257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A statistical shape modelling framework to extract 3D shape biomarkers from medical imaging data: assessing arch morphology of repaired coarctation of the aorta</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Bruse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="1" to="19" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">ShapeWorks: particle-based shape correspondence and visualization software</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cates</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Elhabian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Whitaker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Statistical Shape and Deformation Analysis</title>
+		<imprint>
+			<publisher>Elsevier</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="257" to="298" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Computational anatomy for multi-organ analysis in medical imaging: a review</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Cerrolaza</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="44" to="67" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">IM-NET: learning implicit fields for generative shape modeling</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Learning shape: optimal models for analysing natural variability. The University of Manchester</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">H</forename><surname>Davies</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002">2002</date>
+			<pubPlace>United Kingdom</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Morphometry of anatomical shape complexes with dense deformations and sparse parameters</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Durrleman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="page" from="35" to="49" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">4D statistical shape modeling of the left ventricle in cardiac MR images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Faghih Roohi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Aghaeizadeh Zoroofi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="335" to="351" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Statistical shape model generation using nonrigid deformation of a template mesh</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Heitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Rohlfing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Maurer</surname><genName>Jr</genName></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Image Processing</title>
+		<imprint>
+			<biblScope unit="volume">5747</biblScope>
+			<biblScope unit="page" from="1411" to="1421" />
+			<date type="published" when="2005">2005. 2005</date>
+			<publisher>SPIE</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tagliasacchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ShapeFlow: learnable deformation flows among 3D shapes</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="9745" to="9757" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Machine learning based liver disease diagnosis: a systematic review</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">X</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">468</biblScope>
+			<biblScope unit="page" from="492" to="509" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1312.6114</idno>
+		<title level="m">Auto-encoding variational Bayes</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Hippocampal shape analysis in Alzheimer&apos;s disease and frontotemporal lobar degeneration subtypes</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Lindberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Alzheimers Dis</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="355" to="365" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Landmark-free statistical shape modeling via neural flow deformations</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lüdke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Amiranashvili</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ambellan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ezhov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">H</forename><surname>Menze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zachow</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_44</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-744" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Singapore; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="453" to="463" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Deformable models in medical image analysis</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mcinerney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Terzopoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Workshop on Mathematical Methods in Biomedical Image Analysis</title>
+		<meeting>the Workshop on Mathematical Methods in Biomedical Image Analysis</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="1996">1996</date>
+			<biblScope unit="page" from="171" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">High variability of acetabular offset in primary hip osteoarthritis influences acetabular reaming-a computed tomography-based anatomic study</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Merle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Arthroplasty</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1808" to="1814" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Building and testing a statistical shape model of the human ear canal</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Paulsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Larsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nielsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laugesen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ersbøll</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/3-540-45787-9_47</idno>
+		<ptr target="https://doi.org/10.1007/3-540-45787-947" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2002</title>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Dohi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Kikinis</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2002">2002</date>
+			<biblScope unit="volume">2489</biblScope>
+			<biblScope unit="page" from="373" to="380" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Statistical shape model-based tibiofibular assessment of syndesmotic ankle lesions using weight-bearing CT</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Peiffer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Orthop. Res. R</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2873" to="2884" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Davidson&apos;s Principles and Practice of Medicine E-Book</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Ralston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">D</forename><surname>Penman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Strachan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hobson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>Elsevier Health Sciences</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Stochastic backpropagation and approximate inference in deep generative models</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Rezende</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mohamed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wierstra</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="page" from="1278" to="1286" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A level set model for image classification</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Samson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Blanc-Féraud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Aubert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zerubia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Vision</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="187" to="197" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A radiation-free classification pipeline for craniosynostosis using statistical shape modeling</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Schaufelberger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Diagnostics</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">1516</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">A large annotated medical image dataset for the development and evaluation of segmentation algorithms</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Simpson</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.09063</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Feasibility of a longitudinal statistical atlas model to study aortic growth in congenital heart disease</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Sophocleous</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">144</biblScope>
+			<biblScope unit="page">105326</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Framework for the statistical shape analysis of brain structures using SPHARM-PDM</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Styner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Insight J</title>
+		<imprint>
+			<biblScope unit="page">242</biblScope>
+			<date type="published" when="1071">1071. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Statistical shape analysis of the tricuspid valve in hypoplastic left heart syndrome</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vicory</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Statistical Atlases and Computational Models of the Heart. Multi-Disease, Multi-View, and Multi-Center Right Ventricular Segmentation in Cardiac MRI Challenge: 12th International Workshop</title>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Puyol Antón</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Strasbourg, France</addrLine></address></meeting>
+		<imprint>
+			<biblScope unit="page">27</biblScope>
+		</imprint>
+	</monogr>
+	<note>STACOM 2021, Held in Conjunction with MICCAI 2021</note>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Revised Selected Papers</title>
+		<idno type="DOI">10.1007/978-3-030-93722-5_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-93722-515" />
+		<imprint>
+			<date type="published" when="2021-09">September 2021. 2022</date>
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="132" to="140" />
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Dynamic graph CNN for learning on point clouds</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Sarma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Bronstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Solomon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Graph. (TOG)</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

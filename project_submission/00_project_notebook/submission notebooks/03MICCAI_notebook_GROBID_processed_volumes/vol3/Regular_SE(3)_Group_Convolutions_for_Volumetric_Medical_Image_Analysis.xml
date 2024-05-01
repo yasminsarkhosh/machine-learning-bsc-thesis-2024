@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Regular SE(3) Group Convolutions for Volumetric Medical Image Analysis</title>
+				<funder ref="#_fpES9Bb">
+					<orgName type="full">Dutch Research Council (NWO)</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Thijs</forename><forename type="middle">P</forename><surname>Kuipers</surname></persName>
+							<email>kuipersthijs@gmail.com</email>
+							<idno type="ORCID">0009-0007-7198-2856</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Informatics Institute</orgName>
+								<orgName type="laboratory">Amsterdam Machine Learning Laboratory</orgName>
+								<orgName type="institution">University of Amsterdam</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Erik</forename><forename type="middle">J</forename><surname>Bekkers</surname></persName>
+							<idno type="ORCID">0000-0003-4418-2160</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Informatics Institute</orgName>
+								<orgName type="laboratory">Amsterdam Machine Learning Laboratory</orgName>
+								<orgName type="institution">University of Amsterdam</orgName>
+								<address>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Regular SE(3) Group Convolutions for Volumetric Medical Image Analysis</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="252" to="261"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">692D5206C438B8DC89584E559A60F599</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_25</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>geometric deep learning</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Regular group convolutional neural networks (G-CNNs) have been shown to increase model performance and improve equivariance to different geometrical symmetries. This work addresses the problem of SE(3), i.e., roto-translation equivariance, on volumetric data. Volumetric image data is prevalent in many medical settings. Motivated by the recent work on separable group convolutions, we devise a SE(3) group convolution kernel separated into a continuous SO(3) (rotation) kernel and a spatial kernel. We approximate equivariance to the continuous setting by sampling uniform SO(3) grids. Our continuous SO(3) kernel is parameterized via RBF interpolation on similarly uniform grids. We demonstrate the advantages of our approach in volumetric medical image analysis. Our SE(3) equivariant models consistently outperform CNNs and regular discrete G-CNNs on challenging medical classification tasks and show significantly improved generalization capabilities. Our approach achieves up to a 16.5% gain in accuracy over regular CNNs.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Invariance to geometrical transformations has been long sought-after in the field of machine learning <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b11">12]</ref>. The strength of equipping models with inductive biases to these transformations was shown by the introduction of convolutional neural networks (CNNs) <ref type="bibr" target="#b12">[13]</ref>. Following the success of CNNs, <ref type="bibr" target="#b6">[7]</ref> generalized the convolution operator to commute with geometric transformation groups other than translations, introducing group-convolutional neural networks (G-CNNs), which have been shown to outperform conventional CNNs <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20]</ref>.</p><p>Early G-CNNs were mainly concerned with operating on 2D inputs. With the increase in computing power, G-CNNs were extended to 3D G-CNNs. Volumetric data is prevalent in many medical settings, such as in analyzing protein structures <ref type="bibr" target="#b14">[15]</ref> and medical image analysis <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b26">27]</ref>. Equivariance to symmetries such as scaling and rotations is essential as these symmetries often naturally occur in volumetric data. Equivariance to the group of 3D rotations, SO <ref type="bibr" target="#b2">(3)</ref>, remains a non-trivial challenge for current approaches due to its complex structure and non-commutative properties <ref type="bibr" target="#b18">[19]</ref>.</p><p>An important consideration regarding 3D convolutions that operate on volumetric data is overfitting. Due to the dense geometric structure in volumetric data and the high parameter count in 3D convolution kernels, 3D convolutions are highly susceptible to overfitting <ref type="bibr" target="#b13">[14]</ref>. G-CNNs have been shown to improve generalization compared to CNNs <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b22">23]</ref>. However, G-CNNs operating on discrete subgroups can exhibit overfitting to these discrete subgroups <ref type="bibr" target="#b2">[3]</ref>, failing to obtain equivariance on the full continuous group. This effect is amplified for 3D G-CNNs, limiting their improved generalization capabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contributions.</head><p>In this work, we introduce regular continuous group convolutions equivariant to SE(3), the group of roto-translations. Motivated by the work on separable group convolutions <ref type="bibr" target="#b10">[11]</ref>, we separate our SE(3) kernel in a continuous SO(3) and a spatial convolution kernel. We randomly sample discrete equidistant SO(3) grids to approximate the continuous group integral. The continuous SO(3) kernels are parameterized via radial basis function (RBF) interpolation on a similarly equidistantly spaced grid. We evaluate our method on several challenging volumetric medical image classification tasks from the MedM-NIST <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref> dataset. Our approach consistently outperforms regular CNNs and discrete SE(3) subgroup equivariant G-CNNs and shows significantly improved generalization capabilities. To this end, this work offers the following contributions.</p><p>1. We introduce separable regular SE(3) equivariant group convolutions that generalize to the continuous setting using RBF interpolation and randomly sampling equidistant SO(3) grids. 2. We show the advantages of our approach on volumetric medical image classification tasks over regular CNNs and discrete subgroup equivariant G-CNNs, achieving up to a 16.5% gain in accuracy over regular CNNs. 3. Our approach generalizes to SE(n) and requires no additional hyperparameters beyond setting the kernel and sample resolutions. 4. We publish our SE(3) equivariant group convolutions and codebase for designing custom regular group convolutions as a Python package.<ref type="foot" target="#foot_0">1</ref> </p><p>Paper Outline. The remainder of this paper is structured as follows. Section 2 provides an overview of current research in group convolutions. Section 3 introduces the group convolution theory and presents our approach to SE(3) equivariant group convolutions. Section 4 presents our experiments and an evaluation of our results. We give our concluding remarks in Sect. 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Literature Overview</head><p>Since the introduction of the group convolutional neural network (G-CNN), research in G-CNNs has grown in popularity due to their improved performance and equivariant properties over regular CNNs. Work on G-CNNs operating on volumetric image data has primarily been focused on the 3D roto-translation group SE(3) <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b21">22]</ref>. CubeNet was the first introduced 3D G-CNN, operating on the rotational symmetries of the 3D cube <ref type="bibr" target="#b21">[22]</ref>. The approach presented in <ref type="bibr" target="#b19">[20]</ref> similarly works with discrete subsets of SE(3). These approaches are not fully equivariant to SE <ref type="bibr" target="#b2">(3)</ref>. Steerable 3D G-CNNs construct kernels through a linear combination of spherical harmonic functions, obtaining full SE(3) equivariance <ref type="bibr" target="#b18">[19]</ref>. Other approaches that are fully SE(3) equivariant are the Tensor-Field-Network <ref type="bibr" target="#b17">[18]</ref> and N-Body networks <ref type="bibr" target="#b16">[17]</ref>. However, these operate on point clouds instead of 3D volumes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Separable SE(n) Equivariant Group Convolutions</head><p>This work introduces separable SE(3) equivariant group convolutions. However, our framework generalizes to SE(n). Hence, we will describe it as such. Section 3.1 presents a brief overview of the regular SE(n) group convolution. Section 3.2 introduces our approach for applying this formulation to the continuous domain.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Regular Group Convolutions</head><p>The traditional convolution operates on spatial signals, i.e., signals defined on R n . Intuitively, one signal (the kernel) is slid across the other signal. That is, a translation is applied to the kernel. From a group-theoretic perspective, this can be viewed as performing the group action from the translation group. The convolution operator can then be formulated in terms of the group action. By commuting to a group action, the group convolution produces an output signal that is equivariant to the transformation imposed by the corresponding group.</p><p>The SE(n) Group Convolution Operator. Instead of operating on signals defined on R n , SE(n)-convolutions operate on signals defined on the group SE(n) = R n SO(n). Given an n-dimensional rotation matrix R, and SE(3)signals f and k, the SE(n) group convolution is defined as follows:</p><formula xml:id="formula_0">(f * group k)(x, R) = R n SO(n) k R -1 (x -x), R -1 R f (x, R)d Rdx. (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>The Lifting Convolution Operator. Input data is usually not defined on SE(n). Volumetric images are defined on R 3 . Hence, the input signal should be lifted to SE(n). This is achieved via a lifting convolution, which accepts a signal f defined on R n and applies a kernel k defined on SO(n), resulting in an output signal on SE(n). The lifting convolution is defined as follows:</p><formula xml:id="formula_2">(f * lifting k)(x) = R n k(R -1 (x -x))f (x)dx. (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>The lifting convolution can be seen as a specific case of group convolution where the input is implicitly defined on the identity group element.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Separable SE(n) Group Convolution</head><p>The group convolution in Eq. 1 can be separated into a convolution over R followed by a convolution over R n by assuming</p><formula xml:id="formula_4">k SE(n) (x, R) = k SO(n) (R)k R n (x).</formula><p>This improves performance and significantly reduces computation time <ref type="bibr" target="#b10">[11]</ref>.</p><p>The Separable SE(n) Kernel. Let i and o denote in the input and output channel indices, respectively. We separate the SE(3) kernel as follows:</p><formula xml:id="formula_5">k io SE(n) (x, R) = k io SO(n) (R)k o R n (x).<label>(3)</label></formula><p>Here, k SO(n) performs the channel mixing, after which a depth-wise separable spatial convolution is performed. This choice of separation is not unique. The channel mixing could be separated from the SO(n) kernel. However, this has been shown to hurt model performance <ref type="bibr" target="#b10">[11]</ref>.</p><p>Discretizing the Continuous SO(n) Integral. The continuous group integral over SO(n) in Eq. 1 can be discretized by summing over a discrete SO(n) grid. By randomly sampling the grid elements, the continuous group integral can be approximated <ref type="bibr" target="#b23">[24]</ref>. However, randomly sampled kernels may not capture the entirety of the group manifold. This will result in a noisy estimate. Therefore, we constrain our grids to be uniform, i.e., grid elements are spaced equidistantly.</p><p>Similarly to the authors of <ref type="bibr" target="#b1">[2]</ref>, we use a repulsion model to generate SO(n) grids of arbitrary resolution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Continuous SO(n) Kernel with Radial Basis Function Interpolation.</head><p>The continuous SO(n) kernel is parameterized via a similarly discrete SO(n) uniform grid. Each grid element R i has corresponding learnable parameters k i . We use radial basis function (RBF) interpolation to evaluate sampled grid elements. Given a grid of resolution N , the continuous kernel k SO(n) is evaluated for any R as:</p><formula xml:id="formula_6">k SO(n) (R) = N i=1 a d,ψ (R, R i )k i .<label>(4)</label></formula><p>Here, a d,ψ (R, R i ) represents the RBF interpolation coefficient of R corresponding to R i obtained using Gaussian RBF ψ and Riemannian distance d. The uniformity constraint on the grid allows us to scale ψ to the grid resolution dynamically. This ensures that the kernel is smooth and makes our approach hyperparameter-free.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Evaluation</head><p>In this section, we present our results and evaluation. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Evaluation Methodology</head><p>From here on, we refer to our approach as the SE(3)-CNN. We evaluate the SE(3)-CNNs for different group kernel resolutions. The sample and kernel resolutions are kept equal. We use a regular CNN as our baseline model. We also compare discrete SE(3) subgroup equivariant G-CNNs. K-CNN and T-CNN are equivariant to the 180 and 90 • rotational symmetries, containing 4 and 12 group elements, respectively. All models use the same ResNet <ref type="bibr" target="#b7">[8]</ref> architecture consisting of an initial convolution layer, two residual blocks with two convolution layers each, and a final linear classification layer. Batch normalization is applied after the first convolution layer. In the residual blocks, we use instance normalization instead. Max spatial pooling with a resolution of 2 × 2 × 2 is applied after the first residual block. Global pooling is applied before the final linear layer to produce SE(3) invariant feature descriptors. The first layer maps to 32 channels. The residual blocks map to 32 and 64 channels, respectively. For the G-CNNs, the first convolution layer is a lifting convolution, and the remainders are group convolutions. All spatial kernels have a resolution of 7 × 7 × 7. Increasing the group kernel resolution increases the number of parameters. Hence, a second baseline CNN with twice the number of channels is included. The number of parameters of the models is presented in Table <ref type="table" target="#tab_0">1</ref>.</p><p>We evaluate the degree of SE(3) equivariance obtained by the SE(3)-CNNs on OrganMNIST3D <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b24">25]</ref> and rotated OrganMNIST3D. For rotated Organ-MNIST3D, samples in the test set are randomly rotated. We further evaluate FractureMNIST3D <ref type="bibr" target="#b8">[9]</ref>, NoduleMNIST3D <ref type="bibr" target="#b0">[1]</ref>, AdrenalMNIST3D <ref type="bibr" target="#b26">[27]</ref>, and SynapseMNIST3D <ref type="bibr" target="#b26">[27]</ref> from the MedMNIST dataset <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref>. These volumetric image datasets form an interesting benchmark for SE(3) equivariant methods, as they naturally contain both isotropic and anisotropic features. All input data has a single channel with a resolution of 28 × 28 × 28. Each model is trained for 100 epochs with a batch size of 32 and a learning rate of 1 × 10 -4 using the Adam <ref type="bibr" target="#b9">[10]</ref> optimizer on an NVIDIA A100 GPU. The results are averaged over three training runs with differing seeds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">SE(3) Equivariance Performance</head><p>Table <ref type="table" target="#tab_0">1</ref> shows the accuracies and accuracy drops obtained by the evaluated models on the OrganMNIST3D test set and rotated test set. The decrease in accuracy is calculated as the percentage of the difference between the test scores on the test set and the rotated test set. Both baselines suffer from a high accuracy drop. This is expected, as these models are not equivariant to SE(3). K-CNN and T-CNN fare better. Due to its higher SO(3) kernel resolution, T-CNN outperforms K-CNN. However, these methods do not generalize to the SE(3) group. The SE(3)-CNNs obtain significantly lower drops in accuracy, showing their improved generalization to SE(3). The SE(3)-CNNs at sample resolutions of 12 and 16 also reach higher accuracies than both baseline models. As the sample resolution increases, performance on the standard test set shows a more pronounced increase than on the rotated test set. This results in a slight increase in accuracy drop. At a sample resolution of 16, accuracy on the standard test set decreases while the highest accuracy is obtained on the rotated test set. A high degree of SE(3) equivariance seems disadvantageous on OrganMNIST3D. This would also explain why T-CNN achieved the highest accuracy on the standard test set, as this model generalizes less to SE(3). OrganMNIST3D contains samples aligned to the abdominal window, resulting in high isotropy. This reduces the advantages of SE(3) equivariance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Performance on MedMNIST</head><p>The accuracies obtained on FractureMNIST3D, NoduleMNIST3D, AdrenalM-NIST3D, and SynapseMNIST3D are reported in Table <ref type="table" target="#tab_1">2</ref>. The SE(3)-CNNs obtain the highest accuracies on all datasets. On FreactureMNIST3D, the highest accuracy is achieved by the SE(3)-CNN <ref type="bibr" target="#b11">(12)</ref>. Both K-CNN and T-CNN achieve an accuracy very similar to the baseline models. The baseline-big model slightly outperforms both K-CNN and T-CNN. On NoduleMNIST3D, SE(3)-CNN <ref type="bibr" target="#b5">(6)</ref> and SE(3)-CNN (8) achieve the highest accuracy, with SE(3)-CNN (12) performing only slightly lower. K-CNN and T-CNN outperform both baseline models. On AdrenalMNIST3D, the differences in accuracy between all models are the lowest. SE(3)-CNN ( <ref type="formula">16</ref>) obtains the highest accuracy, whereas the baseline model obtains the lowest. The baseline-big model outperforms K-CNN and T-CNN. On SynapseMNIST3D, we again observe a significant difference in performance between the SE(3)-CNNs and the other models. SE(3)-CNN (6) obtained the highest performance. T-CNN outperforms K-CNN and both baseline models. However, the baseline-big model outperforms K-CNN. On NoduleMNIST3D and AdrenalMNIST3D, only a slight performance gain is achieved by the SE(3)-CNNs. This is likely due to the isotropy of the samples in these datasets. In these cases, SE(3) equivariance is less beneficial. In contrast, FractureMNIST3D and SynapseMNIST3D are more anisotropic, resulting in significant performance gains of up to 16.5%.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Model Generalization</head><p>The scores obtained on both the train set and test sets of SynapseMNIST3D in Figs. <ref type="figure" target="#fig_1">1a</ref> and<ref type="figure" target="#fig_1">1b</ref>, respectively. We observed similar behavior on all datasets. Figure <ref type="figure" target="#fig_1">1</ref> shows a stark difference between the SE(3)-CNNs and the other models. The baselines and K-CNN and T-CNN converge after a few epochs on the train set. SE(3)-CNN ( <ref type="formula">16</ref>) requires all 100 epochs to converge on the train set. SE(3)-CNN (4) does not converge within 100 epochs. This improvement during the training window is also observed in the test scores. This suggests that SE(3)-CNNs suffer less from overfitting, which results in improved model generalization. K-CNN and T-CNN behave similarly to the baselines. We hypothesize that this results from the weight-sharing that occurs during the RBF interpolation.</p><p>We do observe a higher variance in scores of the SE(3)-CNNs, which we attribute to the random nature of the convolution kernels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">Future Work</head><p>With an increase in the sample resolution, a better approximation to SE(3) equivariance is achieved. However, we observe that this does not necessarily improve model performance, e.g., in the case of isotropic features. This could indicate that the equivariance constraint is too strict. We could extend our approach to learn partial equivariance. Rather than sampling on the entire SO(3) manifold, each group convolution layer could learn sampling in specific regions. This suggests a compelling extension of our work, as learning partial invariance has shown to increase model performance <ref type="bibr" target="#b15">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>This work proposed an SE(3) equivariant separable G-CNN. Equivariance is achieved by sampling uniform kernels on a continuous function over SO(3) using RBF interpolation. Our approach requires no additional hyper-parameters compared to CNNs. Hence, our SE(3) equivariant layers can replace regular convolution layers. Our approach consistently outperforms CNNs and discrete subgroup equivariant G-CNNs on challenging medical image classification tasks. We showed that 3D CNNs and discrete subgroup equivariant G-CNNs suffer from overfitting. We showed significantly improved generalization capabilities of our approach. In conclusion, we have demonstrated the advantages of equivariant methods in medical image analysis that naturally deal with rotation symmetries. The simplicity of our approach increases the accessibility of these methods, making them available to a broader audience.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Section 4.1 introduces our experimental setup. Our results on MedMNIST are presented in Sects. 4.2 and 4.3. Section 4.4 offers a deeper look into the generalization performance. Directions for future work based on our results are suggested in Sect. 4.5.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Accuracy scores of the baseline models, the SE(3)-CNN (4) and (16) models, and the discrete SE(3) subgroup models on (a) the train set and (b) the test set of SynapseMNIST3D.</figDesc><graphic coords="7,46,80,253,34,323,47,110,35" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Number of parameters, computational performance, accuracies, and drop in accuracy on test scores between OrganMNIST3D and rotated OrganMNIST3D. Computational performance is measured during training. The highest accuracy and lowest error are shown in bold.</figDesc><table><row><cell>Model</cell><cell cols="4">Baseline Baseline big SE(3)-CNN</cell><cell></cell><cell></cell><cell></cell><cell cols="2">K-CNN T-CNN</cell></row><row><cell>Sample res</cell><cell>-</cell><cell>-</cell><cell>4</cell><cell>6</cell><cell>8</cell><cell>12</cell><cell>16</cell><cell>4</cell><cell>12</cell></row><row><cell># parameters</cell><cell>89k</cell><cell>200k</cell><cell>80k</cell><cell>96k</cell><cell cols="3">111k 142k 172k</cell><cell>80k</cell><cell>142k</cell></row><row><cell cols="2">Seconds/epoch 3.37</cell><cell>5.83</cell><cell cols="6">9.67 14.43 18.48 27.31 36.37 9.70</cell><cell>27.75</cell></row><row><cell>Memory (GB)</cell><cell>3.34</cell><cell>4,80</cell><cell cols="6">6.89 9.188 12.38 15.75 20.86 6.70</cell><cell>15.52</cell></row><row><cell>Accuracy</cell><cell>0.545</cell><cell>0.697</cell><cell cols="6">0.655 0.681 0.688 0.703 0.698 0.633</cell><cell>0.722</cell></row><row><cell>Rotated Acc</cell><cell>0.207</cell><cell>0.264</cell><cell cols="6">0.581 0.593 0.592 0.608 0.628 0.327</cell><cell>0.511</cell></row><row><cell cols="2">Drop in Acc. % 62.15</cell><cell>62.09</cell><cell cols="6">11.26 12.91 14.07 13.60 10.09 48.27</cell><cell>29.27</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Accuracies and SE(3)-CNN performance gain in percentage points (p.p.) over the CNN baselines on FractureMNIST3D, NoduleMNIST3D, AdrenalMNIST3D, and SynapseMNIST3D. Sample resolution in parenthesis behind the model name. Standard deviation in parenthesis behind the accuracies. The highest accuracy is indicated in bold.</figDesc><table><row><cell>Model</cell><cell>Fracture</cell><cell>Nodule</cell><cell>Adrenal</cell><cell>Synapse</cell></row><row><cell>Baseline</cell><cell cols="4">0.450 (±0.033) 0.834 (±0.019) 0.780 (±0.006) 0.694 (±0.006)</cell></row><row><cell>Baseline-big</cell><cell cols="4">0.499 (±0.032) 0.846 (±0.010) 0.806 (±0.022) 0.720 (±0.019)</cell></row><row><cell cols="5">SE(3)-CNN (4) 0.588 (±0.029) 0.869 (±0.008) 0.800 (±0.006) 0.865 (±0.010)</cell></row><row><cell cols="5">SE(3)-CNN (6) 0.617 (±0.013) 0.875 (±0.008) 0.804 (±0.002) 0.870 (±0.008)</cell></row><row><cell cols="5">SE(3)-CNN (8) 0.615 (±0.002) 0.875 (±0.014) 0.815 (±0.015) 0.885 (±0.007)</cell></row><row><cell cols="5">SE(3)-CNN (12) 0.621 (±0.002) 0.873 (±0.005) 0.814 (±0.010) 0.858 (±0.028)</cell></row><row><cell cols="5">SE(3)-CNN (16) 0.604 (±0.012) 0.858 (±0.011) 0.832 (±0.005) 0.869 (±0.023)</cell></row><row><cell>K-CNN (4)</cell><cell cols="4">0.486 (±0.012) 0.859 (±0.013) 0.798 (±0.011) 0.709 (±0.009)</cell></row><row><cell>T-CNN (12)</cell><cell cols="4">0.490 (±0.036) 0.862 (±0.006) 0.800 (±0.011) 0.777 (±0.021)</cell></row><row><cell>Gain in p.p.</cell><cell>12.2</cell><cell>2.9</cell><cell>2.6</cell><cell>16.5</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>Our codebase can be accessed at: https://github.com/ThijsKuipers1995/gconv.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This work was part of the research program <rs type="projectName">VENI</rs> with project "context-aware AI in medical image analysis" with number <rs type="grantNumber">17290</rs>, financed by the <rs type="funder">Dutch Research Council (NWO)</rs>. We want to thank <rs type="institution">SURF</rs> for the use of the National Supercomputer Snellius. For providing financial support, we want to thank ELLIS and <rs type="institution">Qualcomm</rs>, and the <rs type="institution">University of Amsterdam</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_fpES9Bb">
+					<idno type="grant-number">17290</idno>
+					<orgName type="project" subtype="full">VENI</orgName>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The lung image database consortium (LIDC) and image database resource initiative (IDRI): a completed reference database of lung nodules on CT scans</title>
+		<author>
+			<persName><forename type="first">Iii</forename><surname>Armato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="915" to="931" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">B-spline {CNN}s on lie groups</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Bekkers</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=H1gBhkBFDH" />
+	</analytic>
+	<monogr>
+		<title level="j">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Roto-translation covariant convolutional networks for medical image analysis</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Bekkers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Lafarge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Veta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A J</forename><surname>Eppenhof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P W</forename><surname>Pluim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Duits</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00928-1_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00928-150" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11070</biblScope>
+			<biblScope unit="page" from="440" to="448" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">The liver tumor segmentation benchmark (lits)</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bilic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page">102680</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Impact of a computer-aided detection (CAD) system integrated into a picture archiving and communication system (PACS) on reader sensitivity and efficiency for the detection of lung nodules in thoracic CT exams</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bogoni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Digit. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="771" to="781" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Learning transformation groups and their invariants</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Cohen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<publisher>University of Amsterdam</publisher>
+		</imprint>
+	</monogr>
+	<note type="report_type">Ph.D. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Group equivariant convolutional networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2990" to="2999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep-learning-assisted detection and segmentation of rib fractures from CT scans: development and validation of FracNet</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EBioMedicine</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="page">103106</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">3rd International Conference for Learning Representations</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Exploiting redundancy: separable group convolutional networks on lie groups</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Knigge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">J</forename><surname>Bekkers</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11359" to="11386" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">On the generalization of equivariance and convolution in neural networks to the action of compact groups</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kondor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Trivedi</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="2747" to="2755" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Convolutional networks for images, speech, and time series</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Handb. Brain Theory Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">3361</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page">1995</biblScope>
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Volumetric and multi-view CNNs for object classification on 3D data</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="5648" to="5656" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">DeepRank: a deep learning framework for data mining 3D protein-protein interfaces</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Renaud</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="8" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lohit</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=jFfRcKVut98" />
+		<title level="m">Learning Equivariances and Partial Equivariances From Data</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Rotation, scaling and deformation invariant scattering for texture discrimination</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Sifre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mallat</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="1233" to="1240" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<author>
+			<persName><forename type="first">N</forename><surname>Thomas</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1802.08219</idno>
+		<title level="m">Tensor field networks: rotation-and translation equivariant neural networks for 3d point clouds</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">3D steerable CNNs: learning rotationally equivariant features in volumetric data</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Weiler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">31</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">3D G-CNNs for pulmonary nodule detection</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Winkels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Cohen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1804.04656</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">3D G-CNNs for pulmonary nodule detection</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Winkels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">S</forename><surname>Cohen</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=H1sdHFiif" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Imaging Deep Learn</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">CubeNet: equivariance to 3D rotation and translation</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Worrall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01228-1_35</idno>
+		<idno>978-3- 030-01228-1 35</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11209</biblScope>
+			<biblScope unit="page" from="585" to="602" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Harmonic networks: deep translation and rotation equivariance</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">E</forename><surname>Worrall</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="5028" to="5037" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">PointConv: deep convolutional networks on 3D point clouds</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fuxin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="9621" to="9630" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Efficient multiple organ localization in CT image using 3D region proposal network</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1885" to="1898" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">MedMNIST classification decathlon: a lightweight AutoML benchmark for medical image analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="191" to="195" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">MedMNIST v2-a large-scale lightweight benchmark for 2D and 3D biomedical image classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">41</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

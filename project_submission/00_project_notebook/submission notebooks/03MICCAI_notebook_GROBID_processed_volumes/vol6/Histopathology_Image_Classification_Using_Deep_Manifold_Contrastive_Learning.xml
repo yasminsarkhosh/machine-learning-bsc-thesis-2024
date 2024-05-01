@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Histopathology Image Classification Using Deep Manifold Contrastive Learning</title>
+				<funder ref="#_AuDfyzV">
+					<orgName type="full">Korea Institute of Science and Technology</orgName>
+					<orgName type="abbreviated">KIST</orgName>
+				</funder>
+				<funder ref="#_TXDPfP3">
+					<orgName type="full">Korea University Grant</orgName>
+				</funder>
+				<funder ref="#_hYXj2Xs">
+					<orgName type="full">National Research Foundation of Korea</orgName>
+				</funder>
+				<funder ref="#_p6yukZF #_ZyJVwmR #_d5D56ww">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_Jucaw7D">
+					<orgName type="full">Korea Health Industry Development Institute</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jing</forename><forename type="middle">Wei</forename><surname>Tan</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Korea University</orgName>
+								<address>
+									<settlement>Seoul</settlement>
+									<country key="KR">South Korea</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Won-Ki</forename><surname>Jeong</surname></persName>
+						</author>
+						<title level="a" type="main">Histopathology Image Classification Using Deep Manifold Contrastive Learning</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="683" to="692"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EB7BC732E50B60D5335256816B1F3C44</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_66</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Contrastive learning</term>
+					<term>Manifold learning</term>
+					<term>Geodesic distance</term>
+					<term>Histopathology image classification</term>
+					<term>Multiple instance learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Contrastive learning has gained popularity due to its robustness with good feature representation performance. However, cosine distance, the commonly used similarity metric in contrastive learning, is not well suited to represent the distance between two data points, especially on a nonlinear feature manifold. Inspired by manifold learning, we propose a novel extension of contrastive learning that leverages geodesic distance between features as a similarity metric for histopathology whole slide image classification. To reduce the computational overhead in manifold learning, we propose geodesic-distance-based feature clustering for efficient contrastive loss evaluation using prototypes without time-consuming pairwise feature similarity comparison. The efficacy of the proposed method is evaluated on two real-world histopathology image datasets. Results demonstrate that our method outperforms stateof-the-art cosine-distance-based contrastive learning methods.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Whole slide image (WSI) classification is a crucial process to diagnose diseases in digital pathology. Owing to the huge size of a WSI, the conventional WSI classification process consists of patch decomposition and per-patch classification, followed by the aggregation of per-patch results using multiple instance learning (MIL) for the final per-slide decision <ref type="bibr" target="#b6">[7]</ref>. MIL constructs bag-of-features (BoF) that effectively handles imperfect patch labels, allowing weakly supervised learning using per-slide labels for WSI classification. Although MIL does not require perfect per-patch label assignment, it is important to construct good feature vectors that are easily separated into different classes to make the classification more accurate. Therefore, extensive research has been conducted on metric and representation learning <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b12">13]</ref> aimed at developing improved feature representation. Recently, contrastive learning has demonstrated its robustness in the representational ability of the feature extractor, which employs self-supervised learning with a contrastive loss that forces samples from the same class to stay closer in the feature space (and vice versa). SimCLR <ref type="bibr" target="#b2">[3]</ref> introduced the utilization of data augmentation and a learnable nonlinear transformation between the feature embedding and the contrastive loss to generally improve the quality of feature embedding. MoCo <ref type="bibr" target="#b5">[6]</ref> employed a dynamic dictionary along with a momentum encoder in the contrastive learning model to serve as an alternative to the supervised pre-trained ImageNet model in various computer vision tasks. PCL <ref type="bibr" target="#b8">[9]</ref> and HCSC <ref type="bibr" target="#b4">[5]</ref> integrated the k-means clustering and contrastive learning model by introducing prototypes as latent variables and assigning each sample to multiple prototypes to learn the hierarchical semantic structure of the dataset. These prior works used cosine distance as their distance measurement, which computes the angle between two feature vectors as shown in Fig. <ref type="figure" target="#fig_0">1(a)</ref>. Although cosine distance is a commonly used distance metric in contrastive learning, we observed that the cosine distance approximates the difference between local neighbors and is insufficient to represent the distance between far-away points on a complicated, nonlinear manifold.</p><p>The main motivation of this work is to extend the current contrastive learning to represent the nonlinear feature manifold inspired by manifold learning. Owing to the manifold distribution hypothesis <ref type="bibr" target="#b7">[8]</ref>, the relative distance between high-dimensional data is preserved on a low-dimensional manifold. ISOMAP <ref type="bibr" target="#b11">[12]</ref> is a well-known manifold learning approach that represents the manifold structure by using geodesic distance (i.e., the shortest path length between points on the manifold). There are several previous works that use manifold learning for image classification and reconstruction tasks, such as Lu et al. <ref type="bibr" target="#b9">[10]</ref> and Zhu et al. <ref type="bibr" target="#b13">[14]</ref>. However, the use of geodesic distance on the feature manifold for image classification is a recent development. Aziere et al. <ref type="bibr" target="#b1">[2]</ref> applied the random walk algorithm on the nearest neighbor graph to compute the pairwise geodesic distance and proposed the N-pair loss to maximize the similarity between samples from the same class for image retrieval and clustering applications. Gong et al. <ref type="bibr" target="#b3">[4]</ref> employed the geodesic distance computed using the Dijkstra algorithm on the knearest neighbor graph to measure the correlation between the original samples and then further divided each class into sub-classes to deal with the problems of high spectral dimension and channel redundancy in the hyperspectral images. However, this method captured the nonlinear data manifold structure on the original data (not on the feature vectors) only once at the beginning stage, which is not updated in the further training process.</p><p>In this study, we propose a hybrid method that combines manifold learning and contrastive learning to generate a good feature extractor (encoder) for histopathology image classification. Our method uses the sub-classes and prototypes as in conventional contrastive learning, but we propose the use of geodesic distance in generating the sub-classes to represent the non-linear feature manifold more accurately. By doing this, we achieve better separation between features with large margins, resulting in improved MIL classification performance. The main contributions of our work can be summarized as follows:</p><p>-We introduce a novel integration of manifold geodesic distance in contrastive learning, which results in better feature representation for the non-linear feature manifold. We demonstrate that the proposed method outperforms conventional cosine-distance-based contrastive learning methods. -We propose a geodesic-distance-based feature clustering for efficient contrastive loss evaluation using prototypes without brute-force pairwise feature similarity comparison while approximating the overall manifold geometry well, which results in reduced computation. -We demonstrate that the proposed method outperforms other state-of-theart (SOTA) methods with a much smaller number of sub-classes without complicated prototype assignment (e.g., hierarchical clustering).</p><p>To the best of our knowledge, this work is the first attempt to leverage manifold geodesic distance in contrastive learning for histopathology WSI classification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>The overview of our proposed model is illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>. It is composed of two stages: (1) train the feature extractor using deep manifold embedding learning and (2) train the WSI classifier using the deep manifold embedding extracted from the first stage. The input WSIs are pre-processed to extract 256 × 256 × 3 dimensional patches from the tumor area at a 10× magnification level. Patches with less than 50% tissue coverage are excluded from the experiment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Deep Manifold Embedding Learning</head><p>As illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>(a), we first feed the patches into a feature extractor f , which is composed of an encoder, a pooling layer, and a multi-perceptron layer.</p><p>The output is then passed through two different paths, namely, deep manifold and softmax paths. Loss Functions. For the deep manifold training, we adopted two losses: (1) intra-subclass loss L intra and (2) inter-subclass loss L inter . The main idea in intra-subclass loss is to make the samples from the same sub-class stay near their respective sub-class prototype. L intra is formulated as follows:</p><formula xml:id="formula_0">L intra = 1 J • I J j=1 I i=1 (f (x i j ) -p + ) T (f (x i j ) -p + )<label>(1)</label></formula><p>where x i j is the i-th patch in the j-th batch, J represents the total number of batches, I represents the total number of patches per batch, f (•) is the feature extractor, and p + indicates the positive prototype of the patch (i.e., the prototype of the subclass containing x i j ). The prototype of each sub-class is computed by simply taking the mean of all the patch features that belong to each sub-class. Inter-subclass loss L inter is proposed to make the sub-classes from a different class far apart from one another. The formulation of L inter is as shown below:</p><formula xml:id="formula_1">L inter = 1 J J j=1 ( -D(f (Q A j ), P B ))<label>(2)</label></formula><formula xml:id="formula_2">D(Y, Z) = max{sup y∈Y d(y, Z), sup z∈Z d(z, Y )}<label>(3)</label></formula><p>where </p><formula xml:id="formula_3">f (Q A j )</formula><formula xml:id="formula_4">L manif old = L intra + L inter (4)</formula><p>Another path via softmax is simply trained on outputs from the feature extractor with the ground truth slide-level labels y by the cross-entropy loss L CE , which is defined as follows:</p><formula xml:id="formula_5">L CE = - 1 J • I J j=1 I i=1 y i j • log ŷi j + (1 -y i j ) • log(1 -ŷi j ) (<label>5</label></formula><formula xml:id="formula_6">)</formula><p>where y is the ground truth slide-level label and ŷ is predicted label. Finally, the total loss for the first stage is defined as follows:</p><formula xml:id="formula_7">L total = L manif old + L CE (6)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">MIL Classification</head><p>As illustrated in Fig. <ref type="figure" target="#fig_1">2</ref>(b), in the second stage, the pre-trained feature extractor from the previous stage is then deployed to extract features for bag generation. A total of 50 bags are generated for each WSI, in which each bag is composed of the concatenation of the features from 100 patches in 512 dimensions. These bags are fed into a classifier with two layers of multiple perceptron layers (512 neurons) and a Softmax layer and then trained with a binary cross-entropy loss.</p><p>After the classification, majority voting is applied to the predicted labels of the bags to derive the final predicted label for each WSI.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Result</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We tested our proposed method on two different tasks: (1) intrahepatic cholangiocarcinomas(IHCCs) subtype classification and (2) liver cancer type classification. The dataset for the former task was collected from 168 patients with 332 WSIs from Seoul National University hospital. IHCCs can be further categorized into small duct type (SDT) and large duct type (LDT). Using gene mutation information as prior knowledge, we collected WSIs with wild KRAS and mutated IDH genes for use as training samples in SDT, and WSIs with mutated KRAS and wild IDH genes for use in LDT. The rest of the WSIs were used as testing samples. The liver cancer dataset for the latter task was composed of 323 WSIs, in which the WSIs can be further classified into hepatocellular carcinomas (HCCs) (collected from Pathology AI Platform <ref type="bibr" target="#b0">[1]</ref>) and IHCCs. We collected 121 WSIs for the training set, and the remaining WSIs were used as the testing set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Detail</head><p>We used a pre-trained VGG16 with ImageNet as the initial encoder, which was further modified via deep manifold model training using the proposed manifold and cross-entropy loss functions. The number of nearest neighbors k and the number of sub-classes n were set to 5 and 10, respectively. In the deep manifold embedding learning model, the learning rates were set to 1e-4 with a decay rate of 1e-6 for the IHCCs subtype classification and to 1e-5 with a decay rate of 1e-8 for the liver cancer type classification. The k-nearest neighbors graph and the geodesic distance matrix are updated once every five training epochs, which is empirically chosen to balance running time and accuracy. To train the MIL classifier, we set the learning rate to 1e-3 and the decay rate to 1e-6. We used batch sizes 64 and 4 for training the deep manifold embedding learning model and the MIL classification model, respectively. The number of epochs for the deep manifold embedding learning model was 50, while 50 and 200 epochs for the IHCCs subtype classification and liver cancer type classification, respectively. As for the optimizer, we used stochastic gradient decay for both stages. The result shown in the tables is the average result from 10 iterations of the MIL classification model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Experimental Results</head><p>The performance of different models from two different datasets is reported in this section. For the baseline model, we chose the pre-trained VGG16 feature extractor with an MIL classifier, which is the same as our proposed model except that the encoder is retrained using the proposed loss. Two SOTA methods using contrastive learning and clustering, PCL <ref type="bibr" target="#b8">[9]</ref> and HCSC <ref type="bibr" target="#b4">[5]</ref>, are compared with our method in this study. The MIL classification result of the IHCCs subtype classification is shown in Table <ref type="table" target="#tab_0">1</ref>. Our proposed method outperformed the baseline CNN by about 4% increment in accuracy, precision, recall, and F1 score. Note that our method only used 20 sub-classes but outperformed PCL (using 2300 sub-classes) by 4% and HCSC (using 112 sub-classes) by 5% in accuracy. The result of liver cancer type classification is also shown in Table <ref type="table" target="#tab_0">1</ref>. Our method achieved about 5% improvement in accuracy against the baseline and 1% to 2% improvement in accuracy against the SOTA methods. Moreover, it outperformed the SOTA methods with far fewer prototypes and without complicated hierarchical prototype assignments. To further evaluate the effect of prototypes, we conducted an ablation study for different prototype assignment strategies as shown in Table <ref type="table" target="#tab_1">2</ref>. Here, global prototypes imply assigning a single prototype per class while local prototypes imply assigning multiple prototypes per class (one per sub-class). When both are used together, it implies a hierarchical prototype assignment where local prototypes interact with the corresponding global prototype. As shown in this result, the model with local prototypes only performed about 4% higher than did the model with global prototypes only. Meanwhile, the combination of both prototypes achieved a similar performance to that of the model with local prototypes only. Since the hierarchical (global + local) assignment did not show a significant improvement but instead increased computation, we used only local sub-class prototypes in our final experiment setting.  <ref type="formula" target="#formula_0">1</ref>)-( <ref type="formula">4</ref>) are the patches from SDT and ( <ref type="formula" target="#formula_5">5</ref>)-( <ref type="formula">8</ref>) are the patches from LDT.</p><p>Since one of our contributions is the use of geodesic distance, we assessed the efficacy of the method by comparing it with the performance using cosine distance, as shown in Table <ref type="table" target="#tab_2">3</ref>. To measure the performance of the cosine-distancebased method, we simply replaced our proposed manifold loss with NT-Xent loss <ref type="bibr" target="#b2">[3]</ref>, which uses cosine distance in their feature similarity measurement. Two cosine distance experiments were conducted as follows: (1) use only their groundtruth class without further dividing the samples into sub-classes (i.e., global prototypes) and (2) divide the samples from each class into 10 sub-classes by using k-means clustering (i.e., local prototypes). As shown in Table <ref type="table" target="#tab_2">3</ref>, using multiple local prototypes shows slightly better performance compared to using global prototypes. By switching the NT-Xent loss with our geodesic-based manifold loss, the overall performance is increased by about 2%. Figure <ref type="figure">3</ref> visually compares the effect of the geodesic and cosine distance-based losses. Two scatter plots are t-SNE projections of feature vectors from the encoders trained using geodesic distance and cosine distance, respectively. Red dots represent SDT samples and blue dots represent LDT samples from the IHCCs dataset (corresponding histology thumbnail images are shown on the right). In this example, all eight cases are correctly classified by the method using geodesic distance while all cases are incorrectly classified by the method using cosine distance. It is clearly shown that geodesic distance can correctly measure the feature distance (similarity) on the manifold so that SDT and LDT groups are located far away in the t-SNE plot, whereas cosine distance failed to separate these groups and they are located nearby in the plot.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Conclusion and Future Work</head><p>In this paper, we proposed a novel geodesic-distance-based contrastive learning for histopathology image classification. Unlike conventional cosine-distancebased contrastive learning methods, our method can represent nonlinear feature manifold better and generate better discriminative features. One limitation of the proposed method is the extra computation time for graph generation and pairwise distance computation using the Dijkstra algorithm. In the future, we plan to optimize the algorithm and apply our method to other datasets and tasks, such as multi-class classification problems and natural image datasets.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Comparison of geodesic and cosine distance in n-dimensional space.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of our proposed method, which is composed of two stages: (a) deep manifold embedding learning and (b) MIL classification.</figDesc><graphic coords="4,44,79,54,62,334,96,173,08" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>is a set of patch features in batch j from class A, P B is a set of prototypes from the sub-classes of class B, and is a positive margin between classes on data manifold. D(•) is the Hausdorff distance, where sup indicates supremum, inf indicates infimum, and d(t, R) = inf r∈R ||t -r|| which measures the distance from a data point t ∈ Y to the subset R ⊆ Y . Then, the manifold loss is formulated as</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Classification performance on IHCCs subtype and liver cancer type dataset. (Acc.: Accuracy, Prec.: Precision, Rec.: Recall, F1: F1 Score, NA: Not Applicable)</figDesc><table><row><cell cols="4">Method Prototype Number IHCC Subtype</cell><cell></cell><cell></cell><cell cols="3">Liver Cancer Type</cell></row><row><cell></cell><cell></cell><cell>Acc.</cell><cell>Prec.</cell><cell>Rec.</cell><cell>F1</cell><cell>Acc.</cell><cell>Prec.</cell><cell>Rec.</cell><cell>F1</cell></row><row><cell>CNN</cell><cell>NA</cell><cell cols="7">0.7315 0.7372 0.7315 0.7270 0.7710 0.7781 0.7719 0.7657</cell></row><row><cell>PCL</cell><cell>500-800-1000</cell><cell cols="7">0.7386 0.7478 0.7394 0.7354 0.8146 0.7898 0.8146 0.7979</cell></row><row><cell cols="2">HCSC 2-10-100</cell><cell cols="7">0.7230 0.7265 0.7230 0.7231 0.7995 0.8524 0.7995 0.7825</cell></row><row><cell>Ours</cell><cell>20</cell><cell cols="7">0.7703 0.7710 0.7678 0.7668 0.8239 0.8351 0.8239 0.8227</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation study of prototype assignment strategies.</figDesc><table><row><cell>Prototype</cell><cell cols="4">Prototype Number Accuracy Precision Recall F1 Score</cell></row><row><cell>Global</cell><cell>2</cell><cell>0.7365</cell><cell>0.7390</cell><cell>0.7365 0.7353</cell></row><row><cell>Local</cell><cell>20</cell><cell>0.7703</cell><cell>0.7710</cell><cell>0.7678 0.7668</cell></row><row><cell cols="2">Global + Local 22 (20 + 2)</cell><cell>0.7698</cell><cell>0.7735</cell><cell>0.7698 0.7692</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Classification performance of geodesic distance and cosine distance.</figDesc><table><row><cell>Method</cell><cell cols="4">Number of sub-classes Accuracy Precision Recall F1 Score</cell></row><row><cell cols="2">Cosine distance 2</cell><cell>0.7519</cell><cell>0.7552</cell><cell>0.7519 0.7503</cell></row><row><cell cols="2">Cosine distance 20</cell><cell>0.7576</cell><cell>0.7589</cell><cell>0.7576 0.7571</cell></row><row><cell>Ours</cell><cell>20</cell><cell>0.7703</cell><cell>0.7710</cell><cell>0.7678 0.7668</cell></row></table><note><p>Fig. 3. Comparison of geodesic and cosine distance in feature space.(</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>. This study was approved by the institutional review board of <rs type="affiliation">Seoul National University Hospital</rs> (<rs type="grantNumber">IRB NO.H-1011-046-339</rs>). This work was partially supported by the <rs type="funder">National Research Foundation of Korea</rs> (<rs type="grantNumber">NRF-2019M3E5D2A01063819</rs>, <rs type="grantNumber">NRF-2021R1A6A1A13044830</rs>), the <rs type="institution">Institute for Information &amp; Communications Technology Planning &amp; Evaluation</rs> (<rs type="grantNumber">IITP-2023-2020-0-01819</rs>), the <rs type="funder">Korea Health Industry Development Institute</rs> (<rs type="grantNumber">HI18C0316</rs>), the <rs type="funder">Korea Institute of Science and Technology (KIST) Institutional Program</rs> (<rs type="grantNumber">2E32210</rs> and <rs type="grantNumber">2E32211</rs>) and a <rs type="funder">Korea University Grant</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_hYXj2Xs">
+					<idno type="grant-number">IRB NO.H-1011-046-339</idno>
+				</org>
+				<org type="funding" xml:id="_p6yukZF">
+					<idno type="grant-number">NRF-2019M3E5D2A01063819</idno>
+				</org>
+				<org type="funding" xml:id="_ZyJVwmR">
+					<idno type="grant-number">NRF-2021R1A6A1A13044830</idno>
+				</org>
+				<org type="funding" xml:id="_Jucaw7D">
+					<idno type="grant-number">IITP-2023-2020-0-01819</idno>
+				</org>
+				<org type="funding" xml:id="_AuDfyzV">
+					<idno type="grant-number">HI18C0316</idno>
+				</org>
+				<org type="funding" xml:id="_d5D56ww">
+					<idno type="grant-number">2E32210</idno>
+				</org>
+				<org type="funding" xml:id="_TXDPfP3">
+					<idno type="grant-number">2E32211</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title/>
+		<ptr target="http://wisepaip.org/paip" />
+	</analytic>
+	<monogr>
+		<title level="j">Pathology AI platform</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Ensemble deep manifold similarity learning using hard proxies</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Aziere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Todorovic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="7299" to="7307" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Deep manifold embedding for hyperspectral image classification</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Cybern</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="10430" to="10443" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">HCSC: hierarchical contrastive selective coding</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="9706" to="9715" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Momentum contrast for unsupervised visual representation learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9729" to="9738" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep learning can predict microsatellite instability directly from histology in gastrointestinal cancer</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Kather</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Med</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1054" to="1056" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A geometric understanding of deep learning</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Lei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Engineering</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="361" to="374" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">C</forename><surname>Hoi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2005.04966</idno>
+		<title level="m">Prototypical contrastive learning of unsupervised representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Multi-manifold deep metric learning for image set classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Moulin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1137" to="1145" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Introduction to similarity and deep metric learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ommer</surname></persName>
+		</author>
+		<ptr target="https://dvsml2022-tutorial.github.io/Talks/02DMLtutorialBjornOmmer.pdf" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Feature generation i: data transformation and dimensionality reduction</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Theodoridis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Koutroumbas</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="volume">4</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Hardness-aware deep metric learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="72" to="81" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Image reconstruction by domain-transform manifold learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">F</forename><surname>Cauley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">R</forename><surname>Rosen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Rosen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">555</biblScope>
+			<biblScope unit="issue">7697</biblScope>
+			<biblScope unit="page" from="487" to="492" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

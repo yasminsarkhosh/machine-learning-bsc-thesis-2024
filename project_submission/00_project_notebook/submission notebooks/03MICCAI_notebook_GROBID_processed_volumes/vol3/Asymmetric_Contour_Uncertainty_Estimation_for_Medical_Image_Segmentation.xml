@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Asymmetric Contour Uncertainty Estimation for Medical Image Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Thierry</forename><surname>Judge</surname></persName>
+							<email>thierry.judge@usherbrooke.ca</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of Sherbrooke</orgName>
+								<address>
+									<settlement>Sherbrooke</settlement>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Olivier</forename><surname>Bernard</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution" key="instit1">University of Lyon</orgName>
+								<orgName type="institution" key="instit2">CREATIS</orgName>
+								<orgName type="institution" key="instit3">CNRS UMR5220</orgName>
+								<address>
+									<addrLine>Inserm U1294</addrLine>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="institution">INSA-Lyon</orgName>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="institution">University of Lyon 1</orgName>
+								<address>
+									<settlement>Villeurbanne</settlement>
+									<country key="FR">France</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Woo-Jin</forename><surname>Cho Kim</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Alberto</forename><surname>Gomez</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Ultromics Ltd</orgName>
+								<address>
+									<postCode>OX4 2SU</postCode>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Agisilaos</forename><surname>Chartsias</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Ultromics Ltd</orgName>
+								<address>
+									<postCode>OX4 2SU</postCode>
+									<settlement>Oxford</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Pierre-Marc</forename><surname>Jodoin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of Sherbrooke</orgName>
+								<address>
+									<settlement>Sherbrooke</settlement>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Asymmetric Contour Uncertainty Estimation for Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="210" to="220"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">1D9CB1A4C4C813556F9BFAA505A309E1</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_21</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-01T10:02+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Uncertainty estimation • Image segmentation</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Aleatoric uncertainty estimation is a critical step in medical image segmentation. Most techniques for estimating aleatoric uncertainty for segmentation purposes assume a Gaussian distribution over the neural network's logit value modeling the uncertainty in the predicted class. However, in many cases, such as image segmentation, there is no uncertainty about the presence of a specific structure, but rather about the precise outline of that structure. For this reason, we explicitly model the location uncertainty by redefining the conventional per-pixel segmentation task as a contour regression problem. This allows for modeling the uncertainty of contour points using a more appropriate multivariate distribution. Additionally, as contour uncertainty may be asymmetric, we use a multivariate skewed Gaussian distribution. In addition to being directly interpretable, our uncertainty estimation method outperforms previous methods on three datasets using two different image modalities. Code is available at: https://github.com/ThierryJudge/contouring-uncertainty.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Segmentation is key in medical image analysis and is primarily achieved with pixel-wise classification neural networks <ref type="bibr" target="#b4">[4,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b20">20]</ref>. Recently, methods that use contours defined by points <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b13">13]</ref> have been shown more suitable for organs with a regular shape (e.g. lungs, heart) while predicting the organ outline similarly to how experts label data <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b13">13]</ref>. While various uncertainty methods have been investigated for both pixel-wise image segmentation <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b29">29]</ref> and landmark regression <ref type="bibr" target="#b25">[25,</ref><ref type="bibr" target="#b27">27]</ref>, few uncertainty methods for point-defined contours in the context of segmentation exists to date. Uncertainty can be epistemic or aleatoric by nature <ref type="bibr" target="#b16">[16]</ref>. Epistemic uncertainty models the network uncertainty by defining the network weights as a probabilistic distribution instead of a single value, with methods such as Bayesian networks <ref type="bibr" target="#b5">[5]</ref>, MC dropout <ref type="bibr" target="#b11">[11,</ref><ref type="bibr" target="#b12">12]</ref> and ensembles <ref type="bibr" target="#b19">[19]</ref>. Aleatoric uncertainty is the uncertainty in the data. Most pixel-wise segmentation methods estimate perpixel aleatoric uncertainty by modeling a normal distribution over each output logit <ref type="bibr" target="#b16">[16]</ref>. For regression, it is common practice to assume that each predicted output is independent and identically distributed, and follows an univariate normal distribution. In that case, the mean and variance distribution parameters μ and σ are learned with a loss function that maximizes their log-likelihood <ref type="bibr" target="#b16">[16]</ref>.</p><p>Other methods estimate the aleatoric uncertainty from multiple forward passes of test-time augmentation <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b29">29]</ref>. Some methods do not explicitly model epistemic nor aleatoric uncertainty, but rather use custom uncertainty losses <ref type="bibr" target="#b9">[9]</ref> or add an auxiliary confidence network <ref type="bibr" target="#b8">[8]</ref>. Other works predict uncertainty based on an encoded prior <ref type="bibr" target="#b15">[15]</ref> or by sampling a latent representation space <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b18">18]</ref>. The latter however requires a dataset containing multiple annotations per image to obtain optimal results.</p><p>Previous methods provide pixel-wise uncertainty estimates. These estimates are beneficial when segmenting abnormal structures that may or may not be present. However, they are less suited for measuring uncertainty on organ delineation because their presence in the image are not uncertain.</p><p>In this work, we propose a novel method to estimate aleatoric uncertainty of point-wise defined contours, independent on the model's architecture, without compromising the contour estimation performance. We extend state-of-the-art point-regression networks <ref type="bibr" target="#b21">[21]</ref> by modeling point coordinates with Gaussian and skewed-Gaussian distributions, a novel solution to predict asymmetrical uncertainty. Conversely, we demonstrate that the benefits of point-based contouring also extend to uncertainty estimation with highly interpretable results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Let's consider a dataset made of N pairs {x i , y k i } N i=1 , each pair consisting of an image x i ∈ R H×W of height H and width W , and a series of K ordered points y k i , drawn by an expert. Each point series defines the contour of one or more organs depending on the task. A simple way of predicting these K points is to regress 2K values (x-y coordinates) with a CNN, but doing so is sub-optimal due to the loss of spatial coherence in the output flatten layer <ref type="bibr" target="#b21">[21]</ref>. As an alternative, Nabili et al. proposed the DSNT network (differentiable spatial to numerical transform) designed to extract numerical coordinates of K points from the prediction of K heatmaps <ref type="bibr" target="#b21">[21]</ref> (c.f. the middle plots in Fig. <ref type="figure" target="#fig_0">1</ref> for an illustration).</p><p>Inspired by this work, our method extends to the notion of heatmaps to regress univariate, bivariate, and skew-bivariate uncertainty models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Contouring Uncertainty</head><p>Univariate Model -In this approach, a neural network f θ (•) is trained to generate K heatmaps Z k ∈ R H×W which are normalized by a softmax function so that their content represents the probability of presence of the center c k of each landmark point. Two coordinate maps I ∈ R H×W and J ∈ R H×W , where</p><formula xml:id="formula_0">I i,j = 2j-(W +1) W and J i,j = 2i-(H+1)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>H</head><p>, are then combined to these heatmaps to regress the final position μ k and the corresponding variance (σ k</p><p>x , σ k y ) of each landmark point through the following two equations:</p><formula xml:id="formula_1">μ k = E[c k ] = Ẑk , I F , Ẑk , J F ∈ R 2 , (<label>1</label></formula><formula xml:id="formula_2">)</formula><formula xml:id="formula_3">V ar[c kx ] = (σ kx ) 2 = E[(c kx -E[c kx ]) 2 ) = Ẑk , (I -μ kx ) (I -μ kx ) F ∈ R, (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>where •, • F is the Frobenius inner product, corresponds to the Hadamard product, and (σ ky ) 2 is computed similarly. Thus, for each image x i , the neural network f θ (x i ) predicts a tuple (μ i , σ i ) with μ i ∈ R 2K and σ i ∈ R 2K through the generation of K heatmaps. The network is finally trained using the following univariate aleatoric loss adapted from <ref type="bibr" target="#b16">[16]</ref> </p><formula xml:id="formula_5">L N1 = 1 NK N i=1 K k=1 log σ kx i σ ky i + 1 2 (μ kx i -y kx i ) 2 (σ kx i ) 2 + (μ ky i -y ky i ) 2 (σ ky i ) 2 , (<label>3</label></formula><formula xml:id="formula_6">)</formula><p>where y k i is the k th reference landmark point of image x i . Bivariate Model -One of the limitations of the univariate model is that it assumes no x-y covariance on the regressed uncertainty. This does not hold true in many cases, because the uncertainty can be oblique and thus involve a nonzero x-y covariance. To address this, one can model the uncertainty of each point with a 2 × 2 covariance matrix, Σ, where the variances are expressed with Eq. 2 and the covariance is computed as follows:</p><formula xml:id="formula_7">cov[c k ] = E[(c kx -E[c kx ])(c ky -E[c ky ]) = Ẑ, (I -μ kx ) (J -μ ky ) F . (<label>4</label></formula><formula xml:id="formula_8">)</formula><p>The network f θ (x i ) thus predicts a tuple (μ i , Σ i ) for each image x i , with μ i ∈ R K×2 and Σ i ∈ R K×2×2 . We propose to train f θ using a new loss function L N2 :</p><formula xml:id="formula_9">L N2 = 1 NK N i=1 K k=1 1 2 log |Σ k i | + 1 2 (μ k i -y k i ) T (Σ k i ) -1 (μ k i -y k i ).<label>(5)</label></formula><p>Asymmetric Model -One limitation of the bivariate method is that it models a symmetric uncertainty, an assumption that may not hold in some cases as illustrated on the right side of Fig. <ref type="figure" target="#fig_1">2</ref>. Therefore we developed a third approach based on a bivariate skew-normal distribution <ref type="bibr" target="#b1">[2]</ref>:</p><formula xml:id="formula_10">SN n (y|μ, Σ, α) = 2φ n (y|μ, Σ)Φ 1 α T ω -1 (y -μ) , (<label>6</label></formula><formula xml:id="formula_11">)</formula><p>where φ n is a multivariate normal, Φ 1 is the cumulative distribution function of a unit normal, Σ = ω Σω and α ∈ R n is the skewness parameter. Note that this is a direct extension of the multivariate normal as the skew-normal distribution is equal to the normal distribution when α = 0.</p><p>The corresponding network predicts a tuple (μ, Σ, α) with μ ∈ R K×2 , Σ ∈ R K×2×2 and α ∈ R K×2 . The skewness output α is predicted using a sub-network whose input is the latent space of the main network (refer to the supplementary material for an illustration). This model is trained using a new loss function derived from the maximum likelihood estimate of the skew-normal distribution:</p><formula xml:id="formula_12">L SN 2 = 1 NK N i=1 K k=1 1 2 log |Σ k i | + 1 2 (μ k i -y k i ) T (Σ k i ) -1 (μ k i -y k i ) + log Φ 1 (α k i ) T (ω k i ) -1 (y k i -μ k i ) . (7)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Visualization of Uncertainty</head><p>As shown in Fig. <ref type="figure" target="#fig_1">2</ref>, the predicted uncertainty can be pictured in two ways: (i) either by per-point covariance ellipses [left] and skewed-covariance profiles [right] or (ii) by an uncertainty map to express the probability of wrongly classifying pixels which is highest at the border between 2 classes. In our formalism, the probability of the presence of a contour (and thus the separation between 2 classes) can be represented by the component of the uncertainty that is perpendicular to the contour. We consider the perpendicular normalized marginal distribution at each point (illustrated by the green line). This distribution also happens to be a univariate normal [left] or skew-normal [right] distribution <ref type="bibr" target="#b1">[2]</ref>.</p><p>From these distributions, we draw isolines of equal uncertainty on the inside and outside of the predicted contour. By aggregating multiple isolines, we construct a smooth uncertainty map along the contours (illustrated by the white-shaded areas). Please refer to the supp. material for further details on this procedure.</p><p>3 Experimental Setup</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Data</head><p>CAMUS. The CAMUS dataset <ref type="bibr" target="#b20">[20]</ref> contains cardiac ultrasounds from 500 patients, for which two-chamber and four-chamber sequences were acquired.</p><p>Manual annotations for the endocardium and epicardium borders of the left ventricle (LV) and the left atrium were obtained from a cardiologist for the end-diastolic (ED) and end-systolic (ES) frames. The dataset is split into 400 training patients, 50 validation patients, and 50 testing patients. Contour points were extracted by finding the basal points of the endocardium and epicardium and then the apex as the farthest points along the edge. Each contour contains 21 points.</p><p>Private Cardiac US. This is a proprietary multi-site multi-vendor dataset containing 2D echocardiograms of apical two and four chambers from 890 patients. Data comes from patients diagnosed with coronary artery disease, COVID, or healthy volunteers. The dataset is split into a training/validation set (80/20) and an independent test set from different sites, comprised of 994 echocardiograms from 684 patients and 368 echocardiograms from 206 patients, respectively. The endocardium contour was labeled by experts who labeled a minimum of 7 points based on anatomical landmarks and add as many other points as necessary to define the contour. We resampled 21 points equally along the contour.</p><p>JSRT. The Japanese Society of Radiological Technology (JSRT) dataset consists of 247 chest X-Rays <ref type="bibr" target="#b26">[26]</ref>. We used the 120 points for the lungs and heart annotation made available by <ref type="bibr" target="#b10">[10]</ref>. The set of points contains specific anatomical points for each structure (4 for the right lung, 5 for the left lung, and 4 for the heart) and equally spaced points between each anatomical point. We reconstructed the segmentation map with 3 classes (background, lungs, heart) with these points and used the same train-val-test split of 70%-10%-20% as <ref type="bibr" target="#b10">[10]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>We used a network based on ENet <ref type="bibr" target="#b24">[24]</ref> for the ultrasound data and on DeepLabV3 <ref type="bibr" target="#b7">[7]</ref> for the JSRT dataset to derive both the segmentation maps and regress the per-landmark heatmaps. Images were all reshaped to 256 × 256 and B-Splines were fit on the predicted landmarks to represent the contours.</p><p>Training was carried out with the Adam optimizer <ref type="bibr" target="#b17">[17]</ref> with a learning rate of 1 × 10 -3 and with ample data augmentation (random rotation and translations, brightness and contrast changes, and gamma corrections). Models were trained with early stopping and the models with best validation loss were retained for testing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Evaluation Metrics</head><p>To assess quality of the uncertainty estimates at image and pixel level we use:</p><p>Correlation. The correlation between image uncertainty and Dice was computed using the absolute value of the Pearson correlation score. We obtained image uncertainty be taking the sum of the uncertainty map and dividing it by the number of foreground pixels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Maximum Calibration Error (MCE)</head><p>. This common uncertainty metric represents the probability if a classifier (here a segmentation method) of being correct by computing the worst case difference between its predicted confidence and its actual accuracy <ref type="bibr" target="#b23">[23]</ref>.</p><p>Uncertainty Error Mutual-Information. As proposed in <ref type="bibr" target="#b15">[15]</ref>, uncertainty error mutual-information measures the degree of overlap between the unthresholded uncertainty map and the pixel-wise error map.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head><p>We computed uncertainty estimates for both pixel-wise segmentation and contour regression methods to validate the hypothesis that uncertainty prediction is better suited to per-landmark segmentation than per-pixel segmentation methods. For a fair comparison, we made sure the segmentation models achieve similar segmentation performance, with the average Dice being .90 ± .02 for CAMUS, .86 ± .02 for Private US., and .94 ± .02 for JSRT.</p><p>For the pixel-wise segmentations, we report results of a classical aleatoric uncertainty segmentation method <ref type="bibr" target="#b16">[16]</ref> as well as a Test Time Augmentation (TTA) method <ref type="bibr" target="#b29">[29]</ref>. For TTA, we used the same augmentations as the ones used during training. We also computed epistemic uncertainty with MC-Dropout <ref type="bibr" target="#b6">[6]</ref> for which we selected the best results of 10%, 25%, and 50% dropout rates. The implementation of MC-Dropout for regression was trained with the DSNT layer <ref type="bibr" target="#b21">[21]</ref> and mean squared error as a loss function.</p><p>As for the landmark prediction, since no uncertainty estimation methods have been proposed in the literature, we adapted the MC-Dropout method to it. We also report results for our method using univariate, (N 1 ), bivariate, (N 2 ) and bivariate skew-normal distributions (SN 2 ).</p><p>The uncertainty maps for TTA and MC-Dropout (i.e. those generating multiple samples) were constructed by computing the pixel-wise entropy of multiple Fig. <ref type="figure">4</ref>. Reliability diagrams <ref type="bibr" target="#b22">[22]</ref> for the 3 datasets. For uncertainty (u) bounded by 0 and 1, confidence (c) is defined as c = 1u <ref type="bibr" target="#b28">[28]</ref> forward passes. It was found that doing so for the aleatoric method produces better results than simply taking the variance. The uncertainty map for the landmark predictions was obtained with the method described in Sect. 2.2.</p><p>Quantitative results are presented in Table <ref type="table" target="#tab_0">1</ref> and qualitative results are shown in Fig. <ref type="figure" target="#fig_2">3</ref>. As can be seen, our uncertainty estimation method is globally better than the other approaches except for the correlation score on the CAMUS dataset which is slightly larger for TTA. Furthermore, our point-based aleatoric uncertainty better detects regions of uncertainty consistently, as reflected in the Mutual Information (MI) metric. The reliability diagrams in Fig. <ref type="figure">4</ref> show that our method is systematically better aligned to perfect calibration (dashed line) for all datasets, which explains why our method has a lower MCE. With the exception of the Private Cardiac US dataset, the skewed normal distribution model shows very similar or improved results for both correlation and mutual information compared to the univariate and bivariate models. It can be noted, however, that in specific instances, the asymmetric model performs better on Private Cardiac US dataset (c.f. column 2 and 3 in Fig. <ref type="figure" target="#fig_2">3</ref>). This confirms that it is better capturing asymmetric errors over the region of every contour point.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Discussion and Conclusion</head><p>The results reported before reveal that approaching the problem of segmentation uncertainty prediction via a regression task, where the uncertainty is expressed in terms of landmark location, is globally better than via pixel-based segmentation methods. It also shows that our method (N 1 , N 2 and SN 2 ) is better than the commonly-used MC-Dropout. It can also be said that our method is more interpretable as is detailed in Sect. 2.2 and shown in Fig. <ref type="figure" target="#fig_2">3</ref>.</p><p>The choice of distribution has an impact when considering the shape of the predicted contour. For instance, structures such as the left ventricle and the myocardium wall in the ultrasound datasets have large components of their contour oriented along the vertical direction which allows the univariate and bivariate models to perform as well, if not better, than the asymmetric model. However, the lungs and heart in chest X-Rays have contours in more directions and therefore the uncertainty is better modeled with the asymmetric model.</p><p>Furthermore, it has been demonstrated that skewed uncertainty is more prevalent when tissue separation is clear, for instance, along the septum border (CAMUS) and along the lung contours (JSRT). The contrast between the left ventricle and myocardium in the images of the Private Cardiac US dataset is small, which explains why the simpler univariate and bivariate models perform well. This is why on very noisy and poorly contrasted data, the univariate or the bivariate model might be preferable to using the asymmetric model.</p><p>While our method works well on the tasks presented, it is worth noting that it may not be applicable to all segmentation problems like tumour segmentation. Nevertheless, our approach is broad enough to cover many applications, especially related to segmentation that is later used for downstream tasks such as clinical metric estimation. Future work will look to expand this method to more general distributions, including bi-modal distributions, and combine the aleatoric and epistemic uncertainty to obtain the full predictive uncertainty.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Overview of our method. Left to right: predicted left ventricle contour landmarks; heatmaps associated to three points; and skewed-normal uncertainty estimation for these three points.</figDesc><graphic coords="2,55,98,54,11,340,18,127,60" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Two uncertainty visualizations: a per-landmark representation and a pixelwise uncertainty map. [Left] bi-variate normal model and [right] the skewed-normal distribution. In both case, the uncertainty map has been obtained by interpolating the landmark uncertainly along the contour.</figDesc><graphic coords="5,41,79,54,50,340,21,100,21" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Results from various methods on CAMUS, Private and JSRT datasets. [row 1] images with predicted (red) and groundtruth (blue) contours. Confidence intervals are shown in red around each point. [row 2] Error maps where white pixels indicate a prediction error. [row 3] Uncertainty maps where high uncertainty is shown in white. (Color figure online)</figDesc><graphic coords="6,57,48,54,11,337,36,175,60" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Uncertainty estimation results for segmentation (top rows) and regression (bottom rows) methods. Best and second best results are highlighted in red and blue respectively. MCE ↓ MI ↑ Corr. ↑ MCE ↓ MI ↑ Corr. ↑ MCE ↓ MI ↑</figDesc><table><row><cell>Data</cell><cell>CAMUS</cell><cell></cell><cell cols="2">Private Card. US</cell><cell>JSRT</cell><cell></cell><cell></cell></row><row><cell cols="2">Method Corr. ↑ Aleatoric [16] .397</cell><cell>.327</cell><cell>.028 .101</cell><cell>.487</cell><cell>.010 .660</cell><cell>.294</cell><cell>.037</cell></row><row><cell cols="2">MC-Dropout [6] .424</cell><cell>.349</cell><cell>.030 .276</cell><cell>.467</cell><cell>.011 .559</cell><cell>.346</cell><cell>.060</cell></row><row><cell>TTA [29]</cell><cell>.538</cell><cell>.340</cell><cell>.023 .261</cell><cell>.400</cell><cell>.009 .432</cell><cell>.422</cell><cell>.036</cell></row><row><cell>MC-Dropout</cell><cell>.271</cell><cell>.380</cell><cell>.021 .600</cell><cell>.378</cell><cell>.009 .453</cell><cell>.368</cell><cell>.007</cell></row><row><cell>N1</cell><cell>.403</cell><cell>.088</cell><cell>.052 .635</cell><cell>.103</cell><cell>.033 .713</cell><cell>.129</cell><cell>.047</cell></row><row><cell>N2</cell><cell>.386</cell><cell>.114</cell><cell>.049 .697</cell><cell>.173</cell><cell>.032 .595</cell><cell>.118</cell><cell>.050</cell></row><row><cell>SN 2</cell><cell>.454</cell><cell>.104</cell><cell>.051 .562</cell><cell>.332</cell><cell>.025 .824</cell><cell>.152</cell><cell>.055</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1_21.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Test-time data augmentation for estimation of heteroscedastic aleatoric uncertainty in deep neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Ayhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Berens</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Conference on Medical Imaging with Deep Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Azzalini</surname></persName>
+		</author>
+		<title level="m">Institute of Mathematical Statistics Monographs: The Skew-Normal and Related Families Series Number 3</title>
+		<meeting><address><addrLine>Cambridge</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">PHiSeg: capturing uncertainty in medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Baumgartner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="119" to="127" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_14" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Weight uncertainty in neural network</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Blundell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cornebise</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kavukcuoglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wierstra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 32nd International Conference on Machine Learning. Proceedings of Machine Learning Research</title>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Bach</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Blei</surname></persName>
+		</editor>
+		<meeting>the 32nd International Conference on Machine Learning. Machine Learning Research<address><addrLine>Lille, France</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015-07">July 2015</date>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="7" to="09" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Quantitative comparison of Monte-Carlo dropout uncertainty measures for multi-class segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Camarasa</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-60365-6_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-60365-6_4" />
+	</analytic>
+	<monogr>
+		<title level="m">UNSURE/GRAIL -2020</title>
+		<editor>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Sudre</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12443</biblScope>
+			<biblScope unit="page" from="32" to="41" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Rethinking atrous convolution for semantic image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Papandreou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adam</surname></persName>
+		</author>
+		<idno>CoRR abs/1706.05587</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Addressing failure prediction by learning model confidence</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Corbière</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Thome</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bar-Hen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pérez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="2902" to="2913" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Leveraging uncertainty estimates for predicting segmentation quality</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Devries</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<idno>CoRR abs/1807.00502</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Improving anatomical plausibility in medical image segmentation via hybrid graph neural networks: applications to chest x-ray analysis</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gaggion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mansilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Mosquera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Milone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Bayesian convolutional neural networks with Bernoulli approximate variational inference</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<idno>arXiv abs/1506.02158</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Dropout as a Bayesian approximation: representing model uncertainty in deep learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<ptr target="JMLR.org" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 33rd International Conference on International Conference on Machine Learning. ICML&apos;16</title>
+		<meeting>the 33rd International Conference on International Conference on Machine Learning. ICML&apos;16</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="1050" to="1059" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Left ventricle contouring of apical three-chamber views on 2d echocardiography</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gomez</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16902-1_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16902-1_10" />
+	</analytic>
+	<monogr>
+		<title level="m">ASMUS 2022</title>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Min</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13565</biblScope>
+			<biblScope unit="page" from="96" to="105" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">NNU-net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Crisp -reliable uncertainty estimation for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Judge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Porumb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chartsias</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Beqiri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Jodoin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-1_47" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022 MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="492" to="502" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">What uncertainties do we need in Bayesian deep learning for computer vision?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kendall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="5574" to="5584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Adam: a method for stochastic optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">3rd International Conference on Learning Representations, ICLR 2015</title>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</editor>
+		<meeting><address><addrLine>San Diego, CA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015-05-09">7-9 May 2015. 2015</date>
+		</imprint>
+	</monogr>
+	<note>Conference Track Proceedings</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A probabilistic u-net for segmentation of ambiguous images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kohl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">31</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Simple and scalable predictive uncertainty estimation using deep ensembles</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lakshminarayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pritzel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Blundell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</editor>
+		<imprint>
+			<publisher>Curran Associates, Inc</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Deep learning for segmentation using an open large-scale dataset in 2D echocardiography</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Leclerc</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2198" to="2210" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Numerical coordinate regression with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nibali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Morgan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Prendergast</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1801.07372</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Predicting good probabilities with supervised learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Niculescu-Mizil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Caruana</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd International Conference on Machine Learning. ICML &apos;05</title>
+		<meeting>the 22nd International Conference on Machine Learning. ICML &apos;05<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computing Machinery</publisher>
+			<date type="published" when="2005">2005</date>
+			<biblScope unit="page" from="625" to="632" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Obtaining well calibrated probabilities using Bayesian binning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pakdaman Naeini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cooper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hauskrecht</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2015-02">February 2015</date>
+			<biblScope unit="volume">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Enet: a deep neural network architecture for real-time semantic segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chaurasia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Culurciello</surname></persName>
+		</author>
+		<idno>CoRR abs/1606.02147</idno>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Uncertainty estimation for heatmap-based landmark localization</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Schobs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Swift</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1021" to="1034" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Development of a digital image database for chest radiographs with and without a lung nodule: receiver operating characteristic analysis of radiologists&apos; detection of pulmonary nodules</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shiraishi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Roentgenol</title>
+		<imprint>
+			<biblScope unit="volume">174</biblScope>
+			<biblScope unit="page" from="71" to="74" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Modeling annotation uncertainty with Gaussian heatmaps in landmark localization</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Thaler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn. Biomed. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Entropy methods for the confidence assessment of probabilistic classification models</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">N</forename><surname>Tornetta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistica (Bologna)</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="383" to="398" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Aleatoric uncertainty estimation with test-time augmentation for medical image segmentation with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aertsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deprest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="page" from="34" to="45" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
