@@ -1,9 +1,9 @@
 
 # **Bridging the Data Gap: An Experimental Investigation into Demographic Representation in Healthcare AI**
-- An overview of the thesis project.
+An overview of the thesis project.
+
+
 - Instructions on how to install necessary dependencies (possibly using a **`requirements.txt`** file).
-
-
 
 
 ## Project Submission
@@ -11,6 +11,109 @@
 ### GitHub Repository Structure
 Details about the directory structure can be found in the following link:
 - **[Directory Structure](directory_structure.txt)**
+
+```markdown
+## Installation and Setup
+
+### Dependencies Installation
+To install the necessary Python packages, use the `requirements.txt` file. Below is the content of `requirements.txt` which lists all the packages used in the project:
+
+```
+# requirements.txt with the packages you used
+pandas==1.5.3
+numpy==1.26.4
+et-xmlfile==1.1.0
+grobid-client-python==0.0.8
+lxml==5.2.1
+openpyxl==3.1.2
+plotly==5.20.0
+PyPDF2==3.0.1
+PyMuPDF==1.24.2
+PyMuPDFb==1.24.1
+regex==2023.12.25
+seaborn==0.13.2
+squarify==0.4.3
+zipp==3.17.0
+```
+To install these packages, run:
+```bash
+pip install -r requirements.txt
+```
+
+### Additional Setup for GROBID
+To use GROBID, follow these steps:
+
+1. **Download GROBID:**
+   ```bash
+   wget https://github.com/kermitt2/grobid/archive/0.8.0.zip
+   ```
+
+2. **Unzip the downloaded file:**
+   ```bash
+   unzip 0.8.0.zip
+   ```
+
+3. **Change to the GROBID directory:**
+   ```bash
+   cd grobid-0.8.0
+   ```
+
+4. **Run GROBID:**
+   ```bash
+   ./gradlew run
+   ```
+
+### Python Import Statements
+Below are the import statements used in the notebooks:
+```python
+import fitz  # PyMuPDF for PDF rendering and manipulation
+import PyPDF2  # PyPDF2 for PDF file reading and manipulation
+import zipfile
+import requests
+from bs4 import BeautifulSoup
+import io
+from io import BytesIO
+import urllib.request
+from urllib.request import urlopen
+import os
+import re
+import regex as re
+import numpy as np
+import pandas as pd
+from xml.etree import ElementTree as et
+from lxml import etree
+from collections import Counter
+from grobid_client.grobid_client import GrobidClient
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import colormaps
+import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
+import squarify
+import seaborn as sns
+import plotly.graph_objects as go
+```
+
+### Optional Installations
+Uncomment the necessary installation commands if required:
+```bash
+# pip install PyPDF2
+# pip install xhtml2pdf requests lxml 
+# pip install xhtml2pdf requests
+# pip install lxml
+# pip install beautifulsoup4
+# pip install pandas
+# pip install numpy
+# pip install regex
+# pip install zipfile
+# pip install lxml
+# pip install pandas openpyxl
+# pip install beautifulsoup4 requests lxml regex
+# pip install pandas openpyxl
+```
+```
+
+
 
 ### Notebooks Overview
 ***
