@@ -1,5 +1,7 @@
 
 # **Bridging the Data Gap: An Experimental Investigation into Demographic Representation in Healthcare AI**
+- An overview of the thesis project.
+- Instructions on how to install necessary dependencies (possibly using a **`requirements.txt`** file).
 
 
 
