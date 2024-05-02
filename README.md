@@ -1,11 +1,16 @@
-
 # **Bridging the Data Gap: An Experimental Investigation into Demographic Representation in Healthcare AI**
-An overview of the thesis project.
+This project investigates the integration of data quality and demographic inclusivity in the development of healthcare AI models. It centers on a systematic review of research presented at the 2023 MICCAI conference, a significant venue for advancements in medical imaging and AI.
 
+### Objectives
+- **Examine and Annotate Datasets:** Analyze the datasets used in selected studies from the conference to understand the extent of demographic data incorporation during model training.
+- **Identify Gaps and Biases:** Explore how these models account for diverse datasets and demographic details, identify any prevalent gaps, and assess potential biases.
 
+### Goals
+The ultimate goal of this research is to contribute to the development of equitable healthcare AI by ensuring that AI models are trained on data that adequately reflects the diversity of patient populations. By highlighting and addressing gaps in data inclusivity and quality, this thesis advocates for more inclusive and accurate healthcare AI applications.
+
+This GitHub repository hosts the notebooks and tools developed as part of this thesis to automate the extraction, processing, and analysis of data from the MICCAI 2023 conference, aiding in the systematic review and providing a structured foundation for further research in this crucial area.
 
 ## Project Submission
-***
 ### GitHub Repository Structure
 Details about the directory structure can be found in the following link:
 - **[Directory Structure](directory_structure.txt)**
@@ -41,8 +46,10 @@ pip install -r requirements.txt
 ```
 
 ### Additional Setup for GROBID
-To use GROBID, follow these steps:
 [GROBID GitHub Repository](https://github.com/kermitt2/grobid_client_python)
+
+
+To use GROBID, follow these steps:
 
 1. **Download GROBID:**
    ```bash
