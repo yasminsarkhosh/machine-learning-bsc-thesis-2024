@@ -3,13 +3,9 @@
 An overview of the thesis project.
 
 
-- Instructions on how to install necessary dependencies (possibly using a **`requirements.txt`** file).
-
 
 ## Project Submission
 ***
-***
-
 ### GitHub Repository Structure
 Details about the directory structure can be found in the following link:
 - **[Directory Structure](directory_structure.txt)**
@@ -17,7 +13,6 @@ Details about the directory structure can be found in the following link:
 ***
 
 ### Installation and Setup
-
 #### Dependencies Installation
 To install the necessary Python packages, use the `requirements.txt` file. Below is the content of `requirements.txt` which lists all the packages used in the project:
 
@@ -47,6 +42,7 @@ pip install -r requirements.txt
 
 ### Additional Setup for GROBID
 To use GROBID, follow these steps:
+[GROBID GitHub Repository](https://github.com/kermitt2/grobid_client_python)
 
 1. **Download GROBID:**
    ```bash
