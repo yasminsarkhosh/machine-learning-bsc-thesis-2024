@@ -14,6 +14,8 @@ The material in the weekly-meetings-yasmin.md is derived from "Whitaker Lab Proj
 * [09 apr 2024](#date-09-apr-2024)
 * [16 apr 2024](#date-16-apr-2024)
 * [30 apr 2024](#date-30-apr-2024)
+* [07 may 2024](#date-07-may-2024)
+
 
 ***
 ***
@@ -638,3 +640,35 @@ Report
 ![Skærmbillede 2024-01-20 kl. 16.12.17.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/98e02574-67a5-418e-9195-4cad988250e1/c6348373-001f-4930-be41-e8a41bbaa690/Skrmbillede_2024-01-20_kl._16.12.17.png)
 
 ![Skærmbillede 2024-01-20 kl. 18.09.02.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/98e02574-67a5-418e-9195-4cad988250e1/b309e0fd-6335-422f-842e-7683af5bec61/Skrmbillede_2024-01-20_kl._18.09.02.png)
+
+***
+
+### Date: 07 May 2024
+### Who helped you this week?
+N/A
+### What did you achieve?
+* Finished GitHub repo-related tasks:
+  - readme.md file
+  - requirements.txt
+  - description of repo, installments, notebooks and data
+  - directory structure of the github
+  - notebooks and notebook descriptions/purpose/inputs/outputs
+  - output files organised into folders and sub folders 
+  - re-ran all notebooks to check/correct errors
+
+
+### What would you like to work on next week?
+* Focusing solely on writing/refining my report
+
+
+### Where do you need help from Veronika?
+* To look through my github repo and check if anything is missing?
+* (Or another) to re-run my notebooks 
+* If possible, a final read on my report 
+
+
+### Any other topics
+N/A
+
+### What are the agreements after this meeting? (to fill in after the meeting) 
+
