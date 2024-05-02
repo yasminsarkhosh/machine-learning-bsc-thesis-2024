@@ -1,3 +1,9 @@
+
+# **Bridging the Data Gap: An Experimental Investigation into Demographic Representation in Healthcare AI**
+
+
+
+
 ## Project Submission
 
 ### GitHub Repository Structure
@@ -5,6 +11,7 @@ Details about the directory structure can be found in the following link:
 - **[Directory Structure](directory_structure.txt)**
 
 ### Notebooks Overview
+***
 This section outlines the objectives and key functionalities of each notebook included in this repository, specifically designed for processing data from the MICCAI 2023 conference.
 
 #### Notebook: 01MICCAI
@@ -42,11 +49,10 @@ This section outlines the objectives and key functionalities of each notebook in
   - Evaluate geographical locations and disclosure status of datasets.
 
 ### Additional Resources
-
+***
 #### Annotation Data
 Details and data formats used for annotation in this project:
 - **[Annotation Data](project_submission/00_project/annotation_data)**
-
 
 #### Annotation Guide and Scheme
 Guidelines and schemes applied for data annotation within the project:
