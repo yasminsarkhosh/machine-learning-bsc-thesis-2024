@@ -7,18 +7,21 @@ An overview of the thesis project.
 
 
 ## Project Submission
+***
+***
 
 ### GitHub Repository Structure
 Details about the directory structure can be found in the following link:
 - **[Directory Structure](directory_structure.txt)**
 
-```markdown
-## Installation and Setup
+***
 
-### Dependencies Installation
+### Installation and Setup
+
+#### Dependencies Installation
 To install the necessary Python packages, use the `requirements.txt` file. Below is the content of `requirements.txt` which lists all the packages used in the project:
 
-```
+```markdown
 # requirements.txt with the packages you used
 pandas==1.5.3
 numpy==1.26.4
@@ -35,6 +38,8 @@ seaborn==0.13.2
 squarify==0.4.3
 zipp==3.17.0
 ```
+
+
 To install these packages, run:
 ```bash
 pip install -r requirements.txt
@@ -111,9 +116,6 @@ Uncomment the necessary installation commands if required:
 # pip install beautifulsoup4 requests lxml regex
 # pip install pandas openpyxl
 ```
-```
-
-
 
 ### Notebooks Overview
 ***
