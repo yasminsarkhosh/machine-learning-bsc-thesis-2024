@@ -655,6 +655,9 @@ N/A
   - notebooks and notebook descriptions/purpose/inputs/outputs
   - output files organised into folders and sub folders 
   - re-ran all notebooks to check/correct errors
+* Finished sections in report:
+  - Methodology
+  - Experimental Setups
 
 
 ### What would you like to work on next week?
@@ -668,7 +671,8 @@ N/A
 
 
 ### Any other topics
-N/A
+* Exam
+  - What should we prepare/what are the requirements/expectations?
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
 
