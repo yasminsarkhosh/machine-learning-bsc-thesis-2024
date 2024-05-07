@@ -675,4 +675,16 @@ N/A
   - What should we prepare/what are the requirements/expectations?
 
 ### What are the agreements after this meeting? (to fill in after the meeting) 
+* V fromt the report: It could be relevant to mention/discuss papers on bias reduction, fairness etc within the more machine learning-focused papers in medical imaging domain - these studies exist but tend to focus on a few datasets, because many datasets do not have this information
+- Look into related work in the MICCAI 2023 papers beyond the selection 
 
+* Background 
+  - section 2.d: the example of diabetes is a bit far out of the scope of the paper, look into examples within MICCAI 2023 
+  - sex change in medical imaging as a section (inconsistency in definitions/meanings/terms)
+  - gender vs sex: define what you are focusing on and what contributes gender and/or sex, not clear if they report biological sex or gender (was how you define yourself as)
+
+* For writing sections
+  * recipe and the justification: salt, acid, heat, Explain why the steps are important, and why you cannot go to step 4 before going through step 1 and 2 and 3.  
+
+* Exam
+ - 
