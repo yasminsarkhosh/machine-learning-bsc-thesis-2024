@@ -37,6 +37,7 @@ regex==2023.12.25
 seaborn==0.13.2
 squarify==0.4.3
 zipp==3.17.0
+kaleido==0.2.1
 ```
 
 
@@ -83,23 +84,32 @@ import io
 from io import BytesIO
 import urllib.request
 from urllib.request import urlopen
+
 import os
 import re
+import sys
+import textwrap
+import subprocess
 import regex as re
 import numpy as np
 import pandas as pd
+
 from xml.etree import ElementTree as et
 from lxml import etree
 from collections import Counter
 from grobid_client.grobid_client import GrobidClient
+
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib import colormaps
 import matplotlib.patches as mpatches
 import matplotlib.ticker as ticker
+
 import squarify
 import seaborn as sns
 import plotly.graph_objects as go
+import plotly.io as pio
+
 ```
 
 ### Optional Installations
@@ -118,6 +128,8 @@ Uncomment the necessary installation commands if required:
 # pip install pandas openpyxl
 # pip install beautifulsoup4 requests lxml regex
 # pip install pandas openpyxl
+# !pip install kaleido 
+# !pip install -U kaleido
 ```
 
 ### Notebooks Overview
