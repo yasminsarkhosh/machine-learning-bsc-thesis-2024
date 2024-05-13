@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">CAT-ViL: Co-attention Gated Vision-Language Embedding for Visual Question Localized-Answering in Robotic Surgery</title>
+				<funder ref="#_ZPHC4ju">
+					<orgName type="full">EPSRC</orgName>
+				</funder>
+				<funder ref="#_xWxKMqp #_sHAVmF4 #_WRKNGYY #_H27mdb7 #_VGkMjCf #_zQMU6fA #_hzHyTek">
+					<orgName type="full">unknown</orgName>
+				</funder>
+				<funder ref="#_3arbQrJ">
+					<orgName type="full">Hong Kong RGC CRF</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Long</forename><surname>Bai</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic Engineering</orgName>
+								<orgName type="institution">The Chinese University of Hong Kong (CUHK)</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mobarakol</forename><surname>Islam</surname></persName>
+							<email>mobarakol.islam@ucl.ac.uk</email>
+							<affiliation key="aff1">
+								<orgName type="department">Wellcome/EPSRC Centre for Interventional and Surgical Sciences (WEISS)</orgName>
+								<orgName type="institution">University College London</orgName>
+								<address>
+									<settlement>London</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hongliang</forename><surname>Ren</surname></persName>
+							<email>hlren@ee.cuhk.edu.hk</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electronic Engineering</orgName>
+								<orgName type="institution">The Chinese University of Hong Kong (CUHK)</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution" key="instit1">Shun Hing Institute of Advanced Engineering</orgName>
+								<orgName type="institution" key="instit2">CUHK</orgName>
+								<address>
+									<settlement>Hong Kong SAR</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">CAT-ViL: Co-attention Gated Vision-Language Embedding for Visual Question Localized-Answering in Robotic Surgery</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="397" to="407"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">576A9DEFAB1EA678AC67901F2B8D41B4</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_38</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Medical students and junior surgeons often rely on senior surgeons and specialists to answer their questions when learning surgery. However, experts are often busy with clinical and academic work, and have little time to give guidance. Meanwhile, existing deep learning (DL)-based surgical Visual Question Answering (VQA) systems can only provide simple answers without the location of the answers. In addition, vision-language (ViL) embedding is still a less explored research in these kinds of tasks. Therefore, a surgical Visual Question Localized-Answering (VQLA) system would be helpful for medical students and junior surgeons to learn and understand from recorded surgical videos. We propose an end-to-end Transformer with the Co-Attention gaTed Vision-Language (CAT-ViL) embedding for VQLA in surgical scenarios, which does not require feature extraction through detection models. The CAT-ViL embedding module is designed to fuse multimodal features from visual and textual sources. The fused embedding will feed a standard Data-Efficient Image Transformer (DeiT) module, before the parallel classifier and detector for joint prediction. We conduct the experimental validation on public surgical videos from MICCAI EndoVis Challenge 2017 and 2018. The experimental results highlight the superior performance and robustness of our proposed model compared to the state-of-the-art approaches. Ablation studies further prove the outstanding performance of all the proposed components. The proposed method provides a promising solution for surgical scene understanding, and opens up a primary step in the Artificial Intelligence (AI)based VQLA system for surgical training. Our code is available at github.com/longbai1006/CAT-ViL.</p><p>L. Bai and M. Islam-are co-first authors.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Specific knowledge in the medical domain needs to be acquired through extensive study and training. When faced with a surgical scenario, patients, medical students, and junior doctors usually come up with various questions that need to be answered by surgical experts, and therefore, to better understand complex surgical scenarios. However, the number of expert surgeons is always insufficient, and they are often overwhelmed by academic and clinical workloads. Therefore, it is difficult for experts to find the time to help students individually <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b23">24]</ref>. Automated solutions have been proposed to help students learn surgical knowledge, skills, and procedures, such as pre-recorded videos, surgical simulation and training systems <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b17">18]</ref>, etc. Although students may learn knowledge and skills from these materials and practices, their questions still need to be answered by experts. Recently, several approaches <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b23">24]</ref> have demonstrated the feasibility of developing safe and reliable VQA models in the medical field. Specifically, Surgical-VQA <ref type="bibr" target="#b21">[22]</ref> made effective answers regarding tools and organs in robotic surgery, but they were still unable to help students make sense of complex surgical scenarios. For example, suppose a student asks a question about the tooltissue interaction for a specific surgical tool, the VQA model can only simply answer the question, but cannot directly indicate the location of the tool and tissue in the surgical scene. Students will still need help understanding this complex surgical scene. Another problem with Surgical-VQA is that their sentence-based VQA model requires datasets with annotation in the medical domain, and manual annotation is time-consuming and laborious.</p><p>Currently, extensive research and progress have been made on VQA tasks in the computer vision domain <ref type="bibr" target="#b16">[17]</ref>. Models using long-short term memory modules <ref type="bibr" target="#b27">[28]</ref>, attention modules <ref type="bibr" target="#b23">[24]</ref>, and Transformer <ref type="bibr" target="#b16">[17]</ref> significantly boost the performance in VQA tasks. Furthermore, FindIt <ref type="bibr" target="#b15">[16]</ref> proposed a unified Transformer model for joint object detection and ViL tasks. However, firstly, most of these models acquire the visual features of key targets through object detection models. In this case, the VQA performance strongly depends on the object detection results, which hinders the global understanding of the surgical scene <ref type="bibr" target="#b22">[23]</ref>, and makes the overall solution not fully end-to-end. Second, many VQA models employ simple additive, averaging, scalar product, or attention mechanisms when fusing heterogeneous visual and textual features. Nevertheless, in heterogeneous feature fusion, each feature represents different meanings, and simple techniques cannot achieve the best intermediate representation from heterogeneous features. Finally, the VQA model cannot highlight specific regions in the image relevant to the question and answer. Supposing the location of the object in the surgical scene can be known along with the answer by VQLA models, students can compare it with the surrounding tissues, different surgical scenes, preoperative scan data, etc., to better understand the surgical scene <ref type="bibr" target="#b3">[4]</ref>.</p><p>In this case, we propose CAT-ViL DeiT for VQLA tasks in surgical scene understanding. Specifically, our contributions are three-fold: <ref type="bibr" target="#b0">(1)</ref> We carefully design a Transformer-based VQLA model that can relate the surgical VQA and localization tasks at an instance level, demonstrating the potential of AI-based VQLA system in surgical training and surgical scene understanding. (2) In our proposed CAT-ViL embedding, the co-attention module allows the text embeddings to have instructive interaction with visual embeddings, and the gated module works to explore the best intermediate representation for heterogeneous embeddings. <ref type="bibr" target="#b2">(3)</ref> With extensive experiments, we demonstrate the extraordinary performance and robustness of our CAT-ViL DeiT in localizing and answering questions in surgical scenarios. We compare the performance of detection-based and detection-free feature extractors. We remove the computationally costly and error-prone detection proposals to achieve superior representation learning and end-to-end real-time applications.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Preliminaries</head><p>VisualBERT <ref type="bibr" target="#b16">[17]</ref> generates text embeddings (including token embedding e t , segment embedding e s , and position embedding e p ) based on the strategy of natural language model BERT <ref type="bibr" target="#b8">[9]</ref>, and uses object detection model to extract visual embeddings (consisting of visual features representation f v , segment embedding f s and position embedding f p ). Then, it concatenates visual and text embeddings before feeding the subsequent multilayer Transformer module.</p><p>Multi-Head Attention <ref type="bibr" target="#b25">[26]</ref> can focus limited attention on key and highvalue information. In each head h i , give the certain query q ∈ R dq , key matrix K ∈ R d k , value matrix V ∈ R dv , the attention for each head is calculated as</p><formula xml:id="formula_0">h i = A W (q) i q, W (K) i K, W (V ) i V . W (q) i ∈ R pq×dq , W (k) i ∈ R p k ×d k , W (v) i ∈ R pv×dv</formula><p>are learnable parameters, and A represents the function of single-head attention aggregation. A linear conversion is then applied for the attention aggregation from multiple heads: h = MA(W o [h 1 . . . h h ]). W o ∈ R po×hpv is the learnable parameters in multiple heads. Each head may focus on a different part of the input to achieve the optimal output.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">CAT-ViL DeiT</head><p>We present CAT-ViL DeiT to process the information from different modalities and implement the VQLA task in the surgical scene. DeiT <ref type="bibr" target="#b24">[25]</ref> serves as the backbone of our network. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, the network consists of a vision feature extractor, a customized trained tokenizer, a co-attention gated embedding module, a standard DeiT module, and task-specific heads.</p><p>Feature Extraction: Taking a given image and the associated question, conventional VQA models usually extract visual features via object proposals <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b27">28]</ref>. Instead, we employ ResNet18 <ref type="bibr" target="#b10">[11]</ref> pre-trained on ImageNet <ref type="bibr" target="#b7">[8]</ref> as our visual feature extractor. This design enables faster inference speed and global understanding of given surgical scenes. The text embeddings are acquired via a customized pre-trained tokenizer <ref type="bibr" target="#b21">[22]</ref>. The CAT-ViL embedding module then processes and fuses the input embeddings from different modalities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>CAT-ViL Embedding:</head><p>In the following, the extracted features are processed into visual and text embeddings following VisualBERT <ref type="bibr" target="#b16">[17]</ref> as described in Sect. 2.1. However, VisualBERT <ref type="bibr" target="#b16">[17]</ref> and VisualBERT ResMLP <ref type="bibr" target="#b21">[22]</ref> naively concatenate the embeddings from different modalities without optimizing the intermediate representation between heterologous embeddings. In this case, information and statistical representations from different modalities cannot interact perfectly and serve subsequent tasks. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Self-Attn</head><p>Self-Attn Self-Attn Self-Attn Self-Attn Self-Attn</p><p>Self-Attn Self-Attn Self-Attn Self-Attn Self-Attn Self-Attn Guided-Attn Guided-Attn Guided-Attn Guided-Attn Guided-Attn Guided-Attn Inspired by <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b27">28]</ref>, we replace the naive concatenation operation with a coattention gated ViL module. The gated module can explore the best combination of the two modalities. Co-attention learning enables active information interaction between visual and text embeddings. Specifically, the guided-attention module is applied to infer the correlation between the visual and text embeddings. The normal self-attention module contains the multi-head attention layer, a feed-forward layer, and ReLU activation. The guide-attention module also contains the above components, but its input is from both two modalities, in which the q is from visual embeddings and K,V are from text embeddings:</p><note type="other">Gated</note><formula xml:id="formula_1">h i = A W (q) i q visual , W (K) i K text , W (V) i V text<label>(1)</label></formula><p>Therefore, the visual embeddings shall be reconstructed with the original query, and the key and value of the text embeddings, which can realize the text embeddings to have instructive information interaction with the visual embeddings, and help the model to focus on the targeted image context related to the question. Six guided-attention layers are applied in our network. Thus, the correlation between questions and image regions can be gradually constructed. Besides, we also build six self-attention blocks for both visual and text embeddings to boost the internal relationship within each modality. This step can also avoid 'over' guidance and seek a trade-off. Then, the attended text embeddings and textguided attended visual embedding shall be output from the co-attention module and propagated through the gated module.</p><p>Compared to the naive concatenation <ref type="bibr" target="#b16">[17]</ref>, summation, or the multilayer perceptron (MLP) layer <ref type="bibr" target="#b27">[28]</ref>, this learnable gated neuron-based model can control the contribution of multimodal input to output through selective activation (set as tanh here). The gate node α is employed to control the weight for selective visual and text embedding aggregation. The equations of the gated module are as follows: Subsequently, the fused embeddings E o shall feed the pre-trained DeiT-Base <ref type="bibr" target="#b24">[25]</ref> module before the task-specific heads. The pre-trained DeiT-Base module can learn the joint representation, resolve ambiguous groundings from multimodel information, and maximize performance.</p><formula xml:id="formula_2">E o = w * tanh (θ v • E v ) + (1 -w) * tanh (θ t • E t ) w = α (θ w • [E v E t ])<label>(2)</label></formula><p>Prediction Heads: The classification head, following the normal classification strategy, is a linear layer with Softmax activation. Regarding the localization head, we follow the setup in Detection with Transformers (DETR) <ref type="bibr" target="#b6">[7]</ref>. A simple feed-forward network (FFN) with a 3-layer perceptron, ReLU activation, and a linear projection layer is employed to fit the coordinates of the bounding boxes. The entire network is therefore built end-to-end without multi-stage training.</p><p>Loss Function: Normally, the cross-entropy loss L CE serves as our classification loss. The combination of L 1 -norm and Generalized Intersection over Union (GIoU) loss <ref type="bibr" target="#b20">[21]</ref> is adopted to conduct bounding box regression. GIoU loss <ref type="bibr" target="#b20">[21]</ref> further emphasizes both overlapping and non-overlapping regions of bounding boxes. Then, the final loss function is L = L CE + (L GIoU + L 1 ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>EndoVis 2018 Dataset is a public dataset with 14 robotic surgery videos from MICCAI Endoscopic Vision Challenge <ref type="bibr" target="#b0">[1]</ref>. The VQLA annotations are publicly accessible by <ref type="bibr" target="#b3">[4]</ref>, in which the QA pairs are from <ref type="bibr" target="#b22">[23]</ref> and the bounding box annotations are from <ref type="bibr" target="#b13">[14]</ref>. Specifically, the QA pairs include 18 different singleword answers regarding organs, surgical tools, and tool-organ interactions. When the question is about organ-tool interactions, the bounding box will contain both the organ and the tool. We follow <ref type="bibr" target="#b21">[22]</ref> to use video <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b15">16]</ref>  against VisualBERT (light blue) <ref type="bibr" target="#b16">[17]</ref>, VisualBERT ResMLP (green) <ref type="bibr" target="#b21">[22]</ref>, MCAN (orange) <ref type="bibr" target="#b27">[28]</ref>, VQA-DeiT (purple) <ref type="bibr" target="#b24">[25]</ref>, MUTAN (gray) <ref type="bibr" target="#b4">[5]</ref>, MFH (dark blue) <ref type="bibr" target="#b28">[29]</ref>, and BlockTucker (pink) <ref type="bibr" target="#b5">[6]</ref>. The Ground Truth bounding box is red. (Color figure online)</p><p>EndoVis 2017 Dataset is also a publicly available dataset from the MIC-CAI Endoscopic Vision Challenge 2017 <ref type="bibr" target="#b1">[2]</ref>, and the annotations are also available by <ref type="bibr" target="#b3">[4]</ref>. We employ this dataset as an external validation dataset to demonstrate the generalization capability of our model in various surgical domains. Specifically, we manually select and annotate frames with common organs, tools, and interactions in EndoVis 2017 Dataset, generating 97 frames with 472 QA pairs. We conduct no training but only testing on this external validation dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>We conduct our comparison experiments against VisualBERT <ref type="bibr" target="#b16">[17]</ref>, VisualBERT ResMLP <ref type="bibr" target="#b21">[22]</ref>, MCAN <ref type="bibr" target="#b27">[28]</ref>, VQA-DeiT <ref type="bibr" target="#b24">[25]</ref>, MUTAN <ref type="bibr" target="#b4">[5]</ref>, MFH <ref type="bibr" target="#b28">[29]</ref>, and Block-Tucker <ref type="bibr" target="#b5">[6]</ref>. In VQA-DeiT, we use pre-trained DeiT-Base block <ref type="bibr" target="#b24">[25]</ref> to replace the multilayer Transformer module in VisualBERT <ref type="bibr" target="#b16">[17]</ref>. To keep a fair comparison of VQLA tasks, we use the same prediction heads in and loss function in Sect. 2.2. The evaluation metrics are accuracy, f-score, and mean intersection over union (mIoU) <ref type="bibr" target="#b20">[21]</ref>. All models are trained on NVIDIA RTX 3090 GPUs using Adam optimizer <ref type="bibr" target="#b14">[15]</ref> with PyTorch. The epoch, batch size, and learning rate are set to 80, 64, and 1 × 10 -5 , respectively. The experimental results are the average results with five different random seeds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Figure <ref type="figure" target="#fig_1">2</ref> presents the visualization and qualitative comparison of the surgical VQLA system. Quantitative evaluation in Table <ref type="table" target="#tab_2">1</ref> presents that our proposed model using ResNet18 <ref type="bibr" target="#b10">[11]</ref> feature extractor suppresses all SOTA models significantly. Additionally, we compare the performance between using object proposals (Faster RCNN <ref type="bibr" target="#b19">[20]</ref>) and using features from the entire image (ResNet18 <ref type="bibr" target="#b10">[11]</ref>). The experimental results in EndoVis-18 show that removing the object proposal model improves the performance appreciably on both question-answering and localization tasks, which demonstrates the impact of this approach in correcting potential false detections. Meanwhile, in the external validation set -EndoVis-17, our CAT-ViL DeiT with RCNN feature extractor suffers from domain shift  <ref type="bibr" target="#b21">[22]</ref> 0.6064 0.3226 0.7305 0.4267 0.3506 0.6947 MCAN <ref type="bibr" target="#b27">[28]</ref> 0.6084 0.3428 0.7257 0.4258 0.3035 0.6832 VQA-DeiT <ref type="bibr" target="#b24">[25]</ref> 0.6089 0.3217 0.7338 0.4492 0.3213 0.7134 MUTAN <ref type="bibr" target="#b4">[5]</ref> 0.6049 0.3238 0.7217 0.4364 0.3206 0.6870 MFH <ref type="bibr" target="#b28">[29]</ref> 0.6179 0.3158 0.7227 0.3729 0.2048 0.7183 BlockTucker <ref type="bibr" target="#b5">[6]</ref> 0.6067 0.3414 0.7313 0.4364 0.3210 0.6825 CAT-ViL DeiT (Ours) 0.6192 0.3521 0.7482 0.4555 0.3676 0.7049</p><p>VisualBERT <ref type="bibr" target="#b16">[17]</ref> 6.64 ms 0.6268 0.3329 0.7391 0.4005 0.3381 0.7073 VisualBERT R <ref type="bibr" target="#b21">[22]</ref> 0.6301 0.3390 0.7352 0.4190 0.3370 0.7137 MCAN <ref type="bibr" target="#b27">[28]</ref> 0.6285 0.3338 0.7526 0.4137 0.2932 0.7029 VQA-DeiT <ref type="bibr" target="#b24">[25]</ref> 0.6104 0.3156 0.7341 0.3797 0.2858 0.6909 MUTAN <ref type="bibr" target="#b4">[5]</ref> 0.6283 0.3395 0.7639 0.4242 0.3482 0.7218 MFH <ref type="bibr" target="#b28">[29]</ref> 0.6283 0.3254 0.7592 0.4103 0.3500 0.7216 BlockTucker <ref type="bibr" target="#b5">[6]</ref> 0.6201 0.3286 0.7653 0.4221 0.3515 0.7288 CAT-ViL DeiT (Ours) 0.6452 0.3321 0.7705 0.4491 0.3622 0.7322 Fig. <ref type="figure">3</ref>. Robustness experiments on the EndoVis-18 dataset. We process the data with 18 corruption methods at each severity level and average the prediction results. and class imbalance problems, thus achieving poor performance. However, our final model, CAT-ViL DeiT with ResNet18 feature extractor, endows the network with global awareness and outperforms all baselines in terms of accuracy and mIoU, proving the superiority of our method. The inference speed is also enormously accelerated, demonstrating its potential in real-time applications. Furthermore, a robustness experiment is conducted to observe the model stability when test data is corrupted. We set 18 types of corruption on the test data based on the severity level from 1 to 5 by following <ref type="bibr" target="#b11">[12]</ref>. Then, the performance of our model and all comparison methods on each corruption severity level is presented in Fig. <ref type="figure">3</ref>. As the severity increases, the performance of all models degrades. However, our model shows good stability against corruption, and presents the best prediction results at each severity level. The excellent robustness of our model brings great potential for real-world applications.</p><p>Finally, we conduct an ablation study on different ViL embedding techniques with the same feature extractors and DeiT backbone in Table <ref type="table" target="#tab_3">2</ref>. We compare with Concatenation <ref type="bibr" target="#b16">[17]</ref>, Joint Cross-Attention (JCA) <ref type="bibr" target="#b18">[19]</ref>, Multimodal Multi-Head Convolutional Attention (MMHCA) <ref type="bibr" target="#b9">[10]</ref>, Multimodal Attention Transformers (MAT) <ref type="bibr" target="#b26">[27]</ref>, Gated Fusion <ref type="bibr" target="#b2">[3]</ref>, Self-Attention Fusion <ref type="bibr" target="#b25">[26]</ref>, Guided-Attention Fusion <ref type="bibr" target="#b27">[28]</ref>, Co-Attention Fusion (T2V: Text-Guide-Vision) <ref type="bibr" target="#b27">[28]</ref>. Besides, we explore the Co-Attention module with different directions (V2T: Vision-Guide-Text, and Bidirectional). Furthermore, we also incorporate the Gated Fusion with different attention mechanisms (Self-Attention, Guided-Attention, Bidirectional Co-Attention, Co-Attention (V2T), Co-Attention (T2V)) for detailed comparison. They are shown as 'Self-Attn Gated', 'Guided-Attn Gated', 'CAT-ViL (Bi)', 'CAT-ViL (V2T)' and 'CAT-ViL (T2V)' in Table <ref type="table" target="#tab_3">2</ref>. The study proves the superior performance of our ViL embedding strategy against other advanced methods. We also demonstrate that integrating attention feature fusion techniques and the gated module will bring performance improvement.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>This paper presents a Transformer model with CAT-ViL embedding for the surgical VQLA tasks, which can give the localized answer based on a specific surgical scene and associated question. It brings up a primary step in the study of VQLA systems for surgical training and scene understanding. The proposed CAT-ViL embedding module is proven capable of optimally facilitating the interaction and fusion of multimodal features. Numerous comparative, robustness, and ablation experiments display the leading performance and stability of our proposed model against all SOTA methods in both question-answering and localization tasks, as well as the potential of real-time and real-world applications. Furthermore, our study opens up more potential VQA-related problems in the medical community. Future work can be focused on quantifying and improving the reliability and uncertainty of these safety-critical tasks in the medical domain.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The proposed network architecture. The network components include a visual feature extractor, tokenizer, CAT-ViL embedding module (embedding setup, coattention learning, gated module), per-trained DeiT block, and task-specific heads. 'Attn' represents 'Attention'.</figDesc><graphic coords="4,48,60,253,31,51,76,102,97" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2.Qualitative comparison on the VQLA task. Our CAT-ViL DeiT (Yellow) displays state-of-the-art (SOTA) performance on generating the answers and location against VisualBERT (light blue)<ref type="bibr" target="#b16">[17]</ref>, VisualBERT ResMLP (green)<ref type="bibr" target="#b21">[22]</ref>, MCAN (orange)<ref type="bibr" target="#b27">[28]</ref>, VQA-DeiT (purple)<ref type="bibr" target="#b24">[25]</ref>, MUTAN (gray)<ref type="bibr" target="#b4">[5]</ref>, MFH (dark blue)<ref type="bibr" target="#b28">[29]</ref>, and BlockTucker (pink)<ref type="bibr" target="#b5">[6]</ref>. The Ground Truth bounding box is red. (Color figure online)</figDesc><graphic coords="6,57,30,161,00,238,96,67,24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 1 .</head><label>1</label><figDesc>Comparison experiments on EndoVis-18 and EndoVis-17 datasets.</figDesc><table><row><cell>Models</cell><cell cols="2">Visual Feature</cell><cell cols="2">EndoVis-18</cell><cell>EndoVis-17</cell></row><row><cell></cell><cell>Detection</cell><cell>Inference</cell><cell>Acc</cell><cell cols="2">F-Score mIoU Acc</cell><cell>F-Score mIoU</cell></row><row><cell></cell><cell></cell><cell>Speed</cell><cell></cell><cell></cell></row><row><cell>VisualBERT [17]</cell><cell cols="2">FRCNN [20] 55.28 ms</cell><cell cols="3">0.5973 0.3223 0.7340 0.4382 0.3743 0.6822</cell></row><row><cell>VisualBERT R</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 2 .</head><label>2</label><figDesc>Ablation study on different fusion strategies. All experiments use the same feature extractor, DeiT backbone, and prediction heads. 'Attn' denotes 'Attention'.</figDesc><table><row><cell>Fusion Strategies</cell><cell cols="2">EndoVis-18</cell><cell>EndoVis-17</cell></row><row><cell></cell><cell>Acc</cell><cell cols="2">F-Score mIoU Acc</cell><cell>F-Score mIoU</cell></row><row><cell>Concatenation [17]</cell><cell cols="3">0.6104 0.3156 0.7341 0.3797 0.2858 0.6909</cell></row><row><cell>JCA [19]</cell><cell cols="3">0.6024 0.3010 0.7527 0.3750 0.2835 0.7145</cell></row><row><cell>MMHCA [10]</cell><cell cols="3">0.6096 0.3124 0.7449 0.3581 0.3001 0.7077</cell></row><row><cell>MAT [27]</cell><cell cols="3">0.6186 0.3179 0.7415 0.3369 0.2850 0.6956</cell></row><row><cell>Gated Fusion [3]</cell><cell cols="3">0.6071 0.3793 0.7683 0.4030 0.2824 0.7388</cell></row><row><cell>Self-Attn [26]</cell><cell cols="3">0.5923 0.3095 0.7271 0.3686 0.2673 0.6718</cell></row><row><cell>Guided-Attn [28]</cell><cell cols="3">0.6194 0.3134 0.7310 0.3517 0.2290 0.7185</cell></row><row><cell>Co-Attn (Bi)</cell><cell cols="3">0.6056 0.3090 0.7206 0.3644 0.3083 0.7044</cell></row><row><cell>Co-Attn (V2T)</cell><cell cols="3">0.6392 0.3263 0.7218 0.3453 0.2265 0.7143</cell></row><row><cell>Co-Attn (T2V) [28]</cell><cell cols="3">0.6136 0.3208 0.7273 0.3805 0.3026 0.6870</cell></row><row><cell>Self-Attn Gated (Ours)</cell><cell cols="3">0.6249 0.3078 0.7314 0.3263 0.2897 0.7086</cell></row><row><cell cols="4">Guided-Attn Gated (Ours) 0.6280 0.3127 0.7651 0.3962 0.3337 0.7145</cell></row><row><cell>CAT-ViL (Bi) (Ours)</cell><cell cols="3">0.6230 0.3121 0.7415 0.4258 0.3593 0.7282</cell></row><row><cell>CAT-ViL (V2T) (Ours)</cell><cell cols="3">0.6352 0.3259 0.7600 0.4301 0.3543 0.7074</cell></row><row><cell>CAT-ViL (T2V) (Ours)</cell><cell cols="3">0.6452 0.3321 0.7705 0.4491 0.3622 0.7322</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><head>Acknowledgements</head><p>. This work was funded by <rs type="funder">Hong Kong RGC CRF</rs> <rs type="grantNumber">C4063-18G</rs>, <rs type="grantNumber">CRF C4026-21GF</rs>, <rs type="grantNumber">RIF R4020-22</rs>, <rs type="grantNumber">GRF 14203323</rs>, <rs type="grantNumber">GRF 14216022</rs>, <rs type="grantNumber">GRF 14211420</rs>, <rs type="grantNumber">NSFC/RGC JRS N CUHK420/22</rs>; <rs type="affiliation">Shenzhen-Hong Kong-Macau Technology Research Programme (Type C 202108233000303</rs>); Guangdong GBABF #<rs type="grantNumber">2021B1515120035</rs>. M. Islam was funded by <rs type="funder">EPSRC</rs> grant <rs type="grantNumber">[EP/W00805X/1</rs>].</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_3arbQrJ">
+					<idno type="grant-number">C4063-18G</idno>
+				</org>
+				<org type="funding" xml:id="_xWxKMqp">
+					<idno type="grant-number">CRF C4026-21GF</idno>
+				</org>
+				<org type="funding" xml:id="_sHAVmF4">
+					<idno type="grant-number">RIF R4020-22</idno>
+				</org>
+				<org type="funding" xml:id="_WRKNGYY">
+					<idno type="grant-number">GRF 14203323</idno>
+				</org>
+				<org type="funding" xml:id="_H27mdb7">
+					<idno type="grant-number">GRF 14216022</idno>
+				</org>
+				<org type="funding" xml:id="_VGkMjCf">
+					<idno type="grant-number">GRF 14211420</idno>
+				</org>
+				<org type="funding" xml:id="_zQMU6fA">
+					<idno type="grant-number">NSFC/RGC JRS N CUHK420/22</idno>
+				</org>
+				<org type="funding" xml:id="_ZPHC4ju">
+					<idno type="grant-number">2021B1515120035</idno>
+				</org>
+				<org type="funding" xml:id="_hzHyTek">
+					<idno type="grant-number">[EP/W00805X/1</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4 38.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Allan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2001.11190</idno>
+		<title level="m">robotic scene segmentation challenge</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Allan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.06426</idno>
+		<title level="m">robotic instrument segmentation challenge</title>
+		<imprint>
+			<date type="published" when="2017">2017. 2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Arevalo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Solorio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Montes-Y Gómez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>González</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1702.01992</idno>
+		<title level="m">Gated multimodal units for information fusion</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Surgical-VQLA: transformer with gated vision-language embedding for visual question localized-answering in robotic surgery</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Seenivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ren</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2305.11692</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">MUTAN: multimodal tucker fusion for visual question answering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ben-Younes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cadene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Thome</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2612" to="2620" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">BLOCK: bilinear superdiagonal fusion for visual question answering and visual relationship detection</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ben-Younes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cadene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Thome</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="8102" to="8109" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Endto-end object detection with transformers</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Synnaeve</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zagoruyko</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58452-8_13</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58452-813" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12346</biblScope>
+			<biblScope unit="page" from="213" to="229" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">ImageNet: a large-scale hierarchical image database</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2009 IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="248" to="255" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">BERT: pre-training of deep bidirectional transformers for language understanding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Devlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Toutanova</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.04805</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Multimodal multi-head convolutional attention with various kernel sizes for medical image super-resolution</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Georgescu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="2195" to="2205" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Dietterich</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1903.12261</idno>
+		<title level="m">Benchmarking neural network robustness to common corruptions and perturbations</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">VR and AR applications in medical practice and education</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">H</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hu Li Za Zhi</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="12" to="18" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Learning and reasoning with the graph structure representation in robotic surgery</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Seenivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Ming</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ren</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_60</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59716-060" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="627" to="636" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.6980</idno>
+		<title level="m">Adam: a method for stochastic optimization</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">W</forename><surname>Kuo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bertsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Piergiovanni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Saffar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Angelova</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.17273</idno>
+		<title level="m">FindIt: generalized localization with natural language queries</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yatskar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>Chang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.03557</idno>
+		<title level="m">VisualBERT: a simple and performant baseline for vision and language</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Towards automatic skill evaluation: detection and segmentation of robot-assisted surgical motions</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">C</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Shafran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yuh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hager</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Aided Surg</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="220" to="230" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A joint cross-attention model for audio-visual fusion in dimensional emotion recognition</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">G</forename><surname>Praveen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2486" to="2495" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Faster R-CNN: towards real-time object detection with region proposal networks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">28</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Generalized intersection over union: a metric and a loss for bounding box regression</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Rezatofighi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tsoi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gwak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sadeghian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Reid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Savarese</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="658" to="666" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Surgical-VQA: visual question answering in surgical scenes using transformer</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Seenivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krishna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="33" to="43" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Global-reasoned multi-task learning model for surgical scene understanding</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Seenivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mitheran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="3858" to="3865" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">MedFuseNet: an attention-based multimodal deep learning model for visual question answering in the medical domain</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Purushotham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Reddy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="18" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Training data-efficient image transformers &amp; distillation through attention</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Touvron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Douze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sablayrolles</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jégou</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10347" to="10357" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Multimodal crowd counting with mutual attention transformers</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE International Conference on Multimedia and Expo (ICME)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1" to="6" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Deep modular co-attention networks for visual question answering</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Tian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="6281" to="6290" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Generalized multimodal factorized highorder pooling for visual question answering</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="5947" to="5959" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,930 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">How Reliable are the Metrics Used for Assessing Reliability in Medical Imaging?</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Mayank</forename><surname>Gupta</surname></persName>
+							<email>mayank.gupta@cse.iitd.ac.in</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Soumen</forename><surname>Basu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chetan</forename><surname>Arora</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Indian Institute of Technology</orgName>
+								<address>
+									<settlement>Delhi</settlement>
+									<country key="IN">India</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">How Reliable are the Metrics Used for Assessing Reliability in Medical Imaging?</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="149" to="158"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">CE6F5E2CB142F7976DBD3FAAE4A81314</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_15</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Confidence Calibration</term>
+					<term>Uncertainty Estimation</term>
+					<term>Image Classification</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deep Neural Networks (DNNs) have been successful in various computer vision tasks, but are known to be uncalibrated, and make overconfident mistakes. This erodes a user's confidence in the model and is a major concern in their applicability for critical tasks like medical imaging. In the last few years, researchers have proposed various metrics to measure miscalibration, and techniques to calibrate DNNs. However, our investigation shows that for small datasets, typical for medical imaging tasks, the common metrics for calibration, have a large bias as well as variance. It makes these metrics highly unreliable, and unusable for medical imaging. Similarly, we show that state-of-the-art (SOTA) calibration techniques while effective on large natural image datasets, are ineffective on small medical imaging datasets. We discover that the reason for failure is large variance in the density estimation using a small sample set. We propose a novel evaluation metric that incorporates the inherent uncertainty in the predicted confidence, and regularizes the density estimation using a parametric prior model. We call our metric, Robust Expected Calibration Error (RECE), which gives a low bias, and low variance estimate of the expected calibration error, even on the small datasets.</p><p>In addition, we propose a novel auxiliary loss -Robust Calibration Regularization (RCR) which rectifies the above issues to calibrate the model at train time. We demonstrate the effectiveness of our RECE metric as well as the RCR loss on several medical imaging datasets and achieve SOTA calibration results on both standard calibration metrics as well as RECE. We also show the benefits of using our loss on general classification datasets. The source code and all trained models have been released (https://github.com/MayankGupta73/Robust-Calibration).</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Application of DNNs to critical applications like medical imaging requires that a model is not only accurate, but also well calibrated. Practitioners can trust Fig. <ref type="figure">1</ref>. The graphs show the ECE computed on the sample sets of various sizes (x axis) drawn from a given test distribution: (Left) GBCU <ref type="bibr" target="#b1">[2]</ref> (Middle) POCUS <ref type="bibr" target="#b2">[3]</ref>, and (Right) Diabetic Retinopathy <ref type="bibr" target="#b11">[12]</ref>. Notice the large bias and the variance, especially for the small sample sets. In this paper we propose a novel calibration metric, Robust ECE, and a novel train time calibration loss, RCR, especially suited for small datasets, which is a typical scenario for medical image analysis tasks.</p><p>deployed models if they are certain that the model will give a highly confident answer when it is correct, and uncertain samples will be labeled as such. In case of uncertainty, the doctors can be asked for a second opinion instead of an automated system giving highly confident but incorrect and potentially disastrous predictions <ref type="bibr" target="#b10">[11]</ref>. Researchers have shown that modern DNNs are poorly calibrated and overconfident <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b24">25]</ref>. To rectify the problem, various calibration methods have been proposed such as Platt-scaling <ref type="bibr" target="#b25">[26]</ref> based post-hoc calibration, or the train-time calibration methods such as MDCA <ref type="bibr" target="#b7">[8]</ref>. We note that these methods have been mostly tested on large natural image datasets.</p><p>Our key observation is that current metrics for calibration are highly unreliable for small datasets. For example, given a particular data distribution, if one measures calibration on various sample sets drawn from the distribution, an ideal metric should give an estimate with low bias and variance. We show that this does not hold true for popular metrics like ECE (c.f. Fig. <ref type="figure">1</ref>). We investigate the reason for such discrepancy. We observe that all the techniques first divide the confidence range into bins, and then estimate the probability of a model predicting confidence in each bin, along with the accuracy of the model in that bin. Such probability estimates become highly unreliable when the sample set is small. Imagine, seeing one correct sample with confidence 0.7, and then declaring the model under-confident in that bin. Armed with the insight, we go on proposing a new metric called Robust ECE especially suited for small datasets, and an auxiliary RCR loss to calibrate a model at the train time. The proposed loss can be used in addition to an application specific loss to calibrate the model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Contributions: (1)</head><p>We demonstrate the ineffectiveness of common calibration metrics on medical image datasets with limited number of samples. (2) We propose a novel and robust metric to estimate calibration accurately on small datasets. The metric regularizes the probability of predicting a particular confidence value by estimating a parametric density model for each sample. The calibration estimates using the regularized probability estimates have significantly lower bias, and variance. (3) Finally, we also propose a train-time auxiliary loss for calibrating models trained on small datasets. We validate the proposed loss on several public medical datasets and achieve SOTA calibration results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Metrics for Estimating Calibration: Expected Calibration Error (ECE) <ref type="bibr" target="#b20">[21]</ref>, first proposed in the context of DNNs by <ref type="bibr" target="#b5">[6]</ref>, divides the predicted confidence values in various bins and then calculates the absolute difference of average confidence and accuracy in that bin. The aggregate over all the bins is outputted as the calibration error. The motivation is to compute the probability of the model outputting a particular confidence, and the accuracy for the samples getting the particular confidence. The expectation of the difference is the calibration error. Since the error relies on accurate computation of probability, the same has large bias and variance when the dataset is small. Static Calibration Error (SCE) <ref type="bibr" target="#b22">[23]</ref> extends ECE to multi-class settings by computing ECE for each class and then taking the average. Both ECE and SCE suffer from non-uniform distribution of samples into various bins, resulting in some bins getting small or no allocations. Adaptive binning (AECE) <ref type="bibr" target="#b21">[22]</ref> attempts to mitigate the same by adaptively changing the bin sizes according to the given sample set. ECE-KDE <ref type="bibr" target="#b26">[27]</ref> uses Dirichlet kernel density estimates for estimating calibration error.</p><p>Calibrating DNNs: Calibration techniques typically reshape the output confidence vector so as to minimize a calibration loss. The techniques can be broadly categorized into post-hoc and train-time techniques. Whereas post-hoc techniques <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b13">14]</ref> use a validation set to learn parameters to reshape the output probability vector, the train time techniques typically introduce an additional auxiliary loss to aid in calibration <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b29">30]</ref>. While being more intrusive, such techniques are more popular due to their effectiveness. We also follow a similar approach in this paper. Other strategies for calibration includes learning robust representations leading to calibrated confidences <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b31">32]</ref>.</p><p>Calibration in Medical Imaging: Liang et al. <ref type="bibr" target="#b16">[17]</ref> propose DCA loss which has been used for calibration of medical classification models. The loss aims to minimize the difference between predicted confidence and accuracy. However, the datasets demonstrated are quite large and the technique does not indicate any benefits for smaller datasets. Carneiro et al. <ref type="bibr" target="#b3">[4]</ref> use MC-Dropout <ref type="bibr" target="#b4">[5]</ref> entropy estimation and temperature scaling <ref type="bibr" target="#b5">[6]</ref> for calibrating a model trained on colonoscopy polyp classification. Rajaraman et al. <ref type="bibr" target="#b27">[28]</ref> demonstrate a few calibration methods for classification on class-imbalanced medical datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Proposed Methodology</head><p>Model Calibration: Let D be a dataset with N samples:</p><formula xml:id="formula_0">D = {(x i , y * i ) | i ∈ 1, . . . , N}. Given an input x i ∈ X , a classification model f must predicts its categorical label y ∈ Y = {1, . . . , K}.</formula><p>Hence, for a sample i, the model outputs a confidence vector, C i ∈ [0, 1] K , a probability vector denoting the confidence for each class. A prediction y i is made by selecting the class with maximum confidence in C. A model is said to be calibrated if:</p><formula xml:id="formula_1">P (y * = y) ( y = arg max yi C[y i ]) = C[ y]. (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>Expected Calibration Error (ECE): is computed by bin-wise addition of difference between the average accuracy A i and average confidence C i :</p><formula xml:id="formula_3">ECE = M i=1 B i N |A i -C i |, (<label>2</label></formula><formula xml:id="formula_4">)</formula><formula xml:id="formula_5">A i = 1 B i j∈Bi I(y * j = y j ), C i = 1 B i j∈Bj C j [ y j ]<label>(3)</label></formula><p>Here, C j denotes the confidence vector, and y j predicted label of a sample j.</p><p>The confidences, C[ y], of all the samples being evaluated are split into M equal sized bins with the i th bin having B i number of samples. C i represents the average confidence of samples in the i th bin. The basic idea is to compute the probability of outputting a particular confidence and the associated accuracy, and the expression merely substitutes sample mean in place of true probabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Static Calibration Error (SCE):</head><p>extends ECE to a multi-class setting as follows:</p><formula xml:id="formula_6">SCE = 1 K M i=1 K k=1 B i,k N |A i,k -C i,k |, (<label>4</label></formula><formula xml:id="formula_7">)</formula><formula xml:id="formula_8">A i,k = 1 B i,k j∈B i,k , yj =k I(y * j = y j ), C i,k = 1 B i,k j∈B i,k , yj =k C j [ y j ]<label>(5)</label></formula><p>Here B i,k denotes the number of samples of class k in the i th bin.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Proposed Metric: Robust Expected Calibration Error (RECE)</head><p>We propose a novel metric which gives an estimate of true ECE with low bias, and variance, even when the sample set is small. RECE incorporates the inherent uncertainty in the prediction of a confidence value, by considering the observed value as a sample from a latent distribution. This not only helps avoid overfitting on outliers, but also regularizes the confidence probability estimate corresponding to each confidence bin. We consider two versions of RECE based on the parameterization of the latent distribution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RECE-G:</head><p>Here, we assume a Gaussian distribution of fixed variance (σ) as the latent distribution for each confidence sample. We estimate the mean of the latent distribution as the observed sample itself. Formally:</p><formula xml:id="formula_9">RECE-G = M i=1 1 N | A i -C i |, where C i = N j=1 c j * N i-1 M , i M ; c j , σ M k=1 N k-1 M , k M ; c j , σ ,</formula><p>and</p><formula xml:id="formula_10">A i = N j=1 I( y j = y * j ) * N i-1 M , i M ; c j , σ M k=1 N k-1 M , k M ; c j , σ . (<label>6</label></formula><formula xml:id="formula_11">)</formula><p>To prevent notation clutter, we use</p><formula xml:id="formula_12">c j to denote C j [ y j ]. Further, N ([a, b]; μ, σ)</formula><p>denotes the probability of the interval [a, b] for a Gaussian distribution with mean μ, and variance σ. In the above expression, the range [ i-1 M , i M ] corresponds to the range of confidence values corresponding to i th bin. We also normalize the weight values over the set of bins. The value of standard deviation σ is taken as a fixed hyper-parameter. Note that the expression is equivalent to sampling infinitely many confidence values from the distribution N (•; c j , σ) for each sample j, and then computing the ECE value from thus computed large sampled dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RECE-M:</head><p>Note that RECE-G assumes fixed uncertainty in confidence prediction for all the samples as indicated by the choice of single σ for all the samples. To incorporate sample specific confidence uncertainty, we propose RECE-M in which we generate multiple confidence observations for a sample using test time augmentation. In our implementation, we generate 10 observations using random horizontal flip and rotation. We use the 10 observed values to estimate a Gaussian Mixture Model (denoted as G) with 3 components. We use θ j to denote the estimated parameters of mixture model for sample j. Note that, unlike RECE-G, computation of this metric requires additional inference passes through the model. Hence, the computation is more costly, but may lead to more reliable calibration estimates. Formally, RECE-M is computed as:</p><formula xml:id="formula_13">RECE-M = M i=1 1 N | A i -C i |, where C i = N j=1 c j * G i-1 M , i M ; θ j M k=1 G k-1 M , k M ; θ j ,</formula><p>and</p><formula xml:id="formula_14">A i = N j=1 I( y j = y * j ) * G i-1 M , i M ; θ j M k=1 G k-1 M , k M ; θ j . (<label>7</label></formula><formula xml:id="formula_15">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Proposed Robust Calibration Regularization (RCR) Loss</head><p>Most train time auxiliary loss functions minimize ECE over a mini-batch. When the mini-batches are smaller, the problem of unreliable probability estimation affects those losses as well. Armed with insights from the proposed RECE metric, we apply similar improvements in state of the art MDCA loss <ref type="bibr" target="#b7">[8]</ref>. We call the modified loss function as the Robust Calibration Regularization (RCR) loss:</p><formula xml:id="formula_16">L RCR = 1 K K k=1 1 N b N b j=1 z k j - 1 N b N b j=1 I(y * j = k) (<label>8</label></formula><formula xml:id="formula_17">)</formula><formula xml:id="formula_18">z k j = 1 N b N b i=1 C i [k] * N (C j [k]; C i [k], σ) N b l=1 N (C l [k]; C i [k], σ) . (<label>9</label></formula><formula xml:id="formula_19">)</formula><p>The RCR loss can be used as a regularization term along side any application specific loss function as follows:</p><formula xml:id="formula_20">L total = L application + β * L RCR<label>(10)</label></formula><p>Here, β is a hyper-parameter for the relative weightage of the calibration. As suggested in the MDCA, we also use focal loss <ref type="bibr" target="#b18">[19]</ref> for the L application . Our RCR  We give details in Supplementary A loss is also independent of binning scheme and differentiable which allows for its application in multiple problem formulations outside of classification (though not the focus of this paper, and hence, not validated through experiments).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head><p>Datasets: We use following publicly available datasets for our experiments to demonstrate variety of input modalities, and disease focus. GBCU dataset <ref type="bibr" target="#b1">[2]</ref> consists of 1255 ultrasound (US) images used for the classification of gallbladders into normal, benign and malignant. BUSI <ref type="bibr" target="#b0">[1]</ref> consists of 830 breast US images divided into normal, benign and malignant. POCUS <ref type="bibr" target="#b2">[3]</ref> is a lung US dataset consisting of 2116 images among healthy, pneumonia and covid-19. Covid-CT <ref type="bibr" target="#b32">[33]</ref> consists of 746 CT images classified as covid and non-covid. The Kaggle Diabetic Retinopathy (DR) dataset <ref type="bibr" target="#b11">[12]</ref> consists of 50089 retina images classified into 5 stages of DR severity. The SIIM-ISIC Melanoma dataset <ref type="bibr" target="#b28">[29]</ref> has 33132 dermoscopic images of skin lesions classified into benign and malignant classes. Wherever the train-test splits have been specified (GBCU, POCUS and Covid-CT), we have used the same. For BUSI and Melanoma we create random stratified splits as none are available. For DR we follow the method of <ref type="bibr" target="#b30">[31]</ref> and split the dataset into a binary classification problem. We show the generality of our method on natural image datasets with CIFAR10 and CIFAR100 <ref type="bibr" target="#b12">[13]</ref>.</p><p>Experimental Setup: We use a ResNet-50 <ref type="bibr" target="#b6">[7]</ref> model as a baseline for most of our experiments. The GBCU dataset is trained on the GBCNet architecture <ref type="bibr" target="#b1">[2]</ref>. Both are intialized with ImageNet weights. We use SGD optimizer with weight decay 5e-4, momentum 0.9 and step-wise LR decay with factor 0.1. We use LR 0.003 for GBCU and 0.01 for DR while the rest use 0.005. We train the models for 160 epochs with batch size 128. Horizontal flip is the only train-time augmentation used. For the RECE metric, we use σ = 0.1 and M = 15 bins for evaluation. For RCR loss we use β = 1 and focal loss as L application with γ = 1. Comparison between RECE-G, RECE-M and Other Metrics: Figure <ref type="figure" target="#fig_0">2</ref> and Table <ref type="table" target="#tab_0">1</ref> give the comparison of different metrics computed over increasingly larger sample sets. For these experiments, we randomly sample the required sample size from the test set and compute metrics on them. The process is repeated 20 times and the average value is plotted with 95% confidence intervals. We plot the absolute difference with the baseline being the metric evaluated on the entire dataset. The results show that RECE-G and RECE-M outperform other metrics and are able to converge to the value computed from the whole dataset, using the smallest amount of data. The results for natural datasets are also shown.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Evaluation of Calibration Methods:</head><p>We compare our RCR loss with other SOTA calibration techniques in Table <ref type="table" target="#tab_1">2</ref>. The results show that RCR is able to not only minimize our RECE metric but also other common metrics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We demonstrated the ineffectiveness of existing calibration metrics for medical datasets with limited samples and propose a robust calibration metric to accurately estimates calibration independent of dataset size. We also proposed a novel loss to calibrate models using proposed calibration metric.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Comparison on (Left) GBCU, (Middle) POCUS, and (Right) Diabetic Retinopathy datasets. The x-axis denotes the dataset size sampled and the y-axis denotes the absolute difference with the value obtained on the entire dataset. We repeat the process 20 times and plot the 95% confidence interval.</figDesc><graphic coords="6,54,81,54,47,314,17,73,24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Ablation experiments for RECE Metric. (Left) Effect of calibration on RECE-M for the GBC-USG Dataset. (Middle) Effect of different standard deviation strategies for the GBC-USG dataset. (Right) Effect of different distributions for the BUSI dataset. We give details in Supplementary A</figDesc><graphic coords="6,41,79,195,35,340,21,80,86" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison of metrics evaluated on different sample set sizes. Similar to Fig 2 we calculate the mean and std dev on different data sizes. The highlighted metric is closest to actual value (on 100% data)</figDesc><table><row><cell cols="4">Dataset &amp; Model Eval Metric 100% Data 1% Data</cell><cell>5% Data</cell><cell>10% Data</cell><cell>25% Data</cell><cell>50% Data</cell></row><row><cell>GBCU</cell><cell>ECE</cell><cell>0.0802</cell><cell cols="3">0.147 ± 0.131 0.155 ± 0.090 0.145 ± 0.069 0.126 ± 0.032 0.101 ± 0.027</cell></row><row><cell>GBCNet</cell><cell>SCE</cell><cell>0.0841</cell><cell cols="3">0.092 ± 0.090 0.101 ± 0.046 0.112 ± 0.043 0.113 ± 0.030 0.096 ± 0.015</cell></row><row><cell></cell><cell>AECE</cell><cell>0.0722</cell><cell cols="3">0.012 ± 0.025 0.077 ± 0.039 0.088 ± 0.067 0.138 ± 0.039 0.114 ± 0.027</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.3438</cell><cell cols="3">0.927 ± 0.236 0.531 ± 0.182 0.479 ± 0.151 0.338 ± 0.075 0.346 ± 0.055</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0607</cell><cell cols="3">0.049 ± 0.050 0.062 ± 0.043 0.065 ± 0.038 0.066 ± 0.024 0.060 ± 0.024</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0641</cell><cell cols="3">0.066 ± 0.081 0.080 ± 0.057 0.090 ± 0.045 0.075 ± 0.026 0.069 ± 0.019</cell></row><row><cell>BUSI</cell><cell>ECE</cell><cell>0.0726</cell><cell cols="3">0.113 ± 0.162 0.076 ± 0.092 0.066 ± 0.058 0.071 ± 0.042 0.067 ± 0.024</cell></row><row><cell>ResNet-50</cell><cell>SCE</cell><cell>0.0485</cell><cell cols="3">0.075 ± 0.109 0.051 ± 0.062 0.044 ± 0.039 0.049 ± 0.028 0.047 ± 0.015</cell></row><row><cell></cell><cell>AECE</cell><cell>0.0531</cell><cell cols="3">0.005 ± 0.007 0.037 ± 0.055 0.045 ± 0.050 0.084 ± 0.045 0.070 ± 0.021</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.1864</cell><cell cols="3">0.752 ± 0.401 0.530 ± 0.367 0.292 ± 0.155 0.186 ± 0.080 0.161 ± 0.064</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0301</cell><cell cols="3">0.040 ± 0.061 0.028 ± 0.034 0.028 ± 0.027 0.034 ± 0.023 0.027 ± 0.014</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0239</cell><cell cols="3">0.031 ± 0.053 0.029 ± 0.031 0.035 ± 0.033 0.032 ± 0.019 0.026 ± 0.011</cell></row><row><cell>POCUS</cell><cell>ECE</cell><cell>0.0280</cell><cell cols="3">0.134 ± 0.082 0.110 ± 0.032 0.089 ± 0.024 0.054 ± 0.016 0.040 ± 0.009</cell></row><row><cell>ResNet-50</cell><cell>SCE</cell><cell>0.0444</cell><cell cols="3">0.100 ± 0.080 0.091 ± 0.026 0.077 ± 0.016 0.064 ± 0.009 0.053 ± 0.004</cell></row><row><cell></cell><cell>AECE</cell><cell>0.0324</cell><cell cols="3">0.078 ± 0.090 0.158 ± 0.045 0.104 ± 0.026 0.074 ± 0.016 0.058 ± 0.011</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.2649</cell><cell cols="3">0.661 ± 0.267 0.326 ± 0.092 0.285 ± 0.069 0.273 ± 0.048 0.283 ± 0.028</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0111</cell><cell cols="3">0.046 ± 0.029 0.042 ± 0.021 0.041 ± 0.016 0.022 ± 0.010 0.017 ± 0.008</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0197</cell><cell cols="3">0.052 ± 0.046 0.059 ± 0.020 0.054 ± 0.017 0.036 ± 0.010 0.030 ± 0.009</cell></row><row><cell>Covid-CT</cell><cell>ECE</cell><cell>0.1586</cell><cell cols="3">0.184 ± 0.188 0.185 ± 0.110 0.143 ± 0.061 0.200 ± 0.044 0.175 ± 0.027</cell></row><row><cell>ResNet-50</cell><cell>SCE</cell><cell>0.1655</cell><cell cols="3">0.184 ± 0.188 0.188 ± 0.109 0.153 ± 0.059 0.208 ± 0.042 0.183 ± 0.026</cell></row><row><cell></cell><cell>AECE</cell><cell>0.1351</cell><cell cols="3">0.089 ± 0.133 0.123 ± 0.109 0.155 ± 0.063 0.177 ± 0.037 0.164 ± 0.022</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.3186</cell><cell cols="3">0.793 ± 0.333 0.423 ± 0.207 0.381 ± 0.128 0.382 ± 0.069 0.360 ± 0.039</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.1390</cell><cell cols="3">0.071 ± 0.076 0.098 ± 0.082 0.073 ± 0.039 0.146 ± 0.040 0.145 ± 0.028</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.1325</cell><cell cols="3">0.099 ± 0.115 0.116 ± 0.087 0.087 ± 0.046 0.155 ± 0.041 0.143 ± 0.026</cell></row><row><cell>Diabetic</cell><cell>ECE</cell><cell>0.0019</cell><cell cols="3">0.032 ± 0.008 0.013 ± 0.004 0.011 ± 0.003 0.005 ± 0.002 0.004 ± 0.001</cell></row><row><cell>Retinopathy</cell><cell>SCE</cell><cell>0.0228</cell><cell cols="3">0.045 ± 0.011 0.028 ± 0.006 0.023 ± 0.004 0.023 ± 0.002 0.023 ± 0.001</cell></row><row><cell>ResNet-50</cell><cell>AECE</cell><cell>0.0028</cell><cell cols="3">0.034 ± 0.007 0.024 ± 0.005 0.022 ± 0.003 0.020 ± 0.002 0.020 ± 0.002</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.0458</cell><cell cols="3">0.102 ± 0.019 0.064 ± 0.009 0.053 ± 0.004 0.046 ± 0.004 0.046 ± 0.002</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0008</cell><cell cols="3">0.015 ± 0.007 0.006 ± 0.003 0.005 ± 0.003 0.003 ± 0.001 0.001 ± 0.001</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0017</cell><cell cols="3">0.018 ± 0.008 0.007 ± 0.004 0.006 ± 0.003 0.003 ± 0.001 0.002 ± 0.001</cell></row><row><cell>SIIM-ISIC</cell><cell>ECE</cell><cell>0.1586</cell><cell cols="3">0.015 ± 0.013 0.010 ± 0.006 0.013 ± 0.005 0.013 ± 0.002 0.013 ± 0.002</cell></row><row><cell>Melanoma</cell><cell>SCE</cell><cell>0.1655</cell><cell cols="3">0.015 ± 0.013 0.010 ± 0.006 0.013 ± 0.004 0.013 ± 0.002 0.013 ± 0.002</cell></row><row><cell>ResNet-50</cell><cell>AECE</cell><cell>0.1351</cell><cell cols="3">0.021 ± 0.014 0.017 ± 0.005 0.018 ± 0.004 0.015 ± 0.002 0.014 ± 0.002</cell></row><row><cell></cell><cell cols="2">ECE-KDE 1.9551</cell><cell cols="3">1.965 ± 0.026 1.959 ± 0.011 1.958 ± 0.012 1.955 ± 0.005 1.955 ± 0.003</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.1390</cell><cell cols="3">0.007 ± 0.006 0.005 ± 0.003 0.006 ± 0.002 0.006 ± 0.001 0.006 ± 0.001</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0129</cell><cell cols="3">0.015 ± 0.013 0.010 ± 0.006 0.013 ± 0.005 0.013 ± 0.002 0.013 ± 0.002</cell></row><row><cell>CIFAR-10</cell><cell>ECE</cell><cell>0.0295</cell><cell cols="3">0.056 ± 0.016 0.040 ± 0.008 0.033 ± 0.005 0.032 ± 0.004 0.031 ± 0.002</cell></row><row><cell>ResNet-50</cell><cell>SCE</cell><cell>0.0070</cell><cell cols="3">0.015 ± 0.003 0.012 ± 0.002 0.010 ± 0.001 0.009 ± 0.001 0.008 ± 0.000</cell></row><row><cell></cell><cell>AECE</cell><cell>0.0287</cell><cell cols="3">0.036 ± 0.014 0.030 ± 0.010 0.024 ± 0.006 0.024 ± 0.004 0.023 ± 0.002</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.1232</cell><cell cols="3">0.119 ± 0.024 0.123 ± 0.012 0.125 ± 0.012 0.125 ± 0.007 0.123 ± 0.005</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0288</cell><cell cols="3">0.034 ± 0.018 0.033 ± 0.010 0.028 ± 0.005 0.029 ± 0.004 0.029 ± 0.002</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0287</cell><cell cols="3">0.033 ± 0.016 0.032 ± 0.010 0.026 ± 0.006 0.029 ± 0.004 0.029 ± 0.002</cell></row><row><cell>CIFAR-100</cell><cell>ECE</cell><cell>0.0857</cell><cell cols="3">0.118 ± 0.021 0.090 ± 0.016 0.088 ± 0.011 0.089 ± 0.007 0.086 ± 0.004</cell></row><row><cell>ResNet-50</cell><cell>SCE</cell><cell>0.0025</cell><cell cols="3">0.006 ± 0.001 0.005 ± 0.000 0.005 ± 0.000 0.004 ± 0.000 0.003 ± 0.000</cell></row><row><cell></cell><cell>AECE</cell><cell>0.0855</cell><cell cols="3">0.108 ± 0.015 0.076 ± 0.013 0.073 ± 0.007 0.071 ± 0.008 0.070 ± 0.005</cell></row><row><cell></cell><cell cols="2">ECE-KDE 0.5161</cell><cell cols="3">1.120 ± 0.072 0.527 ± 0.042 0.496 ± 0.016 0.495 ± 0.012 0.506 ± 0.010</cell></row><row><cell></cell><cell>RECE-G</cell><cell>0.0854</cell><cell cols="3">0.082 ± 0.021 0.081 ± 0.017 0.086 ± 0.011 0.088 ± 0.007 0.085 ± 0.004</cell></row><row><cell></cell><cell>RECE-M</cell><cell>0.0854</cell><cell cols="3">0.085 ± 0.022 0.081 ± 0.017 0.086 ± 0.011 0.088 ± 0.007 0.085 ± 0.004</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison of calibration methods on medical datasets. On the more reliable RECE-G and RECE-M metric, calibrating with our regularizing loss term consistently achieves SOTA results.</figDesc><table><row><cell cols="2">Dataset &amp; Model Method</cell><cell>Acc.</cell><cell>ECE</cell><cell>SCE</cell><cell>RECE-G RECE-M Brier Score</cell></row><row><cell>GBC-USG</cell><cell cols="5">Cross-Entropy 0.9016 0.0802 0.0841 0.0607</cell><cell>0.0610</cell><cell>0.2005</cell></row><row><cell>GBCNet</cell><cell>FL [18]</cell><cell cols="4">0.8934 0.0913 0.0911 0.0644</cell><cell>0.0702</cell><cell>0.2084</cell></row><row><cell></cell><cell cols="5">FL+MDCA [8] 0.8934 0.0810 0.0811 0.0508</cell><cell>0.0604</cell><cell>0.1929</cell></row><row><cell></cell><cell>FLSD [19]</cell><cell cols="4">0.9016 0.1036 0.0909 0.0660</cell><cell>0.0581</cell><cell>0.1967</cell></row><row><cell></cell><cell>DCA [17]</cell><cell cols="4">0.8934 0.0869 0.0905 0.0603</cell><cell>0.0433</cell><cell>0.1957</cell></row><row><cell></cell><cell>RCR</cell><cell cols="4">0.8852 0.0810 0.0863 0.0355 0.0372</cell><cell>0.1957</cell></row><row><cell>BUSI</cell><cell cols="5">Cross-Entropy 0.9487 0.0726 0.0485 0.0301</cell><cell>0.0329</cell><cell>0.1000</cell></row><row><cell>ResNet-50</cell><cell>FL [18]</cell><cell cols="4">0.9487 0.0761 0.0613 0.0276</cell><cell>0.0415</cell><cell>0.1065</cell></row><row><cell></cell><cell cols="5">FL+MDCA [8] 0.9615 0.0683 0.0505 0.0378</cell><cell>0.0358</cell><cell>0.0977</cell></row><row><cell></cell><cell>FLSD [19]</cell><cell cols="4">0.9615 0.0939 0.0530 0.0493</cell><cell>0.0568</cell><cell>0.1028</cell></row><row><cell></cell><cell>DCA [17]</cell><cell cols="4">0.9487 0.0669 0.0489 0.0337</cell><cell>0.0308</cell><cell>0.0988</cell></row><row><cell></cell><cell>RCR</cell><cell cols="4">0.9231 0.0608 0.0680 0.0201 0.0235</cell><cell>0.1277</cell></row><row><cell>POCUS</cell><cell cols="5">Cross-Entropy 0.8845 0.0456 0.0443 0.0368</cell><cell>0.0452</cell><cell>0.1594</cell></row><row><cell>ResNet-50</cell><cell>FL [18]</cell><cell cols="4">0.8866 0.0488 0.0649 0.0301</cell><cell>0.0408</cell><cell>0.1584</cell></row><row><cell></cell><cell cols="5">FL+MDCA [8] 0.8761 0.0646 0.0685 0.0598</cell><cell>0.0595</cell><cell>0.2014</cell></row><row><cell></cell><cell>FLSD [19]</cell><cell cols="4">0.9349 0.0455 0.0541 0.0394</cell><cell>0.0444</cell><cell>0.1085</cell></row><row><cell></cell><cell>DCA [17]</cell><cell cols="4">0.8782 0.0689 0.0567 0.0583</cell><cell>0.0607</cell><cell>0.1853</cell></row><row><cell></cell><cell>RCR</cell><cell cols="4">0.8908 0.0387 0.0625 0.0205 0.0339</cell><cell>0.1522</cell></row><row><cell>Diabetic</cell><cell cols="5">Cross-Entropy 0.8641 0.0464 0.0889 0.0456</cell><cell>0.0458</cell><cell>0.2007</cell></row><row><cell>Retinopathy</cell><cell>FL [18]</cell><cell cols="4">0.8765 0.0369 0.0884 0.0365</cell><cell>0.0369</cell><cell>0.1813</cell></row><row><cell>ResNet-50</cell><cell cols="5">FL+MDCA [8] 0.9351 0.0442 0.0752 0.0439</cell><cell>0.0442</cell><cell>0.1023</cell></row><row><cell></cell><cell>FLSD [19]</cell><cell cols="4">0.8620 0.0359 0.0896 0.0277</cell><cell>0.0216</cell><cell>0.1947</cell></row><row><cell></cell><cell>DCA [17]</cell><cell cols="4">0.8332 0.0669 0.1171 0.0665</cell><cell>0.0669</cell><cell>0.2474</cell></row><row><cell></cell><cell>RCR</cell><cell cols="4">0.8297 0.0316 0.0951 0.0250 0.0206</cell><cell>0.2400</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1 15.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Dataset of breast ultrasound images</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Al-Dhabyani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gomaa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Khaled</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fahmy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Brief</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page">104863</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Surpassing the human accuracy: detecting gallbladder cancer from USG images with curriculum learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="20886" to="20896" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Accelerating detection of lung pathologies with explainable ultrasound image analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Born</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Sci</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">672</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Deep learning uncertainty and confidence calibration for the five-class polyp classification from colonoscopy</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Carneiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">Z C T</forename><surname>Pu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Burt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">62</biblScope>
+			<biblScope unit="page">101653</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Dropout as a Bayesian approximation: Representing model uncertainty in deep learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="1050" to="1059" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">On calibration of modern neural networks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pleiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1321" to="1330" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A stitch in time saves nine: a train-time regularizing loss for improved neural network calibration</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hebbalaguppe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Prakash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Madan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Arora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="16081" to="16090" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hendrycks</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">D</forename><surname>Cubuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zoph</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gilmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lakshminarayanan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1912.02781</idno>
+		<title level="m">AugMix: a simple data processing method to improve robustness and uncertainty</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Class-distribution-aware calibration for long-tailed visual recognition</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Seenivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Glocker</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.05263</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Calibrating predictive model estimates to support personalized medicine</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Osl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ohno-Machado</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Med. Inform. Assoc</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="263" to="274" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">EyePacs: kaggle diabetic retinopathy detection</title>
+		<author>
+			<persName><surname>Kaggle</surname></persName>
+		</author>
+		<ptr target="https://www.kaggle.com/c/diabetic-retinopathy-detection/data" />
+		<imprint>
+			<date type="published" when="2015-07">July 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Learning multiple layers of features from tiny images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krizhevsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Beyond temperature scaling: obtaining well-calibrated multi-class probabilities with Dirichlet calibration</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Perello Nieto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kängsepp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Silva Filho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Flach</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Trainable calibration measures for neural networks from kernel mean embeddings</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sarawagi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><surname>Jain</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="2805" to="2814" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Simple and scalable predictive uncertainty estimation using deep ensembles</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lakshminarayanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pritzel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Blundell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Improved trainable calibration method for neural networks on medical imaging classification</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Jacobs</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2009.04057</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Focal loss for dense object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Calibrating deep neural networks using focal loss</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mukhoti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kulharia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sanyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Golodetz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Torr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dokania</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="15288" to="15299" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">When does label smoothing help?</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Obtaining well calibrated probabilities using Bayesian binning</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Naeini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cooper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hauskrecht</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">29</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Posterior calibration and exploratory analysis for natural language processing models</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>O'connor</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1508.05154</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Measuring calibration in deep learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nixon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Dusenberry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jerfel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tran</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR Workshops</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Calibrating deep neural networks using explicit regularisation and dynamic data pruning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Patra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hebbalaguppe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Dash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Shroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Vig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="1541" to="1549" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pereyra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Tucker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chorowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1701.06548</idno>
+		<title level="m">Regularizing neural networks by penalizing confident output distributions</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Platt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Large Margin Classif</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="61" to="74" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A consistent and differentiable LP canonical calibration error estimator</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Popordanoska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sayer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Blaschko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="7933" to="7946" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Deep learning model calibration for improving performance in class-imbalanced medical image classification tasks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Rajaraman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ganesan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Antani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">262838</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A patient-centric dataset of images and metadata for identifying melanomas using clinical context</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Rotemberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">34</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Rethinking the inception architecture for computer vision</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vanhoucke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shlens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wojna</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2818" to="2826" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Hybrid deep learning gaussian process for diabetic retinopathy diagnosis and uncertainty quantification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Toledo-Cortés</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De La Pava</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Perdomo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">A</forename><surname>González</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-63419-3_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-63419-321" />
+	</analytic>
+	<monogr>
+		<title level="m">OMIA 2020</title>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Garvin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Macgillivray</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12069</biblScope>
+			<biblScope unit="page" from="206" to="215" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cisse</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">N</forename><surname>Dauphin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lopez-Paz</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1710.09412</idno>
+		<title level="m">mixup: Beyond empirical risk minimization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xie</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2003.13865</idno>
+		<title level="m">COVID-CT-dataset: a CT scan dataset about COVID-19</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

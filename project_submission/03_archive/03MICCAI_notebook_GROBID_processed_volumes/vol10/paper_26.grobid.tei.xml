@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">MRIS: A Multi-modal Retrieval Approach for Image Synthesis on Diverse Modalities</title>
+				<funder>
+					<orgName type="full">NIMH Data Archive</orgName>
+				</funder>
+				<funder ref="#_dydFwDe">
+					<orgName type="full">NIAMS</orgName>
+				</funder>
+				<funder ref="#_cnPhUpU">
+					<orgName type="full">National Institutes of Health</orgName>
+					<orgName type="abbreviated">NIH</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Osteoarthritis Initiative (OAI)</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">NIMH</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Boqi</forename><surname>Chen</surname></persName>
+							<email>bqchen@cs.unc.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of North Carolina at Chapel Hill</orgName>
+								<address>
+									<settlement>Chapel Hill</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Marc</forename><surname>Niethammer</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of North Carolina at Chapel Hill</orgName>
+								<address>
+									<settlement>Chapel Hill</settlement>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">MRIS: A Multi-modal Retrieval Approach for Image Synthesis on Diverse Modalities</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">5C18EFBFA239A04C98665ADF9773898D</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-526.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Metric learning</term>
+					<term>k-nearest neighbor</term>
+					<term>osteoarthritis Supplementary Information The online version contains supplementary material</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Multiple imaging modalities are often used for disease diagnosis, prediction, or population-based analyses. However, not all modalities might be available due to cost, different study designs, or changes in imaging technology. If the differences between the types of imaging are small, data harmonization approaches can be used; for larger changes, direct image synthesis approaches have been explored. In this paper, we develop an approach, MRIS, based on multi-modal metric learning to synthesize images of diverse modalities. We use metric learning via multi-modal image retrieval, resulting in embeddings that can relate images of different modalities. Given a large image database, the learned image embeddings allow us to use k-nearest neighbor (k-NN) regression for image synthesis. Our driving medical problem is knee osteoarthritis (KOA), but our developed method is general after proper image alignment. We test our approach by synthesizing cartilage thickness maps obtained from 3D magnetic resonance (MR) images using 2D radiographs. Our experiments show that the proposed method outperforms direct image synthesis and that the synthesized thickness maps retain information relevant to downstream tasks such as progression prediction and Kellgren-Lawrence grading (KLG). Our results suggest that retrieval approaches can be used to obtain high-quality and meaningful image synthesis results given large image databases. Our code is available at https://github.com/uncbiag/MRIS.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Recent successes of machine learning algorithms in computer vision and natural language processing suggest that training on large datasets is beneficial for model performance <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b20">21]</ref>. While several efforts to collect very large medical image datasets are underway <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b18">19]</ref>, collecting large homogeneous medical image datasets is hampered by: a) cost, b) advancement of technology throughout long study periods, and c) general heterogeneity of acquired images across studies, making it difficult to utilize all data. Developing methods accounting for different imaging types would help make the best use of available data.</p><p>Although image harmonization and synthesis <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b21">22]</ref> methods have been explored to bridge the gap between different types of imaging, these methods are often applied to images of the same geometry. On the contrary, many studies acquire significantly more diverse images; e.g., the OAI image dataset<ref type="foot" target="#foot_0">1</ref>  <ref type="bibr" target="#b8">[9]</ref> contains both 3D MR images of different sequences and 2D radiographs. Similarly, the UK Biobank <ref type="bibr" target="#b18">[19]</ref> provides different 3D MR image acquisitions and 2D DXA images. Ideally, a machine learning system can make use of all data that is available. As a related first step in this direction, we explore the feasibility of predicting information gleaned from 3D geometry using 2D projection images. Being able to do so would allow a) pooling datasets that drastically differ in image types or b) relating information from a cheaper 2D screening to more readily interpretable 3D quantities that are difficult for a human observer.</p><p>We propose an image synthesis method for diverse modalities based on multimodal metric learning and k-NN regression. To learn the metric, we use image retrieval as the target task, which aims at embedding images such that matching pairs of different modalities are close in the embedding space. We use a triplet loss <ref type="bibr" target="#b23">[24]</ref> to contrastively optimize the gap between positive and negative pairs based on the cosine distance over the learned deep features. In contrast to the typical learning process, we carefully design the training scheme to avoid interference when training with longitudinal image data. Given the learned embedding, we can synthesize images between diverse image types by k-NN regression through a weighted average based on their distances measured in the embedding space. Given a large database, this strategy allows for a quick and simple estimation of one image type from another.</p><p>We use knee osteoarthritis as the driving medical problem and evaluate our proposed approach using the OAI image data. Specifically, we predict cartilage thickness maps obtained from 3D MR images using 2D radiographs. This is a highly challenging task and therefore is a good test case for our approach for the following reasons: 1) cartilage is not explicitly visible on radiographs. Instead, the assessment is commonly based on joint space width (JSW), where decreases in JSW suggest decreases in cartilage thickness <ref type="bibr" target="#b0">[1]</ref>; 2) the difficulty in predicting information obtained from a 3D image using only the 2D projection data; 3) the large appearance difference between MR images and thickness maps; 4) the need to capture fine-grained details within a small region of the input radiograph. While direct regression via deep neural networks is possible, such approaches lack interpretability and we show that they can be less accurate for diverse images.</p><p>The main contributions of our work are as follows.</p><p>1. We propose an image synthesis method for diverse modalities based on multimodal metric learning using image retrieval and k-NN regression. We carefully construct the learning scheme to account for longitudinal data.</p><p>2. We extensively test our approach for osteoarthritis, where we synthesize cartilage thickness maps derived from 3D MR using 2D radiographs. 3. Experimental results show the superiority of our approach over commonly used image synthesis methods, and the synthesized images retain sufficient information for downstream tasks of KL grading and progression prediction. Left top: encoding the region of interest from radiographs, extracted using the method from <ref type="bibr" target="#b25">[26]</ref>. Left bottom: encoding thickness maps, extracted from MR images using the method from <ref type="bibr" target="#b10">[11]</ref>. Features are compared using cosine similarity. Right: applying triplet loss on cosine similarity, where nonpaired data is moved away from paired data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>In this work, we use multi-modal metric learning followed by k-NN regression to synthesize images of diverse modalities. Our method requires 1) a database containing matched image pairs; 2) target images aligned to an atlas space.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Multi-modal Longitudinally-Aware Metric Learning</head><p>Let {(x i a , y i a )} be a database of multiple paired images with each pair containing two modalities x and y of the a-th subject and i-th timepoint if longitudinal data is available. We aim to learn a metric that allows us to reliably identify related image pairs, which in turn relate structures of different modalities. Specifically, we train our deep neural network via a triplet loss so that matching image pairs are encouraged to obtain embedding vectors closer to each other than mismatched pairs. Figure <ref type="figure" target="#fig_0">1</ref> illustrates the proposed multi-modal metric learning approach, which uses two convolutional neural networks (CNNs), each for extracting the features of one modality. The two networks may share the same architecture, but unlike Siamese networks <ref type="bibr" target="#b3">[4]</ref>, our CNNs have independent sets of weights. This is because the two modalities differ strongly in appearance.</p><p>Denoting the two CNNs as f (•; θ) and g(•; φ), where θ and φ are the CNN parameters, we measure the feature distance between two images x and y using cosine similarity</p><formula xml:id="formula_0">d(x, y) = 1 - f (x; θ) • g(y; φ) f (x; θ) g(y; φ) ,<label>(1)</label></formula><p>where the output of f and g are vectors of the same dimension<ref type="foot" target="#foot_1">2</ref> . Given a minibatch of N paired images, our goal is to learn a metric such that f (x i a ) and g(y i a ) are close (that is, for the truly matching image pair), while f (x i a ) and g(y j b ) are further apart, where a = b and i, j are arbitrary timepoints of subjects a, b, respectively. We explicitly avoid comparing across timepoints of the same subject to avoid biasing longitudinal trends. This is because different patients have different disease progression speeds. For those with little to no progression, images may look very similar across timepoints and should therefore result in similar embeddings. It would be undesirable to view them as negative pairs. Therefore, our multi-modal longitudinally-aware triplet loss becomes</p><formula xml:id="formula_1">loss({(x i a , y i a )}) = (a,i) (b,j),b =a max[d(f θ (x i a ), g φ (y i a )) -d(f θ (x i a ), g φ (y j b )) + m, 0] ,</formula><p>(2) where m is the margin for controlling the minimum distance between positive and negative pairs. We sum over all subjects at all timepoints for each batch.</p><p>To avoid explicitly tracking the subjects in a batch, we can simplify the above equation by randomly picking one timepoint per subject during each training epoch. This then simplifies our multi-modal longitudinally aware triplet loss to a standard triplet loss of the form</p><formula xml:id="formula_2">loss({(x a , y b )}) = N a=1 N b=1,b =a max[d(f θ (x a ), g φ (y a )) -d(f θ (x a ), g φ (y b )) + m, 0] . (3)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Image Synthesis</head><p>After learning the embedding space, it can be used to find the most relevant images with a new input, as shown in Fig. <ref type="figure">2</ref>. Specifically, the features of a query image x are first extracted by the CNN model f θ we described previously. Given a database of images of the target modality S I = {y i a } and their respective embeddings S F = {g(y i a )}, we can then select the top k images with the smallest cosine distance, which will be the most similar images given this embedding. Denoting these k most similar images as K = {ỹ k } we can synthesize an image, ŷ based on a query image, x as a weighted average of the form</p><formula xml:id="formula_3">ŷ = K i=1 w i ỹi where w i = 1 -d(x, ỹi ) K j=1 (1 -d(x, ỹj )) , (<label>4</label></formula><formula xml:id="formula_4">)</formula><p>where the weights are normalized weights based on the cosine similarities. This requires us to work in an atlas space for the modality y, where all images in the database S I are spatially aligned. However, images of the modality x do not need to be spatially aligned, as long as sensible embeddings can be captured by f θ . As we will see, this is particularly convenient for our experimental setup, where the modality x is a 2D radiograph and the modality y is a cartilage thickness map derived from a 3D MR image, which can easily be brought into a common atlas space. As our synthesized image, ŷ, is a weighted average of multiple spatially aligned images, it will be smoother than a typical image of the target modality. However, we show in Sect. 3 that the synthesized images still retain the general disease patterns and retain predictive power. Note also that our goal is not image retrieval or image reidentification, where one wants to find a known image in a database. Instead, we want to synthesize an image for a patient who is not included in our image database. Hence, we expect that no perfectly matched image exists in the database and therefore set k &gt; 1. Based on theoretical analyses of k-NN regression <ref type="bibr" target="#b5">[6]</ref>, we expect the regression results to improve for larger image databases.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experimental Results</head><p>Fig. <ref type="figure">2</ref>. Image synthesis by k-NN regression from the database. Given an unseen image x, we extract its features f θ (x), find the k nearest neighbors in the database {y} based on these features, and use them for a weighted k-NN regression.</p><p>patients between the ages of 45 to 79 years at the time of recruitment. Each patient is longitudinally followed for up to 96 months.</p><p>Images. The OAI acquired images of multiple modalities, including T2 and DESS MR images, as well as radiographs. We use the paired DESS MR images and radiographs in our experiments. After excluding all timepoints when patients do not have complete MR/radiograph pairs, we split the dataset into three sets by patient (i.e., data from the same patient are in the same sets): Set 1) to train the image retrieval model (2, 000 patients; 13, 616 pairs). This set also acts as a database during image synthesis; Set 2) to train the downstream task (1, 750 patients; 16, 802 pairs); Set 3) to test performance (897 patients; 8, 418 pairs). Preprocessing. As can be seen from the purple dashed box in Fig. <ref type="figure" target="#fig_0">1</ref>, we extract cartilage thickness maps from the DESS MR images using a deep segmentation network <ref type="bibr" target="#b26">[27]</ref>, register them to a common 3D atlas space <ref type="bibr" target="#b24">[25]</ref>, and then represent them in a common flattened 2D atlas space <ref type="bibr" target="#b10">[11]</ref>. These 2D cartilage thickness maps are our target modality, which we want to predict from the 2D radiographs. Unlike MR images for which a separate scan is obtained for the left and right knees, OAI radiographs include both knees and large areas of the femur and tibia. To separate them, we apply the method proposed in <ref type="bibr" target="#b25">[26]</ref>, which automatically detects keypoints between the knee joint. As shown in the blue dashed box in Fig. <ref type="figure" target="#fig_0">1</ref>, the region of interest for each side of the knee is being extracted using a region of 140 mm * 140 mm around the keypoints. We normalize all input radiographs by linearly scaling the intensities so that the smallest 99% values are mapped to [0, 0.99]. We horizontally flip all right knees to the left as done in <ref type="bibr" target="#b10">[11]</ref>, randomly rotate images up to 15 degrees, add Gaussian noise, and adjust contrast. Unlike the radiographs, we normalize the cartilage thickness map by dividing all values by 3, which is approximately the 95-th percentile of cartilage thickness. All images are resized to 256 * 256. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Network Training</head><p>During multi-modal metric learning, our two branches use the ResNet-18 [10] model with initial parameters obtained by ImageNet pre-training <ref type="bibr" target="#b7">[8]</ref>. We finetune the networks using AdamW <ref type="bibr" target="#b19">[20]</ref> with initial learning rate 10 -4 for radiographs and 10 -5 for the thickness maps. The output embedding dimensions of both networks are 512. We train the networks with a batch size of 64 for a total of 450 epochs with a learning rate decay of 80% for every 150 epochs. We set the margin m = 0.1 in all our experiments. For both downstream tasks, we fine-tune our model on a ResNet-18 pretrained network with the number of classes set to 4 for KLG prediction and 2 for progression prediction. Both tasks are trained with AdamW for 30 epochs, batch size 64, and learning rate decay by 80% for every 10 epochs. The initial learning rate is set to 10 -5 for KLG prediction and 10 -4 for progression prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>This section shows our results for image retrieval, synthesis, and downstream tasks based on the questions posed above. All images synthesized from MRIS are based on the weighted average of the retrieved top k = 20 thickness maps.</p><p>Image Retrieval. To show the importance of the learned embedding space, we perform image retrieval on the test set, where our goal is to correctly find the corresponding matching pair. Since our training process does not compare images of the same patient at different timepoints, we test using only the baseline images for each patient <ref type="bibr">(1, 794 pairs)</ref>. During training, we created two thickness map variants: 1) combining the femoral and tibial cartilage thickness maps (Combined); 2) separating the femoral and tibial thickness maps (Femoral/Tibial), which requires training two networks. Table <ref type="table" target="#tab_0">1</ref> shows the image retrieval recall, where R@k represents the percentage of radiographs for which the correct thickness map is retrieved within the k-nearest neighbors in the embedding space. Combined achieves better results than retrieving femoral and tibial cartilage separately. This may be because more discriminative features can be extracted when both cartilages are provided, which simplifies the retrieval task. In addition, tibial cartilage appears to be easier to retrieve than femoral cartilage. Image Synthesis. To directly measure the performance of our synthesized images on the testing dataset, we show the median ± MAD (median absolute deviation) absolute error compared to the thickness map extracted by MR in Table <ref type="table" target="#tab_2">2</ref>. We created two variants by combining or separating the femoral and tibial cartilage, corresponding to MRIS-C(ombined) and MRIS-S(eparate). Unlike the image retrieval recall results, MRIS-S performs better than MRIS-C (last column of Table <ref type="table" target="#tab_2">2</ref>). This is likely because it should be beneficial to mix and match separate predictions for synthesizing femoral and tibial cartilage. Moreover, MRIS-S outperforms all baseline image synthesis methods <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b22">23]</ref>.</p><p>Osteoarthritis is commonly assessed via Kellgren-Lawrence grade <ref type="bibr" target="#b15">[16]</ref> on radiographs by assessing joint space width and the presence of osteophytes. KLG=0 represents a healthy knee, while KLG=4 represents severe osteoarthritis. KLG=0 and 1 are often combined because knee OA is considered definitive only when KLG≥ 2 <ref type="bibr" target="#b16">[17]</ref>. To assess prediction errors by OA severity, we stratify our results in Table <ref type="table" target="#tab_2">2</ref> by KLG. Both variants of our approach perform well, outperforming the simpler pix2pix and U-Net baselines for all KLG. The TransUNet approach shows competitive performance, but overall our MRIS-S achieves better results regardless of our much smaller model size. Figure <ref type="figure" target="#fig_1">3</ref> shows examples of images synthesized for the different methods for different severity of OA. Downstream Tasks. The ultimate question is whether the synthesized images can still retain information for downstream tasks. Therefore, we test the ability to predict KLG and OA progression, where we define OA progression as whether or not the KLG will increase within the next 72 months. Table <ref type="table" target="#tab_3">3</ref> shows that our synthesized thickness maps perform on par with the MR-extracted thickness maps for progression prediction and we even outperform on predicting KLG. MRIS overall performs better than U-Net <ref type="bibr" target="#b22">[23]</ref>, pix2pix <ref type="bibr" target="#b12">[13]</ref> and TransUNet <ref type="bibr" target="#b6">[7]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work, we proposed an image synthesis method using metric learning via multi-modal image retrieval and k-NN regression. We extensively validated our approach using the large OAI dataset and compared it with direct synthesis approaches. We showed that our method, while conceptually simple, can effectively synthesize alignable images of diverse modalities. More importantly, our results on the downstream tasks showed that our approach retains diseaserelevant information and outperforms approaches based on direct image regression. Potential shortcomings of our approach are that the synthesized images tend to be smoothed due to the weight averaging and that spatially aligned images are required for the modality to be synthesized.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig.1. Proposed multi-modal metric learning model (left) trained using a triplet loss (right). Left top: encoding the region of interest from radiographs, extracted using the method from<ref type="bibr" target="#b25">[26]</ref>. Left bottom: encoding thickness maps, extracted from MR images using the method from<ref type="bibr" target="#b10">[11]</ref>. Features are compared using cosine similarity. Right: applying triplet loss on cosine similarity, where nonpaired data is moved away from paired data.</figDesc><graphic coords="3,58,98,144,83,334,48,103,24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Thickness map predictions for different methods and different severity. Our approach shows a better match of cartilage thickness with the MR-extracted thickness map than the other approaches. See more examples in the appendix.</figDesc><graphic coords="6,56,31,203,03,311,32,131,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Thickness map retrieval recall percentage on the testing set. R@k shows the percentage of queries for which the correct one is retrieved within the top k nearest neighbors.</figDesc><table><row><cell>Method</cell><cell cols="2">R@1 ↑ R@5 ↑ R@10 ↑ R@20 ↑</cell></row><row><cell>Femoral</cell><cell>28.26 58.19 71.13</cell><cell>82.11</cell></row><row><cell>Tibial</cell><cell>30.49 61.48 73.36</cell><cell>83.33</cell></row><row><cell cols="2">Combined 45.</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>21 75.53 84.73 90.64</head><label></label><figDesc></figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Median ± MAD absolute error for both femoral and tibial cartilage between the predicted thickness maps and those extracted from MR images. We stratify the result by KLG. Larger KLG results in less accurate synthesis.</figDesc><table><row><cell>Median ± MAD</cell><cell></cell><cell>KLG01 ↓</cell><cell>KLG2 ↓</cell><cell>KLG3 ↓</cell><cell>KLG4 ↓</cell><cell>All ↓</cell></row><row><cell cols="2">Femoral Cartilage U-Net</cell><cell cols="5">0.288 ± 0.173 0.324 ± 0.195 0.358 ± 0.214 0.410 ± 0.252 0.304 ± 0.183</cell></row><row><cell></cell><cell>pix2pix</cell><cell cols="5">0.289 ± 0.173 0.326 ± 0.196 0.360 ± 0.216 0.411 ± 0.253 0.306 ± 0.183</cell></row><row><cell></cell><cell cols="6">TransUNet 0.260 ± 0.157 0.300 ± 0.180 0.326 ± 0.195 0.384 ± 0.235 0.277 ± 0.167</cell></row><row><cell></cell><cell>MRIS-C</cell><cell cols="5">0.265 ± 0.158 0.298 ± 0.178 0.319 ± 0.191 0.377 ± 0.226 0.279 ± 0.167</cell></row><row><cell></cell><cell>MRIS-S</cell><cell cols="5">0.259 ± 0.155 0.295 ± 0.176 0.319 ± 0.191 0.373 ± 0.223 0.275 ± 0.164</cell></row><row><cell>Tibial Cartilage</cell><cell>U-Net</cell><cell cols="5">0.304 ± 0.181 0.324 ± 0.193 0.364 ± 0.216 0.428 ± 0.270 0.316 ± 0.188</cell></row><row><cell></cell><cell>pix2pix</cell><cell cols="5">0.306 ± 0.182 0.325 ± 0.194 0.367 ± 0.219 0.433 ± 0.272 0.319 ± 0.190</cell></row><row><cell></cell><cell cols="6">TransUNet 0.269 ± 0.160 0.288 ± 0.172 0.325 ± 0.192 0.371 ± 0.254 0.281 ± 0.167</cell></row><row><cell></cell><cell>MRIS-C</cell><cell cols="5">0.271 ± 0.160 0.291 ± 0.171 0.319 ± 0.188 0.385 ± 0.225 0.282 ± 0.166</cell></row><row><cell></cell><cell>MRIS-S</cell><cell cols="5">0.265 ± 0.157 0.283 ± 0.168 0.313 ± 0.187 0.379 ± 0.226 0.276 ± 0.163</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Results on the downstream tasks of KLG and progression prediction. Our synthesis methods overall perform better than other synthesis methods and obtain a comparable result with the MR-extracted thickness maps.</figDesc><table><row><cell>Method</cell><cell cols="2">KLG Prediction (accuracy) ↑</cell><cell cols="2">Progression Prediction</cell></row><row><cell></cell><cell cols="4">KLG01 KLG2 KLG3 KLG4 overall average precision ↑ roc auc ↑</cell></row><row><cell>U-Net</cell><cell>0.819</cell><cell cols="2">0.321 0.778 0.545 0.719 0.242</cell><cell>0.606</cell></row><row><cell>pix2pix</cell><cell>0.805</cell><cell cols="2">0.396 0.735 0.654 0.722 0.225</cell><cell>0.625</cell></row><row><cell>TransUNet</cell><cell>0.797</cell><cell cols="2">0.528 0.763 0.865 0.746 0.286</cell><cell>0.654</cell></row><row><cell>MRIS-C</cell><cell>0.865</cell><cell cols="2">0.469 0.757 0.673 0.781 0.299</cell><cell>0.713</cell></row><row><cell>MRIS-S</cell><cell cols="3">0.869 0.479 0.786 0.718 0.789 0.307</cell><cell>0.702</cell></row><row><cell cols="2">MR-extracted 0.842</cell><cell cols="2">0.523 0.727 0.795 0.775 0.286</cell><cell>0.739</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://nda.nih.gov/oai/.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>For notational clarity we will suppress the dependency of f on θ and will write f θ (•) instead of f (•; θ).</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work was supported by <rs type="funder">NIH</rs> <rs type="grantNumber">1R01AR072013</rs>; it expresses the views of the authors, not of <rs type="funder">NIH</rs>. Data and research tools used in this manuscript were obtained/analyzed from the controlled access datasets distributed from the <rs type="funder">Osteoarthritis Initiative (OAI)</rs>, a data repository housed within the <rs type="funder">NIMH Data Archive</rs>. OAI is a collaborative informatics system created by <rs type="funder">NIMH</rs> and <rs type="funder">NIAMS</rs> to provide a worldwide resource for biomarker identification, scientific investigation and OA drug development. Dataset identifier: NIMH Data Archive Collection ID: <rs type="grantNumber">2343</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_cnPhUpU">
+					<idno type="grant-number">1R01AR072013</idno>
+				</org>
+				<org type="funding" xml:id="_dydFwDe">
+					<idno type="grant-number">2343</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This section focuses on investigating the following questions on the OAI dataset:</p><p>1. How good is our retrieval performance? We calculate recall values to determine the performance to retrieve the correct image; 2. How accurate are our estimated images? We compare the predicted cartilage thickness maps with those obtained from 3D MR images;</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Does our prediction retain disease-relevant information for downstream tasks?</head><p>We test the performance of our predicted cartilage thickness maps in predicting KLG and osteoarthritis progressors; 4. How does our approach compare to existing image synthesis models? We show that our approach based on simple k-NN regression compares favorably to direct image synthesis approaches.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>We perform a large-scale validation of our method using the Osteoarthritis Initiative (OAI) dataset on almost 40,000 image pairs. This dataset includes 4, 796</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Radiographic assessment of progression in osteoarthritis</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">D</forename><surname>Altman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Arthritis Rheumatism: Official J. Am. College Rheumatol</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1214" to="1225" />
+			<date type="published" when="1987">1987</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Beit: Bert pre-training of image transformers</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Piao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wei</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2106.08254</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deep learning methods to generate synthetic CT from MRI in radiotherapy: a literature review</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Boulanger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica Med</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="page" from="265" to="281" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Signature verification using a Siamese time delay neural network</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bromley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Guyon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Säckinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<date type="published" when="1993">1993</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Language models are few-shot learners</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="1877" to="1901" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Explaining the success of nearest neighbor methods in prediction</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Foundat. Trends Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">5-6</biblScope>
+			<biblScope unit="page" from="337" to="588" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Transunet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Imagenet: a large-scale hierarchical image database</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2009 IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<publisher>Ieee</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="248" to="255" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Recent advances in osteoarthritis imagingthe osteoarthritis initiative</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Eckstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wirth</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Nevitt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Rev. Rheumatol</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page">10</biblScope>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">DADP: dynamic abnormality detection and progression for longitudinal knee magnetic resonance images from the osteoarthritis initiative</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Image Analysis</title>
+		<imprint>
+			<biblScope unit="page">102343</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Objectives, design and main findings until 2020 from the Rotterdam study</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Ikram</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. J. Epidemiol</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="483" to="517" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Image-to-image translation with conditional adversarial networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1125" to="1134" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">End-To-end convolutional neural network for 3D reconstruction of knee bones from Bi-planar X-Ray images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kasten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Doktofsky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Kovler</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-61598-7_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-61598-712" />
+	</analytic>
+	<monogr>
+		<title level="m">MLMIR 2020</title>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Deeba</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Johnson</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Würfl</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12450</biblScope>
+			<biblScope unit="page" from="123" to="133" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">T1-weighted and T2-weighted MRI image synthesis with convolutional generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kawahara</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Nagata</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Reports Practical Oncol. Radiotherapy</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="35" to="42" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Radiological assessment of osteo-arthrosis</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Kellgren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lawrence</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Rheum. Dis</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page">494</biblScope>
+			<date type="published" when="1957">1957</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Classifications in brief: Kellgren-Lawrence classification of osteoarthritis</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Kohn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Sassoon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">D</forename><surname>Fernando</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Orthop. Relat. Res</title>
+		<imprint>
+			<biblScope unit="volume">474</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1886" to="1893" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">BLIP-2: bootstrapping language-image pretraining with frozen image encoders and large language models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Savarese</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hoi</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2301.12597</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">UK Biobank: opportunities for cardiovascular research</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">J</forename><surname>Littlejohns</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sudlow</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>Allen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Collins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Heart J</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">14</biblScope>
+			<biblScope unit="page" from="1158" to="1166" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.05101</idno>
+		<title level="m">Decoupled weight decay regularization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Segmentation-renormalized deep feature modulation for unpaired image harmonization</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Fishbaugh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gerig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1519" to="1530" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Facenet: a unified embedding for face recognition and clustering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kalenichenko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Philbin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="815" to="823" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Networks for joint affine and nonparametric image registration</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="4224" to="4233" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">KNEEL: knee anatomical landmark localization using hourglass networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tiulpin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Melekhov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Saarakkala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision Workshops</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Contextual additive networks to efficiently boost 3d image segmentations</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">DLMIA/ML-CDS -2018</title>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="92" to="100" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00889-5_11</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-511" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

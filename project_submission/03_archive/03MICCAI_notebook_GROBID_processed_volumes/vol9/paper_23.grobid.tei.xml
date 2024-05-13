@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">SENDD: Sparse Efficient Neural Depth and Deformation for Tissue Tracking</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Adam</forename><surname>Schmidt</surname></persName>
+							<email>adamschmidt@ece.ubc.ca</email>
+							<idno type="ORCID">0000-0003-4769-4313</idno>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">The University of British Columbia</orgName>
+								<address>
+									<postCode>V6T 1Z4</postCode>
+									<settlement>Vancouver</settlement>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Omid</forename><surname>Mohareri</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Advanced Research</orgName>
+								<orgName type="institution">Intuitive Surgical</orgName>
+								<address>
+									<postCode>94086</postCode>
+									<settlement>Sunnyvale</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Simon</forename><surname>Dimaio</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Advanced Research</orgName>
+								<orgName type="institution">Intuitive Surgical</orgName>
+								<address>
+									<postCode>94086</postCode>
+									<settlement>Sunnyvale</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Septimiu</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical and Computer Engineering</orgName>
+								<orgName type="institution">The University of British Columbia</orgName>
+								<address>
+									<postCode>V6T 1Z4</postCode>
+									<settlement>Vancouver</settlement>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">SENDD: Sparse Efficient Neural Depth and Deformation for Tissue Tracking</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="238" to="248"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">8AD8444528F6F64F6EF3806C97201CDD</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_23</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Tissue tracking</term>
+					<term>Graph neural networks</term>
+					<term>Scene flow</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deformable tracking and real-time estimation of 3D tissue motion is essential to enable automation and image guidance applications in robotically assisted surgery. Our model, Sparse Efficient Neural Depth and Deformation (SENDD), extends prior 2D tracking work to estimate flow in 3D space. SENDD introduces novel contributions of learned detection, and sparse per-point depth and 3D flow estimation, all with less than half a million parameters. SENDD does this by using graph neural networks of sparse keypoint matches to estimate both depth and 3D flow anywhere. We quantify and benchmark SENDD on a comprehensively labelled tissue dataset, and compare it to an equivalent 2D flow model. SENDD performs comparably while enabling applications that 2D flow cannot. SENDD can track points and estimate depth at 10fps on an NVIDIA RTX 4000 for 1280 tracked (query) points and its cost scales linearly with an increasing/decreasing number of points. SENDD enables multiple downstream applications that require estimation of 3D motion in stereo endoscopy.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Tracking of tissue and organs in surgical stereo endoscopy is essential to enable downstream tasks in image guidance <ref type="bibr" target="#b8">[8]</ref>, surgical perception <ref type="bibr" target="#b5">[5,</ref><ref type="bibr" target="#b13">13]</ref>, motion compensation <ref type="bibr" target="#b17">[17]</ref>, and colonoscopy coverage estimation <ref type="bibr" target="#b28">[28]</ref>. Given the difficulty in creating labelled training data, we train an unsupervised model that can estimate motion for anything in the surgical field: tissue, gauze, clips, instruments. Recent models for estimating deformation either use classical features and an underlying model (splines, embedded deformation, etc. <ref type="bibr" target="#b11">[11,</ref><ref type="bibr" target="#b21">21]</ref>), or neural networks (eg. CNNs <ref type="bibr" target="#b24">[24]</ref> or 2D graph neural networks (GNNs) <ref type="bibr" target="#b19">[19]</ref>). The issue with 2D methods is that downstream applications often require depth. For example a correct physical 3D is needed location to enable augmented reality image guidance, motion compensation, and robotic automation (eg. suturing). For our model, SENDD, we extend a sparse neural interpolation paradigm <ref type="bibr" target="#b19">[19]</ref> to simultaneously perform depth estimation and 3D flow estimation. This allows us to estimate depth and 3D flow all with one network rather than having to separately estimate dense depth maps. With our approach, SENDD computes motion directly in 3D space, and parameterizes a 3D flow field that estimates the motion of any point in the field of view.</p><p>We design SENDD to use few parameters (low memory cost) and to scale with the number of points to be tracked (adaptive to different applications). To avoid having to operate a 3D convolution over an entire volume, we use GNNs instead of CNNs. This allows applications to tune how much computation to use by using more/fewer points. SENDD is trained end-to-end. This includes the detection, description, refinement, depth estimation, and 3D flow steps. SENDD can perform frame-to-frame tracking and 3D scene flow estimation, but it could also be used as a more robust data association term for SLAM. As will be shown in Sect. 2, unlike in prior work, our proposed approach combines feature detection, depth estimation and deformation modeling for scene flow all in one. After providing relevant background for tissue tracking, we will describe SENDD, quantify it with a new IR-labelled tissue dataset, and finally demonstrate SENDD's efficiency. The main novelties are that it is both 3D and Efficient by: estimating scene flow anywhere in 3D space by using a GNN on salient points (3D), and reusing salient keypoints to calculate both sparse depth and flow at anywhere (Efficient).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Background and Related Work</head><p>Different components are necessary to enable tissue tracking in surgery: feature detection, depth estimation, deformation modelling, and deformable Simultaneous Localization and Mapping (SLAM). Our model acts as the feature detection, depth estimation, and deformation model for scene flow, all in one.</p><p>Recently, SuperPoint <ref type="bibr" target="#b2">[3]</ref> features have been applied to endoscopy <ref type="bibr" target="#b0">[1]</ref>. These are trained using loss on image pairs that are warped with homographies. In SENDD we use similar detections, but use a photometric reconstruction loss instead. SuperGlue <ref type="bibr" target="#b18">[18]</ref> is a GNN method that can be used on top of SuperPoint to filter outliers, but it does not enable estimation of flow at non-keypoint locations, in addition to taking ∼270 ms for 2048 keypoints. Its GNN differs in that we use k-NN connected graph rather than a fully connected one. In stereo depth estimation, BDIS <ref type="bibr" target="#b22">[22]</ref> introduces efficient improvements on classical methods, running in ∼70 ms for images of size (1280, 720). For flow estimation, there are the CNN-based RAFT <ref type="bibr" target="#b24">[24]</ref>, and RAFT3D <ref type="bibr" target="#b25">[25]</ref> (45M params ∼386 ms) which downsample by 8x and require computation over full images. KINFlow <ref type="bibr" target="#b19">[19]</ref> estimates motion using a GNN, but only in 2D. For SLAM in endoscopy, MIS-SLAM <ref type="bibr" target="#b21">[21]</ref> uses classical descriptors and models for deformation. More recent work still does this, mainly due to the high cost of using CNNs when only a few points are actually salient. Specifically, Endo-Depth-and-Motion <ref type="bibr" target="#b16">[16]</ref> performs SLAM in rigid scenes. DefSLAM and SD-DefSLAM <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b9">9]</ref> both use meshes along with ORB features or Lucas-Kanade optical flow, respectively, for data association. Lamarca et al. <ref type="bibr" target="#b10">[10]</ref> track surfels using photometric error, but they do not have an underlying interpolation model for estimating motion between surfels. SuPer <ref type="bibr" target="#b11">[11]</ref>, and its extensions <ref type="bibr" target="#b12">[12,</ref><ref type="bibr" target="#b13">13]</ref> use classical embedded deformation for motion modelling (∼500 ms/frame). Finally, for full scene and deformation estimation, NERF <ref type="bibr" target="#b15">[15]</ref> has recently been applied to endoscopy <ref type="bibr" target="#b26">[26]</ref>, but requires per-scene training and computationally expensive. With SENDD, we fill the gap between classical and learned models by providing a flexible and efficient deformation model that could be integrated into SuPer <ref type="bibr" target="#b11">[11]</ref>, SLAM, or used for short-term tracking.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methods</head><p>The SENDD model is described in Fig. <ref type="figure" target="#fig_0">1</ref>. SENDD improves on prior sparse interpolation methods by designing a solution that: learns a detector as part of the network, uses detected points to evaluate depth in a sparse manner, and uses a sparse interpolation paradigm to evaluate motion in 3D instead of 2D. SENDD consists of two key parts, with the first being the 1D stereo interpolation (Depth), and the second being the 3D flow estimation (Deformation). Both use GNNs to estimate query disparity/motion using a coordinate-based Multi Layer Perceptron (MLP) (aka. implicit functions <ref type="bibr" target="#b23">[23]</ref>) of keypoints neighboring it. Before either interpolation step, SENDD detects and matches keypoints. After detailing the detection step, we will explain the 3D flow and disparity models. For the figures in this paper, we densely sample query points on a grid to show dense visualizations, but in practice the query points can be user or application defined. Please see the supplementary video for examples of SENDD tracking tissue points.</p><p>Learned Detector: Like SuperPoint <ref type="bibr" target="#b2">[3]</ref>, we detect points across an image, but we use fewer layers and estimate a single location for each (32, 32) region (instead of (8, 8)). Our images (I t l , I t r ) are of size (1280, 1024), so we have N = 1280 detected points per frame. Unlike SuperPoint or others in the surgical space <ref type="bibr" target="#b0">[1]</ref>, we do not rely on data augmentation for training, and instead allow the downstream loss metric to optimize detections to best reduce the final photometric reconstruction error. Thus the detections are directly trained on real-world deformations. Since we have a sparse regime, we use a softmax dot product score in training, and use max in inference. See Fig. <ref type="figure" target="#fig_0">1</ref> for examples of detections.</p><p>3D Flow Network: SENDD estimates the 3D flow d 3D (q) ∈ R 3 for each query q ∈ R 2 using two images (I t l , I t+1 l ), and their depth maps (D t , D t+1 ). For a means to query depth at arbitrary points, see the section on sparse depth estimation. To obtain initial matches, we match the detected points in 2D from frame I t l to I t+1 l . We use ReTRo keypoints <ref type="bibr" target="#b20">[20]</ref> as descriptors by training the ReTRo network paired with SENDD's learned detector. We do this to remain as lightweight as possible. Matches further than 256 pixels away are filtered out. This results in N pairs of points in 2D with positions p 2D i , p 2D i and feature descriptors f i , f i , {i ∈ 1, . . . , N}, f i ∈ R c . These pairs are nodes in our graph, G. Given the set of preliminary matches, we can then get their 3D positions by using our sparse depth interpolation and backprojecting using the camera parameters at each point</p><formula xml:id="formula_0">p 2D i , p 2D i → p 3D i , p 3D i .</formula><p>The graph, G, is defined with edges connecting each node to its k-nearest neighbors (k-NN) in 3D, with an optional dilation to enable a wider field of view at low cost. The positions and features of each correspondence are combined to act as features in this graph. For each node (detected point in image I t l ), its feature is:</p><formula xml:id="formula_1">b i = φ 3 (p 3D i ) + φ 3 (p 3D i ) + γ d (f i ) + γ e (f i ) + φ 1 (||f i -f i || 2 ) + φ 1 (||p i -p i || 2 ). φ dim : R dim → R c ,</formula><p>denotes a positional encoding layer <ref type="bibr" target="#b23">[23]</ref>, and γ * are linear layers followed by a ReLU, where different subscripts denote different weights. b i are used as features in our graph attention network, with the bold version defined as the set of all node features b = {b i |i ∈ N }. By using a graphattention neural network (GNN), as described in <ref type="bibr" target="#b19">[19]</ref>, we can refine this graph in 3D to estimate refined offsets and higher level local-neighborhood features. b = Ga (Ga (Ga (Ga (b, G)))), is the final set of node features that are functions of their neighborhood, N , in the graph. Ga is the graph attention operation. In practice, for each layer we use dilations of <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b8">8,</ref><ref type="bibr" target="#b0">1]</ref>, and k = 4. The prior steps only need to run once per image pair. The motion d 3D (q) of each query point q is a function of the nearby nodes in 3D, with G q denoting a k-clique graph of the query point and its k -1 nearest nodes; d 3D (q) ∈ R 3 = Lin 3D Ga {q} {b N }, G q . Lin 3D is a linear layer that converts from c channels to 3.</p><p>Sparse Depth Interpolation: Instead of running a depth CNN in parallel, we estimate disparity sparsely as needed by using the same feature points with another lightweight GNN. We do this as we found CNNs (eg. GANet <ref type="bibr" target="#b27">[27]</ref>) too expensive in terms of training and inference time. We adapt the 3D GNN interpolation methodology to estimate 1D flow along epipolar lines in the same way that we modified a 2D sparse flow model to work in 3D. First, matches are found along epipolar lines between left and right images (I t r , I t l ). Then matches are refined and query points are interpolated using a GNN. a, a are the 1D equivalents of b, b from the 3D flow network. For the refined node features, a ∈ R 1 = Ga (Ga (Ga (Ga (a, G)))), and the final disparity estimate, d disp (q) ∈ R 1 = Lin 1D (Ga ({q} {a N } , G q )). Lin 1D is a linear layer that converts from c channels to 1. This can be seen like a neural version of the classic libELAS <ref type="bibr" target="#b3">[4]</ref>, where libELAS uses sparse support points on a regular grid along Sobel edge features to match points within a search space defined by the Delauney triangulation of support point matches.</p><p>Loss: We train SENDD using loss on the warped stereo and flow images: </p><formula xml:id="formula_2">L p (A, B) = α 1 -SSIM (A, B) 2 + (1 -α) A -B 1 . (<label>1</label></formula><formula xml:id="formula_3">L s (V ) = 1 n exp - β 3 c ∂I ∂x ∂V ∂x + exp - β 3 c ∂I ∂y ∂V ∂y (<label>2</label></formula><formula xml:id="formula_4">)</formula><formula xml:id="formula_5">L d = D t→t-1 -D t-1 (3) L total = L p (I l , I r→l ) + L p (I t , I t+1→t ) + λ F L s (F ) + λ D L s (D) + λ d L d (4)</formula><p>L p (A, B) is a photometric loss function of input images (A, B) that is used for both the warped depth pairs (L p (I l , I r→l )) and warped flow pairs (L p (I t , I t+1→t )), L s (V ) is a smoothness loss on a flow field V , and c denotes image color channels <ref type="bibr" target="#b7">[7]</ref>. These loss functions are used for both the warped depth (I l , I r→l ) and the flow reconstruction pairs (I t , I t+1→t ). F and D are densely queried images of flow and depth. We add a depth matching loss, L d which encourages the warped depth map to be close to the estimated depth map.</p><p>We set α = 0.85, β = 150, λ d = 0.001, λ F = 0.01, λ D = 1.0, using values similar to <ref type="bibr" target="#b7">[7]</ref>, and weighting depth matching lightly as a guiding term.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>We train SENDD with a set of rectified stereo videos from porcine clinical labs collected with a da Vinci Xi surgical system. We randomly select images and skip between (1, 45) frames for each training pair. We train using PyTorch with a batch size of 2 for 100,000 steps using a one-cycle learning rate schedule with maxlr = 1e-4, minlr = 4e-6. We use 64 channels for all graph attention operations.</p><p>Dataset: In order to quantify our results, we generate a new dataset. The primary motivation for this is to have metrics that are not dependent on visible markers or require human labelling (which can bias to salient points). Some other datasets have points that are hand labelled in software <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b11">11]</ref> or use visible markers <ref type="bibr" target="#b12">[12]</ref>. Others rely on RMSE of depth maps as a proxy for error, but this does not account for tissue sliding. Our dataset uses tattooed points that flouresce  under infrared (IR) light by using ICG dye. For each ground truth clip, we capture an IR frame at the start, record a deformation action, and then capture another IR frame. The start and end IR segments are then used as ground truth for quantification. Points that are not visible at both the start and finish are then manually removed. See Fig. <ref type="figure" target="#fig_1">2</ref> for examples of data points at start and end frames. The dataset includes multiple different tissue types in ex vivo, including: stomach, kidney, liver, intestine, tongue, heart, chicken breast, pork chop, etc. Additionally the dataset includes recordings from four different in vivo porcine labs. This dataset will be publicly released separately before MICCAI. No clips from this labelled dataset are used in training.</p><p>Quantification: Instead of using Intersection Over Union (IOU) which would fail on small segments (eg. IOU = 0 for a one pixel measurement that is one pixel off), we use endpoint error and chamfer distance between segments to quantify SENDD's performance. We compute endpoint error between the centers of each segmentation region. We use chamfer distance as well because it allows us to see error for regions that are larger or non-circular. Chamfer distance provides a metric that has an lower bound on error, in that if true error is zero then this will also be zero.</p><p>Experiments: The primary motivation for creating a 3D model (SENDD) instead of 2D is that it enables applications that require understanding of motion in 3D (automation, image guidance models). That said, we still compare to the 2D version to compare performance in pixel space. To quantify performance on clips, since these models only estimate motion for frame pairs, we run SENDD for each frame pair over n frames in a clip, where n is the clip length. No relocalization or drift prevention is incorporated (the supplementary material shows endpoint error on strides other than one). For all experiments we select clips with length less than 10 s, as we are looking to quantify short term tracking methods.</p><p>The 2D model has the exact same parameters and model structure as SENDD (3D), except it does not do any depth map calculation, and only runs in image space. First, we compare SENDD to the equivalent 2D model. We do this with endpoint error as seen in Fig. <ref type="figure">3</ref>, and show that the 3D method outperforms 2D over the full dataset. Additionally, we compare to baselines of CSRT <ref type="bibr" target="#b14">[14]</ref> which is a high performer in the SurgT challenge <ref type="bibr" target="#b1">[2]</ref> and RAFT <ref type="bibr" target="#b24">[24]</ref>. To track with CSRT and RAFT, we track in each left and right frame and backproject as done in SurgT <ref type="bibr" target="#b1">[2]</ref>. SENDD outperforms these methods used off-the-shelf; see Fig. <ref type="figure">3</ref>. Performance of the RAFT and CSRT methods could likely be improved with a drift correction, or synchronization between left and right to prevent depth from becoming more erroneous. Then we compare chamfer distance. The 3D method also outperforms the 2D method, on 64 randomly selected clips, with a total average error of 19.18 px vs 20.88 px. The reasons for the SENDD model being close in performance to the equivalent 2D model could be that the 3D method uses the same amount of channels to detect and describe the same features that will be used for both depth and flow. Additionally, lens smudges or specularities can corrupt the depth map, leading to errors in the 3D model that the purely photometric 2D model might not encounter. In 3D all it takes is for one camera artifact to in either image to obscure the depth map, and the resulting flow. The 2D method decreases the likelihood of this happening as it only uses one image. Finally, we compare performance in terms of endpoint error of our 3D model on in vivo vs ex vivo labelled data. As is shown in Fig. <ref type="figure" target="#fig_3">4</ref>, the in vivo experiments have a more monotonic performance decrease relative to clip length. Actions in the ex vivo dataset were performed solely to evaluate tracking performance, while the in vivo data was collected alongside training while performing standard surgical procedures (eg. cholecystectomy). Thus the in vivo scenes can have more complicated occlusions or artifacts that SENDD does not account for, even though it is also trained on in vivo data.</p><p>Benchmarking and Model Size: SENDD has only 366,195 parameters, compared to other models which estimate just flow (RAFT-s <ref type="bibr" target="#b24">[24]</ref> with 1.0M params.) or depth (GANet <ref type="bibr" target="#b27">[27]</ref> with 0.5M params.) using CNNs. We benchmark SENDD on a NVIDIA Quadro RTX 4000, with a batch size of one, 1280 query points, and 1280 control points (keypoints). As seen in Table <ref type="table" target="#tab_1">1</ref>, the stereo estimation for each frame takes 21.4 ms, and total time for the whole network to estimate stereo (at both t and t + 1) and flow is 145.4 ms. When estimating flow for an image pair, we need to calculate two sets of keypoint features, but for a video, we can reuse the features from the previous frame instead of recalculating the full pair each time. Results with reuse are exactly the same, only timing differs. Subtracting out the time for operations that do not need to be repeated leaves us with a streaming time of 97.3 ms, with a frame rate of 10fps for the entire flow and depth model. This can be further improved by using spatial data structures for nearest neighbor lookup or PyTorch optimizations that have not been enabled (eg. float16). The number of salient (or query) points can also be changed to adjust refinement (or neural interpolation) time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>SENDD is a flexible model for estimating deformation in 3D. A limitation of SENDD is that it is unable to cope with occlusion or relocalization, and like all methods is vulnerable to drift over long periods. These could be amended by integrating a SLAM system. We demonstrate that SENDD performs better than the equivalent sparse 2D model while additionally enabling parameterization of deformation in 3D space, learned detection, and depth estimation. SENDD enables real-time applications that can rely on tissue tracking in surgery, such as long term tracking, or deformation estimation.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The SENDD model on a single query point, q (green star). From left to right are different steps in the refinement process for both depth (top) and flow (bottom). They both share feature points, but they use different weights for the graph refinement and interpolation steps. Both the depth and the flow network estimate motion of any point as a function of the nearest detected features using a GNN. The depth of tracked (query) points is passed into the flow model to provide 3D position. (a, b) are learned (depth, flow) features after nearest-neighbor keypoint matching, and (a , b ) are node features after graph refinement. Only Neural Interpolation is repeated to track multiple queries. (Color figure online)</figDesc><graphic coords="3,42,30,53,93,339,43,216,79" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Test dataset images. Left: patch triplets of IR ims., visible light ims., and ground truth segmentations. Right: IR ims. from the start and end of clips with circles around labelled segment centers. Dataset statistics (in vivo 266 min./ex vivo 134 min.) with (182/1139) clips and (944/9596) segments.</figDesc><graphic coords="4,55,98,53,78,340,12,161,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. In vivo and ex vivo errors of SENDD over the dataset.</figDesc><graphic coords="7,93,75,53,87,240,61,98,11" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>) Endpoint error over the full dataset. Left: 2D endpoint error in a boxplot. Mean is the dotted line. Right: 3D endpoint error compared to using RAFT or CSRT to track in both left and right frames. Standard error of the mean is denoted with ±.</figDesc><table><row><cell></cell><cell cols="5">Box plot of 2D endpoint error</cell></row><row><cell>2D</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">Model Mean (mm) Median (mm)</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>SEND 7.92 ± 0.28</cell><cell>6.05</cell></row><row><cell>SENDD</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>CSRT 56.66 ± 8.18</cell><cell>17.21</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>RAFT 33.00 ± 5.01</cell><cell>13.10</cell></row><row><cell>0</cell><cell>10</cell><cell>20</cell><cell>30</cell><cell>40</cell><cell>50</cell></row><row><cell></cell><cell></cell><cell cols="2">Error (px)</cell><cell></cell><cell></cell></row><row><cell>Fig. 3.</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Times in milliseconds for using SENDD with 1280 detected keypoints to track 1280 query points. Times are averaged over 64 runs, with standard error in the second row. Streaming total is calculated by subtracting ( 1 2 (col1 + col2) + col4) from the stereo and flow total. This is the time that it would take if reusing features, as is enabled in a streaming manner (10 fps).</figDesc><table><row><cell>Detection</cell><cell>Auxiliary</cell><cell>3. Stereo</cell><cell>Stereo</cell><cell>Flow</cell><cell>Stereo &amp;</cell><cell>Streaming</cell></row><row><cell>&amp;</cell><cell>Buffer (x4)</cell><cell>Refinement</cell><cell>Total</cell><cell>Refinement</cell><cell>Flow Total</cell><cell>Total</cell></row><row><cell>Description</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>(x4)</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>50.1</cell><cell>1.8</cell><cell>12.9</cell><cell>21.4</cell><cell>32.3</cell><cell>145.4</cell><cell>98.1</cell></row><row><cell>± 0.4</cell><cell>± 0.02</cell><cell>± 0.6</cell><cell>± 0.8</cell><cell>± 0.9</cell><cell>± 2.1</cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43996-4_23.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Superpoint features in endoscopy</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">L</forename><surname>Barbed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Chadebecq</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Morlana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M M</forename><surname>Montiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Murillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Imaging Systems for GI Endoscopy, and Graphs in Biomedical Image Analysis</title>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="45" to="55" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">SurgT: soft-tissue tracking for robotic surgery, benchmark and challenge</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cartucho</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/ARXIV.2302.03022</idno>
+		<ptr target="https://doi.org/10.48550/ARXIV.2302.03022" />
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">SuperPoint: self-supervised interest point detection and description</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Detone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Malisiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rabinovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition Workshops</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Efficient large-scale stereo matching</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Geiger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Roser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Urtasun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACCV 2010</title>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Kimmel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Klette</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Sugimoto</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">6492</biblScope>
+			<biblScope unit="page" from="25" to="38" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-642-19315-6_3</idno>
+		<ptr target="https://doi.org/10.1007/978-3-642-19315-6_3" />
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Vision-based deformation recovery for intraoperative force estimation of tool-tissue interaction for neurosurgery</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Giannarou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Leibrandt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Marcus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IJCARS</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="929" to="936" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">SD-DefSLAM: semi-direct monocular slam for deformable and intracorporeal scenes</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Gómez-Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lamarca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Morlana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Tardós</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M M</forename><surname>Montiel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<date type="published" when="2021-05">May 2021</date>
+			<biblScope unit="page" from="5170" to="5177" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">What matters in unsupervised optical flow</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jonschkowski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Stone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Barron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gordon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Konolige</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Angelova</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58536-5_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58536-5_33" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="557" to="572" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Evaluation of a marker-less, intra-operative, augmented reality guidance system for robotassisted laparoscopic radical prostatectomy</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kalia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mathur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Tsang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Black</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Salcudean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. CARS</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1225" to="1233" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">DefSLAM: tracking and mapping of deforming scenes from monocular sequences</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lamarca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Parashar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bartoli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Montiel</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TRO.2020.3020739</idno>
+		<ptr target="https://doi.org/10.1109/TRO.2020.3020739" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Rob</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="291" to="303" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Direct and sparse deformable tracking</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lamarca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">J</forename><surname>Gómez Rodríguez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Tardós</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Montiel</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/LRA.2022.3201253</idno>
+		<ptr target="https://doi.org/10.1109/LRA.2022.3201253" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="11450" to="11457" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">SuPer: a surgical perception framework for endoscopic tissue manipulation with surgical robotics</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="2294" to="2301" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Semantic-SuPer: a semantic-aware surgical perception framework for endoscopic tissue identification, reconstruction, and tracking</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICRA48891.2023.10160746</idno>
+		<ptr target="https://doi.org/10.1109/ICRA48891.2023.10160746" />
+	</analytic>
+	<monogr>
+		<title level="m">2023 IEEE International Conference on Robotics and Automation (ICRA)</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="4739" to="4746" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Super deep: a surgical perception framework for robotic tissue manipulation using deep learning for feature extraction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jayakumari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Richter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Yip</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICRA</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<publisher>IEEE</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Discriminative correlation filter with channel and spatial reliability</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lukezic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vojir</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Zajc</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kristan</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2017.515</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2017.515" />
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting><address><addrLine>Honolulu, HI</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="4847" to="4856" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">NeRF: representing scenes as neural radiance fields for view synthesis</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mildenhall</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">P</forename><surname>Srinivasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tancik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Barron</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ramamoorthi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ng</surname></persName>
+		</author>
+		<idno type="DOI">10.1145/3503250</idno>
+		<ptr target="https://doi.org/10.1145/3503250" />
+	</analytic>
+	<monogr>
+		<title level="j">Commun. ACM</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="99" to="106" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Endo-depthand-motion: reconstruction and tracking in endoscopic videos using depth networks and photometric constraints</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Recasens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lamarca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Fácil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M M</forename><surname>Montiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Civera</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/LRA.2021.3095528</idno>
+		<ptr target="https://doi.org/10.1109/LRA.2021.3095528" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="7225" to="7232" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Towards robust 3D visual tracking for motion compensation in beating heart surgery</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Richa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">P</forename><surname>Bó</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Poignet</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="302" to="315" />
+			<date type="published" when="2011">2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">SuperGlue: learning feature matching with graph neural networks</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Sarlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Detone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Malisiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rabinovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Fast graph refinement and implicit neural representation for tissue tracking</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Mohareri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Dimaio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICRA</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Real-time rotated convolutional descriptor for surgical environments</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_27</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-1_27" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="279" to="289" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">MIS-SLAM: real-time large-scale dense deformable slam system in minimal invasive surgery based on heterogeneous computing</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Dissanayake</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Robot. Autom. Lett</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="4068" to="4075" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">BDIS: Bayesian dense inverse searching method for real-time stereo surgical image matching</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ghaffari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Rob</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1388" to="1406" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Fourier features let networks learn high frequency functions in low dimensional domains</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tancik</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">RAFT: recurrent all-pairs field transforms for optical flow</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Teed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58536-5_24</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58536-5_24" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12347</biblScope>
+			<biblScope unit="page" from="402" to="419" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">RAFT-3D: scene flow using rigid-motion embeddings</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Teed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8375" to="8384" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Neural rendering for stereo 3D reconstruction of deformable tissues in robotic surgery</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="431" to="441" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">GA-Net: guided aggregation net for end-to-end stereo matching</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Prisacariu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H</forename><surname>Torr</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2019.00027</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2019.00027" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting><address><addrLine>Long Beach, CA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2019">2019. 2019</date>
+			<biblScope unit="page" from="185" to="194" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">ColDE: a depth estimation framework for colonoscopy reconstruction</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2111.10371</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note>cs, eess</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,1038 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Synthetic Augmentation with Large-Scale Unconditional Pre-training</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Jiarong</forename><surname>Ye</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Pennsylvania State University</orgName>
+								<address>
+									<settlement>University Park</settlement>
+									<region>Pennsylvania</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Haomiao</forename><surname>Ni</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Pennsylvania State University</orgName>
+								<address>
+									<settlement>University Park</settlement>
+									<region>Pennsylvania</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Peng</forename><surname>Jin</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Sharon</forename><forename type="middle">X</forename><surname>Huang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Pennsylvania State University</orgName>
+								<address>
+									<settlement>University Park</settlement>
+									<region>Pennsylvania</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Yuan</forename><surname>Xue</surname></persName>
+							<email>yuan.xue@osumc.edu</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">The Ohio State University</orgName>
+								<address>
+									<settlement>Columbus</settlement>
+									<region>OH</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Synthetic Augmentation with Large-Scale Unconditional Pre-training</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="754" to="764"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">B3FDDFCEC8920A24773B78A84296B470</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_71</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Deep learning based medical image recognition systems often require a substantial amount of training data with expert annotations, which can be expensive and time-consuming to obtain. Recently, synthetic augmentation techniques have been proposed to mitigate the issue by generating realistic images conditioned on class labels. However, the effectiveness of these methods heavily depends on the representation capability of the trained generative model, which cannot be guaranteed without sufficient labeled training data. To further reduce the dependency on annotated data, we propose a synthetic augmentation method called HistoDiffusion, which can be pre-trained on large-scale unlabeled datasets and later applied to a small-scale labeled dataset for augmented training. In particular, we train a latent diffusion model (LDM) on diverse unlabeled datasets to learn common features and generate realistic images without conditional inputs. Then, we fine-tune the model with classifier guidance in latent space on an unseen labeled dataset so that the model can synthesize images of specific categories. Additionally, we adopt a selective mechanism to only add synthetic samples with high confidence of matching to target labels. We evaluate our proposed method by pre-training on three histopathology datasets and testing on a histopathology dataset of colorectal cancer (CRC) excluded from the pre-training datasets. With HistoDiffusion augmentation, the classification accuracy of a backbone classifier is remarkably improved by 6.4% using a small set of the original labels. Our code is available at https://github.com/karenyyy/HistoDiffAug.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The recent advancements in medical image recognition systems have greatly benefited from deep learning techniques <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b27">28]</ref>. Large-scale well-annotated datasets are one of the key components for training deep learning models to achieve satisfactory results <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b16">17]</ref>. However, unlike natural images in computer vision, the number of medical images with expert annotations is often limited by the high labeling cost and privacy concerns. To overcome this challenge, a natural choice is to employ data augmentation to increase the number of training samples. Although conventional augmentation techniques <ref type="bibr" target="#b22">[23]</ref> such as flipping and cropping can be directly applied to medical images, they merely improve the diversity of datasets, thus leading to marginal performance gains <ref type="bibr" target="#b0">[1]</ref>. Another group of studies employ conditional generative adversarial networks (cGANs) <ref type="bibr" target="#b9">[10]</ref> to synthesize visually appealing medical images that closely resemble those in the original datasets <ref type="bibr" target="#b35">[36,</ref><ref type="bibr" target="#b36">37]</ref>. While existing works have proven effective in improving the performance of downstream models to some extent, a sufficient amount of labeled data is still required to adequately train models to generate decentquality images. More recently, diffusion models have become popular for natural image generation due to their impressive results and training stability <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b30">31]</ref>. A few studies have also demonstrated the potential of diffusion models for medical image synthesis <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b23">24]</ref>.</p><p>Although annotated data is typically hard to acquire for medical images, unannotated data is often more accessible. To mitigate the issue existed in current cGAN-based synthetic augmentation methods <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b35">[36]</ref><ref type="bibr" target="#b36">[37]</ref><ref type="bibr" target="#b37">[38]</ref>, in this work, we propose to leverage the diffusion model with unlabeled pre-training to reduce the dependency on the amount of labeled data (see comparisons in Fig. <ref type="figure" target="#fig_0">1</ref>). We propose a novel synthetic augmentation method, named HistoDiffusion, which can be pre-trained on large-scale unannotated datasets and adapted to smallscale annotated datasets for augmented training. Specifically, we first employ a latent diffusion model (LDM) and train it on a collection of unlabeled datasets from multiple sources. This large-scale pre-training enables the model to learn common yet diverse image characteristics and generate realistic medical images. Second, given a small labeled dataset that does not exist in the pre-training datasets, the decoder of the LDM is fine-tuned using annotations to adapt to the domain shift. Synthetic images are then generated with classifier guidance <ref type="bibr" target="#b3">[4]</ref> in the latent space. Following the prior work <ref type="bibr" target="#b35">[36]</ref>, we select generated images based on the confidence of target labels and feature similarity to real labeled images. We evaluate our proposed method on a histopathology image dataset of colorectal cancer (CRC). Experiment results show that when presented with limited annotations, the classifier trained with our augmentation method outperforms the ones trained with the prior cGAN-based methods. Our experimental results show that once HistoDiffusion is well pre-trained using large datasets, it can be applied to any future incoming small dataset with minimal fine-tuning and may substantially improve the flexibility and efficacy of synthetic augmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Figure <ref type="figure" target="#fig_1">2</ref> illustrates the overall architecture of our proposed method. First, we train an LDM on a large-scale set of unlabeled datasets collected from multiple sources. We then fine-tune the decoder of this pretrained LDM on a small labeled dataset. To enable conditional image synthesis, we also train a latent classifier on the same labeled dataset to guide the diffusion model in LDM. Once the classifier is trained, we apply the fine-tuned LDM to generate a pool of candidate images conditioned on the target class labels. These candidate images are then passed through the image selection module to filter out any low-quality results. Finally, we can train downstream classification models on the expanded training data, which includes the selected images, and then use them to perform inference on test data. In this section, we will first introduce the background of diffusion models and then present details about the HistoDiffusion model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Diffusion Models</head><p>Diffusion models (DM) <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b31">32]</ref> are probabilistic models that are designed to learn a data distribution. Given a sample from the data distribution z 0 ∼ q(z 0 ), the DM forward process produces a Markov chain z 1 , . . . , z T by gradually adding Gaussian noise to z 0 based on a variance schedule β 1 , . . . , β T , that is:</p><formula xml:id="formula_0">q(zt|zt-1) = N (zt; 1 -βtzt-1, βtI) , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where variances β t are constants. If β t are small, the posterior q(z t-1 |z t ) can be well approximated by diagonal Gaussian <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b29">30]</ref>. Furthermore, when the T of the chain is large enough, z T can be well approximated by standard Gaussian distribution N (0, I). These suggest that the true posterior q(z t-1 |z t ) can be estimated by p θ (z t-1 |z t ) defined as <ref type="bibr" target="#b21">[22]</ref>:</p><formula xml:id="formula_2">p θ (zt-1|zt) = N (zt-1; μ θ (zt), Σ θ (zt)) .</formula><p>(2) The DM reverse process (also known as sampling) then generates samples z 0 ∼ p θ (z 0 ) by initiating a Markov chain with Gaussian noise z T ∼ N(0, I) and progressively decreasing noise in the chain of z T -1 , z T -2 , . . . , z 0 using the learnt p θ (z t-1 |z t ). To learn p θ (z t-1 |z t ), Gaussian noise is added to z 0 to generate samples z t ∼ q(z t |z 0 ), then a model θ is trained to predict using the following mean-squared error loss:</p><formula xml:id="formula_3">LDM = E t∼U (1,T ),z 0 ∼q(z 0 ), ∼N (0,I) [|| -θ (zt, t)|| 2 ] ,<label>(3)</label></formula><p>where time step t is uniformly sampled from {1, . . . , T }. Then μ θ (z t ) and Σ θ (z t ) in Eq. 2 can be derived from θ (z t , t) to model p θ (z t-1 |z t ) <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b21">22]</ref>. The denoising model θ is typically implemented using a time-conditioned U-Net <ref type="bibr" target="#b26">[27]</ref> with residual blocks <ref type="bibr" target="#b10">[11]</ref> and self-attention layers <ref type="bibr" target="#b34">[35]</ref>. Sinusoidal position embedding <ref type="bibr" target="#b34">[35]</ref> is also usually used to specify the time step t to θ .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">HistoDiffusion</head><p>Model Architecture. Our proposed HistoDiffusion is built on Latent Diffusion Models (LDM) <ref type="bibr" target="#b25">[26]</ref>, which requires fewer computational resources without degradation in performance, compared to prior works <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b27">28]</ref>. LDM first trains a latent autoencoder (LAE) <ref type="bibr" target="#b15">[16]</ref> to encode images as lower-dimensional latent representations and then learns a diffusion model (DM) for image synthesis by modeling the latent space of the trained LAE. Particularly, the encoder E of the LAE encodes the input image x ∈ R H×W ×3 into a latent representation z = E(x) ∈ R h×w×c in a lower-dimensional latent space Z. Here H and W are the height and width of image x, and h, w, and c are the height, width, and channel of latent z, respectively. The latent z is then passed into the decoder D to reconstruct the image x = D(z). Through this process, the compositional features from the image space X can be extracted to form the latent space Z, and we then model the distribution of Z by learning a DM. For the DM in LDM, both the forward and reverse sampling processes are performed in the latent space Z instead of the original image space X .</p><p>Unconditional Large-scale Pre-training. To ensure the latent space Z can cover features of various data types, we first pre-train our proposed His-toDiffusion on large-scale unlabeled datasets. Specifically, we gather unlabeled images from M different sources to construct a large-scale set of datasets S = {S 1 , S 2 , . . . , S M }. We then train an LAE using the data from S with the following self-reconstruction loss to learn a powerful latent space Z that can describe diverse features: <ref type="bibr" target="#b3">(4)</ref> where L rec is the loss measuring the difference between the output reconstructed image x and the input ground truth image x. Here we implement L rec with a combination of a pixel-wise L 1 loss, a perceptual loss <ref type="bibr" target="#b38">[39]</ref>, and a patch-base adversarial loss <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7]</ref>. To avoid arbitrarily high-variance latent spaces, we also add a KL regularization term D KL <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b25">26]</ref> to constrain the variance of the latent space Z with a slight KL-penalty.</p><formula xml:id="formula_4">LLAE = Lrec(x, x) + λKLDKL(q(z)||N (0, I)) ,</formula><p>After training the LAE, we fixed the trained encoder E and then train a DM with the loss L DM in Eq. 3 to model E's latent space Z. Here z 0 = E(x) in Eq. 3. Once the DM is trained, we can use denoising model θ in the DM reverse sampling process to synthesize a novel latent z0 ∈ R h×w×c and employ the trained decoder D to generate a new image x = D(z 0 ), which should satisfy the similar distribution as the data in S.</p><p>Conditional Small-scale Fine-tuning. Using the LAE and DM pretrained on S, we can only generate the new image x following the similar distribution in S. To generalize our HistoDiffusion to the small-scale labeled dataset S collected from a different source (i.e., S ⊂ S), we further fine-tune HistoDiffusion using the labeled data from S . Let y be the label of image x in S . To minimize the training cost, we fix both the trained encoder E and trained DM model θ to keep latent space Z unchanged. Then we only fine-tune the decoder D using labeled data (x, y) from S with the following loss function: LD = Lrec(x, x) + λCELCE(ϕ(x), y) , <ref type="bibr" target="#b4">(5)</ref> where L rec (x, x) is the self-reconstruction loss between the output reconstructed image x = D(E(x)) and the input ground truth image x. To enhance the correlation between the decoder output x and label y, we also add an auxiliary image classifier ϕ trained with (x, y) on the top of D and impose the cross-entropy classification loss L CE when fine-tuning D. λ CE is the balancing parameter. We annotate this fine-tuned decoder as D for differentiation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Classifier-guided Conditional Synthesis.</head><p>To enable conditional image generation with our HistoDiffusion, we further apply the classifier-guided diffusion sampling proposed in <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b28">29,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b32">33]</ref> using the labeled data (x, y) from small-scale labeled dataset S . We first utilize the trained encoder E to encode the data x from S as latent z 0 . Then we train a time-dependent latent classifier φ with paired (z t , y) using the following loss function: <ref type="bibr" target="#b5">(6)</ref> where z t ∼ q(z t |z 0 ) is the noisy version of z 0 at the time step t during the DM forward process, and L CE is the cross-entropy classification loss. Based on the trained unconditional diffusion model θ , and a classifier φ trained on noisy input z t , we enable conditional diffusion sampling by perturbing the reverseprocess mean with the gradient of the log probability p φ (y|z t ) of a target class y predicted by the classifier φ as follows:</p><formula xml:id="formula_5">L φ = LCE(φ(zt), y) ,</formula><formula xml:id="formula_6">μθ (zt|y) = μ θ (zt) + g • Σ θ (zt)∇z t log p φ (y|zt) , (<label>7</label></formula><formula xml:id="formula_7">)</formula><p>where g is the guidance scale. Then the DM reverse process in HistoDiffusion can finally generate a novel latent z0 satisfying the class condition y through a Markov chain starting with a standard Gaussian noise z T ∼ N(0, I) using p θ,φ (z t-1 |z t , y) defined as follows: p θ,φ (zt-1|zt, y) = N (zt-1; μθ (zt|y), Σ θ (zt)) . <ref type="bibr" target="#b7">(8)</ref> The final image x of class y can be generated by applying the fine-tuned decoder D , i.e., x = D ( z0 ).</p><p>Selective Augmentation. To further improve the efficacy of synthetic augmentation, we follow <ref type="bibr" target="#b35">[36]</ref> to selectively add synthetic images to the original labeled training data based on centroid feature distance. The augmentation ratio is defined as the ratio between the selected synthetic images and the original training images. More results are demonstrated later in Table <ref type="table" target="#tab_0">1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Datasets. We employ three public datasets of histopathology images during the large-scale pre-training procedure. The first one is the H&amp;E breast cancer dataset <ref type="bibr" target="#b1">[2]</ref>, containing 312,320 patches extracted from the hematoxylin &amp; eosin (H&amp;E) stained human breast cancer tissue micro-array (TMA) images <ref type="bibr" target="#b17">[18]</ref>. Each patch has a resolution of 224 × 224. The second dataset is PanNuke <ref type="bibr" target="#b8">[9]</ref>, a pan-cancer histology dataset for nuclei instance segmentation and classification. The PanNuke dataset includes 7,901 patches of 19 types of H&amp;E stained tissues obtained from multiple data sources, and each patch has a unified size of 256×256 pixels. The third dataset is TCGA-BRCA-A2/E2 [34], a subset derived from the TCGA-BRCA breast cancer histology dataset <ref type="bibr" target="#b19">[20]</ref>. The subset consists of 482,958 patches with a resolution of 256 × 256. Overall, there are 803,179 patches used for pre-training. As for fine-tuning and evaluation, we employ the NCT-CRC-HE-100K dataset that contains 100,000 patches from H&amp;E stained histological images of human colorectal cancer (CRC) and normal tissue. The patches have been divided into 9 classes: Adipose (ADI), background (BACK), debris (DEB), lymphocytes (LYM), mucus (MUC), smooth muscle (MUS), nor-mal colon mucosa (NORM), cancer-associated stroma (STR), colorectal adenocarcinoma epithelium (TUM). The resolution of each patch is 224 × 224.</p><p>To replicate a scenario where only a small annotated dataset is available for training, we have opted to utilize a subset of 5,000 (5%) samples for finetuning. This subset has been carefully selected through an even sampling without replacement from each tissue type present in the train set. It is worth noting that the labels for these samples have been kept, which allows the fine-tuning process to be guided by labeled data, leading to better predictions on the specific task or domain being trained. By ensuring that the fine-tuning process is representative of the entire dataset through even sampling from each tissue type, we can eliminate bias towards any particular tissue type. We evaluate the fine-tuned model on the official test set. The related data use declaration and acknowledgment can be found in our supplementary materials.</p><p>Evaluation Metrics. We employ Fréchet Inception Distance (FID) score <ref type="bibr" target="#b11">[12]</ref> to assess the image quality of the synthetic samples. We further compute the accuracy, F1-score, sensitivity, and specificity of the downstream classifiers to evaluate the performance gain from different augmentation methods.</p><p>Model Implementation. All the patches are resized to 256 × 256 × 3 before being passed into the models. Our implementation of HistoDiffusion basically follows the LDM-4 <ref type="bibr" target="#b25">[26]</ref> architecture, where the input is downsampled by a factor of 4, resulting in a latent representation with dimensions of 64 × 64 × 3. We use 1000 timesteps (T = 1000) for the training of diffusion model and sample with classifier-free guidance scale g = 1.0 and 200 DDIM steps. The latent classifier φ is constructed using the encoder architecture of the LAE and an additional attention pooling layer <ref type="bibr" target="#b24">[25]</ref> added before the output layer.</p><p>We use the same architecture for the auxiliary image classifier ϕ. For downstream evaluation, we implement the classifier using the ViT-B/16 architecture <ref type="bibr" target="#b4">[5]</ref> in all experiments to ensure fair comparisons. The default hyper-parameter settings provided in their officially released codebases are followed.</p><p>Comparison to State-of-the-Art. We compare our proposed HistoDiffusion with the current state-of-the-art cGAN-based method <ref type="bibr" target="#b35">[36]</ref>. We employ Style-GAN2 <ref type="bibr" target="#b13">[14]</ref> as the backbone generative model for cGAN-based synthesis. To ensure a fair comparison, all images synthesized by StyleGAN2 and HistoDiffusion model are further selected based on feature centroid distances <ref type="bibr" target="#b35">[36]</ref>. More implementation details of our proposed HistoDiffusion, StyleGAN2, and baseline classifier can also be found in our supplementary materials.  <ref type="figure" target="#fig_2">3</ref>, where HistoDiffusion consistently generates more realistic images matching the given class conditions than SytleGAN2, especially for classes ADI and BACK. When augmenting the training dataset with different numbers of images synthesized from HistoDiffusion and StyleGAN2, one can observe that when increasing the ratio of synthesized data to 100%, the FID score of StyleGAN2 increases quickly and can become even worse than the one without using image selection strategy. In contrast, HistoDiffusion can keep synthesizing high-quality images until the augmentation ratio reaches 300%. Regarding classification performance improvement of the baseline classifier, the accuracy and F1 score of using His-toDiffusion augmentation are increased by up to 6.4% and 6.6%, respectively. Even when not using the image selection module to filter out the low-quality results (i.e., +random 50%), our HistoDiffusion can still improve the accuracy by 1.5%. The robustness and effectiveness of HistoDiffusion can be attributed to the unconditional large-scale pre-training, our specially-designed conditional fine-tuning, and classifier-guided generation, among others.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Result Analysis. As shown in</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>In this study, we have introduced a novel synthetic augmentation technique, termed HistoDiffusion, to enhance the performance of medical image recognition systems. HistoDiffusion leverages multiple unlabeled datasets for large-scale, unconditional pre-training, while employing a labeled dataset for small-scale conditional fine-tuning. Experiment results on a histopathology image dataset excluded from the pre-training demonstrate that given limited labels, HistoDiffusion with image selection remarkably enhances the classification performance of the baseline model, and can potentially handle any future incoming small dataset for augmented training using the same pre-trained model.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Comparison between different deep generative models for synthetic augmentation. (a) cGAN-based method which requires relatively large-scale annotated training data; (b) Diffusion model (DM) which cannot take conditional input; (c) Our proposed HistoDiffusion model that can be pretrained on large-scale unannotated data and later applied to unseen small-scale annotated data for augmentation.</figDesc><graphic coords="2,89,97,53,72,272,95,130,99" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The architecture of our proposed HistoDiffusion, which consists of a pre-training process (blue solid lines), a fine-tuning process (blue dashed lines), and a selective augmentation process (orange lines). During pre-training, a latent autoencoder (LAE) and a diffusion model (DM) are trained on large-scale unlabeled datasets for unconditional image synthesis. HistoDiffusion is then fine-tuned on a small-scale dataset for conditional image synthesis under the guidance of a trained latent classifier. During selective augmentation, given a target class label, the synthetic images generated by the finetuned model are selected and added to the training set based on their distances to the class centroids in the feature space. (Color figure online)</figDesc><graphic coords="4,64,89,53,99,331,63,149,02" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Comparison of real images from training subset, synthesized images generated by StyleGAN2 [14] and our proposed HistoDiffusion (zoom in for clear observation). Qualitatively, our synthesized results contain more realistic and diagnosable patterns than results synthesized from StyleGAN2.</figDesc><graphic coords="7,76,26,72,02,302,86,322,69" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 ,</head><label>1</label><figDesc>under the same synthetic augmentation setting, HistoDiffusion shows better FID scores and outperforms the stateof-the-art cGAN model StyleGAN2 in all classification metrics. A qualitative comparison between synthetic images by HistoDiffusion and StyleGAN2 can be</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Quantitative comparison results of synthetic image quality and augmented classification. "Random" refers to directly augmenting the training dataset with synthesized images without any image selections while "selective" indicates applying selective module<ref type="bibr" target="#b35">[36]</ref> to filter out low-quality images. The number (X%) suggests that the number of the synthesized images is X% of the original training set.</figDesc><table><row><cell></cell><cell cols="5">FID↓ Accuracy↑ F1 Score↑ Sensitivity↑ Specificity↑</cell></row><row><cell cols="2">Baseline (5% real images) /</cell><cell>0.855</cell><cell>0.850</cell><cell>0.855</cell><cell>0.983</cell></row><row><cell>StyleGAN2 [14]</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>+ random 50%</cell><cell cols="2">5.714 0.860</cell><cell>0.856</cell><cell>0.860</cell><cell>0.980</cell></row><row><cell>+ selective [36] 50%</cell><cell cols="2">5.088 0.868</cell><cell>0.861</cell><cell>0.867</cell><cell>0.978</cell></row><row><cell>100%</cell><cell cols="2">5.927 0.879</cell><cell>0.876</cell><cell>0.879</cell><cell>0.982</cell></row><row><cell>200%</cell><cell cols="2">7.550 0.895</cell><cell>0.888</cell><cell>0.895</cell><cell>0.983</cell></row><row><cell>300%</cell><cell cols="2">10.643 0.898</cell><cell>0.896</cell><cell>0.898</cell><cell>0.987</cell></row><row><cell>HistoDiffusion (Ours)</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>+ random 50%</cell><cell cols="2">4.921 0.870</cell><cell>0.869</cell><cell>0.870</cell><cell>0.982</cell></row><row><cell>+ selective [36] 50%</cell><cell cols="2">4.544 0.891</cell><cell>0.888</cell><cell>0.891</cell><cell>0.983</cell></row><row><cell>100%</cell><cell cols="2">3.874 0.903</cell><cell>0.902</cell><cell>0.903</cell><cell>0.991</cell></row><row><cell>200%</cell><cell cols="2">4.583 0.919</cell><cell>0.916</cell><cell>0.919</cell><cell>0.992</cell></row><row><cell>300%</cell><cell cols="2">8.326 0.910</cell><cell>0.912</cell><cell>0.910</cell><cell>0.988</cell></row><row><cell>found in Fig.</cell><cell></cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 71.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Generative adversarial networks in medical image augmentation: a review</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">144</biblScope>
+			<biblScope unit="page">105382</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Pathologygan: learning deep representations of cancer tissue</title>
+		<author>
+			<persName><forename type="first">Claudio</forename><surname>Quiros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Murray-Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MELBA</title>
+		<imprint>
+			<biblScope unit="volume">2021</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="48" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">ImageNet: A large-scale hierarchical image database</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009">2009</date>
+			<publisher>Ieee</publisher>
+			<biblScope unit="page" from="248" to="255" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Diffusion models beat GANs on image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="8780" to="8794" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">An image is worth 16x16 words: Transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Generating images with perceptual similarity metrics based on deep networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Taming transformers for high-resolution image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Esser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rombach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ommer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="12873" to="12883" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Gan-based synthetic medical image augmentation for increased CNN performance in liver lesion classification</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Frid-Adar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Diamant</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Klang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Amitai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Goldberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Greenspan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">321</biblScope>
+			<biblScope unit="page" from="321" to="331" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Pan-Nuke: an open pan-cancer histology dataset for nuclei instance segmentation and classification</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gamper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Alemi Koohbanani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Benet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khuram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Rajpoot</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-23937-4_2</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-23937-42" />
+	</analytic>
+	<monogr>
+		<title level="m">ECDP 2019</title>
+		<editor>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Reyes-Aldasoro</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Janowczyk</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Veta</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Bankhead</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Sirinukunwattana</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11435</biblScope>
+			<biblScope unit="page" from="11" to="19" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Goodfellow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Commun. ACM</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="139" to="144" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">GANs trained by a two time-scale update rule converge to a local nash equilibrium</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Heusel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ramsauer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Unterthiner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Nessler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Analyzing and improving the image quality of stylegan</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Karras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aittala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hellsten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lehtinen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="8110" to="8119" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Deep learning applications in medical image analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Lim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="9375" to="9389" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<title level="m">Auto-encoding variational bayes. arXiv</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Microsoft COCO: common objects in context</title>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10602-1_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10602-148" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2014</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8693</biblScope>
+			<biblScope unit="page" from="740" to="755" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The stanford tissue microarray database</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Marinelli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nucleic Acids Research</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="871" to="D877" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+	<note>suppl</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">A morphology focused diffusion probabilistic model for synthesis of histopathology images</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Moghadam</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<publisher>WACV</publisher>
+			<biblScope unit="page" from="2000" to="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Comprehensive molecular portraits of human breast Tumours</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">C G A</forename><surname>Network</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">490</biblScope>
+			<biblScope unit="issue">7418</biblScope>
+			<biblScope unit="page" from="61" to="70" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Glide: Towards photorealistic image generation and editing with text-guided diffusion models</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+		<idno>arXiv</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Improved denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Nichol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8162" to="8171" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">The effectiveness of data augmentation in image classification using deep learning</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Perez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<idno>arXiv</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Brain imaging generation with latent diffusion models</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">H</forename><surname>Pinaya</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-18576-2_12</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-18576-212" />
+	</analytic>
+	<monogr>
+		<title level="m">DGM4MICCAI</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="117" to="126" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Learning transferable visual models from natural language supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Radford</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8748" to="8763" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">High-resolution image synthesis with latent diffusion models</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rombach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blattmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lorenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Esser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ommer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="10684" to="10695" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Deep learning in medical image analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">I</forename><surname>Suk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annu. Rev. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="221" to="248" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Exploring compositional visual generation with latent classifier guidance</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Min</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+			<biblScope unit="page" from="853" to="862" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Deep unsupervised learning using nonequilibrium thermodynamics</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sohl-Dickstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Maheswaranathan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ganguli</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2256" to="2265" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Denoising diffusion implicit models</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Generative modeling by estimating gradients of the data distribution</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sohl-Dickstein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Poole</surname></persName>
+		</author>
+		<title level="m">Scorebased generative modeling through stochastic differential equations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page">34</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Deepmed: A unified, modular pipeline for end-to-end deep learning in computational pathology</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Van Treeck</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BioRxiv</title>
+		<imprint>
+			<date type="published" when="2021-12">2021-12 (2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Selective synthetic augmentation with histogan for improved histopathology image classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xue</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<biblScope unit="page">101816</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Synthetic augmentation and feature-based filtering for improved cervical histopathology image classification</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xue</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32239-7_43</idno>
+		<idno>978-3-030-32239-7 43</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11764</biblScope>
+			<biblScope unit="page" from="387" to="396" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Synthetic sample selection via reinforcement learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ye</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_6</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59710-86" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="53" to="63" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<title level="m" type="main">The unreasonable effectiveness of deep features as a perceptual metric</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shechtman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="586" to="595" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

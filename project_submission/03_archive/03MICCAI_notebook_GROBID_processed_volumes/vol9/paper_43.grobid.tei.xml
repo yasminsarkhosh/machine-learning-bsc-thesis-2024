@@ -1,0 +1,886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Surgical Activity Triplet Recognition via Triplet Disentanglement</title>
+				<funder ref="#_2myFWBm">
+					<orgName type="full">Hong Kong RGC General Research Fund</orgName>
+				</funder>
+				<funder ref="#_T9ysV5S">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Yiliang</forename><surname>Chen</surname></persName>
+							<email>yiliang.chen@connect.polyu.hk</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Centre for Smart Health</orgName>
+								<orgName type="department" key="dep2">School of Nursing</orgName>
+								<orgName type="institution">The Hong Kong Polytechnic University</orgName>
+								<address>
+									<addrLine>Hung Hom</addrLine>
+									<settlement>Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shengfeng</forename><surname>He</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Yueming</forename><surname>Jin</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Singapore Management University</orgName>
+								<address>
+									<settlement>Singapore</settlement>
+									<country key="SG">Singapore</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">National University of Singapore</orgName>
+								<address>
+									<settlement>Singapore</settlement>
+									<country key="SG">Singapore</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jing</forename><surname>Qin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Centre for Smart Health</orgName>
+								<orgName type="department" key="dep2">School of Nursing</orgName>
+								<orgName type="institution">The Hong Kong Polytechnic University</orgName>
+								<address>
+									<addrLine>Hung Hom</addrLine>
+									<settlement>Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Surgical Activity Triplet Recognition via Triplet Disentanglement</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="451" to="461"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">6C592A660C02782CCA124CAC8A5B4EC0</idno>
+					<idno type="DOI">10.1007/978-3-031-43996-4_43</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>triplet disentanglement</term>
+					<term>surgical activity recognition</term>
+					<term>endoscopic videos</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Including context-aware decision support in the operating room has the potential to improve surgical safety and efficiency by utilizing real-time feedback obtained from surgical workflow analysis. In this task, recognizing each surgical activity in the endoscopic video as a triplet &lt;instrument, verb, target&gt; is crucial, as it helps to ensure actions occur only after an instrument is present. However, recognizing the states of these three components in one shot poses extra learning ambiguities, as the triplet supervision is highly imbalanced (positive when all components are correct). To remedy this issue, we introduce a triplet disentanglement framework for surgical action triplet recognition, which decomposes the learning objectives to reduce learning difficulties. Particularly, our network decomposes the recognition of triplet into five complementary and simplified sub-networks. While the first sub-network converts the detection into a numerical supplementary task predicting the existence/number of three components only, the second focuses on the association between them, and the other three predict the components individually. In this way, triplet recognition is decoupled in a progressive, easy-to-difficult manner. In addition, we propose a hierarchical training schedule as a way to decompose the difficulty of the task further. Our model first creates several bridges and then progressively identifies the final key task step by step, rather than explicitly identifying surgical activity. Our proposed method has been demonstrated to surpass current state-of-the-art approaches on the CholecT45 endoscopic video dataset.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Surgical video activity recognition has become increasingly crucial in surgical data science with the rapid advancement of technology <ref type="bibr" target="#b0">[1]</ref><ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref>. This important task provides comprehensive information for surgical workflow analysis <ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b7">[7]</ref> and surgical scene understanding <ref type="bibr" target="#b8">[8]</ref><ref type="bibr" target="#b9">[9]</ref><ref type="bibr" target="#b10">[10]</ref>, which supports the implementation of safety warning and computer-assisted systems in the operating room <ref type="bibr" target="#b11">[11]</ref>. One of the most popular surgical procedures worldwide is laparoscopic cholecystectomy <ref type="bibr" target="#b12">[12,</ref><ref type="bibr" target="#b13">13]</ref>, which is in high demand for the creation of an effective computer-assisted system. Therefore, automated surgical activity triplet recognition is increasingly essential, and learning-based methods are promising solutions to address this need.</p><p>Most current works in the field of surgical video analysis primarily focus on surgical phase recognition <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b14">[14]</ref><ref type="bibr" target="#b15">[15]</ref><ref type="bibr" target="#b16">[16]</ref><ref type="bibr" target="#b17">[17]</ref><ref type="bibr" target="#b18">[18]</ref>. However, only a small portion of the literature is dedicated to surgical activity recognition. The first relevant study <ref type="bibr" target="#b19">[19]</ref> dates back to 2020, in which the authors built a relevant dataset and proposed a weakly supervised detection method that uses a 3D interacting space to identify surgical triplets in an end-to-end manner. An updated version Rendezvous (RDV) <ref type="bibr" target="#b20">[20]</ref> employs a Transformer <ref type="bibr" target="#b21">[21]</ref> inspired semantic attention module in their end-to-end network. Later this method is extended to include the temporal domain, named Rendezvous in Time (RiT) <ref type="bibr" target="#b22">[22]</ref> with a Temporal Attention Module (TAM) to better integrates the current and past features of the verb at the frame level. Significantly, benchmark competitions such as the Cholectriplet2021 Challenge <ref type="bibr" target="#b28">[28]</ref> have garnered interest in surgical action triplet recognition, with its evaluation centering on 94 valid triplet classes while excluding 6 null classes.</p><p>Although significant progress has been made in surgical activity triplet recognition, they suffer from the same limitation of ambiguous supervision from the triplet components. Learning to predict the triplet in one shot is a highly imbalanced process, as only samples with correct predictions across all components are considered positive. This objective is particularly challenging in the following scenarios. Firstly, multiple surgical activities may occur in a single frame (see Fig. <ref type="figure" target="#fig_0">1</ref>), with instruments appearing at the edge of the video or being obscured or overlapped, making it difficult to focus on them. Secondly, similar instruments, verbs, and targets that do not need to be recognized can have a detrimental impact on the task. As illustrated in the second row of Fig. <ref type="figure" target="#fig_0">1</ref>, an obvious movement of the clipper may be labeled as null in the dataset because it is irrelevant to the recognition task. However, this occurrence is frequent in real situations, and labeling all surgical activities is time-consuming. Furthermore, not all surgical activities are indispensable, and some only appear in rare cases or among surgeons' habits. Moreover, the labels of instruments and triplets for this task are binary, and when multiple duplicate instruments or triplets appear, recognizing them directly only determines whether their categories have appeared or not. To improve recognition results, these factors should also be considered. Lastly, most of the previous methods are end-to-end multi-task learning methods, which means that training may be distracted by other auxiliary tasks and not solely focused on the key task.</p><p>To solve the above problems, we propose a triplet disentanglement framework for surgical activity triplet recognition. This approach decomposes the learning objectives, thereby reducing the complexity of the learning process. As stated earlier, surgical activity relies on the presence of tools, making them crucial to our mission. Therefore, our approach concentrates on a simplified numerical representation as a means of mitigating these challenges. Initially, we face challenges such as multiple tools appearing at the same time or irrelevant surgical activities. Therefore, we adopt an intuitive approach to first identify the number/category of tools and whether those activities occur or not, instead of directly recognizing the tool itself. This numerical recognition task helps our network roughly localize the tool's location and differentiate irrelevant surgical activities. Subsequently, we employ a weakly supervised method to detect the tools' locations. However, unlike <ref type="bibr" target="#b20">[20]</ref>, we extend our architecture to 3D networks to better capture temporal information. Our approach separates different types of instruments using the class activation map (CAM) <ref type="bibr" target="#b23">[23]</ref> based on the maximum number of identified instrument categories, allowing our model to slightly minimize the probability of mismatching and reduce the learning difficulty after separation when multiple surgical activities occur simultaneously. Additionally, we propose a hierarchical training schedule that decomposes our tasks into several sub-tasks, starting from easy to hard. This approach improves the efficiency of each individual task and makes training easier.</p><p>In summary, this work makes the following contributions: 1) We propose a triplet disentanglement framework for surgical action triplet recognition, which decomposes the learning objectives in endoscopic videos. 2) By further exploit- ing the knowledge of decomposition, our network is extended to a 3D network to better capture temporal information and make use of temporal class activation maps to alleviate the challenge of multiple surgical activities occurring simultaneously. 3) Our experimental results on the endoscopic video dataset demonstrate that our approaches surpass current state-of-the-art methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>Our objective is to recognize every triplet at each frame in each video. Let X = {X 1 , ..., X n } be the frames of endoscopic videos and Y = {Y 1 , ..., Y n } be the set of labels of triplet classes where n is the number of frames and the sets of triplet classes. Moreover, each set of labels of triplet classes can be denoted as Y = {Y I , Y V , Y T } where I, V, and T are indicated as Instrument, Verb, and Target. Figure <ref type="figure" target="#fig_1">2</ref> shows the overview of our method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Sampling Video Clips</head><p>Unlike RDV <ref type="bibr" target="#b20">[20]</ref> method which identifies surgical activities in individual frames, the video is cut into different segments to identify them. At the beginning of our process, short video clips are obtained from lengthy and differently-sized videos. Each sample clip drawn from the source videos is represented as X s ∈ H×W ×3×M , while X t represents a sample clip from the target. It should be noted that all sample clips have identical specifications, namely a fixed height H, a fixed width W, and a fixed number of frames M.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Generating Soft Labels</head><p>We generate four different soft labels for the number of instruments, the number of instrument categories, the presence of an unrelated surgical activity, and the presence of a critical surgical activity, which are labeled as &lt;N I , N C , U A , S A &gt; respectively. As for N I , our goal is to know the number of instruments occurrences because the appearance of an instrument also means the appearance of a surgical activity. For N C , it is employed to differentiate situations where multiple instruments of the same type are present. In terms of the other two soft labels, they are binary labels, which refer to presence or absence, respectively. In addition, labels with the format &lt;instrument, null, null &gt; are marked as irrelevant surgical activity. In contrast, those with the format &lt;instrument, verb, target&gt; are marked as critical surgical activity. For example, in the case shown in the second line of Fig. <ref type="figure" target="#fig_0">1</ref>, our soft label will be marked as &lt;2, 2, presence, presence&gt;.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Disentanglement Framework</head><p>Our encoder backbone is built on the RGB-I3D <ref type="bibr" target="#b26">[26]</ref> network (preserving the temporal dimension), which is pre-trained on both ImageNet <ref type="bibr" target="#b25">[25]</ref> and Kinetics dataset <ref type="bibr" target="#b26">[26]</ref>. Prior to training, each video is segmented into T non-overlapping segments consisting of precisely 5 frames, which are then fed into the soft label network to recognize their corresponding soft labels. This allows our network to more easily identify the location of the tool and to differentiate between crucial and irrelevant actions, which ultimately aids the network's comprehension of triplet associations. Once the network is trained, its parameters are stored and transferred for initialization to the backbones of other networks. In the second stage, we divide our triplet recognition task into three sub-networks: the tool network, verb network, and target branch network. Notably, our backbone operates at the clip level, whereas RDV is frame-based. The features extracted by the backbone from video clips are fed into the three sub-networks. The tool classifier recognizes the tool class and generates its corresponding Class Activation Map (CAM). The features of the verb and target networks, along with the CAMs of the corresponding tool network, are then passed into the Class Activation Guided Attention Mechanism (CAGAM) module <ref type="bibr" target="#b20">[20]</ref>. Our CAGAM, a dualpath position attention mechanism, leverages the tool's saliency map to guide the location of the corresponding verb and target. Subsequently, the individual predictions of the three components are generated, and the last objective is to learn their association. Therefore, the CAMs and logits of the three components are aligned into the triplet network to learn their association and generate the final triplet prediction. It is important to note that the tool network, verb-target networks, and triplet network are all initialized by the soft label network and contain branches to predict soft labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Hierarchical Training Schedule</head><p>Our framework is a multi-task recognition approach, but training so many tasks simultaneously poses a huge challenge to balancing hyper-parameters. To address this, we propose a hierarchical training schedule method that divides training into different stages. Initially, we train only our soft label network to recognize soft labels, storing its parameters once training is complete. In the next stage, video clips are fed into the tool network to recognize tool categories while simultaneously identifying soft labels. After successful training, the parameters of the tool network are frozen. In the subsequent stage, the verb and target networks identify their respective components and soft labels. At this point, the tool network passes its class activation map to the verb-target networks without updating its parameters. Besides, following previous Tripnet <ref type="bibr" target="#b20">[20]</ref>, which masks out impossible results, we also mask out improbable outcomes for different components. For instance, predefined masks for the tool are based on possible combinations, while the verb and target masks follow the tool's predictions, excluding scissors and clippers; subsequently, the masking results undergo further refinement for the instrument. Finally, we train the final triplet network using the CAMs and output logits of the three components. Similarly, the parameters of the three components' networks are not updated at this stage. This approach allows us to break down the complexity of the task and improve the accuracy of each individual component at each stage, ultimately leading to higher overall accuracy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5">Separation Processing</head><p>Our framework provides a unique approach to address the impact of multiple tool categories that may be present simultaneously. It enables the handling of different surgical instrument categories individually, which reduces the level of complexity for learning. In contrast to RDV <ref type="bibr" target="#b20">[20]</ref> and RiT <ref type="bibr" target="#b22">[22]</ref>, we extend the Grad-CAM <ref type="bibr" target="#b27">[27]</ref> approach to 3D-CNN by utilizing the input of 3D tensor data instead of a 2D matrix, resulting in a more precise class activation map. Based on the maximum number of instrument categories (K) predicted by the soft label and the scores obtained by summing each channel along the CAM, we isolate the top-K CAMs. Each isolated CAM is then used to guide the corresponding features of verbs and targets in our CAGAM module to generate individual predictions of the verb and target. Finally, the different predictions of the verb and target are combined. However, differentiating between various instruments, as we do, can help match them with the correct verbs and targets, especially when multiple tool categories appear at the same time, which may be challenging to do without this approach, such as in the RDV method <ref type="bibr" target="#b20">[20]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.6">Loss Function</head><p>For the number of tools and the categories of tools, softmax cross-entropy loss is adopted, while for other soft labels, three components, and triplet, we employ sigmoid cross-entropy losses. Taking sigmoid cross-entropy loss as an example:</p><formula xml:id="formula_0">L = C c=1 -1 N (y c log c (σ( ŷc )) + (1 -y c ) log(1 -σ( ŷc )),</formula><p>where σ is the sigmoid function, while y c and ŷc are the ground truth label and the prediction for specific class c. Besides, the balanced weights are also adopted based on previous works <ref type="bibr" target="#b20">[20]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset. Following previous works <ref type="bibr" target="#b20">[20]</ref>, an endoscopic video dataset of the laparoscopic cholecystectomy, called CholecT45 <ref type="bibr" target="#b20">[20]</ref>, is used for all the experiments. The database consists of a total of 45 videos and is stripped of triplet classes of little clinical relevance. There are 6 instruments, 10 verbs, 15 targets, and 100 triplet classes in the CholecT45 dataset. For all the videos, each triplet class is always presented in the format of &lt;instrument, verb, target&gt;. In addition, following the data splits in <ref type="bibr" target="#b24">[24]</ref>, the K-fold cross-validation method was used to divide the 45 videos in the dataset into 5 folds, each containing 9 videos.</p><p>Metric. The performance of the method is evaluated based on the mean average precision (mAP) metric to predict the triplet classes. In testing, each triplet class is computed its own average precision (AP) score, and then the AP score of a video will be calculated by averaging the AP scores of all the triplets in this video. Finally, the mean average precision (mAP) of the dataset is measured by averaging the AP scores of all tested videos. Besides, Top-N recognition performance is also adopted in our evaluation, which means that given a test sample X i , a model made a correctness if the correct label y i appears in its top N confident predictions Ŷi . We follow previous works <ref type="bibr" target="#b20">[20]</ref> and measure top-5, top-10, and top-20 accuracy in our experiment. Implementation Details. I3D (Resnet50) <ref type="bibr" target="#b26">[26]</ref> is adopted as a backbone network in our framework, which is pre-trained on the ImageNet <ref type="bibr" target="#b25">[25]</ref> and the Kinetics dataset <ref type="bibr" target="#b26">[26]</ref>. As for the branches of the different networks, they will be slightly modified to fit their corresponding subtasks. We use SGD as an optimizer and apply a step-wise learning rate of 1e-3 for all sub-tasks, but for the soft-labeled task branches that need to be finetuned, their learning rates start from 1e-6. Our batch size is 32, and there is no additional database for surgical detection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Results and Discussion</head><p>Quantitative Evaluation. We demonstrate our experimental results with other state-of-the-art approaches on the CholecT45 <ref type="bibr" target="#b20">[20]</ref> dataset.</p><p>Table <ref type="table" target="#tab_0">1</ref> presents the benchmark results on the CholecT45 cross-validation split, and compares our model with current state-of-the-art methods <ref type="bibr" target="#b19">[19,</ref><ref type="bibr" target="#b20">20,</ref><ref type="bibr" target="#b22">22]</ref> using the mean Average Precision (mAP) metric. The key mission of surgical activity recognition is to calculate the average precision (AP) score of the triplet, denoted as AP IV T . We present tool recognition, verb recognition, and target recognition as AP I , AP V , and AP T , respectively. Compared to previous methods <ref type="bibr" target="#b19">[19,</ref><ref type="bibr" target="#b20">20]</ref>, our hierarchical training schedule method enables us to achieve  better results on individual sub-tasks because we can tune each task individually to achieve the best results. For AP IV T , our framework improves the current SOTA method RiT <ref type="bibr" target="#b22">[22]</ref> by 4.1%, demonstrating that decomposing our tasks helps to improve the final result. In addition, we include Fig. <ref type="figure" target="#fig_2">3</ref> in our paper to illustrate the qualitative and representative results obtained from our triplet activity recognition model. Although we are unable to compare our results with other methods as their trained models have not been released, our method can successfully predict many difficult situations, such as the simultaneous appearance of multiple surgical activities, the influence of brightness, and the tool located at the edge. Following the previous experiments <ref type="bibr" target="#b20">[20]</ref>, we compare the Top N accuracy of the triplet predictions with different methods. However, the previous method <ref type="bibr" target="#b20">[20]</ref> performed this metric only on the CholecT50 <ref type="bibr" target="#b20">[20]</ref> dataset, and this dataset has not been published yet. Besides, the source codes of RiT <ref type="bibr" target="#b22">[22]</ref> have not been released yet. However, the performance between RDV and RiT is very close according to Table <ref type="table" target="#tab_0">1</ref>. Hence, we try to reproduce the RDV method on this metric. As shown in Table <ref type="table" target="#tab_1">2</ref>, our framework outperforms the RDV method <ref type="bibr" target="#b20">[20]</ref> by 8.1%, 5.9% and 2.0% in top-5, top-10, and top-20 respectively.</p><p>Ablation Study. In this section, we conduct ablation studies to showcase the effectiveness of each module in our model. As shown in Table <ref type="table" target="#tab_2">3</ref>, the final triplet prediction outcomes experienced a slight decrease of 0.4% and 1.1% in the absence of the separation process or the soft label module, respectively. Additionally, a marginal decrease was observed in the individual sub-tasks. In conclusion, these results demonstrate that the inclusion of these modules can contribute to the overall performance of our model. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we introduce a novel triplet disentanglement framework for surgical activity recognition. By decomposing the task into smaller steps, our method demonstrates improved accuracy compared to existing approaches. We anticipate that our work will inspire further research in this area and promote the development of more efficient and accurate techniques.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. First Line: Left: Multiple surgical triplets appearing at the same time. Right: Instruments located near the boundary. Second Line: In consecutive frames of an endoscopic surgery video, an unrelated action (green arrow) is labeled as null. (Color figure online)</figDesc><graphic coords="2,41,79,54,56,340,21,223,15" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of Our triplet Disentanglement Network. The parameters of the soft label network are used for the initialization of the other three networks.</figDesc><graphic coords="4,41,79,54,35,340,12,226,36" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Qualitative and representative results obtained from our triplet activity recognition model. Color-coded arrows are used to highlight multiple instruments in examples.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative Results of the Proposed Method Compared to State-of-the-art.</figDesc><table><row><cell>Method</cell><cell>API</cell><cell>APV</cell><cell>APT</cell><cell>APIV</cell></row></table><note><p><p><p><p>T</p>Tripnet</p><ref type="bibr" target="#b19">[19]</ref> </p>89.9 ± 1.0 59.9 ± 0.9 37.4 ± 1.5 24.4 ± 4.7 Attention Tripnet [20] 89.1 ± 2.1 61.2 ± 0.6 40.3 ± 1.2 27.2 ± 2.7 RDV [20] 89.3 ± 2.1 62.0 ± 1.3 40.0 ± 1.4 29.4 ± 2.8 RiT [22] 88.6 ± 2.6 64.0 ± 2.5 43.4 ± 1.4 29.7 ± 2.6 Our method 91.2 ± 1.9 65.3 ± 2.8 43.7 ± 1.6 33.8 ± 2.5</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Top N Accuracy of the Triplet Predictions among Different Methods.</figDesc><table><row><cell>Method</cell><cell cols="2">Top-5 Top-10 Top-20</cell></row><row><cell>RDV [20]</cell><cell>73.6 84.7</cell><cell>93.2</cell></row><row><cell cols="2">Our method 81.7 90.6</cell><cell>95.2</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Comparison of the Different Modules in Our Framework. SC: Separating the category of the instrument in Sect. 2.6; SL: Predicting soft labels in Sect. 2.3.</figDesc><table><row><cell>Method</cell><cell>API APV APT APIV T</cell></row><row><cell>our method</cell><cell>91.2 65.3 43.7 33.8</cell></row><row><cell cols="2">our method w/o SC 91.2 64.7 43.1 33.4</cell></row><row><cell cols="2">our method w/o SL 90.6 63.6 42.8 32.7</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. The work described in this paper is partly supported by a grant of <rs type="projectName">Hong Kong RGC Theme-based Research Scheme</rs> (project no. <rs type="grantNumber">T45-401/22-N</rs>) and a grant of <rs type="funder">Hong Kong RGC General Research Fund</rs> (project no. <rs type="grantNumber">15218521</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funded-project" xml:id="_2myFWBm">
+					<idno type="grant-number">T45-401/22-N</idno>
+					<orgName type="project" subtype="full">Hong Kong RGC Theme-based Research Scheme</orgName>
+				</org>
+				<org type="funding" xml:id="_T9ysV5S">
+					<idno type="grant-number">15218521</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Surgical data science: enabling next-generation surgery</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Maier-Hein</surname></persName>
+		</author>
+		<idno>ArXiv:1701.06482</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">ArXiv Preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Improving accuracy and reducing errors in spinal surgery-a new technique for thoracolumbar-level localization using computer-assisted image guidance</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nowitzke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Wood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Cooney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Spine J</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="597" to="604" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Image-based laparoscopic tool detection and tracking using convolutional neural networks: a review of the literature</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Assist. Surg</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="15" to="28" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Retrieval of surgical phase transitions using reinforcement learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Page</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deprest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Vasconcelos</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022, Part VII</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page">47</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">EndoNet: a deep architecture for recognition tasks on laparoscopic videos</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Twinanda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shehata</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Marescaux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Mathelin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="86" to="97" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">DeepPhase: surgical phase recognition in CATARACTS videos</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Zisimopoulos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018, Part IV</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11073</biblScope>
+			<biblScope unit="page" from="265" to="272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00937-3_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00937-331" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Deep-Onto&quot; network for surgical workflow and context recognition</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Nakawala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bianchi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pescatori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>De Cobelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ferrigno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>De Momi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="685" to="696" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Towards holistic surgical scene understanding</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Valderrama</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-1" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022, Part VII</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page">42</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Instrument-tissue interaction quintuple detection in surgery videos</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_38</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-138" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022, Part VII</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="399" to="409" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Robust deep learning-based semantic organ segmentation in hyperspectral images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Seidlitz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page">102488</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Intervention time prediction from surgical low-level tasks</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Franke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Meixensberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Neumuth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomed. Inform</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="152" to="159" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Outcome trends and safety measures after 30 years of laparoscopic cholecystectomy: a systematic review and pooled data analysis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pucher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Surg. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="2175" to="2183" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Nineteen-year trends in incidence and indications for laparoscopic cholecystectomy: the NY State experience</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Alli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Surg. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="1651" to="1658" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Federated cycling (FedCy): semi-supervised federated learning of surgical phases</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kassem</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Alapatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mascagni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ai4safechole</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Karargyris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Exploring segment-level semantics for online phase recognition from surgical videos</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="3309" to="3319" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">OperA: attention-regularized transformers for surgical phase recognition</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Czempiel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Paschali</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ostler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">T</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Busam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87202-1_58</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87202-158" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021, Part IV</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12904</biblScope>
+			<biblScope unit="page" from="604" to="614" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">SV-RCNet: workflow recognition from surgical videos using recurrent convolutional network</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="1114" to="1126" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Surgical phase recognition by learning phase transitions</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sahu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Szengel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mukhopadhyay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zachow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Curr. Direct. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Recognition of instrument-tissue interactions in endoscopic videos via action triplets</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">I</forename><surname>Nwoye</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59716-0_35</idno>
+		<idno>978-3-030-59716-0 35</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020, Part III</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12263</biblScope>
+			<biblScope unit="page" from="364" to="374" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Rendezvous: attention mechanisms for the recognition of surgical action triplets in endoscopic videos</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nwoye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">102433</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Transformer in transformer</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="15908" to="15919" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Rendezvous in time: an attentionbased temporal fusion approach for surgical triplet recognition</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nwoye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mutter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Comput. Assist. Radiol. Surg</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="1053" to="1059" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Learning deep features for discriminative localization</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lapedriza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oliva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2921" to="2929" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Data splits and metrics for method benchmarking on surgical action triplet datasets</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nwoye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Padoy</surname></persName>
+		</author>
+		<idno>ArXiv:2204.05235</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">ArXiv Preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Quo vadis, action recognition? A new model and the kinetics dataset</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Carreira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="6299" to="6308" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Grad-CAM: visual explanations from deep networks via gradient-based localization</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cogswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vedantam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Batra</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="618" to="626" />
+		</imprint>
+	</monogr>
+	<note>Proceedings</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">CholecTriplet 2021: a benchmark challenge for surgical action triplet recognition</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Nwoye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page">102803</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

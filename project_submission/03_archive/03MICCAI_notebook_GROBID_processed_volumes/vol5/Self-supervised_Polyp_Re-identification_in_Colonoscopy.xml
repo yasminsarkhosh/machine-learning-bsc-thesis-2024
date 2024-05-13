@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Self-supervised Polyp Re-identification in Colonoscopy</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yotam</forename><surname>Intrator</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Verily AI</orgName>
+								<address>
+									<settlement>Haifa</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Natalie</forename><surname>Aizenberg</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Verily AI</orgName>
+								<address>
+									<settlement>Haifa</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Amir</forename><surname>Livne</surname></persName>
+							<email>amirlivne@verily.com</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Verily AI</orgName>
+								<address>
+									<settlement>Haifa</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ehud</forename><surname>Rivlin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Verily AI</orgName>
+								<address>
+									<settlement>Haifa</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Roman</forename><surname>Goldenberg</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Verily AI</orgName>
+								<address>
+									<settlement>Haifa</settlement>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Self-supervised Polyp Re-identification in Colonoscopy</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="590" to="600"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">E543180977557A8B6CD1870D9CF33A1B</idno>
+					<idno type="DOI">10.1007/978-3-031-43904-9_57</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Colonoscopy</term>
+					<term>Re-Identification</term>
+					<term>Optical Biopsy</term>
+					<term>Attention</term>
+					<term>Self Supervised</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Computer-aided polyp detection (CADe) is becoming a standard, integral part of any modern colonoscopy system. A typical colonoscopy CADe detects a polyp in a single frame and does not track it through the video sequence. Yet, many downstream tasks including polyp characterization (CADx), quality metrics, automatic reporting, require aggregating polyp data from multiple frames. In this work we propose a robust long term polyp tracking method based on re-identification by visual appearance. Our solution uses an attention-based self-supervised ML model, specifically designed to leverage the temporal nature of video input. We quantitatively evaluate method's performance and demonstrate its value for the CADx task.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Optical colonoscopy is the standard of care screening procedure for the prevention and early detection of colorectal cancer (CRC). The primary goal of a screening colonoscopy is polyp detection and preventive removal. It is well known that many polyps go unnoticed during colonoscopy <ref type="bibr" target="#b21">[22]</ref>. To deal with this problem, computer-aided polyp detector (CADe) was introduced <ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref> and recently became commercially available <ref type="bibr" target="#b2">[3]</ref>. The success of polyp detector sparkled the development of new CAD tools for colonoscopy, including polyp characterization (CADx, or optical biopsy), extraction of various quality metrics, and automatic reporting. Many of those new CAD applications require aggregation of all available data on a polyp into a single unified entity. For example, one would expect higher accuracy for CADx when it analyzes all frames where a polyp is observed. Clustering polyp detections into polyp entities is a prerequisite for computing such quality metrics as Polyp Detection Rate (PDR) and Polyps Per Colonoscopy (PPC), and for listing detected polyps in a report.</p><p>One may notice that the described task generally falls into the category of the well known multiple object tracking (MOT) problem <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b26">27]</ref>. While this is true, there are a few factors specific to the colonoscopy setup: (a) Due to abrupt endoscope camera movements, targets (polyps) often go out of the field of view, (b) Because of heavy imaging conditions (liquids, debris, low illumination) and non-rigid nature of the colon, targets may change their appearance significantly, (c) Many targets (polyps) are quite similar in appearance. Those factors limit the scope and accuracy of existing frame-by-frame spatio-temporal tracking methods, which typically yield an over-fragmented result. That is, the track is often lost, resulting in relatively short tracklets (temporal sequences of same target detections in multiple near-consecutive frames), see Supplementary Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>A recently published method <ref type="bibr" target="#b1">[2]</ref> addresses this limitation by combining spatial target proximity and visual similarity to match a polyp detected in the current frame to "active" polyp tracklets dynamically maintained by the system. The tracklets are built incrementally, by adding a single frame detection to the matched tracklet, one-by-one. However, this approach limits itself to use of closein-time consistent detections, and cannot handle the frequent cases where polyp gets out of the field of view and long range association is required.</p><p>In this work we propose an alternative approach that allows polyp detections grouping over an extended period of time (up to 10 min), relaxing the spatiotemporal proximity limitation. It involves two steps: (I) a short-term multi-object tracking, which forms initial, relatively short tracklets, followed by (II) a longerterm tracklets grouping by appearance-based polyp re-identification (ReID). As the first step can be done by any generic multiple object tracking algorithm (e.g. we use a tracking by detection method <ref type="bibr" target="#b26">[27]</ref>), in this paper we focus on the second step.</p><p>To avoid manual data annotation, which is extremely ineffective in our case, we turn to self-supervision and adapt the widely used contrastive learning approach <ref type="bibr" target="#b4">[5]</ref> to video input and object tracking scenario.</p><p>As tracklet re-identification is a sequence-to-sequence matching problem, the standard solution is comparing sequences element-wise and then aggregating the per-element comparisons, e.g. by averaging or max/min pooling <ref type="bibr" target="#b20">[21]</ref> -the so-called late fusion technique. We, on the other hand, follow an early fusion approach by building a joint representation for the whole sequence. We use an advanced transformer network <ref type="bibr" target="#b22">[23]</ref> to leverage the attention paradigm for nonuniform weighing and "knowledge exchange" between tracklet frames.</p><p>We extensively test the proposed method on hundreds of colonoscopy videos and evaluate the contribution of method components using an ablation study. Finally, we demonstrate the effectiveness of the proposed ReID method for improving the accuracy of polyp characterization (CADx).</p><p>To summarize, the three main contributions of the paper are:</p><p>-An adaptation of contrastive learning to video input for the purpose of appearance based object tracking. -An early fusion, joint multi-view object representation for ReID, based on transformer networks. -The application of polyp ReID to boost the polyp CADx performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head><p>This work assumes the availability of an automatic polyp detector. Quite a few highly accurate polyp detectors were recently reported <ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref>, detecting (multiple) polyps in a single frame. Our ultimate goal is to group those detections into sets corresponding to distinct polyps.</p><p>As briefly mentioned above, the proposed approach starts with an initial grouping of polyp detections using an off-the-shelf multiple object tracking algorithm. Such a tracker is expected to track polyps through consecutive frames as long as they do not leave the camera field of view, forming disjoint, time separated polyp tracklets. In this work we use the ByteTrack <ref type="bibr" target="#b26">[27]</ref> "tracking by detection" algorithm, but, in principle, any other tracker could be used instead.</p><p>The resulting tracklets are typically relatively short, and there are quite a few tracklets corresponding to the same polyp. To improve the result, we propose an Appearance-based Polyp Re-Identification (ReID), which groups multiple disjoint tracklets by their visual appearance into a joint tracklet, associated with a single polyp. In what follows we describe in detail the proposed ReID component.</p><p>As stated above, the objective of ReID is to ascertain whether two timeseparated, disjoint tracklets belong to the same polyp. To this end we seek a tracklet representation that allows measuring visual similarity between tracklets. The two basic alternatives are either a single representation for the whole tracklet, or a sequence of single-frame representations for each tracklet frame. We will consider both options below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Single-Frame Representation for ReID</head><p>To generate a single frame representation we train an embedding model that maps a polyp image into a latent space, s.t. the vectors of different views of the same polyp are placed closer, and of different polyps away from each other <ref type="bibr" target="#b10">[11]</ref>.</p><p>A straightforward approach to train such model is supervised learning, which requires forming a large collection of polyp image pairs, manually labeled as same/not same polyp <ref type="bibr" target="#b0">[1]</ref>. Such annotation turned out to be inaccurate and expensive. In addition, finding hard negative pairs is especially challenging, as images of two randomly sampled polyps are usually very dissimilar. Moreover, self-supervised techniques using extensive unannotated datasets has exhibited substantial advantages within the medical domain <ref type="bibr" target="#b11">[12]</ref>.</p><p>Hence, we turn to SimCLR <ref type="bibr" target="#b4">[5]</ref>, a contrastive self-supervised learning technique, which requires no manual labeling. In SimCLR the loss is calculated over the whole batch where all input samples serve as negatives of each other and positive samples are generated via image augmentations. Combined with the temperature mechanism this allows for hard negative mining by prioritizing hard-to-distinguish pairs, resulting in a more effective loss weighting scheme.</p><p>One caveat of SimCLR is the difficulty to generate augmentations beneficial for the learning process <ref type="bibr" target="#b4">[5]</ref>. Specifically for colonoscopy, the standard image augmentations do not capture the diversity of polyp appearances in different views (see Fig. <ref type="figure" target="#fig_0">1(c)</ref>).</p><p>Instead of customizing the augmentations to fit the colonoscopy setup, we leverage the temporal nature of videos, and take different polyp views from the same tracklet as positive samples (see Fig. <ref type="figure" target="#fig_0">1(b)</ref>). Formally, a batch is formed by sampling one tracklet from N different procedures to ensure the tracklets belong to different polyps. Two polyp views i, j are sampled from each tracklet as positive pairs (same polyp). Let f be the embedding model. The loss function for the positive pair (i, j) is defined as:</p><formula xml:id="formula_0">i,j = -log exp(sim(f (i), f(j))/τ ) 2N k=1 1 k =i exp(sim(f (i), f(k))/τ ) (1)</formula><p>where sim is the dot product and τ is the temperature parameter <ref type="bibr" target="#b23">[24]</ref>. The final loss is computed across all positive pairs in the batch.</p><p>Tracklets represented as sequences of per-frame embeddings can be matched by computing pair-wise distances between frames, followed by an aggregatione.g. min/max/mean distance <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b9">10]</ref>. An example of similarities between frames can be seen in Supplementary Fig. <ref type="figure" target="#fig_1">2</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Multi-view Tracklet Representation for ReID</head><p>As discussed earlier, an alternative to the single frame approach, is a unified representation for the whole tracklet. A commonly used practice is to compute single frame embedding (for each view) and fuse them <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b20">21]</ref>, e.g. by averaging. The downside of those simple techniques is that they treat every frame in the same way, including bad quality, repeating, non-informative views. We postulate that learning a joint embedding of multiple views in an end-to-end manner will produce a better representation of the visual properties of a polyp, by allowing "knowledge exchange" between the tracklet frames.</p><p>To achieve this, we employ a transformer network <ref type="bibr" target="#b22">[23]</ref>, with the addition of BERT <ref type="bibr" target="#b6">[7]</ref> classification token (CLS). The attention mechanism enables both frame based intra attention and selective weighting of the frames thus providing a more comprehensive tracklet representation. The overview of the architecture is presented in Fig. <ref type="figure" target="#fig_1">2</ref>. Training this multi-view encoder is done similarly to training a single-view encoder using SimCLR, but now, instead of pairs of frames, we deal with pairs of tracklet. To generate positive tracklet pairs, we cannot apply the trick used for single frames, where positive pairs are sampled within the same tracklet. Instead we generate "pseudo positive" pairs from existing tracklets. We artificially split a tracklet into 3 disjoint segments, where the middle segment is discarded, and the first and the last segments are used as a positive pair, thus providing sufficiently different appearances of the same polyp as would happen in real procedures. In addition, this type of sampling approach, which effectively discards highly correlated samples from training, has been shown to improve model performance in <ref type="bibr" target="#b16">[17]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>This section includes two parts. The first provides a stand-alone evaluation of the proposed ReID method. The second assesses the impact of ReID on polyp classification accuracy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">ReID Standalone Evaluation</head><p>Dataset. We use 22,283 colonoscopy videos, split into training (21,737) and test (546) sets. These recordings were captured from standard colonoscopy procedures conducted at six medical centers during the period of 2019 to 2022. The average length of the recorded procedures is 15 min, with a median duration of 13 min. For training, we automatically generated polyp tracklets using automatic polyp detection and tracking as described in Sect. 2.</p><p>The tracking algorithm might produce short and uninformative tracklets as well as outliers. The following clean up steps were performed on the training set: we filtered out tracklets shorter than 1 s or having less than 15 high confidence detections, as defined in <ref type="bibr" target="#b26">[27]</ref>, and took only the longest tracklet from every procedure. The thresholds were determined using analysis of the training set tracklets distribution. This yielded the training set of 15,465 tracklets (mean duration of 377 frames or 29 s). For evaluation, the test set polyp tracklets were manually annotated (timestamps and bounding boxes) by certified physicians. In addition, tracklet pairs from the same procedure were manually labeled as either belonging to the same polyp or not. This yielded 348 negative and 252 positive tracklet pairs.</p><p>Training. We utilize ResNet50V2 <ref type="bibr" target="#b8">[9]</ref> as the single frame encoder, with an MLP head projecting the representation into a 128-dimensional embedding vector. We initialize the model using pre-trained ImageNet <ref type="bibr" target="#b5">[6]</ref> weights. While Ima-geNet weights are not optimal for medical tasks <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b18">19]</ref>, they offer training speedups <ref type="bibr" target="#b17">[18]</ref>. The multi-view encoder consists of 3 transformer encoder blocks with an MLP projection head. We use LARS optimizer <ref type="bibr" target="#b24">[25]</ref> with the learning rate of 0.01 and τ = 0.1 as suggested in <ref type="bibr" target="#b4">[5]</ref>. The batch size is set to 1024 for training both the single frame and the multi-view encoder.</p><p>We first train the single frame encoder and use its weights to initialize the single frame module of the multi-view encoder. Due to memory limitations, we use 8 views per tracklet during training, resulting in 1024 * 8 = 8192 images per training step. The model was trained for 5,000 steps using cloud v3 TPUs with 16 cores. The single frame encoder has 24M parameters, and the multi-view encoder adds an additional 1M parameters.</p><p>Evaluation. We start by comparing various ReID techniques described in Sect. 2. Namely, we evaluate the accuracy of tracklet re-identification using: (a) single-frame representation with pairwise distances aggregation by Min / Max / Mean functions <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b9">10]</ref>; (b) multi-view representation by frame embeddings averaging; and, finally, (c) the joint embedding multi-view model. We evaluate the performance using AUC of the ROC and precision-recall curve (PRC) for tracklet similarity scores over the test set (see Table <ref type="table" target="#tab_0">1</ref> and Supplementary Fig. <ref type="figure">3</ref>). One can see that the joint embedding multi-view model outperforms all other techniques both on ROC and PRC.</p><p>In addition, we evaluate the effectiveness of ReID by measuring the average polyp fragmentation rate (FR), defined as the average number of tracklets polyps are split into. Obviously, lower fragmentation rate means better result (with the best fragmentation of 1), but it may come at the expense of wrong tracklet matching (false positive). We measure the fragmentation rate at the operating point of 5% false positive rate. The number of polyp fragments is determined by matching tracklets to manually annotated polyps and counting  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">ReID for CADx</head><p>In this section, we investigate the potential benefits of using polyp ReID as part of a CADx system. Polyp CADx aims to assist physicians to figure out, in real time, during the procedure, whether the detected polyp is an adenoma. Most reported CADx systems compute a classification score for each frame, and aggregate scores from multiple frames to determine the final polyp classification. Grouping polyp frames into a tracklet, to be fed into the CADx, is usually done by a spatio-temporal tracker <ref type="bibr" target="#b1">[2]</ref>. Longer tracklets provide more information for polyp classification.</p><p>Here, we investigate if the proposed ReID model, used to group disjoint tracklets of the same polyp, can increase the accuracy of CADx.</p><p>Data. We use 3290 colonoscopy videos split into train, validation, and test sets (2666, 296, and 328 videos respectively). The videos are processed by a polyp detector and tracker to form polyp tracklets. The tracklets are then manually grouped together to build a single sequence for every polyp. Each polyp is annotated by a certified gastroenterologist as either adenoma or non-adenoma.</p><p>CADx. We trained a simple image classification CNN, composed of a MobileNet <ref type="bibr" target="#b19">[20]</ref> backbone, followed by an MLP layer with a sigmoid activation, to predict the non-adenoma/adenoma score in [0, 1], for each frame. The chosen architecture has 2.4M parameters and can run in real-time. The model was trained on Nvidia Tesla V100 GPU for 200 epochs with a learning rate of 0.001, using Adam optimizer.</p><p>For evaluation, we used the model to predict the classification score for each frame and aggregated the scores using soft voting to achieve the final prediction for each tracklet.</p><p>Evaluation. To assess the contribution of the ReID to polyp classification, we compare the CADx results on the test set, while using different grouping methods to merge multiple polyp detections into tracklets. The 3 evaluated methods are: (1) manual annotation (2) grouping by tracking, and (3) grouping by ReID. The manually annotated tracklets -the ground truth (GT) -are the longest sequences, containing all frames of each polyp in the test set. In grouping by tracking, we use tracklets generated by the spatio-temporal tracking algorithm <ref type="bibr" target="#b26">[27]</ref>. Finally, for ReID, we merge disjoint tracklets by their appearance using the ReID model. By construction, tracklets generated by methods ( <ref type="formula">2</ref>) and (3) are subsets of the corresponding manually annotated GT tracklet, and are assigned its polyp classification label. A visualization of the resulting tracklets using different grouping methods is provided in Supplementary Fig. <ref type="figure">4</ref>. The number of resulting tracklets in the test set for each grouping method and polyp labels distribution are summarized in Table <ref type="table" target="#tab_2">3</ref>. We ran the CADx model on tracklets generated by the 3 grouping methods. We compute the F 1 score and the AUC for the tracklet classification task. In addition, we measure the CADx sensitivity at specificity=0.9. The results are summarized in Table <ref type="table" target="#tab_3">4</ref>. The result on the manually annotated data is the accuracy upper-bound and is brought as a reference point. One can see that the ReID based approach significantly improves the CADx accuracy compared to the tracking-based grouping. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>In this study we present a novel multi-view self-supervised learning method for learning informative representations of a sequence of video frames. By jointly encoding multiple views of the same object, we get more discriminative features in comparison to traditional embedding fusion techniques. This approach can be used to group disjoint tracklets generated by a spatio-temporal tracking algorithm based on their appearance, by measuring the similarity between tracklets representations. Its applicability to medical contexts is of particular relevance, as medical data annotation often requires specific expertise and may be costly and time consuming. We use this method to train a polyp re-identification model (ReID) from large unlabeled data, and show that using the ReID model as part of a CADx system enhances the performance of polyp classification. There are some limitations however in identifying polyps based on their appearance, as it may be changed drastically during the procedure (for example, during resection). In future work we may examine the use of ReID for additional medical applications, such as listing detected polyps in an automatic report, bookmarking of specific areas of the colon during the procedure, and calculation of clinical metrics such as Polyp Detection Rate and Polyps Per Colonoscopy.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) A polyp image, (b) two additional views of the polyp in (a) taken from the same tracklet, (c) two typical augmentations of the polyp in (a). Images in (b) offer more realistic variations, such as different texture, tools, etc.</figDesc><graphic coords="4,64,98,112,91,322,36,71,08" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Multi-view transformer encoder. Tracklet frames are passed through a single frame encoder to generate frame embedding. The embeddings then go through the transformer encoder, concatenated with the CLS token. Finally, the contextualized CLS token from the transformer encoder output goes through a projection head, resulting with the tracklet visual representation.</figDesc><graphic coords="5,108,30,100,22,207,25,143,32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Polyp ReID accuracy for various ReID techniques. Results presented in Table2demonstrate that ReID can reduce the fragmentation rate by over 50%, compared to a tracking only solution<ref type="bibr" target="#b26">[27]</ref>.</figDesc><table><row><cell>Single-frame</cell><cell>Multi-view</cell></row><row><cell cols="3">Min Max Mean Averaging Joint Embedding</cell></row><row><cell cols="2">AUROC 0.60 0.74 0.72 0.75</cell><cell>0.77</cell></row><row><cell cols="2">AUPRC 0.50 0.65 0.62 0.67</cell><cell>0.69</cell></row><row><cell>their number.</cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Fragmentation Rate (FR) statistics before and after the ReID. FR STD is the FR standard deviation. Fragmented Polyps Ratio is the percentage of polyps divided into more than one tracklet.</figDesc><table><row><cell></cell><cell cols="2">FR FR STD Fragmented Polyps Ratio</cell></row><row><cell>Tracking</cell><cell>3.3 3.3</cell><cell>0.64</cell></row><row><cell cols="2">Tracking+ReID 1.86 1.49</cell><cell>0.45</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>CADx test data distribution and fragmentation rate (FR).</figDesc><table><row><cell>Grouping</cell><cell cols="5">Tracklets FR Adenoma Adenoma FR Non-Adenoma Non-Adenoma FR</cell></row><row><cell>Annotation</cell><cell>608</cell><cell>1.0 464</cell><cell>1.0</cell><cell>144</cell><cell>1.0</cell></row><row><cell>Tracking</cell><cell>3161</cell><cell>5.20 2537</cell><cell>5.47</cell><cell>624</cell><cell>4.33</cell></row><row><cell cols="2">Tracking+ReID 1023</cell><cell>1.68 813</cell><cell>1.75</cell><cell>210</cell><cell>1.46</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 4 .</head><label>4</label><figDesc>Optical biopsy result per grouping method.</figDesc><table><row><cell>Grouping</cell><cell cols="3">AUC F1 (Macro) F1 (Micro) Sensitivity @ Specificity=0.9</cell></row><row><cell>Annotation</cell><cell>0.95 0.88</cell><cell>0.91</cell><cell>0.86</cell></row><row><cell>Tracking</cell><cell>0.86 0.77</cell><cell>0.83</cell><cell>0.71</cell></row><row><cell cols="2">Tracking+ReID 0.90 0.82</cell><cell>0.88</cell><cell>0.79</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43904-9_57.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">An improved deep learning architecture for person re-identification</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">K</forename><surname>Marks</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="3908" to="3916" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A novel ai device for real-time optical characterization of colorectal polyps</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Biffi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Salvagnini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">N</forename><surname>Dinh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Hassan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cherubini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NPJ Digital Med</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">84</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Frame-by-frame analysis of a commercially available artificial intelligence polyp detection system in full-length colonoscopies</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Brand</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Digestion</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="378" to="385" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Not 3d re-id: simple single stream 2d convolution for robust video re-identification</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">P</forename><surname>Breckon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Alsehaim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 25th International conference on pattern recognition (ICPR)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="5190" to="5197" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A simple framework for contrastive learning of visual representations</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1597" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Imagenet: a large-scale hierarchical image database</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fei-Fei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2009 IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="248" to="255" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Bert: pre-training of deep bidirectional transformers for language understanding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Devlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Toutanova</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.04805</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Revisiting temporal modeling for video-based person reid</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nevatia</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1805.02104</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Identity mappings in deep residual networks</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46493-0_38</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46493-0_38" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9908</biblScope>
+			<biblScope unit="page" from="630" to="645" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Dense interaction learning for video-based person re-identification</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">S</forename><surname>Hua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1490" to="1501" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hermans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Beyer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1703.07737</idno>
+		<title level="m">defense of the triplet loss for person reidentification</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning for endoscopic video analysis</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hirsch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Medical Image Computing and Computer-Assisted Intervention</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Novel artificial intelligence-enabled deep learning system to enhance adenoma detection: a prospective randomized controlled study</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lachter</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note>iGIE</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Detection of elusive polyps using a large-scale artificial intelligence system (with videos)</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">M</forename><surname>Livovsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Gastrointest. Endosc</title>
+		<imprint>
+			<biblScope unit="volume">94</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1099" to="1109" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Polyp-yolov5-tiny: a lightweight model for realtime polyp detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 2nd International Conference on Information Technology, Big Data and Artificial Intelligence (ICIBA)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1106" to="1111" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A robust real-time deep learning based automatic polyp detection system</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Pacal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Karaboga</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="page">104519</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Spatiotemporal contrastive video representation learning</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Qian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6964" to="6974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Transfusion: understanding transfer learning for medical imaging</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Raghu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bengio</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Chexnet: radiologist-level pneumonia detection on chest xrays with deep learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Rajpurkar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Mobilenetv 2: inverted residuals and linear bottlenecks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sandler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhmoginov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4510" to="4520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Multi-view classification with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Seeland</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mäder</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">245230</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Polyp miss rate determined by tandem colonoscopy: a systematic review</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Van Rijn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Reitsma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Stoker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Bossuyt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Van Deventer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Dekker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Official J. Am. College Gastroenterology| ACG</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="343" to="350" />
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Attention is all you need</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Understanding the behaviour of contrastive loss</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2495" to="2504" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Large batch optimization for deep learning: training bert in 76 minutes</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>You</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1904.00962</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">An end-to-end tracking method for polyp detectors in colonoscopy videos</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Med</title>
+		<imprint>
+			<biblScope unit="volume">131</biblScope>
+			<biblScope unit="page">102363</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Bytetrack: multi-object tracking by associating every detection box</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-20047-2_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-20047-2_1" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision-ECCV 2022: 17th European Conference</title>
+		<meeting><address><addrLine>Tel Aviv, Israel</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-10-27">23-27 October 2022. 2022</date>
+			<biblScope unit="volume">XXII</biblScope>
+			<biblScope unit="page" from="1" to="21" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

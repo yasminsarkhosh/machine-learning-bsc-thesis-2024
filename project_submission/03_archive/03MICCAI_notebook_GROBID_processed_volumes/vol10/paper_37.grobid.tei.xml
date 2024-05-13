@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">DisC-Diff: Disentangled Conditional Diffusion Model for Multi-contrast MRI Super-Resolution</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Ye</forename><surname>Mao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Clinical Neurosciences</orgName>
+								<orgName type="institution">University of Cambridge</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Lan</forename><surname>Jiang</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">School of Science and Engineering</orgName>
+								<orgName type="institution">University of Dundee</orgName>
+								<address>
+									<settlement>Dundee</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xi</forename><surname>Chen</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">University of Bath</orgName>
+								<address>
+									<settlement>Bath</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chao</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Clinical Neurosciences</orgName>
+								<orgName type="institution">University of Cambridge</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">School of Science and Engineering</orgName>
+								<orgName type="institution">University of Dundee</orgName>
+								<address>
+									<settlement>Dundee</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department">School of Medicine</orgName>
+								<orgName type="institution">University of Dundee</orgName>
+								<address>
+									<settlement>Dundee</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="department">https://github.com/Yebulabula/DisC-Diff</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">DisC-Diff: Disentangled Conditional Diffusion Model for Multi-contrast MRI Super-Resolution</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="387" to="397"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EF9C5F48E49430FED640284399773E5A</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_37</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Magnetic resonance imaging</term>
+					<term>Multi-contrast super-resolution</term>
+					<term>Conditional diffusion model</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Multi-contrast magnetic resonance imaging (MRI) is the most common management tool used to characterize neurological disorders based on brain tissue contrasts. However, acquiring high-resolution MRI scans is time-consuming and infeasible under specific conditions. Hence, multi-contrast super-resolution methods have been developed to improve the quality of low-resolution contrasts by leveraging complementary information from multi-contrast MRI. Current deep learningbased super-resolution methods have limitations in estimating restoration uncertainty and avoiding mode collapse. Although the diffusion model has emerged as a promising approach for image enhancement, capturing complex interactions between multiple conditions introduced by multi-contrast MRI super-resolution remains a challenge for clinical applications. In this paper, we propose a disentangled conditional diffusion model, DisC-Diff, for multi-contrast brain MRI super-resolution. It utilizes the sampling-based generation and simple objective function of diffusion models to estimate uncertainty in restorations effectively and ensure a stable optimization process. Moreover, DisC-Diff leverages a disentangled multi-stream network to fully exploit complementary information from multi-contrast MRI, improving model interpretation under multiple conditions of multi-contrast inputs. We validated the effectiveness of DisC-Diff on two datasets: the IXI dataset, which contains 578 normal brains, and a clinical dataset with 316 pathological brains. Our experimental results demonstrate that DisC-Diff outperforms other state-of-the-art methods both quantitatively and visually.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Magnetic Resonance Imaging (MRI) is the primary management tool for brain disorders <ref type="bibr" target="#b23">[24]</ref><ref type="bibr" target="#b24">[25]</ref><ref type="bibr" target="#b25">[26]</ref>. However, high-resolution (HR) MRI with sufficient tissue contrast is not always available in practice due to long acquisition time <ref type="bibr" target="#b18">[19]</ref>, where low-resolution (LR) MRIs significantly challenge clinical practice.</p><p>Super-resolution (SR) techniques promise to enhance the spatial resolution of LR-MRI and restore tissue contrast. Traditional SR methods, e.g., bicubic interpolation <ref type="bibr" target="#b7">[8]</ref>, iterative deblurring algorithms <ref type="bibr" target="#b6">[7]</ref> and dictionary learning-based methods <ref type="bibr" target="#b0">[1]</ref> are proposed, which, however, are challenging to restore the highfrequency details of images and sharp edges due to the inability to establish the complex non-linear mapping between HR and LR images. In contrast, deep learning (DL) has outperformed traditional methods, owing to its ability to capture fine details and preserve anatomical structures accurately.</p><p>Earlier DL-based SR methods <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b27">28]</ref> focused on learning the one-to-one mapping between the single-contrast LR MRI and its HR counterpart. However, multi-contrast MRI is often required for diagnosing brain disorders due to the complexity of brain anatomy. Single-contrast methods are limited by their ability to leverage complementary information from multiple MRI contrasts, leading to inferior SR quality. As an improvement, multi-contrast SR methods <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b26">27]</ref> are proposed to improve the restoration of anatomical details by integrating additional contrast information. For instance, Zeng et al. designed a CNN consisting of two subnetworks to achieve multi-contrast SR <ref type="bibr" target="#b26">[27]</ref>. Lyu et al. presented a progressive network to generate realistic HR images from multicontrast MRIs by minimizing a composite loss of mean-squared-error, adversarial loss, perceptual loss etc. <ref type="bibr" target="#b16">[17]</ref>. Feng et al. introduced a multi-stage integration network to extract complex interactions among multi-contrast features hierarchically, enhancing multi-contrast feature fusion <ref type="bibr" target="#b4">[5]</ref>. Despite these advancements, most multi-contrast methods fail to 1) estimate restoration uncertainty for a robust model; 2) reduce the risk of mode collapse when applying adversarial loss to improve image fidelity.</p><p>Conditional diffusion models are a class of deep generative models that have achieved competitive performance in natural image SR <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b17">18]</ref>. The model incorporates a Markov chain-based diffusion process along with conditional variables, i.e., LR images, to restore HR images. The stochastic nature of the diffusion model enables the generation of multiple HR images through sampling, enabling inherent uncertainty estimation of super-resolved outputs. Additionally, the objective function of diffusion models is a variant of the variational lower bound that yields stable optimization processes. Given these advantages, conditional diffusion models promise to update MRI SR methods.</p><p>However, current diffusion-based SR methods are mainly single-contrast models. Several challenges remain for developing multi-contrast methods: 1) Integrating multi-contrast MRI into diffusion models increases the number of conditions. Traditional methods integrate multiple conditions via concatenation, which may not effectively leverage complementary information in multiple MRI contrasts, resulting in high-redundancy features for SR; 2) The noise and outliers in MRI can compromise the performance of standard diffusion models that use Mean Squared Error (MSE) loss to estimate the variational lower bound, leading to suboptimal results; 3) Diffusion models are often large-scale, and so are primarily intended for the generation of 2D images, i.e., treating MRI slices separately. Varied anatomical complexity across MRI slices can result in inconsistent diffusion processes, posing a challenge to efficient learning of SR-relevant features.</p><p>To address the challenges, we propose a novel conditional disentangled diffusion model (DisC-Diff). To the best of our knowledge, this is the first diffusionbased multi-contrast SR method. The main contribution of our work is fourfold:</p><p>-We propose a new backbone network disentangled U-Net for the conditional diffusion model, a U-shape multi-stream network composed of multiple encoders enhanced by disentangled representation learning. -We present a disentanglement loss function along with a channel attentionbased feature fusion module to learn effective and relevant shared and independent representations across MRI contrasts for reconstructing SR images. -We tailor a Charbonnier loss <ref type="bibr" target="#b1">[2]</ref> to overcome the drawbacks of the MSE loss in optimizing the variational lower bound, which could provide a smoother and more robust optimization process. -For the first time, we introduce an entropy-inspired curriculum learning strategy for training diffusion models, which significantly reduces the impact of varied anatomical complexity on model convergence.</p><p>Our extensive experiments on the IXI and in-house clinical datasets demonstrate that our method outperforms other state-of-the-art methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Overall Architecture</head><p>The proposed DisC-Diff is designed based on a conditional diffusion model implemented in <ref type="bibr" target="#b3">[4]</ref>. As illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>, the method achieves multi-contrast MRI SR through forward and reverse diffusion processes. Given an HR image x 0 ∼ q(x 0 ), the forward process gradually adds Gaussian noise to x 0 over T diffusion steps according to a noise variance schedule β 1 , . . . , β T . Specifically, each step of the forward diffusion process produces a noisier image x t with distribution q(x t | x t-1 ), formulated as:</p><formula xml:id="formula_0">q (x 1:T | x 0 ) = T t=1 q (x t | x t-1 ) , q (x t | x t-1 ) = N x t ; 1 -β t x t-1 , β t I<label>(1)</label></formula><p>For sufficiently large T , the perturbed HR x T can be considered a close approximation of isotropic Gaussian distribution. On the other hand, the reverse diffusion process p aims to generate a new HR image from x T . This is achieved by constructing the reverse distribution p θ (x t-1 | x t , y, v), conditioned on its associated LR image y and MRI contrast v, expressed as follows:</p><formula xml:id="formula_1">p θ (x 0:T ) = p θ (x T ) T t=1 p θ (x t-1 | x t ) p θ (x t-1 | x t , y, v) = N x t-1 ; μ θ (x t , y, v, t) , σ 2 t I<label>(2)</label></formula><p>where p θ denotes a parameterized model, θ is its trainable parameters and σ 2 t can be either fixed to t t=0 β t or learned. It is challenging to obtain the reverse distribution via inference; thus, we introduce a disentangled U-Net parameterized model, shown in Fig. <ref type="figure" target="#fig_1">2</ref>, which estimates the reverse distribution by learning disentangled multi-contrast MRI representations. Specifically, p θ learns to conditionally generate HR image by jointly optimizing the proposed disentanglement loss L disent and a Charbonnier loss L charb . Additionally, we leverage a curriculum learning strategy to aid model convergence of learning μ θ (x t , y, v, t).</p><p>Disentangled U-Net. The proposed Disentangled U-Net is a multi-stream net composed of multiple encoders, separately extracting latent representations.</p><p>We first denote the representation captured from the HR-MRI x t as Z xt ∈ R H×W ×2C , which contains a shared representation S xt and an independent representation I xt (both with 3D shape H × W × C) extracted by two 3 × 3 convolutional filters. The same operations on y and v yield S y , I y and S v , I v , respectively. Effective disentanglement minimizes disparity among shared representations while maximizing that among independent representations. Therefore, S xt/y/v are as close to each other as possible and can be safely reduced to a single representation S via a weighted sum, followed by the designed Squeezeand-Excitation (SE) module (Fig. <ref type="figure" target="#fig_1">2 B</ref>) that aims to emphasize the most relevant features by dynamically weighting the features in I xt/y/v or S, resulting in rebalanced disentangled representations Îxt/y/v and Ŝ. Each SE module applies global average pooling to each disentangled representation, producing a length-C global descriptor. Two fully-connected layers activated by SiLU and Sigmoid are then applied to the descriptor to compute a set of weights s = [s 1 , . . . , s i , s i+1 , . . . , s C ], where s i represents the importance of the i-th feature map in the disentangled representation. Finally, the decoder block D shown in Fig. <ref type="figure" target="#fig_1">2</ref> performs upsampling on the concatenated representations [ Îxt , Îy , Îv , Ŝ] and outputs a noise prediction θ (x t , y, v, t) to compute the Gaussian mean in Eq. 3:</p><formula xml:id="formula_2">μ θ (x t , y, v, t) = 1 √ α t x t - β t √ 1 -ᾱt θ (x t , y, v, t)<label>(3)</label></formula><p>where α t = 1β t and ᾱt = t s=0 α s .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Design of Loss Functions</head><p>To effectively learn disentangled representations with more steady convergence in model training, a novel joint loss is designed in DisC-Diff as follows.</p><p>Disentanglement Loss. L disent is defined as a ratio between L shared and L indep , where L shared measures the L 2 distance between shared representations, and L indep is the distance between independent representations:</p><formula xml:id="formula_3">L disent = L shared L indep = S xt -S y 2 + S xt -S v 2 + S y -S v 2 I xt -I y 2 + I xt -I v 2 + I y -I v 2<label>(4)</label></formula><p>Charbonnier Loss. L charb is a smoother transition between L 1 and L 2 loss, facilitating more steady and accurate convergence during training <ref type="bibr" target="#b8">[9]</ref>. It is less sensitive to the non-Gaussian noise in x t , y and v, and encourages sparsity results, preserving sharp edges and details in MRIs. It is defined as:</p><formula xml:id="formula_4">L charb = ( θ (x t , y, v, t) -) 2 + γ 2 ) (<label>5</label></formula><formula xml:id="formula_5">)</formula><p>where γ is a known constant. The total loss is the weighted sum of the above two losses:</p><formula xml:id="formula_6">L total = λ 1 L disent + λ 2 L charb<label>(6)</label></formula><p>where λ 1 , λ 2 ∈ (0, 1] indicate the weights of the two losses.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Curriculum Learning</head><p>Our curriculum learning strategy improves the disentangled U-Net's performance on MRI data with varying anatomical complexity by gradually increasing the difficulty of training images, facilitating efficient learning of relevant features. All MRI slices are initially ranked based on the complexity estimated by Shannon-entropy values of their ground-truth HR-MRI, denoted as an ordered set E = {e min , . . . , e max }. Each iteration samples N images whose entropies follow a normal distribution with e min &lt; μ &lt; e max . As training progresses, μ gradually increases from e min to e max , indicating increased complexity of the sampled images. The above strategy is used for the initial M iterations, followed by uniform sampling of all slices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Datasets and Baselines. We evaluated our model on the public IXI dataset<ref type="foot" target="#foot_0">1</ref> and an in-house clinical brain MRI dataset. In both datasets, our setting is to utilize HR T1-weighted images HR T 1 and LR T2-weighted image LR T 2 created by k-space truncation <ref type="bibr" target="#b2">[3]</ref> to restore 2× and 4× HR T2-weighted images, aligning with the setting in <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b26">27]</ref>. We split the 578 healthy brain MRIs in the IXI dataset into 500 for training, 6 for validation, and 70 for testing. We apply center cropping to convert each MRI into a new scan comprising 20 slices, each with a resolution 224 × 224. The processed IXI dataset is available for download at this link<ref type="foot" target="#foot_1">2</ref> . The clinical dataset is fully sampled using a 3T Siemens Magnetom Skyra scanner on 316 glioma patients. The imaging protocol is as follows: TR T 1 = 2300 ms, TE T 1 = 2.98 ms, FOV T 1 = 256 × 240 mm 2 , TR T 2 = 4840 ms, TE T 2 = 114 ms, and FOV T 2 = 220 × 165 mm 2 . The clinical dataset is split patient-wise into train/validation/test sets with a ratio of 7:1:2, and each set is cropped into R 224×224×30 . Both datasets are normalized using the min-max method without prior data augmentations for training.</p><p>We compare our method with three single-contrast SR methods (bicubic interpolation, EDSR <ref type="bibr" target="#b11">[12]</ref>, SwinIR <ref type="bibr" target="#b10">[11]</ref>) and three multi-contrast SR methods (Guided Diffusion <ref type="bibr" target="#b3">[4]</ref>, MINet <ref type="bibr" target="#b4">[5]</ref>, MASA-SR <ref type="bibr" target="#b15">[16]</ref>) (Table <ref type="table" target="#tab_0">1</ref>). Implementation Details. DisC-Diff was implemented using PyTorch with the following hyperparameters: λ 1 = λ 2 = 1.0, diffusion steps T = 1000, 96 channels in the first layer, 2 BigGAN Residual blocks, and attention module at 28×28, 14×14, and 7×7 resolutions. The model was trained for 200,000 iterations (M = 20,000) on two NVIDIA RTX A5000 24 GB GPUs using the AdamW optimizer with a learning rate of 10 -4 and a batch size of 8. Following the sampling strategy in <ref type="bibr" target="#b3">[4]</ref>, DisC-Diff learned the reverse diffusion process variances to generate HR-MRI in only 100 sampling steps. The baseline methods were retrained with their default hyperparameter settings. Guided Diffusion was modified to enable multicontrast SR by concatenating multi-contrast MRI as input.</p><p>Quantitative Comparison. The results show that DisC-Diff outperforms other evaluated methods on both datasets at 2× and 4× enlargement scales. Specifically, on the IXI dataset with 4× scale, DisC-Diff achieves a PSNR increment of 1.44 dB and 0.82 dB and an SSIM increment of 0.0191 and 0.0134 compared to state-of-the-art single-contrast and multi-contrast SR methods <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b15">16]</ref>. The results show that without using disentangled U-Net as the backbone, Guided Diffusion performs much poorer than MINet and MASA-SR on the clinical dataset, indicating its limitation in recovering anatomical details of pathology-bearing brain. Our results suggest that disentangling multiple conditional contrasts could help DisC-Diff accurately control the HR image sampling process. Furthermore, the results indicate that integrating multi-contrast information inappropriately may damage the quality of super-resolved images, as evidenced by multi-contrast methods occasionally performs worse than singlecontrast methods, e.g., EDSR showing higher SSIM than MINet on both datasets at 2× enlargement.</p><p>Visual Comparison and Uncertainty Estimation. Figure <ref type="figure" target="#fig_2">3</ref> shows the results and error maps for each method under IXI (2×) and Clinical (4×) settings, where less visible texture in the error map indicates better restoration. DisC-Diff outperforms all other methods, producing HR images with sharper edges and finer details, while exhibiting the least visible texture. Multi-contrast SR methods consistently generate higher-quality SR images than single-contrast SR methods, consistent with their higher PSNR and SSIM. Also, the lower variation between different restorations at the 2× scale compared to the 4× scale (Last column in Fig. <ref type="figure" target="#fig_2">3</ref>) suggests higher confidence in the 2× restoration results.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We present DisC-Diff, a novel disentangled conditional diffusion model for robust multi-contrast MRI super-resolution. While the sampling nature of the diffusion model has the advantage of enabling uncertainty estimation, proper condition sampling is crucial to ensure model accuracy. Therefore, our method leverages a multi-conditional fusion strategy based on representation disentanglement, facilitating a precise and high-quality HR image sampling process. Also, we experimentally incorporate a Charbonnier loss to mitigate the challenge of MRI noise and outliers on model performance. Future efforts will focus on embedding DisC-Diff's diffusion processes into a compact, low-dimensional latent space to optimize memory and training. We plan to integrate advanced strategies (e.g., DPM-Solver++ <ref type="bibr" target="#b14">[15]</ref>) for faster image generation and develop a unified model that generalizes across various scales, eliminating iterative training.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Conceptual workflow of DisC-Diff on multi-contrast super-resolution. The forward diffusion process q (left-to-right) perturbs HR MRI x by gradually adding Gaussian noise. The backward diffusion process p (right-to-left) denoises the perturbed MRI, conditioning on its corresponding LR version y and other available MRI contrasts v.</figDesc><graphic coords="3,58,98,471,74,334,75,68,65" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. (A) The disentangled U-Net consists of three encoders processing perturbed HR xt, LR y, and additional contrast v respectively. The representations from each encoder are disentangled and concatenated as input to a single decoder D to predict the intermediate noise level θ (xt, y, v, t). The architecture includes SE Modules detailed in (B) for dynamically weighting disentangled representations.</figDesc><graphic coords="5,59,67,54,32,332,59,190,39" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Visual restoration results and error maps of different methods on IXI (4×) and glioma (2×) datasets, along with mean and standard deviation of our method's sampling results for indicating super-resolution uncertainty (Last column).</figDesc><graphic coords="8,42,30,185,15,339,88,176,32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results on both datasets with 2× and 4× enlargement scales in terms of mean PSNR (dB) and SSIM. Bold numbers indicate the best results.</figDesc><table><row><cell>Dataset</cell><cell>IXI</cell><cell></cell><cell></cell><cell cols="2">Clinical Dataset</cell></row><row><cell>Scale</cell><cell>2×</cell><cell></cell><cell>4×</cell><cell>2×</cell><cell></cell><cell>4×</cell></row><row><cell>Metrics</cell><cell cols="2">PSNR SSIM</cell><cell>PSNR SSIM</cell><cell cols="2">PSNR SSIM</cell><cell>PSNR SSIM</cell></row><row><cell>Bicubic</cell><cell cols="6">32.84 0.9622 26.21 0.8500 34.72 0.9769 27.17 0.8853</cell></row><row><cell>EDSR [12]</cell><cell cols="6">36.59 0.9865 29.67 0.9350 36.89 0.9880 29.99 0.9373</cell></row><row><cell>SwinIR [11]</cell><cell cols="6">37.21 0.9856 29.99 0.9360 37.36 0.9868 30.23 0.9394</cell></row><row><cell cols="7">Guided Diffusion [4] 36.32 0.9815 30.21 0.9512 36.91 0.9802 29.35 0.9326</cell></row><row><cell>MINet [5]</cell><cell cols="6">36.56 0.9806 30.59 0.9403 37.73 0.9869 31.65 0.9536</cell></row><row><cell>MASA-SR [16]</cell><cell>-</cell><cell>-</cell><cell cols="2">30.61 0.9417 -</cell><cell>-</cell><cell>31.56 0.9532</cell></row><row><cell cols="7">DisC-Diff (Ours) 37.64 0.9873 31.43 0.9551 37.77 0.9887 32.05 0.9562</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Ablation Study on the IXI dataset with 2× and 4× enlargement scale.</figDesc><table><row><cell>Scale</cell><cell>2×</cell><cell>4×</cell></row><row><cell>Metrics</cell><cell>PSNR SSIM</cell><cell>PSNR SSIM</cell></row><row><cell>w/o L disent</cell><cell cols="2">37.15 0.9834 31.08 0.9524</cell></row><row><cell>w/o L charb</cell><cell cols="2">36.70 0.9846 31.05 0.9532</cell></row><row><cell cols="3">w/o curriculum learning 37.58 0.9872 31.36 0.9533</cell></row><row><cell>DisC-Diff (Ours)</cell><cell cols="2">37.64 0.9873 31.43 0.9551</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://brain-development.org/ixi-dataset/.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>https://bit.ly/3yethO4.</p></note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Super-resolution reconstruction of cardiac MRI using coupled dictionary learning</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">K</forename><surname>Bhatia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Hajnal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 11th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2014">2014. 2014</date>
+			<biblScope unit="page" from="947" to="950" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Two deterministic half-quadratic regularization algorithms for computed imaging</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Charbonnier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Blanc-Feraud</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Aubert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barlaud</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 1st International Conference on Image Processing</title>
+		<meeting>1st International Conference on Image Processing</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="1994">1994</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Brain MRI super resolution using 3d deep densely connected neural networks</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Christodoulou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 15th International Symposium on Biomedical Imaging (ISBI 2018)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="739" to="742" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Diffusion models beat GANs on image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="8780" to="8794" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multi-contrast MRI super-resolution via a multi-stage integration network</title>
+		<author>
+			<persName><forename type="first">C.-M</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87231-1_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87231-114" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12906</biblScope>
+			<biblScope unit="page" from="140" to="149" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Task transformer network for joint MRI reconstruction and super-resolution</title>
+		<author>
+			<persName><forename type="first">C.-M</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87231-1_30</idno>
+		<idno>978-3-030-87231-1 30</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12906</biblScope>
+			<biblScope unit="page" from="307" to="317" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A fast image super-resolution algorithm using an adaptive wiener filter</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2953" to="2964" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Low-cost implementation of bilinear and bicubic image interpolation for real-time image super-resolution</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Khaledyan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amirany</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Jafari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Moaiyeri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Z</forename><surname>Khuzani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Mashhadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 IEEE Global Humanitarian Technology Conference (GHTC)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="5" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Fast and accurate image superresolution with deep Laplacian pyramid networks</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">S</forename><surname>Lai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">B</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ahuja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2599" to="2613" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">SRDiff: single image super-resolution with diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">479</biblScope>
+			<biblScope unit="page" from="47" to="59" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">SwinIR: image restoration using Swin transformer</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Timofte</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1833" to="1844" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Enhanced deep residual networks for single image super-resolution</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Son</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mu Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition Workshops</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="136" to="144" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Fusing multi-scale information in convolution network for MR image super-resolution reconstruction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biomed. Eng. Online</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">GANReDL: medical image enhancement using a generative adversarial network with real-order derivative induced loss functions</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-B</forename><surname>Schönlieb</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32248-9_13</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32248-913" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11766</biblScope>
+			<biblScope unit="page" from="110" to="117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">DPM-solver++: fast solver for guided sampling of diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.01095</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">MASA-SR: matching acceleration and spatial adaptation for reference-based image super-resolution</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="6368" to="6377" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Multi-contrast super-resolution MRI through a progressive network</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Lyu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2738" to="2749" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">High-resolution image synthesis with latent diffusion models</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Rombach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blattmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lorenz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Esser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ommer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="10684" to="10695" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">LRTV: MR image superresolution with low-rank and total variation regularizations</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Yap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2459" to="2466" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Super-resolution reconstruction of MR image with a novel residual learning network algorithm</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">85011</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Multimodal super-resolution with deep guided filtering</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Stimpel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Syben</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schirrmacher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hoelter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dörfler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Maier</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-658-25326-4_25</idno>
+		<ptr target="https://doi.org/10.1007/978-3-658-25326-425" />
+	</analytic>
+	<monogr>
+		<title level="j">Bildverarbeitung für die Medizin</title>
+		<imprint>
+			<biblScope unit="page" from="110" to="115" />
+			<date type="published" when="2019">2019. 2019</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Wiesbaden</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Interpretable deep learning for multimodal super-resolution of medical images</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tsiligianni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zerva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Marivani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Deligiannis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Kondi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87231-1_41</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87231-141" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12906</biblScope>
+			<biblScope unit="page" from="421" to="429" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Enhanced generative adversarial network for 3D brain MRI super-resolution</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3627" to="3636" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multi-modal learning for predicting the genotype of glioma</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Structural connectome quantifies tumour invasion and predicts survival in glioblastoma patients</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<biblScope unit="page" from="1714" to="1727" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Quantifying structural connectivity in brain tumor patients</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Price</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87234-2_49</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87234-249" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12907</biblScope>
+			<biblScope unit="page" from="519" to="529" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Simultaneous singleand multi-contrast super-resolution for brain MRI images based on a convolutional neural network</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Biol. Med</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="133" to="141" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">MR image super-resolution with squeeze and excitation reasoning attention network</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="13425" to="13434" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

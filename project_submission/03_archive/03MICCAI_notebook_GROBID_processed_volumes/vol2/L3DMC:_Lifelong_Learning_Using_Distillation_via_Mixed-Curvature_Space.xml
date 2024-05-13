@@ -1,0 +1,1072 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">L3DMC: Lifelong Learning Using Distillation via Mixed-Curvature Space</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Kaushik</forename><surname>Roy</surname></persName>
+							<email>kaushik.roy@monash.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Electrical and Computer Systems Engineering</orgName>
+								<orgName type="department" key="dep2">Faculty of Engineering</orgName>
+								<orgName type="institution">Monash University</orgName>
+								<address>
+									<settlement>Melbourne</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Data61</orgName>
+								<orgName type="institution">CSIRO</orgName>
+								<address>
+									<settlement>Brisbane</settlement>
+									<region>QLD</region>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Peyman</forename><surname>Moghadam</surname></persName>
+							<email>peyman.moghadam@csiro.au</email>
+							<affiliation key="aff1">
+								<orgName type="department">Data61</orgName>
+								<orgName type="institution">CSIRO</orgName>
+								<address>
+									<settlement>Brisbane</settlement>
+									<region>QLD</region>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mehrtash</forename><surname>Harandi</surname></persName>
+							<email>mehrtash.harandi@monash.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Electrical and Computer Systems Engineering</orgName>
+								<orgName type="department" key="dep2">Faculty of Engineering</orgName>
+								<orgName type="institution">Monash University</orgName>
+								<address>
+									<settlement>Melbourne</settlement>
+									<country key="AU">Australia</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">L3DMC: Lifelong Learning Using Distillation via Mixed-Curvature Space</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="123" to="133"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">D32DE469E5AB343494C85713D1C9A560</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_12</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Lifelong Learning</term>
+					<term>Class-incremental Learning</term>
+					<term>Catastrophic Forgetting</term>
+					<term>Mixed-Curvature</term>
+					<term>Knowledge Distillation</term>
+					<term>Feature Distillation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>The performance of a lifelong learning (L3) model degrades when it is trained on a series of tasks, as the geometrical formation of the embedding space changes while learning novel concepts sequentially. The majority of existing L3 approaches operate on a fixed-curvature (e.g., zero-curvature Euclidean) space that is not necessarily suitable for modeling the complex geometric structure of data. Furthermore, the distillation strategies apply constraints directly on lowdimensional embeddings, discouraging the L3 model from learning new concepts by making the model highly stable. To address the problem, we propose a distillation strategy named L3DMC that operates on mixed-curvature spaces to preserve the already-learned knowledge by modeling and maintaining complex geometrical structures. We propose to embed the projected low dimensional embedding of fixed-curvature spaces (Euclidean and hyperbolic) to higher-dimensional Reproducing Kernel Hilbert Space (RKHS) using a positive-definite kernel function to attain rich representation. Afterward, we optimize the L3 model by minimizing the discrepancies between the new sample representation and the subspace constructed using the old representation in RKHS. L3DMC is capable of adapting new knowledge better without forgetting old knowledge as it combines the representation power of multiple fixed-curvature spaces and is performed on higher-dimensional RKHS. Thorough experiments on three benchmarks demonstrate the effectiveness of our proposed distillation strategy for medical image classification in L3 settings. Our code implementation is publicly available at https://github.com/csiro-robotics/L3DMC.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Lifelong learning <ref type="bibr" target="#b30">[31,</ref><ref type="bibr" target="#b33">34]</ref> is the process of sequential learning from a series of nonstationary data distributions through acquiring novel concepts while preserving alreadylearned knowledge. However, Deep Neural Networks (DNNs) exhibit a significant drop in performance on previously seen tasks when trained in continual learning settings. This phenomenon is often called catastrophic forgetting <ref type="bibr" target="#b26">[27,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b34">35]</ref>. Furthermore, the unavailability of sufficient training data in medical imaging poses an additional challenge in tackling catastrophic forgetting of a DNN model.</p><p>In a lifelong learning scenario, maintaining a robust embedding space and preserving geometrical structure is crucial to mitigate performance degradation and catastrophic forgetting of old tasks <ref type="bibr" target="#b22">[23]</ref>. However, the absence of samples from prior tasks has been identified as one of the chief reasons for catastrophic forgetting. Therefore, to address the problem, a small memory buffer has been used in the literature to store a subset of samples from already seen tasks and replayed together with new samples <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b31">32]</ref>. Nevertheless, imbalances in data (e.g., between current tasks and the classes stored in the memory) make the model biased towards the current task <ref type="bibr" target="#b17">[18]</ref>. Knowledge distillation <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b30">31]</ref> has been widely used in the literature to preserve the previous knowledge while training on a novel data distribution. This approach applies constraints on updating the weight of the current model by mimicking the prediction of the old model. To maintain the old embedding structure intact in the new model, feature distillation strategies have been introduced in the literature <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b17">18]</ref>. For instance, LUCIR <ref type="bibr" target="#b17">[18]</ref> emphasizes on maximizing the similarity between the orientation of old and new embedding by minimizing the cosine distance between old and new embedding. While effective, feature distillation applies strong constraints directly on the lower-dimensional embedding extracted from the old and new models, reducing the plasticity of the model. This is not ideal for adopting novel concepts while preserving old knowledge. Lower-dimensional embedding spaces, typically used for distillation, may not preserve all the latent information in the input data <ref type="bibr" target="#b18">[19]</ref>. As a result, they may not be ideal for distillation in lifelong learning scenarios. Furthermore, DNNs often operate on zero-curvature (i.e., Euclidean) spaces, which may not be suitable for modeling and distilling complex geometrical structures in non-stationary biomedical image distributions with various modalities and discrepancies in imaging protocols and medical equipment. On the contrary, hyperbolic spaces have been successfully used to model hierarchical structure in input data for different vision tasks <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b20">21]</ref>.</p><p>In this paper, we propose to perform distillation in a Reproducing Kernel Hilbert Space (RKHS), constructed from the embedding space of multiple fixed-curvature spacess. This approach is inspired by the ability of kernel methods to yield rich representations in higher-dimensional RKHS <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b18">19]</ref>. Specifically, we employ a Radial Basis Function (RBF) kernel on a mixed-curvature space that combines embeddings from hyperbolic (negative curvature), and Euclidean (zero curvature), using a decomposable Riemannian distance function as illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>. This mixed-curvature space is robust and can maintain a higher quality geometrical formation. This makes the space more suitable for knowledge distillation and tackling catastrophic forgetting in lifelong learning scenarios for medical image classification. Finally, to ensure a similar geometric structure between the old and new models in L3, we propose minimizing the distance between the new embedding and the subspace constructed using the old embedding in RKHS. Overall, our contributions in this paper are as follows:</p><p>-To the best of our knowledge, this is the first attempt to study mixed-curvature space for the continual medical image classification task. -We propose a novel knowledge distillation strategy to maintain a similar geometric structure for continual learning by minimizing the distance between new embedding and subspace constructed using old embedding in RKHS. -Quantitative analysis shows that our proposed distillation strategy is capable of preserving complex geometrical structure in embedding space resulting in significantly less degradation of the performance of continual learning and superior performance compared to state-of-the-art baseline methods on BloodMNIST, PathMNIST, and OrganaMNIST datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Preliminaries</head><p>Lifelong Learning (L3). L3 consists of a series of T tasks T t ∈ {T . We assume that a fixedsize memory M is available to store a subset of previously seen samples to mitigate catastrophic forgetting in L3.</p><p>Mixed-Curvature Space. Mixed-Curvature space is formulated as the Cartesian product of fixed-curvature spaces and represented as</p><formula xml:id="formula_0">M = × C i=1 M di i .</formula><p>Here, M i can be a Euclidean (zero curvature), hyperbolic (constant negative curvature), or spherical (constant positive curvature) space. Furthermore, × denotes the Cartesian product, and d i is the dimensionality of fixed-curvature space M i with curvature c i . The distance in the mixed-curvature space can be decomposed as d M (x, y) := C i=1 d Mi (x i , y i ). Hyperbolic Poincaré Ball. Hyperbolic space is a Riemannian manifold with negative curvature. The Poincare ball with curvature -c, c &gt; 0, D n c = {x ∈ R n : c x &lt; 1} is a model of n-dimensional hyperbolic geometry. To perform vector operations on H n , Möbius Gyrovector space is widely used. Möbius addition between x ∈ D n c and y ∈ D n c is defined as follows</p><formula xml:id="formula_1">x ⊕ c y = (1 + 2c x, y + c y 2 2 )x + (1 -c x 2 2 )y 1 + 2c x, y + c 2 x 2 2 y 2 2 (1)</formula><p>Using Möbius addition, geodesic distance between two input data points, x and y in D n c is computed using the following formula.</p><formula xml:id="formula_2">d c (x, y) = 2 √ c tanh -1 ( √ c (-x) ⊕ c y 2 )<label>(2)</label></formula><p>Tangent space of data point x ∈ D n c is the inner product space and is defined as</p><formula xml:id="formula_3">T x D n c</formula><p>which comprises the tangent vector of all directions at x. Mapping hyperbolic embedding to Euclidean space and vice-versa is crucial for performing operations on D n . Consequently, a vector x ∈ T x D n c is embedded onto the Poincaré ball D n c with anchor x using the exponential mapping function and the inverse process is done using the logarithmic mapping function log c v that maps x ∈ D n c to the tangent space of v as follows</p><formula xml:id="formula_4">log c v (x) = 2 √ cλ c v tanh -1 ( √ c -v ⊕ c x 2 ) -v ⊕ c x -v ⊕ c x 2<label>(3)</label></formula><p>where λ c v is conformal factor that is defined as</p><formula xml:id="formula_5">λ c v = 2 1-c v 2 .</formula><p>In practice, anchor v is set to the origin. Therefore, the exponential mapping is expressed as</p><formula xml:id="formula_6">exp c 0 (x) = tanh √ c x x √ c x .</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Proposed Method</head><p>In our approach, we emphasize on modeling complex latent structure of medical data by combining embedding representation of zero-curvature Euclidean and negativecurvature hyperbolic space. To attain richer representational power of RKHS <ref type="bibr" target="#b16">[17]</ref>, we embed the low-dimensional fixed-curvature embedding onto higher-dimensional RKHS using the kernel method. <ref type="figure"></ref>and<ref type="figure">2</ref>. for any given n ∈ N, we have</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Definition 1. Positive Definite Kernel</head><formula xml:id="formula_7">A function f : X × X → R is positive definite (pd) if and only if 1. k(x i , x j ) = k(x j , x i ) for any x i , x j ∈ X,</formula><formula xml:id="formula_8">n i n j c i c j k(x j , x i ) ≥ 0 for any x 1 , x 2 , • • • , x n ∈ X and c 1 , c 2 , • • • , c n ∈ R. Equivalently, the Gram matrix K ij = k(x i , x j ) &gt; 0 for any set of n samples x 1 , x 2 , • • • , x n ∈ X should be Symmetric and Positive Definite (SPD).</formula><p>Popular kernel functions (e.g., the Gaussian RBF) operate on flat-curvature Euclidean spaces. In R n , the Gaussian RBF kernel method is defined as</p><formula xml:id="formula_9">k e (z i , z j ) := exp -λ z i -z j 2 ; λ &gt; 0.<label>(4)</label></formula><p>However, using the geodesic distance in a hyperbolic space along with an RBF function similar to Eq. (4) (i.e., replacing z i -z j 2 with the geodesic distance) does not lead to a valid positive definite kernel. Theoretically, a valid RBF kernel is impossible to obtain for hyperbolic space using geodesic distance <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref>. Therefore, we use the tangent plane of hyperbolic space and employ log c</p><formula xml:id="formula_10">0 log c 0 (z) = z √ c z tanh -1 √ c z ,<label>(5)</label></formula><p>to embed hyperbolic data to RKHS via the following valid pd kernel (see <ref type="bibr" target="#b9">[10]</ref> for the proof of positive definiteness):</p><formula xml:id="formula_11">k h (z i , z j ) = exp -λ log c 0 (z i ) -log c 0 (z j ) 2 . (<label>6</label></formula><formula xml:id="formula_12">)</formula><p>Now, in L3 setting, we have two models h t and h t-1 at our hand at time t. We aim to improve h t while ensuring the past knowledge incorporated in h t-1 is kept within h t . Assume Z t and Z t-1 are the extracted feature vectors for input X using current and old feature extractor, h t feat and h t-1 feat , respectively. Unlike other existing distillation methods, we employ an independent 2-layer MLP for each fixed-curvature space to project extracted features to a new lower-dimensional embedding space on which we perform further operations. This has two benefits, (i) it relaxes the strong constraint directly applied on Z t and Z t-1 and (ii) reduce the computation cost of performing kernel method. Since we are interested in modeling embedding structure in zero-curvature Euclidean and negative-curvature hyperbolic spaces, we have two MLP as projection modules attached to feature extractors, namely g e and g h .</p><p>Our Idea. Our main idea is that, for a rich and overparameterized representation, the data manifold is low-dimensional. Our algorithm makes use of RKHS, which can be intuitively thought of as a neural network with infinite width. Hence, we assume that the data manifold for the model at time t-1 is well-approximated by a low-dimensional hyperplane (our data manifold assumption). Let </p><formula xml:id="formula_13">Z e t-1 = {z e t-1,1 , z e t-1,2 , • • • , z e t-</formula><p>= min</p><formula xml:id="formula_15">α∈R m φ(z e t ) - m i=1 α i φ(z e t-1,i ) 2 .</formula><p>In Eq. ( <ref type="formula" target="#formula_14">7</ref>), φ is the implicit mapping to the RKHS defined by the Gaussian RBF kernel, i.e. k e . The benefit of formulation Eq. ( <ref type="formula" target="#formula_14">7</ref>) is that it has a closed-form solution as</p><formula xml:id="formula_16">δ e (z e t , Z e t-1 ) = k(z e t , z e t ) -k zZ K -1 ZZ k zZ . (<label>8</label></formula><formula xml:id="formula_17">)</formula><p>In Eq. ( <ref type="formula" target="#formula_16">8</ref>), K ZZ ∈ R m×m is the Gram matrix of Z e t-1 , and k zZ is an m-dimensional vector storing the kernel values between z e t and elements of z e t-1 . We provide the proof of equivalency between Eq. ( <ref type="formula" target="#formula_14">7</ref>) and Eq. ( <ref type="formula" target="#formula_16">8</ref>) in the supplementary material due to the lack of space. Note that we could use the same form for the hyperbolic projection module g h to distill between the model at time t and t -1, albeit this time, we employ the hyperbolic kernel k h . Putting everything together, KD (Z t ) := E zt δ e (z e t , Z e t-1 ) + βE zt δ h (z h t , Z h t-1 ) . (</p><p>Here, β is a hyper-parameter that controls the weight of distillation between the Euclidean and hyperbolic spaces. We can employ Eq. ( <ref type="formula" target="#formula_18">9</ref>) at the batch level. Note that in our formulation, computing the inverse of an m × m matrix is required, which has a complexity of O(m 3 ). However, this needs to be done once per batch and manifold (i.e., Euclidean plus hyperbolic). KD is differentiable with respect to Z t , which enables us to update the model at time t. We train our lifelong learning model by combining distillation loss, KD , together with standard cross entropy loss. Please refer to the overall steps of training lifelong learning model using our proposed distillation strategy via mixed-curvature space in Algorithm 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Classifier and Exemplar Selection</head><p>We employ herding based exemplar selection method that selects examples that are closest to the class prototype, following iCARL <ref type="bibr" target="#b31">[32]</ref>. In this section, we describe Mixedcurvature space and L3 methods to tackle catastrophic forgetting.</p><p>Constant-Curvature and Mixed-Curvature Space. Constant-curvature spaces have been successfully used in the literature to realize the intrinsic geometrical orientation of data for various downstream tasks in machine learning. Flat-curvature Euclidean space is suitable to model grid data <ref type="bibr" target="#b36">[37]</ref> while positive and negative-curvature space is better suited for capturing cyclical <ref type="bibr" target="#b1">[2]</ref> and hierarchical <ref type="bibr" target="#b24">[25]</ref> structure respectively. Hyperbolic representation has been used across domains ranging from image classification <ref type="bibr" target="#b25">[26]</ref> and natural language processing <ref type="bibr" target="#b28">[29,</ref><ref type="bibr" target="#b29">30]</ref> to graphs <ref type="bibr" target="#b5">[6]</ref>. However, a constantcurvature space is limited in modeling the geometrical structure of data embedding as it is designed with a focus on particular structures <ref type="bibr" target="#b13">[14]</ref>. Kernel Methods. A Kernel is a function that measures the similarity between two input samples. The intuition behind the kernel method is to embed the low-dimensional input data into a higher, possibly infinite, dimensional RKHS space. Because of the ability to realize rich representation in RKHS, kernel methods have been studied extensively in machine learning <ref type="bibr" target="#b16">[17]</ref>.</p><p>L3 Using Regularization with Distillation. Regularization-based approaches impose constraints on updating weights of L3 model to maintain the performance on old tasks. LwF mimics the prediction of the old model into the current model but struggles to maintain consistent performance in the absence of a task identifier. Rebuff et al. in <ref type="bibr" target="#b31">[32]</ref> store a subset of exemplars using a herding-based sampling strategy and apply knowledge distillation on output space like LwF <ref type="bibr" target="#b23">[24]</ref>. Distillation strategy on feature spaces has also been studied in the literature of L3. Hou et al. in <ref type="bibr" target="#b17">[18]</ref> proposes a less-forgetting constraint that controls the update of weight by minimizing the cosine angle between old and new embedding representation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experimental Details</head><p>Datasets. In our experiments, we use four datasets (e.g., BloodMNIST <ref type="bibr" target="#b0">[1]</ref>, PathM-NIST <ref type="bibr" target="#b19">[20]</ref>, OrganaMNIST <ref type="bibr" target="#b2">[3]</ref>) and TissueMNIST <ref type="bibr" target="#b2">[3]</ref> from MedMNIST collection <ref type="bibr" target="#b37">[38]</ref> for the multi-class disease classification. BloodMNIST, PathMNIST, OrganaMNIST and TissueMNIST have 8, 9, 11, and 8 distinct classes, respectively that are split into 4 tasks with non-overlapping classes between tasks following <ref type="bibr" target="#b7">[8]</ref>. For cross-domain continual learning experiments, we present 4 datasets sequentially to the model. Implementation Details. We employ ResNet18 <ref type="bibr" target="#b14">[15]</ref> as the backbone for feature extraction and a set of task-specific fully connected layers as the classifier to train all the baseline methods across datasets. To ensure fairness in comparisons, we run each experiment with the same set of hyperparameters as used in <ref type="bibr" target="#b7">[8]</ref> for five times with a fixed set of distinct seed values, 1, 2, 3, 4, 5 and report the average value. Each model is optimized using Stochastic Gradient Decent (SGD) with a batch of 32 images for 200 epochs, having early stopping options in case of overfitting. Furthermore, we use gradient clipping by enforcing the maximum gradient value to 10 to tackle the gradient exploding problem.</p><p>Evaluation Metrics. We rely on average accuracy and average forgetting to quantitatively examine the performances of lifelong learning methods as used in previous approaches <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b31">32]</ref>. Average accuracy is computed by averaging the accuracy of all the previously observed and current tasks after learning a current task t and defined as: Acc t = 1 t t i=1 Acc t,i , where Acc t,i is the accuracy of task i after learning task t. We measure the forgetting of the previous task at the end of learning the current task t using:</p><formula xml:id="formula_19">F t = 1 t-1 t-1 i=1 max j∈{1...t-1} Acc j,i -Acc t,i</formula><p>, where at task t, forgetting on task i is defined as the maximum difference value previously achieved accuracy and current accuracy on task i.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Results and Discussion</head><p>In our comparison, we consider two regularization-based methods (i.e., EWC <ref type="bibr" target="#b21">[22]</ref>, and LwF <ref type="bibr" target="#b23">[24]</ref>) and 5 memory-based methods (e.g., EEIL <ref type="bibr" target="#b4">[5]</ref>, ER <ref type="bibr" target="#b32">[33]</ref>, Bic <ref type="bibr" target="#b35">[36]</ref>, LUCIR <ref type="bibr" target="#b17">[18]</ref> and iCARL <ref type="bibr" target="#b31">[32]</ref>). We employ the publicly available code<ref type="foot" target="#foot_0">1</ref> of <ref type="bibr" target="#b7">[8]</ref> in our experiments to produce results for all baseline methods on BloodMNIST, PathMNIST, and OrganaM-NIST datasets and report the quantitative results in Table <ref type="table" target="#tab_3">1</ref>. The results suggest that the performance of all methods improves with the increase in buffer size (e.g., from 200 to 1000). We observe that our proposed distillation approach outperforms other baseline methods across the settings. The results suggest that the regularization-based methods, e.g., EWC and LwF perform poorly in task-agnostic settings across the datasets as those methods are designed for task-aware class-incremental learning. Our proposed method outperforms experience replay, ER method by a significant margin in both evaluation metrics (i.e., average accuracy and average forgetting) across datasets. For instance, our method shows around 30%, 30%, and 20% improvement in accuracy compared to ER while the second best method, iCARL, performs about 4%, 2%, and 8% worse than our method on BloodMNIST, PathMNIST, and OrganaMNIST respectively with 200 exemplars. Similarly, with 1000 exemplars, our proposed method shows consistent performances and outperforms iCARL by 4%, 6%, and 2% accordingly on BloodMNIST, PathMNIST, and OrganaMNIST datasets. We also observe that catastrophic forgetting decreases with the increase of exemplars. Our method shows about 2% less forgetting phenomenon across the datasets with 1000 exemplars compared to the second best method iCARL. Table <ref type="table" target="#tab_4">2</ref> presents the experimental results (e.g., average accuracy) on relatively complex cross-domain incremental learning setting where datasets (BloodMNIST, PathMNIST, OrganaMNIST, and TissueMNIST) with varying modalities from different institutions are presented at each novel task. Results show an unmatched gap between regularization-based methods (e.g., Lwf and EWC) and our proposed distillation method. CL3DMC outperforms ER method by around 16% on both task-aware and task-agnostic settings. Similarly, CL3DMC performs around 3% better than the second best method, iCARL.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusion</head><p>In this paper, we propose a novel distillation strategy, L3DMC on mixed-curvature space to preserve the complex geometric structure of medical data while training a DNN model on a sequence of tasks. L3DMC aims to optimize the lifelong learning model by minimizing the distance between new embedding and old subspace generated using current and old models respectively on higher dimensional RKHS. Extensive experiments show that L3DMC outperforms state-of-the-art L3 methods on standard medical image datasets for disease classification. In future, we would like to explore the effectiveness of our proposed distillation strategy on long-task and memory-free L3 setting.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Geometrical interpretation of the proposed distillation strategy, L3DMC via mixed-curvature space that optimizes the model by combining the distillation loss from Euclidean with zero-curvature (left) and hyperbolic with negative-curvature (right) space. L3DMC preserves the complex geometrical structure by minimizing the distance between new data representation and subspace induced by old representation in RKHS.</figDesc><graphic coords="2,123,06,199,67,258,76,119,95" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>1 , T 2 , • • • , T T }, where each task T t has it's own dataset D t = {X t , Y t }.</figDesc><table><row><cell>In our experiments, X i ∈ X t ⊂</cell></row><row><cell>X denotes a medical image of size W × H and y i ∈ Y t ⊂ Y is its associated disease</cell></row><row><cell>category at task t. In class-incremental L3, label space of two tasks is disjoint, hence</cell></row><row><cell>Y t ∩ Y t = ∅; t = t . The aim of L3 is to train a model f : X → Y incrementally</cell></row><row><cell>for each task t to map the input space X t to the corresponding target space Y t without</cell></row><row><cell>forgetting all previously learned tasks (i.e., 1, 2, • • • , t -1)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>1,m } be the output of the Euclidean projection module for m samples at time t (i.e., current model). Consider z e t , a sample at time t from the Euclidean projection head. We propose to minimize the following distance δ</figDesc><table /><note><p>e (z e t , Z e t-1 ) := φ(z e t ) -span{φ(z e t-1,i )} m i=1 2</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>At inference time, we use exemplars from memory to compute class template and the nearest template class computed using Euclidean distance is used as the prediction of our L3 model. Assume μ c is the class template computed by averaging the extracted features from memory exemplars belonging to class c. Then, the prediction ŷ for a given input sample X is determined as ŷ = arg min</figDesc><table><row><cell>4 Related Work</cell><cell cols="2">Algorithm 1 Lifelong Learning using Distilla-</cell></row><row><cell></cell><cell cols="2">tion via Mixed-Curvature Space</cell></row><row><cell></cell><cell>4:</cell><cell>Initialize Θ t with Θ t-1</cell></row><row><cell></cell><cell>5:</cell><cell>for iteration 1 to max_iter do</cell></row><row><cell></cell><cell>6:</cell><cell>Sample a mini batch (XB, YB) from</cell></row><row><cell></cell><cell></cell><cell>(D t ∪ M)</cell></row><row><cell></cell><cell>7: 8: 9: 10:</cell><cell>Z t ← h t feat (XB) Z t-1 ← h t-1 feat (XB) ỸB ← h Θ t (Z t ) Compute CE between YB and ỸB</cell></row><row><cell></cell><cell>11:</cell><cell>Compute KD between Z t-1 and Z t</cell></row><row><cell></cell><cell>12:</cell><cell>Update Θ t by minimizing the combined</cell></row><row><cell></cell><cell></cell><cell>loss of cross-entropy CE and KD as in Eq. (9)</cell></row><row><cell></cell><cell>13:</cell><cell>end for</cell></row><row><cell></cell><cell>14:</cell><cell>Evaluate Model on test dataset</cell></row><row><cell></cell><cell>15:</cell><cell>Update Memory M with exemplars from D t</cell></row><row><cell></cell><cell cols="2">16: end for</cell></row></table><note><p>c=1,...,t h t feat (X)μ c 2 . Input: Dataset D 0 , D 1 , ..., D T , and Memory M Output: The new model at time t with parameters Θ t 1: Randomly Initialize Θ 0 ; h 0 Θ = h 0 feat • h 0 cls 2: Train Θ 0 on D 0 using CE 3: for t in {1, 2, ..., T } do</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 1 .</head><label>1</label><figDesc>Experimental results on BloodMNIST, PathMNIST, OrganaMNIST and TissueMNIST datasets for 4-tasks Class-Incremental setting with varying buffer size. Our proposed method outperforms other baseline methods across the settings.</figDesc><table><row><cell>Method</cell><cell cols="2">BloodMNIST</cell><cell>PathMNIST</cell><cell></cell><cell cols="2">OrganaMNIST</cell></row><row><cell></cell><cell cols="6">Accuracy ↑ Forgetting ↓ Accuracy ↑ Forgetting ↓ Accuracy ↑ Forgetting ↓</cell></row><row><cell cols="2">Upper Bound 97.98</cell><cell>-</cell><cell>93.52</cell><cell>-</cell><cell>95.22</cell><cell>-</cell></row><row><cell cols="2">Lower Bound 46.59</cell><cell>68.26</cell><cell>32.29</cell><cell>77.54</cell><cell>41.21</cell><cell>54.20</cell></row><row><cell>EWC [22]</cell><cell>47.60</cell><cell>66.22</cell><cell>33.34</cell><cell>76.39</cell><cell>37.88</cell><cell>67.62</cell></row><row><cell>LwF [24]</cell><cell>43.68</cell><cell>66.30</cell><cell>35.36</cell><cell>67.37</cell><cell>41.36</cell><cell>51.47</cell></row><row><cell cols="2">Memory Size: 200</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>EEIL [5]</cell><cell>42.17</cell><cell>71.25</cell><cell>28.42</cell><cell>79.39</cell><cell>41.03</cell><cell>62.47</cell></row><row><cell>ER [33]</cell><cell>42.94</cell><cell>71.38</cell><cell>33.74</cell><cell>80.6</cell><cell>52.50</cell><cell>52.72</cell></row><row><cell cols="2">LUCIR [18] 20.76</cell><cell>53.80</cell><cell>40.00</cell><cell>54.72</cell><cell>41.70</cell><cell>33.06</cell></row><row><cell>BiC [36]</cell><cell>53.32</cell><cell>31.06</cell><cell>48.74</cell><cell>30.82</cell><cell>58.68</cell><cell>29.66</cell></row><row><cell cols="2">iCARL [32] 67.70</cell><cell>14.52</cell><cell>58.46</cell><cell>-0.70</cell><cell>63.02</cell><cell>7.75</cell></row><row><cell>Ours</cell><cell>71.98</cell><cell>14.62</cell><cell>60.60</cell><cell>21.18</cell><cell>71.01</cell><cell>13.88</cell></row><row><cell cols="2">Memory Size: 1000</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>EEIL [5]</cell><cell>64.40</cell><cell>40.92</cell><cell>34.18</cell><cell>75.42</cell><cell>66.24</cell><cell>34.60</cell></row><row><cell>ER [33]</cell><cell>65.94</cell><cell>33.68</cell><cell>44.18</cell><cell>66.24</cell><cell>67.90</cell><cell>31.72</cell></row><row><cell cols="2">LUCIR [18] 20.92</cell><cell>28.42</cell><cell>53.84</cell><cell>30.92</cell><cell>54.22</cell><cell>23.64</cell></row><row><cell>BiC [36]</cell><cell>70.04</cell><cell>17.98</cell><cell>-</cell><cell>-</cell><cell>73.46</cell><cell>15.98</cell></row><row><cell cols="2">iCARL [32] 73.10</cell><cell>13.18</cell><cell>61.72</cell><cell>14.14</cell><cell>74.54</cell><cell>10.50</cell></row><row><cell>Ours</cell><cell>77.26</cell><cell>10.9</cell><cell>67.52</cell><cell>12.5</cell><cell>76.46</cell><cell>9.08</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4"><head>Table 2 .</head><label>2</label><figDesc>Average accuracy on the cross-domain incremental learning scenario<ref type="bibr" target="#b7">[8]</ref> with 200 exemplars. CL3DMC outperforms baseline methods by a significant margin in both task-aware and task-agnostic settings. Best values are in bold. Accuracy ↑) 29.45 18.44 34.54 34.54 26.79 48.87 19.05 52.19 Task-Aware (Accuracy ↑) 31.07 29.26 37.69 33.19 33.19 49.47 27.48 52.83</figDesc><table><row><cell>Scenario</cell><cell>LwF EWC ER</cell><cell>EEIL BiC iCARL LUCIR L3DMC (Ours)</cell></row><row><cell>Task-Agnostic (</cell><cell></cell><cell></cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://github.com/mmderakhshani/LifeLonger.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Machine Learning -Explainability,</head><p>Bias, and Uncertainty I</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A dataset of microscopic peripheral blood cell images for development of automatic recognition systems</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Acevedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Merino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Alférez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Á</forename><surname>Molina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Boldú</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rodellar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data in brief</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Constant curvature graph convolutional networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bachmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bécigneul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ganea</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="486" to="496" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">The liver tumor segmentation benchmark (lits)</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bilic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page">102680</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Dark experience for general continual learning: a strong, simple baseline</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Buzzega</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Boschini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Porrello</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Abati</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Calderara</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">End-to-end incremental learning</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Castro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Marín-Jiménez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Guil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Schmid</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Alahari</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01258-8_15</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01258-8_15" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11216</biblScope>
+			<biblScope unit="page" from="241" to="257" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Hyperbolic graph convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">I</forename><surname>Chami</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ying</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ré</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Riemannian walk for incremental learning: understanding forgetting and intransigence</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chaudhry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Dokania</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Ajanthan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H S</forename><surname>Torr</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01252-6_33</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01252-6_33" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11215</biblScope>
+			<biblScope unit="page" from="556" to="572" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Lifelonger: A benchmark for continual disease classification</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Derakhshani</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16434-7_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16434-7_31" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention-MICCAI 2022: 25th International Conference</title>
+		<meeting><address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022-09-22">18-22 September 2022. 2022</date>
+			<biblScope unit="page" from="314" to="324" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part II</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">PODNet: pooled outputs distillation for small-tasks incremental learning</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Douillard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ollion</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Robert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Valle</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58565-5_6</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58565-5_6" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12365</biblScope>
+			<biblScope unit="page" from="86" to="102" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Kernel methods in hyperbolic spaces</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harandi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Petersson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Computer Vision</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="10665" to="10674" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Open problem: kernel methods on manifolds and metric spaces. what is the probability of a positive definite geodesic exponential kernel?</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Feragen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hauberg</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Learning Theory</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="1647" to="1650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Geodesic exponential kernels: when curvature and linearity conflict</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Feragen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Lauze</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hauberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="3032" to="3042" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Hyperbolic neural networks</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ganea</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bécigneul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances In Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Learning mixed-curvature representations in product spaces</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Sala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Gunel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ré</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Distilling the knowledge in a neural network</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Vinyals</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1503.02531</idno>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Schölkopf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">J</forename><surname>Smola</surname></persName>
+		</author>
+		<title level="m">Kernel methods in machine learning</title>
+		<imprint>
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learning a unified classifier incrementally via rebalancing</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">C</forename><surname>Loy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="831" to="839" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Kernel methods on riemannian manifolds with gaussian rbf kernels</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jayasumana</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Hartley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Salzmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harandi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2464" to="2477" />
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Predicting survival from colorectal cancer histology slides using deep learning: a retrospective multicenter study</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">N</forename><surname>Kather</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Med</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">1002730</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Hyperbolic image embeddings</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Khrulkov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mirvakhabova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ustinova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Oseledets</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lempitsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6418" to="6428" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Overcoming catastrophic forgetting in neural networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kirkpatrick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci</title>
+		<meeting>Natl. Acad. Sci</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="3521" to="3526" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Incloud: incremental learning for point cloud place recognition</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Knights</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Moghadam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ramezani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sridharan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fookes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="8559" to="8566" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Learning without forgetting</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hoiem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2935" to="2947" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Hyperbolic graph neural networks</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nickel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kiela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Continuous hierarchical representations with poincaré variational auto-encoders</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Mathieu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Le Lan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">J</forename><surname>Maddison</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Tomioka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">W</forename><surname>Teh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Catastrophic interference in connectionist networks: the sequential learning problem</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mccloskey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Cohen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychology of learning and motivation</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="109" to="165" />
+			<date type="published" when="1989">1989</date>
+			<publisher>Elsevier</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Toward understanding catastrophic forgetting in continual learning</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">V</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Achille</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Mahadevan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Soatto</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.01091</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Poincaré embeddings for learning hierarchical representations</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nickel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kiela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Learning continuous hierarchies in the lorentz model of hyperbolic geometry</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nickel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kiela</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="3779" to="3788" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Continual lifelong learning with neural networks: a review</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">I</forename><surname>Parisi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Kemker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Part</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kanan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wermter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Netw</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page" from="54" to="71" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">icarl: incremental classifier and representation learning</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Rebuffi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kolesnikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sperl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Lampert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2001" to="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Riemer</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1810.11910</idno>
+		<title level="m">Learning to learn without forgetting by maximizing transfer and minimizing interference</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Child: a first step towards continual learning</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">B</forename><surname>Ring</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="77" to="104" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Catastrophic forgetting, rehearsal and pseudorehearsal</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Robins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Connect. Sci</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="123" to="146" />
+			<date type="published" when="1995">1995</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Large scale incremental learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="374" to="382" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">A comprehensive survey on graph neural networks</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">Y</forename><surname>Philip</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="4" to="24" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Medmnist classification decathlon: a lightweight automl benchmark for medical image analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="191" to="195" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

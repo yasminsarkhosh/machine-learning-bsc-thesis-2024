@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Boundary Difference over Union Loss for Medical Image Segmentation</title>
+				<funder ref="#_24YwP4r">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_TG8KeDx">
+					<orgName type="full">Science and Technology Plan Project of Xiamen</orgName>
+				</funder>
+				<funder ref="#_dMvuTWK">
+					<orgName type="full">Natural Science Foundation of Fujian Province of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Fan</forename><surname>Sun</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Artificial Intelligence</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen, Fujian</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Zhiming</forename><surname>Luo</surname></persName>
+							<email>zhiming.luo@xmu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Artificial Intelligence</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen, Fujian</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Shaozi</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Artificial Intelligence</orgName>
+								<orgName type="institution">Xiamen University</orgName>
+								<address>
+									<settlement>Xiamen, Fujian</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Boundary Difference over Union Loss for Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="292" to="301"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">70FF7B1CBBBB1C471225F92975ACF0C2</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_28</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Medical image segmentation • Boundary loss</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Medical image segmentation is crucial for clinical diagnosis. However, current losses for medical image segmentation mainly focus on overall segmentation results, with fewer losses proposed to guide boundary segmentation. Those that do exist often need to be used in combination with other losses and produce ineffective results. To address this issue, we have developed a simple and effective loss called the Boundary Difference over Union Loss (Boundary DoU Loss) to guide boundary region segmentation. It is obtained by calculating the ratio of the difference set of prediction and ground truth to the union of the difference set and the partial intersection set. Our loss only relies on region calculation, making it easy to implement and training stable without needing any additional losses. Additionally, we use the target size to adaptively adjust attention applied to the boundary regions. Experimental results using UNet, TransUNet, and Swin-UNet on two datasets (ACDC and Synapse) demonstrate the effectiveness of our proposed loss function.</p><p>Code is available at https://github.com/sunfan-bvb/BoundaryDoULoss.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is a vital branch of image segmentation <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b22">23]</ref>, and can be used clinically for segmenting human organs, tissues, and lesions. Deep learning-based methods have made great progress in medical image segmentation tasks and achieved good performance, including early CNN-based methods <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b24">25]</ref>, as well as more recent approaches utilizing Transformers <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b23">24]</ref>.</p><p>From CNN to Transformer, many different model architectures have been proposed, as well as a number of training loss functions. These losses can be mainly divided into three categories. The first class is represented by the Cross-Entropy Loss, which calculates the difference between the predicted probability distribution and the ground truth. Focal Loss <ref type="bibr" target="#b13">[14]</ref> is proposed for addressing hard-to-learn samples. The second category is Dice Loss and other improvements. Dice Loss <ref type="bibr" target="#b16">[17]</ref> is based on the intersection and union between the prediction and ground truth. Tversky Loss <ref type="bibr" target="#b18">[19]</ref> improves the Dice Loss by balancing precision and recall. The Generalized Dice Loss <ref type="bibr" target="#b19">[20]</ref> extends the Dice Loss to multi-category segmentation. The third category focuses on boundary segmentation. Hausdorff Distance Loss <ref type="bibr" target="#b11">[12]</ref> is proposed to optimize the Hausdorff distance, and the Boundary Loss <ref type="bibr" target="#b12">[13]</ref> calculates the distance between each point in the prediction and the corresponding ground truth point on the contour as the weight to sum the predicted probability of each point. However, the current loss for optimizing segmented boundaries dependent on combining different losses or training instability. To address these issues, we propose a simple boundary loss inspired by the Boundary IoU metrics <ref type="bibr" target="#b5">[6]</ref>, i.e., Boundary DoU Loss.</p><p>Our proposed Boundary DoU Loss improves the focus on regions close to the boundary through a region-like calculation similar to Dice Loss. The error region near the boundary is obtained by calculating the difference set of ground truth and prediction, which is then reduced by decreasing its ratio to the union of the difference set and a partial intersection set. To evaluate the performance of our proposed Boundary DoU loss, we conduct experiments on the ACDC <ref type="bibr" target="#b0">[1]</ref> and Synapse datasets by using the UNet <ref type="bibr" target="#b17">[18]</ref>, TransUNet <ref type="bibr" target="#b2">[3]</ref> and Swin-UNet <ref type="bibr" target="#b1">[2]</ref> models. Experimental results show the superior performance of our loss when compared with others.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>This section first revisit the Boundary IoU metric <ref type="bibr" target="#b5">[6]</ref>. Then, we describe the details of our Boundary DoU loss function and adaptive size strategy. Next, we discuss the connection between our Boundary DoU loss with the Dice loss.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Boundary IoU Metric</head><p>The Boundary IoU is a segmentation evaluation metric which mainly focused on boundary quality. Given the ground truth binary mask G, the G d denotes the inner boundary region within the pixel width of d. The P is the predicted binary mask, and P d denotes the corresponding inner boundary region, whose size is determined as a fixed fraction of 0.5% relative to the diagonal length of the image. Then, we can compute the Boundary IoU metric by using following equation, as shown in the left of Fig. <ref type="figure" target="#fig_0">1</ref>,</p><formula xml:id="formula_0">Boundary IoU = |(G d ∩ G) ∩ (P d ∩ P )| |(G d ∩ G) ∪ (P d ∩ P )| . (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>A large Boundary IoU value indicates that the G d and P d are perfectly matched, which means G and P are with a similar shape and their boundary are well aligned. In practice, the G d and P d is computed by the erode operation <ref type="bibr" target="#b5">[6]</ref>. However, the erode operation is non-differentiable, and we can not directly leverage the Boundary IoU as a loss function for training for increasing the consistency between two boundary areas.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Boundary DoU Loss</head><p>As shown in the left of Fig. <ref type="figure" target="#fig_0">1</ref>, we can find that the union of the two boundaries Based on the above analysis, we design a Boundary DoU loss based on the difference region to facilitate computation and backpropagation. First, we directly treat the difference set as the miss-matched boundary between G and P . Besides, we consider removing the middle part of the intersection area as the inner boundary, which is computed by α * G∩P (α &lt; 1) for simplicity. Then, we joint compute the G ∪ Pα * G ∩ P as the partial union. Finally, as shown in the right of Fig. <ref type="figure" target="#fig_0">1</ref>, our Boundary DoU Loss can be computed by,</p><formula xml:id="formula_2">|(G d ∩G)∪(P d ∩P )|</formula><formula xml:id="formula_3">L DoU = G ∪ P -G ∩ P G ∪ P -α * G ∩ P , (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>where α is a hyper-parameter controlling the influence of the partial union area.</p><p>Adaptive Adjusting α Based-on Target Size: On the other aspect, the proportion of the boundary area relative to the whole target varies for different sizes. When the target is large, the boundary area only accounts for a small proportion, and the internal regions can be easily segmented, so we are encouraged to focus more on the boundary area. In such a case, using a large α is preferred. However, when the target is small, neither the interior nor the boundary areas are easily distinguishable, so we need to focus simultaneously on the interior and boundary, and a small α is preferred. To achieve this goal, we future adaptively compute α based on the proportion,</p><formula xml:id="formula_5">α = 1 -2 × C S , α ∈ [0, 1),<label>(3)</label></formula><p>where C denotes the boundary length of the target, and S denotes its size. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Discussion</head><p>In this part, we compare Boundary DoU Loss with Dice Loss. Firstly, we can re-write our Boundary DoU Loss as:</p><formula xml:id="formula_6">L DoU = S D S D + S I -αS I = 1 - α * S I S D + α * S I ,<label>(4)</label></formula><p>where S D denotes the area of the difference set between ground truth and prediction, S I denotes the intersection area of them, and α = 1α. Meanwhile, the Dice Loss can be expressed by the following:</p><formula xml:id="formula_7">L Dice = 1 - 2 * T P 2 * T P + F P + F N = 1 - 2 * S I 2 * S I + S D ,<label>(5)</label></formula><p>where TP, FP and FN denote True Positive, False Positive, and False Negative, respectively. It can be seen that Boundary DoU Loss and Dice loss differ only in the proportion of the intersection area. Dice is concerned with the whole intersection area, while Boundary DoU Loss is concerned with the boundary since α &lt; 1. Similar to the Dice loss function, minimizing the L DoU will encourage an increase of the intersection area (S I ↑) and a decrease of the different set (S D ↓). Meanwhile, the L DoU will penalize more over the ratio of S D /S I . To corroborate its effectiveness more clearly, we compare the values of L Dice and L DoU in different cases in Fig. <ref type="figure" target="#fig_2">2</ref>. The L Dice decreases linearly with the difference set, whereas L DoU will decrease faster when S I is higher enough.  Evaluation Metrics: We use the most widely used Dice Similarity Coefficient (DSC) and Hausdorff Distances (HD) as evaluation metrics. Besides, the Boundary IoU <ref type="bibr" target="#b5">[6]</ref> (B-IoU) is adopted as another evaluation metric for the boundary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Implementation Details</head><p>We conduct experiments on three advanced models to evaluate the performance of our proposed Boundary DoU Loss, i.e., UNet, TransUNet, and Swin-UNet.</p><p>The models are implemented with the PyTorch toolbox and run on an NVIDIA GTX A4000 GPU. The input resolution is set as 224 × 224 for both datasets.</p><p>For the Swin-UNet <ref type="bibr" target="#b1">[2]</ref> and TransUNet <ref type="bibr" target="#b2">[3]</ref>, we used the same training and testing parameters provided by the source code, i.e., the learning rate is set to 0.01, with a weight decay of 0.0001. The batch size is 24, and the optimizer uses SGD with a momentum of 0.9. For the UNet, we choose ResNet50 as the backbone and initialize the encoder with the ImageNet pre-trained weights following the setting in TransUNet <ref type="bibr" target="#b2">[3]</ref>. The other configurations are the same as TransUNet. We train all models by 150 epochs on both Synapse and ACDC datasets. We further train the three models by different loss functions for comparison, including Dice Loss, Cross-Entropy Loss (CE), Dice+CE, Tversky Loss <ref type="bibr" target="#b18">[19]</ref>, and Boundary Loss <ref type="bibr" target="#b12">[13]</ref>. The training settings of different loss functions are as follows. For the λ 1 Dice + λ 2 CE, we set (λ 1 , λ 2 ) as (0.5, 0.5) for the UNet and TransUNet, and (0.6, 0.4) for Swin-UNet. For the Tversky Loss, we set α = 0.7 and β = 0.3 by referring to the best performance in <ref type="bibr" target="#b18">[19]</ref>. Following the Boundary Loss <ref type="bibr" target="#b12">[13]</ref>, we use L = α * (Dice + CE) + (1α) * Boundary for training . The α is initially set to 1 and decreases by 0.01 at each epoch until it equals 0.01.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Quantitative Results: Table <ref type="table" target="#tab_0">1</ref> shows the results of different losses on the Synapse dataset. From the table, we can have the following findings: 1) The original Dice Loss achieves the overall best performance among other losses. The CE loss function obtains a significantly lower performance than the Dice. Besides, the Dice+CE, Tversky, and Boundary do not perform better than Dice.</p><p>2) Compared with the Dice Loss, our Loss improves the DSC by 2.30%, 1.20%, and 1.89% on UNet, TransUNet, and Swin-UNet models, respectively. The Hausdorff Distance also shows a significant decrease. Meanwhile, we achieved the best performance on the Boundary IoU, which verified that our loss could improve the segmentation performance of the boundary regions.</p><p>Table <ref type="table" target="#tab_1">2</ref> reports the results on the ACDC dataset. We can find that our Boundary DOU Loss effectively improves DSC on all three models. Compared with Dice Loss, the DSC of UNet, TransUNet, and Swin-UNet improved by 0.62%, 0.6%, and 0.85%, respectively. Although our Loss did not get all optimal performance for the Hausdorff Distance, we substantially outperformed all other losses on the Boundary IoU. These results indicate that our method can better segment the boundary regions. This capability can assist doctors in better identifying challenging object boundaries in clinical settings. Qualitative Results: Figures <ref type="figure" target="#fig_3">3</ref> and<ref type="figure" target="#fig_4">4</ref> show the qualitative visualization results of our loss and other losses. Overall, our method has a clear advantage for segmenting the boundary regions. In the Synapse dataset (Fig. <ref type="figure" target="#fig_3">3</ref>), we can achieve more accurate localization and segmentation for complicated organs such as the stomach and pancreas. Our results from the 3rd and 5th rows substantially outperform the other losses when the target is small. Based on the 2nd and last rows, we can obtain more stable segmentation on the hard-to-segment objects. As for the ACDC dataset (Fig. <ref type="figure" target="#fig_4">4</ref>), due to the large variation in the shape of the RV region as shown in Row 1, 3, 4 and 6, it is easy to cause under-or missegmentation. Our Loss resolves this problem better compared with other Losses. Whereas the MYO is annular and the finer regions are difficult to segment, as shown in the 2nd and 5th row, the other losses all result in different degrees of under-segmentation, while our loss ensures its completeness. Reducing the misand under-classification will allow for better clinical guidance.</p><p>Results of Target with Different Sizes: We further evaluate the influence of the proposed loss function for segmenting targets with different sizes. Based on the observation of C/S values for different targets, we consider a target to be a large one when C/S &lt; 0.2 and otherwise as a small target. As shown in Table <ref type="table" target="#tab_2">3</ref>, our Boundary DoU Loss function can improve the performance for both large and small targets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this study, we propose a simple and effective loss (Boundary DoU) for medical image segmentation. It adaptively adjusts the penalty to regions close to the boundary based on the size of the different targets, thus allowing for better optimization of the targets. Experimental results on ACDC and Synapse datasets validate the effectiveness of our proposed loss function.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The illustration of Boundary IoU (left) and Boundary DoU Loss (right), the shaded area in the figure will be calculated. G and P indicate ground truth and prediction, and G d and P d denote their corresponding boundary areas. α is a hyperparameter.</figDesc><graphic coords="2,167,10,66,05,190,84,72,61" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>actually are highly correlated to the difference set between G and P . The intersection |(G d ∩ G) ∩ (P d ∩ P )| is correlated to the inner boundary of the intersection of G and P . If the difference set G ∪ P -G ∩ P decreases and the G ∩ P increases, the corresponding Boundary IoU will increase.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Comparison of Boundary DoU Loss (B-DoU Loss) and Dice Loss. The figure shows the values of the two losses calculated at 20%, 50%, and 80% of the intersection of Ground Truth and Prediction, respectively. We assume that both Ground Truth and Prediction have an area of 1 and α is 0.8.</figDesc><graphic coords="4,149,10,74,36,172,54,80,80" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The qualitative comparison of the segmentation on the Synapse dataset. (Row 1&amp;2: Swin-UNet, Row 3&amp;4: TransUNet, and Row 5&amp;6: UNet)</figDesc><graphic coords="7,49,74,72,71,316,99,316,99" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. The qualitative comparison of segmentation results on the ACDC dataset. (Row 1&amp;2: Swin-UNet, Row 3&amp;4: TransUNet, and Row 5&amp;6: UNet)</figDesc><graphic coords="8,55,98,73,01,340,18,291,70" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Experimental results on the Synapse dataset with the three models (average Dice score % and average Hausdorff Distance in mm, and average Boundary IoU %).</figDesc><table><row><cell>Model</cell><cell>UNet</cell><cell></cell><cell>TransUNet</cell><cell></cell><cell>Swin-UNet</cell></row><row><cell>Loss</cell><cell>DSC↑ HD↓</cell><cell cols="2">B-IoU↑ DSC↑ HD↓</cell><cell cols="2">B-IoU↑ DSC↑ HD↓</cell><cell>B-IoU↑</cell></row><row><cell>Dice</cell><cell cols="2">76.38 31.45 ± 9.31 86.26</cell><cell cols="2">78.52 28.84 ± 2.47 87.34</cell><cell cols="2">77.98 25.95 ± 9.07 86.19</cell></row><row><cell>CE</cell><cell cols="2">65.95 40.31 ± 50.3 82.69</cell><cell cols="2">72.98 35.05 ± 14.1 84.84</cell><cell cols="2">71.77 33.20 ± 4.02 84.04</cell></row><row><cell cols="3">Dice + CE 76.77 30.20 ± 5.10 86.21</cell><cell cols="2">78.19 29.30 ± 11.8 87.18</cell><cell cols="2">78.30 24.71 ± 2.84 86.72</cell></row><row><cell>Tversky</cell><cell cols="2">63.61 65.12 ± 4.38 75.65</cell><cell>63.90 70.89 ± 218</cell><cell>70.77</cell><cell>68.22 41.22 ± 419</cell><cell>79.53</cell></row><row><cell cols="3">Boundary 76.23 34.54 ± 12.5 85.75</cell><cell cols="2">76.82 31.88 ± 3.01 86.66</cell><cell cols="2">76.00 26.74 ± 2.18 84.98</cell></row><row><cell>Ours</cell><cell cols="6">78.68 26.29 ± 2.35 87.08 79.53 27.28 ± 0.51 88.11 79.87 19.80 ± 2.34 87.78</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Experimental results on the ACDC dataset with the three models (average Dice score % and average Hausdorff Distance in mm, and average Boundary DoU %).</figDesc><table><row><cell>Model</cell><cell>UNet</cell><cell></cell><cell>TransUNet</cell><cell></cell><cell>Swin-UNet</cell></row><row><cell>Loss</cell><cell>DSC↑ HD↓</cell><cell cols="2">B-IoU↑ DSC↑ HD↓</cell><cell cols="2">B-IoU↑ DSC↑ HD↓</cell><cell>B-IoU↑</cell></row><row><cell>Dice</cell><cell cols="2">90.17 1.34 ± 0.10 75.20</cell><cell cols="2">90.69 2.03 ± 0.00 76.66</cell><cell>90.17 1.34 ± 0.01 75.20</cell></row><row><cell>CE</cell><cell cols="2">88.08 1.48 ± 0.28 71.25</cell><cell cols="2">89.22 2.07 ± 0.05 73.78</cell><cell>88.08 1.48 ± 0.03 71.25</cell></row><row><cell cols="3">Dice + CE 89.94 1.28 ± 1.29 74.80</cell><cell cols="2">90.48 1.94 ± 0.00 76.27</cell><cell>89.94 1.28 ± 0.00 74.80</cell></row><row><cell>Tversky</cell><cell>83.60 9.88 ± 226</cell><cell>69.36</cell><cell cols="2">90.37 1.95 ± 0.02 76.20</cell><cell>89.55 1.48 ± 0.04 74.37</cell></row><row><cell cols="3">Boundary 89.25 2.28 ± 0.24 73.08</cell><cell cols="2">90.48 1.84 ± 0.08 76.31</cell><cell>88.95 1.53 ± 0.03 72.73</cell></row><row><cell cols="6">ACDC: 2 The ACDC dataset is a 3D MRI dataset from the Automated Cardiac</cell></row><row><cell cols="6">Diagnosis Challenge 2017 and contains cardiac data from 150 patients in five</cell></row><row><cell cols="6">categories. Cine MR images were acquired under breath-holding conditions, with</cell></row><row><cell cols="6">slices 5-8 mm thick, covering the LV from basal to apical, with spatial resolutions</cell></row><row><cell cols="6">from 1.37 to 1.68 mm/pixel and 28 to 40 images fully or partially covering the</cell></row><row><cell cols="6">cardiac cycle. Following the TransUNet, we split the original training set with</cell></row><row><cell cols="6">100 scans into the training, validation, and testing sets with a ratio of 7:1:2.</cell></row></table><note><p>Ours 90.84 1.54 ± 0.33 76.44 91.29 2.16 ± 0.02 78.45 91.02 1.28 ± 0.00 77.00 3 Experiments 3.1 Datasets and Evaluation Metrics Synapse: 1 The Synapse dataset contains 30 abdominal 3D CT scans from the MICCAI 2015 Multi-Atlas Abdomen Labeling Challenge. Each CT volume contains 86 ∼ 198 slices of 512 × 512 pixels. The slice thicknesses range from 2.5 mm to 5.0 mm, and in-plane resolutions vary from 0.54×0.54 mm 2 to 0.98×0.98 mm 2 . Following the settings in TransUNet [3], we randomly select 18 scans for training and the remaining 12 cases for testing.</p></note></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Experimental results for different target sizes on the ACDC and Synapse datasets (average Dice score%).</figDesc><table><row><cell></cell><cell>ACDC</cell><cell></cell><cell></cell><cell>Synapse</cell><cell></cell><cell></cell></row><row><cell>Model</cell><cell>UNet</cell><cell>TransUNet</cell><cell>Swin-UNet</cell><cell>UNet</cell><cell>TransUNet</cell><cell>Swin-UNet</cell></row><row><cell>Loss</cell><cell cols="6">large small large small large small large small large small large small</cell></row><row><cell>Dice</cell><cell cols="6">92.60 84.11 93.63 85.95 92.40 86.43 78.59 36.22 80.84 36.16 79.97 41.67</cell></row><row><cell>CE</cell><cell cols="4">91.40 81.72 92.55 83.86 91.49 82.58 68.89 0.12</cell><cell cols="2">75.21 32.32 74.27 26.25</cell></row><row><cell cols="7">Dice + CE 92.91 84.36 93.45 85.70 92.83 85.30 78.89 38.27 80.47 36.82 80.29 42.22</cell></row><row><cell>Tversky</cell><cell cols="6">91.82 70.37 93.28 85.86 92.67 84.53 65.76 24.60 66.00 25.74 70.08 34.44</cell></row><row><cell cols="7">Boundary 92.53 83.97 93.53 85.57 92.25 83.63 78.37 37.30 79.00 37.14 78.02 39.23</cell></row><row><cell>Ours</cell><cell cols="6">93.73 86.04 94.01 86.93 93.63 86.83 80.88 38.68 81.85 37.32 81.83 44.08</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://www.synapse.org/#!Synapse:syn3193805/wiki/217789.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>https://www.creatis.insa-lyon.fr/Challenge/acdc/.</p></note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work is supported by the <rs type="funder">National Natural Science Foundation of China</rs> (No. <rs type="grantNumber">62276221</rs>), the <rs type="funder">Natural Science Foundation of Fujian Province of China</rs> (No. <rs type="grantNumber">2022J01002</rs>), and the <rs type="funder">Science and Technology Plan Project of Xiamen</rs> (No. <rs type="grantNumber">3502Z20221025</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_24YwP4r">
+					<idno type="grant-number">62276221</idno>
+				</org>
+				<org type="funding" xml:id="_dMvuTWK">
+					<idno type="grant-number">2022J01002</idno>
+				</org>
+				<org type="funding" xml:id="_TG8KeDx">
+					<idno type="grant-number">3502Z20221025</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Swin-UNet: UNet-like pure transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2105.05537</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">TransUNet: transformers make strong encoders for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.04306</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Rethinking atrous convolution for semantic image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Papandreou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adam</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1706.05587</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Encoder-decoder with atrous separable convolution for semantic image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Papandreou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adam</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the European conference on computer vision (ECCV)</title>
+		<meeting>the European conference on computer vision (ECCV)</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="801" to="818" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Boundary IoU: improving object-centric image segmentation evaluation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Berg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kirillov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="15334" to="15342" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">UTNet: a hybrid transformer architecture for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">N</forename><surname>Metaxas</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_6</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-4_6" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="61" to="71" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Unetr: transformers for 3D medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hatamizadeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision</title>
+		<meeting>the IEEE/CVF Winter Conference on Applications of Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="574" to="584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Mask R-CNN</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gkioxari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2961" to="2969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unet 3+: a full-scale connected UNet for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICASSP 2020-2020 IEEE International Conference on Acoustics, Speech and Signal Processing</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1055" to="1059" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">NNU-Net: self-adapting framework for u-net-based medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1809.10486</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Reducing the hausdorff distance in medical image segmentation with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Karimi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">E</forename><surname>Salcudean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="499" to="513" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Boundary loss for highly unbalanced segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bouchtiba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Desrosiers</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Granger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Medical Imaging with Deep Learning</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="285" to="296" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Focal loss for dense object detection</title>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Path aggregation network for instance segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="8759" to="8768" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Fully convolutional networks for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shelhamer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="3431" to="3440" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">V-net: fully convolutional neural networks for volumetric medical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Milletari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Ahmadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Fourth International Conference on 3D Vision (3DV)</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="565" to="571" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Tversky Loss function for image segmentation using 3D fully convolutional deep networks</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S M</forename><surname>Salehi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Erdogmus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gholipour</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-67389-9_44</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67389-9_44" />
+	</analytic>
+	<monogr>
+		<title level="m">MLMI 2017</title>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H.-I</forename><surname>Suk</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Suzuki</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10541</biblScope>
+			<biblScope unit="page" from="379" to="387" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Generalised dice overlap as a deep learning loss function for highly unbalanced segmentations</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">H</forename><surname>Sudre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jorge Cardoso</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-67558-9_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67558-9_28" />
+	</analytic>
+	<monogr>
+		<title level="m">DLMIA/ML-CDS -2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">J</forename><surname>Cardoso</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10553</biblScope>
+			<biblScope unit="page" from="240" to="248" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Medical transformer: gated axial-attention for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M J</forename><surname>Valanarasu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Oza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Hacihaliloglu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-2_4" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="36" to="46" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">LeViT-UNet: make faster encoders with transformer for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2107.08623</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Pyramid scene parsing network</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2881" to="2890" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">nnFormer: interleaved transformer for volumetric segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2109.03201</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">UNet++: a nested U-Net architecture for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Rahman Siddiquee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Tajbakhsh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<editor>Stoyanov, D., et al.</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title/>
+		<idno type="DOI">10.1007/978-3-030-00889-5_1</idno>
+		<idno>DLMIA/ML-CDS -2018</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00889-5_1" />
+	</analytic>
+	<monogr>
+		<title level="j">LNCS</title>
+		<imprint>
+			<biblScope unit="volume">11045</biblScope>
+			<biblScope unit="page" from="3" to="11" />
+			<date type="published" when="2018">2018</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

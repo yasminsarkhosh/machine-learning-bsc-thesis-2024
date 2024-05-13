@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Conditional Diffusion Models for Weakly Supervised Medical Image Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Xinrong</forename><surname>Hu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yu-Jen</forename><surname>Chen</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">National Tsing Hua University</orgName>
+								<address>
+									<settlement>Hsinchu</settlement>
+									<country key="TW">Taiwan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tsung-Yi</forename><surname>Ho</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">The Chinese University of Hong Kong</orgName>
+								<address>
+									<settlement>Shatin, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yiyu</forename><surname>Shi</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">University of Notre Dame</orgName>
+								<orgName type="institution" key="instit2">Notre Dame</orgName>
+								<address>
+									<region>IN</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Conditional Diffusion Models for Weakly Supervised Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="756" to="765"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">2D4724F3CB7530294D85CA68BBE77992</idno>
+					<idno type="DOI">10.1007/978-3-031-43901-8_72</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>weakly supervised semantic segmentation</term>
+					<term>diffusion models</term>
+					<term>brain tumor</term>
+					<term>magnetic resonance imaging</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Recent advances in denoising diffusion probabilistic models have shown great success in image synthesis tasks. While there are already works exploring the potential of this powerful tool in image semantic segmentation, its application in weakly supervised semantic segmentation (WSSS) remains relatively under-explored. Observing that conditional diffusion models (CDM) is capable of generating images subject to specific distributions, in this work, we utilize category-aware semantic information underlied in CDM to get the prediction mask of the target object with only image-level annotations. More specifically, we locate the desired class by approximating the derivative of the output of CDM w.r.t the input condition. Our method is different from previous diffusion model methods with guidance from an external classifier, which accumulates noises in the background during the reconstruction process. Our method outperforms state-of-the-art CAM and diffusion model methods on two public medical image segmentation datasets, which demonstrates that CDM is a promising tool in WSSS. Also, experiment shows our method is more time-efficient than existing diffusion model methods, making it practical for wider applications. The codes are available at https://github.com/xhu248/cond ddpm wsss.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is always a critical task as it can be used for disease diagnosis, treatment planning, and anomaly monitoring. Weakly supervised semantic segmentation attracts significant attention from medical image community since it greatly reduces the cost of dense pixel-wise labeling to get segmentation mask. In WSSS, the training labels are usually easier and faster to obtain, like image-level tags, bounding boxes, scribbles, or point annotations. This work only focuses on WSSS with image-level tags, like whether a tumor presents or not. In this field, previous WSSS works <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b13">14]</ref> are dominated by class activation map (CAM) <ref type="bibr" target="#b24">[25]</ref> and its variants <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b20">21]</ref>, which was firstly introduced as a tool to visualize saliency maps when making a class prediction.</p><p>Meanwhile, denoising diffusion models <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b8">9]</ref> demonstrate superior performance in image synthesis than other generative models. Also, there are several works exploring the application of diffusion models to semantic segmentation in natural images <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b7">8]</ref>and medical images <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b21">[22]</ref><ref type="bibr" target="#b22">[23]</ref><ref type="bibr" target="#b23">[24]</ref>. To the best of our knowledge, Wolleb et al. <ref type="bibr" target="#b21">[22]</ref> is the only work that introduces diffusion models to pixel-wise anomaly detection with only classification labels. They achieve this by utilizing an external classifier trained with image-level annotations to guide the reverse Markov chain. By passing the gradient of the classifier, the diffusion model gradually removes the anomaly areas during the denoising process and then obtains the anomaly map by comparing the reconstructed and original images However, this approach is based on the hypothesis that the classifier can accurately locate the target objects and that the background is not changed when removing the noise. This assumption does not always hold, especially when the distribution of positive images is diverse, and the reconstruction error can also be accumulated after hundreds of steps. As shown in Fig. <ref type="figure" target="#fig_0">1</ref>, the reconstructed images guided by the gradient of non-kidney not only remove the kidney area but also change the content in the background. Another limitation of this method is the long inference time required for a single image, as hundreds of iterations are needed to restore the image to its original noise level. In contrast, CAM approaches need only one inference to get the saliency maps. Therefore, there is ample room for improvement in using diffusion models for WSSS task. In this work, we propose a novel WSSS framework with conditional diffusion models (CDM) as we observe that the predicted noises on different condition show difference. Instead of completely removing the noises from images, we calculate the derivative of the predicted noise after a few stages with respect to conditions so that the related objects are highlighted in the gradient map with less background misidentified. As the output of diffusion model is not differentiable with respect to the discrete condition input, we adopt the finite difference method, i.e., perturbing the condition embedding by a small amplitude and logging the change of the output with DDIM <ref type="bibr" target="#b18">[19]</ref> generative process. In addition, our method does not require the full reverse denoising process for the noised images and may only need one or a few iterations. Thus the inference time of our method is comparable to that of CAM-based approaches. We evaluate our methods on two different tasks, brain tumor segmentation and kidney segmentation, and provide the quantitative results of both CAM based and diffusion model based methods as comparison. Our approach achieves state-of-the-art performance on both datasets, demonstrating the effectiveness of the proposed framework. We also conduct extensive ablation studies to analyze the impact of various components in our framework and provide reasoning for each design.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Training Conditional Denoising Diffusion Models</head><p>Suppose that we have a sample x 0 from distribution D(x|y), and y is the condition. The condition y can be various, like different modality <ref type="bibr" target="#b19">[20]</ref>, inpainting <ref type="bibr" target="#b2">[3]</ref> and low resolution images <ref type="bibr" target="#b16">[17]</ref>. In this work, y ∈ {y 0 , y 1 } indicates the binary classification label, like brain CT scans without tumor vs. with tumor. We then gradually add Guassian noise to the original image sample with different level t ∈ {0, 1, ..., T } as</p><formula xml:id="formula_0">q(x t |x t-1 , y) := N (x t |y; 1 -β t x t-1 |y, β t I)<label>(1)</label></formula><p>With fixed variance {β 1 , β 2 , ..., β t }, x t can be explicitly expressed by x 0 ,</p><formula xml:id="formula_1">q(x t |x 0 , y) := N (x t |y; √ ᾱt x 0 |y, (1 -ᾱt )I)<label>(2)</label></formula><p>where α t := 1β t , ᾱt := t s=1 α s . Then a conditional U-Net <ref type="bibr" target="#b15">[16]</ref> θ (x, t, y) is trained to approximate the reverse denoising process,</p><formula xml:id="formula_2">p θ (x t-1 |x t , y) := N (x t-1 ; μ θ (x t , t, y), Σ θ (x t , t, y))<label>(3)</label></formula><p>The variance μ σ can be learnable parameters or a fixed set of scalars, and both settings achieve comparable results in <ref type="bibr" target="#b8">[9]</ref>. As for the mean, after reparameterization with x t = √ ᾱt x 0 + √ 1ᾱt for ∼ N (0, I), the loss function can be simplified as:</p><formula xml:id="formula_3">L := E x0, -θ ( √ ᾱt x 0 + √ 1 -ᾱt , t, y)<label>(4)</label></formula><p>As for how to infuse binary condition y in the U-Net, we follow the strategy in <ref type="bibr" target="#b5">[6]</ref>, using a embedding projection function e = f (y), f ∈ R → R n , with n being the embedding dimension. Then the condition embedding is added to feature maps in different blocks. After training the denoising model, Tashiro et al. <ref type="bibr" target="#b2">[3]</ref> proved that the network can yield the desired conditional distribution D(x|y) given condition y.</p><p>Algorithm 1. Generation of WSSS prediction mask using differentiate conditional model with DDIM sampling Input: input image x with label y 1 , noise level Q, inference stage R, noise predictor θ , τ Output: prediction mask of label y 1 for all t from 1 to Q do</p><formula xml:id="formula_4">x t ← √ 1 -β t x t-1 + β t * N (0, I) end for a ← zeros(x.shape) x t ← x t .copy() for all t from Q to Q-R do ˆ 1 ← θ (x t , t, f(y 1 )), ˆ 0 ← θ (x t , t, (1 -τ )f (y 1 ) + τ f(y 0 )) x t-1 ← √ ᾱt-1 ( xt- √ 1-ᾱtˆ 1 √ ᾱt ) + √ 1 -ᾱt-1 ˆ 1 x t-1 ← √ ᾱt-1 ( x t - √ 1-ᾱtˆ 0 √ ᾱt ) + √ 1 -ᾱt-1 ˆ 0 a ← a + 1 τ (x t-1 -x t-1</formula><p>) end for return a</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Gradient Map w.r.t Condition</head><p>Inspired by the finding in <ref type="bibr" target="#b1">[2]</ref> that the denoising model extracts semantic information when performing reverse diffusion process, we aim to get segmentation mask from the sample generated by single or just several reverse Markov steps with DDIM <ref type="bibr" target="#b18">[19]</ref>. The reason for using DDIM is that one can generate a sample x t-1 from x t deterministically if removing the random noise term via:</p><formula xml:id="formula_5">x t-1 (x t , t, y) = √ ᾱt-1 ( x t - √ 1 -ᾱt ˆ θ (x t , y) √ ᾱt ) + 1 -ᾱt-1 ˆ θ (x t , y) (5)</formula><p>When given the same images at noise level Q, but with different conditions, the noises predicted by the network θ are supposed to reflect the localization of target objects, that is equivalently x t-1 (x t , t, y 1 )x t-1 (x t , t, y 0 ) . This idea is quite similar to <ref type="bibr" target="#b21">[22]</ref> if we keep sampling x t-1 until x 0 . However, it is not guaranteed that the condition y 0 does not change background areas besides the object needed to be localized. Therefore, in order to minimize the error caused by the generation process, we propose to visualize the sensitivity of x t-1 (x t , t, y 1 ) w.r.t condition y 1 , that is ∂xt-1 ∂y . Since the embedding projection function f (•) is not differentiable, we approximate the gradient using the finite difference method:</p><formula xml:id="formula_6">∂x t-1 (x t , t, y) ∂y | y=y1 = lim τ →1 x t-1 (x t , t, f(y 1 )) -x t-1 (x t , t, (1 -τ )f (y 1 ) + τ f(y 0 )) τ (<label>6</label></formula><p>) in which, τ is the moving weight from f (y 1 ) towards f (y 0 ). The weight τ can not be too close to 1, otherwise there is no noticeable gap between x t-1 and x t-1 , and we find τ = 0.95 gives the best performance. Algorithm 1 shows the detailed workflow of obtaining the segmentation mask of samples with label y 1 . Notice that we iterate the process (5) for R steps, and the default R in this work is set as 10, much smaller than Q = 400. The purpose of R is to amplify the change of x t-1 since the condition does not change the predicted noise a lot in one step.</p><p>In addition, we find that the guidance of additional classifier can further boost the WSSS task, by passing the gradient ˆ ← θ (x t )s √ 1ᾱt ∇ xt logp φ (y|x t ), where p φ is the classifier and s is the gradient scale. Then, in Algorithm 1, ˆ 1 and ˆ 0 have additional terms guided by gradient of y 1 and y 0 , respectively. The ablation studies of related hyperparameters can be seen in Sect. 3.2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>Brain Tumor Segmentation. BraTS (Brain Tumor Segmentation challenge) <ref type="bibr" target="#b0">[1]</ref> contains 2,000 cases of 3D brain scans, each of which includes four different MRI modalities as well as tumor segmentation ground truth. In this work, we only use the FLAIR channel and treat all types of tumor as one single class. We divide the official training set into 9:1 for training and validation purpose, and evaluate our method on the official validation set. For preprocessing, we slice each volume into 2D images, following the setting in <ref type="bibr" target="#b4">[5]</ref>. Then the total number of slices in training set is 193,905, and we report metrics on the 5802 positive samples in the test set Kidney Segmentation. This task is conducted on dataset from ISBI 2019 CHAOS Challenge <ref type="bibr" target="#b11">[12]</ref>, which contains 20 volumes of T2-SPIR MR abdominal scans. CHAOS provides pixel-wise annotation for several organs, but we focus on the kidney. We split the 20 volumes into four folds for cross-validation, and then decompose 3D volumes to 2D slices in every fold. In the test stage, we remove slices with area of interest taking up less than 5% of the total area in the slice, in order to avoid the influence of extreme cases on the average results.</p><p>Only classification labels are used during training the diffusion models, and segmentation masks are used for evaluation in the test stage. For both datasets, we repeat the evaluation protocols for four times and report the average metrics and their standard deviation on test set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Implementation Details</head><p>As for model architecture, we use the same setting as in <ref type="bibr" target="#b7">[8]</ref>. The diffusion model is based on U-Net with encoder and decoder consisting of resnet blocks. We implement two different versions of the proposed method, one without classifier guidance and one with it. To differentiate the two in the experiments, we continue to call them former CDM, and the latter CG-CDM. The classifier used in CG-CDM is the same as the encoder of the diffusion model. We stop training the diffusion model after 50,000 iterations or 7 days, and the classifier is trained for 20,000 iterations. We choose AdamW as the optimizer with learning rate being 1e-5 and 5e-5 for diffusion model and classifier. The batch sizes for both datasets are 2. The implementation of all methods in this work is based on PyTorch library, and all experiments are run on a single NVIDIA RTX 2080Ti. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Types Methods</head><p>Dice↑ mIoU↑ HD95↓ infer time CAM GradCAM <ref type="bibr" target="#b17">[18]</ref> 0.235 ± 0.075 0.149 ± 0.051 44.4 ± 8.9 3.79 s GradCAM++ <ref type="bibr" target="#b3">[4]</ref> 0.281 ± 0.084 0.187 ± 0.059 32.6 ± 6.0 3.59 s ScoreCAM <ref type="bibr" target="#b20">[21]</ref> 0.303 ± 0.053 0.202 ± 0.039 32.7 ± 2.1 27.0 s LayerCAM <ref type="bibr" target="#b10">[11]</ref>  Types Methods Dice↑ mIoU↑ HD95↓</p><p>CAM GradCAM <ref type="bibr" target="#b17">[18]</ref> 0.105 ± 0.017 0.059 ± 0.010 33.9 ± 5.1 GradCAM++ <ref type="bibr" target="#b3">[4]</ref> 0.147 ± 0.016 0.085 ± 0.010 28.5 ± 4.5 ScoreCAM <ref type="bibr" target="#b20">[21]</ref> 0.135 ± 0.024 0.078 ± 0.015 32.1 ± 6.7 LayerCAM <ref type="bibr" target="#b10">[11]</ref>  FSL N/A 0.847 ± 0.011 0.765 ± 0.023 3.6 ± 1.7</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>Comparison with State of the Arts. We benchmark our methods against previous WSSS works on two datasets in Table <ref type="table" target="#tab_0">1</ref> &amp; 2, in terms of dice score, mean intersection over union (mIoU), and Hausdorff distance (HD95). For CAM based methods, we include the classical GradCAM <ref type="bibr" target="#b17">[18]</ref> and GradCAM++ <ref type="bibr" target="#b3">[4]</ref>, as well as two more recent methods, ScoreCAM <ref type="bibr" target="#b20">[21]</ref> and LayerCAM <ref type="bibr" target="#b10">[11]</ref>. The implementation of these CAM approaches is based on the repository <ref type="bibr" target="#b6">[7]</ref>. For diffusion based methods, we include the only diffusion model for medical image segmentation in the WSSS literature, namely CG-Diff <ref type="bibr" target="#b21">[22]</ref>. We follow the default setting in <ref type="bibr" target="#b21">[22]</ref>, setting noise level Q = 400 and gradient scale s = 100. We also present the results under the fully supervised learning setting, which is the upper bond of all WSSS methods (Fig. <ref type="figure" target="#fig_1">2</ref>).</p><p>From the results, we can make several key observations. Firstly, our proposed method, even without classifier guidance, outperform all other WSSS methods including the classifier guided diffusion model CG-Diff on both datasets for all three metrics. When classifier guidance is provided, the improvement gets even bigger, and CG-CDM can beat other methods regarding segmentation accuracy. Secondly, all WSSS methods have performance drop on kidney dataset compared with BraTS dataset. This demonstrates that the kidney segmentation task is a more challenging task for WSSS than brain tumor task, which may be caused by the small training size and diverse appearance across slices in the CHAOS dataset. Time Efficiency. Regarding inference time for different methods, as shown in Table <ref type="table" target="#tab_0">1</ref>, both CDM and CG-CDM are much faster than CG-Diff. The default noise level Q is set as 400 for all diffusion model approaches, and our methods run 10 iterations during the denoising steps. For all CAM-based approaches, we add augmentation smooth and eigen smooth suggested in <ref type="bibr" target="#b6">[7]</ref> to reduce noise in the prediction mask. This post-processing greatly increases the inference time. Without the two smooth methods, the inference time for GradCAM is 0.031 s, but the segmentation accuracy is significantly degraded. Therefore, considering both inference time and performance, our method is a better option than CAM for WSSS.</p><p>Ablation Studies. There are several important hyperparameters in our framework, noise level Q, number of iterations R, moving weight τ , and gradient scale s. The default setting is CG-CDM on BraTS dataset with Q = 400, R = 10, τ = 0.95, and s = 10. We evaluate the influence of one hyperparameter at a time by keeping other parameters at their default values. As illustrated in Fig. <ref type="figure" target="#fig_2">3</ref>, a few observations can be made: (1) Either too large or too small noise level can negatively influence the performance. When Q is small, most spatial information is still kept in x t and the predicted noise by diffusion model contains no semantic knowledge. When Q is large, most of the spatial information is lost and the predicted noise can be distracted from original structure. Meanwhile, larger number of iterations can lightly improve the dice score at the beginning. When R gets too high, the error in the background is also accumulated after too many iterations. (2) We try different τ in the range (0, 1.0). Small τ leads to more noises in the background when calculating the difference in different conditions. On the other hand, as τ gets close to 1, the difference between x t-1 and x t-1 becomes minor, and the gradient map mainly comes from the guidance of the classifier, making localization not so accurate. Thus, τ = 0.95 becomes the optimal choice for this task. (3) As for gradient scale, Fig. <ref type="figure" target="#fig_2">3</ref> shows that before s = 100, larger gradient scale can boost the CDM, because at this time, the gradient from the classifier is at the same magnitude as the difference caused by the changed condition embedding. When the guidance of the classifier becomes dominant, the dice score gets lower as the background is distorted by too large gradients.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we present a novel weakly supervised semantic segmentation framework based on conditional diffusion models. Fundamentally, the essence of generative approaches on WSSS is maximizing the change in class-related areas while minimizing the noise in the background. Our methods are designed around this rule to enhance the state-of-the-art. First, existing work that utilizes a trained classifier to remove target objects leads to unpredictable distortion in other areas, thus we decide to iterate the reverse denoising process for as few steps as possible. Second, to amplify the difference caused by different conditions, we extract the semantic information from gradient of the noise predicted by the diffusion model. Finally, this rule also applies to all other designs and choice of hyperparameters in our framework. When compared with latest WSSS methods on two public medical image segmentation datasets, our method shows superior performance regarding both segmentation accuracy and inference efficiency.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Intuition behind our CDM based method. From left to right, each column represents original images, ground truth, reconstructed images with negative guidance, saliency map generated by guided diffusion model, images with one step of denoising conditioned on positive label and negative label, and saliency map generated by our method. Images are from BraTS and CHAOS dataset.</figDesc><graphic coords="2,57,48,354,23,337,39,101,05" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visualization of WSSS segmentation masks using different methods on bothBraTS and CHAOS dataset. The threshold is decided by average Otsu thresholding<ref type="bibr" target="#b12">[13]</ref>.</figDesc><graphic coords="7,58,80,54,59,306,91,186,10" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Ablation studies of hyper-parameters on BraTS dataset, including noise level Q, number of iterations R, moving weight τ , and gradient scale s.</figDesc><graphic coords="8,58,98,54,50,334,60,104,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparisons with state-of-the-art WSSS methods on BraTS dataset. "CAM" refers to CAM-based methods, "DM" means methods based on diffusion models, and "FSL" is short for fully supervised learning.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Comparison with state-of-the-art WSSS methods on CHAOS dataset.</figDesc><table><row><cell></cell><cell></cell><cell cols="2">0.276 ± 0.082 0.184 ± 0.058 30.4 ± 6.6 4.07 s</cell></row><row><cell>DM</cell><cell>CG-Diff [22]</cell><cell cols="2">0.456 ± 0.043 0.325 ± 0.036 43.4 ± 3.0 116 s</cell></row><row><cell></cell><cell>CDM</cell><cell cols="2">0.525 ± 0.057 0.407 ± 0.051 26.0 ± 5.2 1.61 s</cell></row><row><cell></cell><cell>CG-CDM</cell><cell cols="2">0.563 ± 0.023 0.450 ± 0.012 19.2 ± 3.2 2.78 s</cell></row><row><cell cols="2">FSL N/A</cell><cell>0.902 ± 0.028 0.814 ± 0.023 8.1 ± 1.9</cell><cell>0.31 s</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head></head><label></label><figDesc>0.194 ± 0.022 0.131 ± 0.018 29.7 ± 8.1</figDesc><table><row><cell>DM</cell><cell>CG-Diff [22]</cell><cell>0.235 ± 0.025 0.152 ± 0.020 27.1 ± 3.2</cell></row><row><cell></cell><cell>CDM</cell><cell>0.263 ± 0.028 0.167 ± 0.042 26.6 ± 2.4</cell></row><row><cell></cell><cell>CG-CDM</cell><cell>0.311 ± 0.018 0.186 ± 0.014 23.3 ± 3.4</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43901-8 72.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Advancing the cancer genome atlas glioma MRI collections with expert segmentation labels and radiomic features</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Data</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Labelefficient semantic segmentation with diffusion models</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Baranchuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Voynov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Rubachev</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Khrulkov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Babenko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Conditional image generation with score-based diffusion models</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Batzolis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Stanczuk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Schönlieb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Etmann</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2111.13606</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Grad-CAM++: generalized gradient-based visual explanations for deep convolutional networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chattopadhay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Howlader</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">N</forename><surname>Balasubramanian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2018 IEEE Winter Conference on Applications of Computer Vision (WACV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="839" to="847" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">ASC-Net: adversarial-based selective network for unsupervised anomaly segmentation</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Dey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hong</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_23</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-323" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="236" to="247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Diffusion models beat GANs on image synthesis</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nichol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="8780" to="8794" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">contributors: Pytorch library for cam methods</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gildenblat</surname></persName>
+		</author>
+		<ptr target="https://github.com/jacobgil/pytorch-grad-cam" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Graikos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Malkin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Jojic</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Samaras</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2206.09012</idno>
+		<title level="m">Diffusion models as plug-and-play priors</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Weakly-supervised learning-based feature localization for confocal laser endomicroscopy glioma images</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Izadyyazdanabadi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00934-2_34</idno>
+		<idno>978-3-030-00934-2 34</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11071</biblScope>
+			<biblScope unit="page" from="300" to="308" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Layercam: exploring hierarchical class activation maps for localization</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">B</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="5875" to="5888" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">CHAOS challenge -combined (CT-MR) healthy abdominal organ segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Kavur</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2020.101950</idno>
+		<ptr target="http://www.sciencedirect.com/science/article/pii/S1361841520303145" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">101950</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A threshold selection method from gray-level histograms</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Otsu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Syst. Man Cybern</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="62" to="66" />
+			<date type="published" when="1979">1979</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Weakly supervised segmentation with cross-modality equivariant constraints</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="page">102374</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Fast unsupervised brain anomaly detection and segmentation with diffusion models</title>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">H</forename><surname>Pinaya</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-167" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="705" to="714" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Image superresolution via iterative refinement</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Saharia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Chan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Salimans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">J</forename><surname>Fleet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Norouzi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="4713" to="4726" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Gradcam: visual explanations from deep networks via gradient-based localization</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">R</forename><surname>Selvaraju</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cogswell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Vedantam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parikh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Batra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="618" to="626" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion implicit models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">CSDI: conditional score-based diffusion models for probabilistic time series imputation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tashiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ermon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="24804" to="24816" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Score-CAM: score-weighted visual explanations for convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="24" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Diffusion models for medical anomaly detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wolleb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bieder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sandkühler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_4</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-14" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="35" to="45" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Diffusion models for implicit image segmentation ensembles</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wolleb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sandkühler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Bieder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Valmaggia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">C</forename><surname>Cattin</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Medical Imaging with Deep Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1336" to="1348" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Anoddpm: anomaly detection with denoising diffusion probabilistic models using simplex noise</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wyatt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Leach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Schmon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">G</forename><surname>Willcocks</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="650" to="656" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Learning deep features for discriminative localization</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Khosla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lapedriza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Oliva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Torralba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2921" to="2929" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

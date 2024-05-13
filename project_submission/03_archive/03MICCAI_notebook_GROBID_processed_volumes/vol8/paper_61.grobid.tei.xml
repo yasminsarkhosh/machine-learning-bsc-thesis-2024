@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Pick and Trace: Instance Segmentation for Filamentous Objects with a Recurrent Neural Network</title>
+				<funder ref="#_3Kjq5CU">
+					<orgName type="full">National Institutes of Health</orgName>
+				</funder>
+				<funder ref="#_rpqp7HV">
+					<orgName type="full">National Institute of General Medical Sciences</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">State of Delaware</orgName>
+				</funder>
+				<funder ref="#_Fn5cWkR #_bA27D8X">
+					<orgName type="full">NIH-NIGMS</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Yi</forename><surname>Liu</surname></persName>
+							<email>yliu@udel.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Delaware</orgName>
+								<address>
+									<postCode>19716</postCode>
+									<settlement>Newark</settlement>
+									<region>DE</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Su</forename><surname>Peng</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Delaware</orgName>
+								<address>
+									<postCode>19716</postCode>
+									<settlement>Newark</settlement>
+									<region>DE</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jeffrey</forename><surname>Caplan</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Delaware</orgName>
+								<address>
+									<postCode>19716</postCode>
+									<settlement>Newark</settlement>
+									<region>DE</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Chandra</forename><surname>Kambhamettu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Delaware</orgName>
+								<address>
+									<postCode>19716</postCode>
+									<settlement>Newark</settlement>
+									<region>DE</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Pick and Trace: Instance Segmentation for Filamentous Objects with a Recurrent Neural Network</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="635" to="645"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">65BC08DC8D37FABC95DC521305698A2F</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_61</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Instance Segmentation</term>
+					<term>Filament Tracing</term>
+					<term>Recurrent Neural Network</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Filamentous objects are ubiquitous in biomedical images, and segmenting individual filaments is fundamental for biomedical research. Unlike common objects with well-defined boundaries and centers, filaments are thin, non-rigid, varying in shape, and often densely overlapping. These properties make it extremely challenging to extract individual filaments. This paper proposes a novel approach to extract filamentous objects by transforming an instance segmentation problem into a sequence modeling problem. Our approach first identifies filaments' tip points, and we segment each instance by tracing them from each tip with a sequential encoder-decoder framework. The proposed method simulates the process of humans extracting filaments: pick a tip and trace the filament. As few datasets contain instance labels of filaments, we first generate synthetic filament datasets for training and evaluation. Then, we collected a dataset of 15 microscopic images of microtubules with instance labels for evaluation. Our proposed method can alleviate the data shortage problem since our proposed model can be trained with synthetic data and achieve state-of-art results when directly evaluated on the microtubule dataset and P. rubescens dataset. We also demonstrate our approaches' capabilities in extracting short and thick elongated objects by evaluating on the C. elegans dataset. Our method achieves a comparable result compared to the state-of-art method with faster processing time. Our code is available at https://github.com/VimsLab/DRIFT.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Filamentous objects, such as microtubules, actin filaments, and blood vessels, play a fundamental role in biological systems. For example, microtubules (See Fig. <ref type="figure" target="#fig_0">1</ref>) form part of cell cytoskeleton structures and are involved in various cellular activities such as movement, transportation, and key signaling events. To understand the mechanism of filamentous objects, quantifying their properties, including quantity, length, curvature, and distribution, is fundamental for biological research. Instance segmentation is often the first step for quantitative analysis. However, as filaments are very thin, non-rigid, and usually span over the image intersecting each other, extracting individual filaments is very challenging.</p><p>Since the advent of deep learning, region-based instance segmentation methods <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b26">27]</ref>, which segment instances within the detected bounding boxes, have shown remarkable performance on objects with well-defined centers and boundaries. However, filaments are non-rigid objects and span widely across the image. Each filament has a distinct shape varying in length and deformation, while segments of different filaments share a similar appearance. These properties make it extremely hard for region-based methods to detect the centers and bounding boxes for filaments and segment the target within the detected region.</p><p>Region-free methods utilize learned embedding <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b13">14]</ref> or affinity graph <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b18">19]</ref> to separate instances. These methods rely on pixel-level prediction to group instances and do not directly extract the complete shape of instances. Since filaments may be densely clustered and overlapping, these methods have difficulties in disentangling filaments in complicated scenes. Liu et al. <ref type="bibr" target="#b16">[17]</ref> address the overlapping challenge by proposing an orientation-aware network to disentangle filaments at intersections, but it requires a heuristic post-processing to form instances. Hirsch et al. <ref type="bibr" target="#b8">[9]</ref> predict dense patches representing instances' shape for each pixel and assemble them to form instances with affinity graph. Effectively extracting longer filaments requires predicting a larger shape patch for each pixel, leading to a longer computational time.</p><p>Lacking instance-level labels of filaments is another challenge. Most existing approaches for filaments extraction adopt traditional computer vision techniques such as morphological operations <ref type="bibr" target="#b28">[29]</ref>, template matching <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b28">29]</ref> and active contour <ref type="bibr" target="#b25">[26]</ref>. These methods follow the segment-break-regroup strategy. They first obtain the binary segmentation, then break it at intersections and regroup the segments into filaments by geometric properties. The performance heavily relies on manual parameter tuning.</p><p>When a human tries to manually extract filaments in Fig. <ref type="figure" target="#fig_0">1</ref>, directly pointing out each filament can be challenging. Instead, a human would first identify each filament's tip and then trace each filament. Inspired by this human behavior, we introduce Deep Recurrent Instance Filament Tracer (DRIFT) for instance segmentation on filamentous objects. Figure <ref type="figure" target="#fig_1">2</ref> shows an example of how DRIFT mimics a human and sequentially extracts filaments. As shown in Fig. <ref type="figure" target="#fig_2">3</ref>, the pick module in DRIFT first detects all tip points as candidates. The recurrent neural network (RNN) based tracing module will 'look' at the patch around tip points, segment the object within the patch, and predict the next location. The trace module sequentially segments the object until a stop flag is predicted. The RNN learns where 'it' comes from, where 'it' is, and where 'it' goes next.</p><p>Our method is fundamentally different from <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b24">25]</ref>. Ren et al. <ref type="bibr" target="#b22">[23]</ref> and Amaia <ref type="bibr" target="#b24">[25]</ref> et al. use the RNN model to sequentially predict objects' bounding boxes, which are essentially region-based segmentation methods. Januszewski et al. <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref> propose a flood-filling network to repeatedly perform segmentation within a set of manually defined patches to grow object masks. While the iterations in <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b11">12]</ref> are heuristic, our method learns to trace the filaments and sequentially segments the targets.</p><p>The major contributions of this work are as follows: (1). To our knowledge, our method is the first method that converts the instance segmentation into a sequence modeling problem. Our proposed method mimics human tracing and extracting individual filament, tackling the challenges of extracting filamentous objects. <ref type="bibr" target="#b1">(2)</ref>. We propose a synthetic filament dataset for training and evaluation. Our model trained on synthetic datasets can be applied to various real filament datasets and thus alleviate the data shortage problem. (3). We collected a dataset of 15 microscopic images of microtubules with instance labels for evaluation. (4). Our method is evaluated on four different datasets and compared with several competing approaches. Our method shows better or comparable results regarding accuracy and computational time. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_2">3</ref> shows the framework of our proposed method. The pick module detects tip points for all filaments. Then we crop the patches around tip points, and the tracing module will encode these patches into patch embeddings with a convolutional block. The tip point's patch embedding is used to initialize the hidden state of RNN. Then a decoder will decode the hidden state output and predict a stop flag and the object's mask within the current patch. The decoder also outputs an offset map, where each pixel predicts a vector pointing to the next center. We use the offset map to locate the next center via Hough voting. The model sequentially segment instances until the stop flag turns on.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Pick: Tip Points Detection Module</head><p>We adapt the U-shaped structure from <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b14">15]</ref> to regress the tip points' heatmap and use a maximum filter to acquire coordinates of tip points. Network details are included in supplementary materials.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Trace: A Recurrent Network for Filament Tracing</head><p>Network Description. After tip points are detected, the tracing module will trace and extract each instance. As shown in Fig. <ref type="figure" target="#fig_3">4</ref>, we use patch size 64 as an example to describe our network design. Since we have converted the instance segmentation problem into a sequence learning problem, we use Long Short Term Memory (LSTM) <ref type="bibr" target="#b9">[10]</ref> to encode the sequence of patches. We use one LSTM layer with a hidden size of 512 and an input size of 256. The tracing module takes patches as input, and encode each patch into a 256 embedding vector by 3 downsampling blocks followed by a dense layer. The input of LSTM layer is the encoded embedding vector. At each step, the decoder outputs a stop flag, offset maps, and mask. We use a dense layer with a sigmoid activation function to predict the stop flag, which takes the hidden unit as input. As stop flag prediction is a classification problem, it takes an independent branch. The other branch uses a dense layer and decodes the hidden unit to a vector size of 4096, which is reshaped to 256 × 4 × 4. The following layers include 3 conv3x3-bn-relu-upsampling blocks. The offset map prediction is a regression problem, and mask prediction is a binary classification problem. We split the current branch into two branches. The offset map prediction includes a conv3x3bn-relu-upsampling block and outputs the offset map with a size of 2 × 64 × 64. The offset map includes a horizontal offset channel and a vertical offset channel. The mask branch includes a conv3x3-bn-relu-upsampling-sigmoid block.</p><p>Predicting the Next Points. At each step, the decoder regresses offset maps where each pixel predicts a vector pointing to the center of the next patch. We use Hough Voting to decide the exact coordinates of the next center. Each pixel casts a vote to the next point, generating a heatmap of the number of votes for each pixel. The highest response point will be selected as the next center.</p><p>Loss Function. We use binary cross entropy (BCE) for the tip prediction. For the tracing module, we use BCE for stop flag and mask prediction and L 1 loss for offset prediction. The final loss for tracing module is</p><formula xml:id="formula_0">L t = t=T t=1 (λ 1 L bce (s t , ŝt ) + λ 2 L bce (A, Â) + λ 3 Lreg(M, M ))</formula><p>T is the number of steps for tracing, and s, A, M stand for stop flag, binary mask, and offset maps. λ 1 , λ 2 , λ 3 are the balance parameters and set as one.</p><p>Training and Inference. We use patches as input for training, and the labels are the corresponding offset map, binary mask, and stop flag. The offset map is generated by computing the distance vector between pixels in the current patch </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Our model is implemented with Pytorch <ref type="bibr" target="#b21">[22]</ref> and trained on one RTX 2080 Ti GPU. We convert each instance into patch sequences with a step size of 30 pixels, and patch size of 64 × 64. We evaluate our approach on four datasets.  <ref type="bibr" target="#b7">[8]</ref> 0.559 0.865 0.641 -Harmonic Emb. <ref type="bibr" target="#b13">[14]</ref> 0.724 0.900 0.723 -PatchPerPix <ref type="bibr" target="#b8">[9]</ref> 0.775 0.939 0.891 13 Ours 0.745 0.935 0.828 4</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Synthetic Dataset</head><p>We first create eight synthetic filament datasets. The statistics of generated datasets are shown in Table <ref type="table" target="#tab_0">1</ref>, and samples are shown in Fig. <ref type="figure">5</ref>. Each dataset contains 1000 images with random filaments varying in widths. We split each dataset into 700, 200, 100 images for training, validating, and testing. We train our network on A-D (image size 256 × 256) for 20 epochs and evaluate our model on the their test set. We also directly evaluate the models trained with dataset A-D on dataset E-H (image size 512 × 512) respectively. We report the average precision (AP) in COCO evaluation criteria <ref type="bibr" target="#b15">[16]</ref>. As shown in Table <ref type="table" target="#tab_0">1</ref>, our model trained with smaller size images achieves better results on the unseen datasets (E, F, G, H) with larger images and longer filaments. This is because our model learns how to trace filaments, and longer filaments do not affect the performance of our model. Also, the lower density of filament in E-H making it easier for our model to trace filaments. In addition, thicker filaments create larger overlapping areas and make it harder to separate the filaments. Therefore, the performance decreases from dataset A to D and E to H. As shown in Table <ref type="table" target="#tab_0">1</ref>, MRCNN <ref type="bibr" target="#b7">[8]</ref> achieves zero AP for filaments with a width below five, as segmentation is performed at strides of eight. Our approach outperforms Liu et al. <ref type="bibr" target="#b16">[17]</ref> in all metrics except AP 0.75 of dataset C.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Microtubule Dataset</head><p>We annotated 15 microscopic images of microtubules with a size of 1376 × 1504. The number of filaments per image is 631 ± 167, and the length of filaments is 104 ± 96. We use a modified U-net <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b23">24]</ref> to obtain the binary segmentation. As the average width of microtubules is five, we directly evaluate the microtubule dataset with model trained on synthetic dataset B (see table <ref type="table" target="#tab_0">1</ref>). We compare our approach against SOAX <ref type="bibr" target="#b25">[26]</ref>, SFINE <ref type="bibr" target="#b28">[29]</ref>, and deep learning method in <ref type="bibr" target="#b16">[17]</ref>.</p><p>Figure <ref type="figure" target="#fig_0">1</ref> shows qualitative results in full size, and Fig. <ref type="figure">6</ref> presents qualitative comparison with detailed area. Our method and Liu et al. <ref type="bibr" target="#b16">[17]</ref>'s approach can better extract long and crossing filaments. SOAX <ref type="bibr" target="#b25">[26]</ref> and SFINE <ref type="bibr" target="#b28">[29]</ref>'s breakregroup strategies struggle to regroup segments at intersections and create fragments. Table <ref type="table" target="#tab_1">2a</ref> presents the quantitative comparisons with AP. Our approach has shown a better performance than <ref type="bibr" target="#b16">[17]</ref> regarding process time and accuracy.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">P. Rubescens Dataset</head><p>P. rubescens is a type of filamentous cyanobacteria, and Zeder et al. <ref type="bibr" target="#b27">[28]</ref> provide a dataset (Fig. <ref type="figure" target="#fig_5">7</ref>) of seven 5000 × 5000 microscopic images of P. rubescens. We apply our model trained with synthetic dataset A (see Table <ref type="table" target="#tab_0">1</ref>) to the binary predictions and follow the evaluation scheme in <ref type="bibr" target="#b27">[28]</ref> by comparing the quantity per image. Table <ref type="table" target="#tab_1">2b</ref> shows our result is close to the manual count.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">C. Elegans Dataset</head><p>We further investigate our model's performance on the C. elegans roundworm dataset (Fig. <ref type="figure" target="#fig_6">8</ref>) from the Broad Bioimage Benchmark Collection <ref type="bibr" target="#b19">[20]</ref>. The dataset contains 100 696 × 520 images with an average of 30 roundworms per image. Different from P. rubescens and microtubules, roundworms are much thicker and shorter. We convert each instance in the training set into a sequence of points with a step size of 30 and generate the corresponding 64 × 64 patches for training. The network is trained and evaluated following the set up in <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b20">21]</ref>.</p><p>Table <ref type="table" target="#tab_1">2c</ref> shows the quantitative comparison between our approach and previous methods <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b20">21]</ref>. Our method achieves comparable AP 0.5 to SOTA, and our method runs 9 s faster than SOTA. Red circles in Fig. <ref type="figure" target="#fig_6">8</ref> show our approach handles complex crossover areas.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>We present a novel method for filament extraction by transforming the instance segmentation problem to a sequence modeling problem. Our method comprises of a sequential encoder-decoder framework to imitate humans extracting filaments and address the challenges brought by filaments' properties, including crossover, spanning and non-rigidity. The experiments show that our method can achieve better or comparable results on filament datasets from different domains. Our method can alleviate the data shortage problem as our models trained on synthetic dataset achieve a better performance on microtubules and P. rubescens dataset. We also train and evaluate our model on C. elegans dataset, achieving comparable results with thicker and shorter filaments. Our method exhibits limitations in tracing "Y"-shaped junctions due to the limited directional information in 2D images. Future work will focus on extending the current method to 3D data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Qualitative result of our method on a full resolution microscopic image of microtubules. The image has a size of 1376 × 1504 and contains 558 filaments.</figDesc><graphic coords="2,74,31,54,14,275,92,83,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Our methods mimic humans extracting filaments. (a). Image of microtubules. (b). Pick: tip points detection. (red circles are detected tips). (c). Trace: Successive stages in the process of tracing 10 instances. The boxes are the areas that the model is processing. The circles are patches' centers. (Color figure online)</figDesc><graphic coords="3,113,97,54,26,224,80,131,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Flowchart of DRIFT for instance segmentation on filaments. The example is shown with a synthetic filament image. A). Pick module for tip points detection. B). Tracing module for individual filament extraction. C-a). Red boxes are the sequence of patches processed. C-b). The final extracted filament. (Color figure online)</figDesc><graphic coords="4,75,81,54,14,273,04,134,56" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Network structure for tracing module</figDesc><graphic coords="5,101,97,53,78,248,68,80,92" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 .Fig. 6 .</head><label>56</label><figDesc>Fig. 5. Qualitative results on synthetic filaments</figDesc><graphic coords="6,53,64,54,50,133,72,164,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 7 .</head><label>7</label><figDesc>Fig. 7. Qualitative results on P. rubescens dataset.</figDesc><graphic coords="8,43,50,53,99,136,48,139,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 8 .</head><label>8</label><figDesc>Fig. 8. Qualitative results on C.elegans dataset. Red circle highlight complicated overlapping area (Color figure online)</figDesc><graphic coords="8,207,33,62,27,168,76,131,44" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Quantitative results on synthetic dataset. E, F, G, H are evaluated with our models trained on A, B, C, D respectively, which are highlighted with . AveInsNum: average number of instance per image. AveLength: average length of filaments in the dataset. AveInsNum and AveLength are reported as Mean ± std.</figDesc><table><row><cell>Datasets</cell><cell></cell><cell>MRCNN [8]</cell><cell>Liu et al. [17]</cell><cell>Ours</cell></row><row><cell cols="2">Size AveInsNum Width AveLength</cell><cell cols="3">AP AP0.5 AP 0.75 AP AP0.5 AP0.75 AP</cell><cell>AP0.5 AP0.75</cell></row><row><cell>A 256 6.94 ± 2.94 3</cell><cell cols="2">221.38 ± 40.89 0.00 0.00 0.00</cell><cell>0.48 0.67 0.56</cell><cell>0.57 0.81 0.65</cell></row><row><cell>B 256 6.61 ± 2.38 5</cell><cell cols="2">219.92 ± 39.95 0.01 0.02 0.01</cell><cell>0.45 0.71 0.51</cell><cell>0.51 0.77 0.57</cell></row><row><cell>C 256 6.86 ± 2.28 7</cell><cell cols="2">225.37 ± 38.44 0.07 0.19 0.04</cell><cell>0.39 0.66 0.43</cell><cell>0.40 0.67 0.42</cell></row><row><cell>D 256 6.76 ± 2.52 11</cell><cell cols="2">222.38 ± 39.54 0.19 0.46 0.14</cell><cell>0.30 0.41 0.31</cell><cell>0.42 0.71 0.42</cell></row><row><cell>E 512 9.28 ± 1.62 3</cell><cell cols="2">371.94 ± 106.86 0.00 0.00 0.00</cell><cell>0.45 0.69 0.52</cell><cell>0.66 0.81 0.67</cell></row><row><cell>F 512 9.16 ± 1.57 5</cell><cell cols="2">373.94 ± 104.29 0.01 0.02 0.01</cell><cell>0.47 0.68 0.54</cell><cell>0.64 0.80 0.70</cell></row><row><cell>G 512 9.44 ± 1.72 7</cell><cell cols="2">381.64 ± 103.56 0.03 0.25 0.13</cell><cell>0.48 0.69 0.55</cell><cell>0.56 0.76 0.64</cell></row><row><cell>H 512 9.75 ± 1.94 11</cell><cell cols="2">382.75 ± 106.81 0.17 0.44 0.10</cell><cell>0.42 0.60 0.44</cell><cell>0.52 0.72 0.56</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Quantitative Results</figDesc><table><row><cell></cell><cell cols="3">(b) P. rubescens dataset</cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="2">Image Manual</cell><cell cols="3">Zeder et al. Liu et al. ours</cell></row><row><cell>(a) Microtubule dataset Method AP SOAX [26] 0.1860 0.3166 0.202 AP0.5 AP0.75 Time (min/image) 25 SFINE [29] Ours 0.3882 0.6040 0.3786 5 Liu et al. [17] 0.3698 0.5774 0.3689 50 0.2222 0.4206 0.1894 5</cell><cell>1 2 6 5 4 3</cell><cell cols="2">Count [28] [28] 25.8 ± 1.5 27 18.5 ± 0.5 23 21.8 ± 0.4 21 36.8 ± 0.4 40 44.0 ± 0 44 27.5 ± 1.5 27</cell><cell>[17] 25 22 24 37 44 26</cell><cell>25 18 22 36 44 27</cell><cell>(c) C. elegans dataset Method Semi-conv Ops [21] 0.569 0.885 0.661 AP AP0.5 AP0.75 Time (sec/image) -M-RCNN</cell></row><row><cell></cell><cell>7</cell><cell cols="2">17.5 ± 1.1 18</cell><cell>18</cell><cell>17</cell></row><row><cell></cell><cell cols="3">Total 191.8 ± 3.6 200</cell><cell>196</cell><cell>189</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">National Institute of General Medical Sciences</rs> grant (<rs type="grantNumber">R01 GM097587</rs>) from the <rs type="funder">National Institutes of Health</rs>. Microscopy equipment was acquired with an <rs type="grantName">NIH-shared instrumentation grant</rs> (<rs type="grantNumber">S10 OD016361</rs>) and, access was supported by the <rs type="funder">NIH-NIGMS</rs> (<rs type="grantNumber">P20 GM103446</rs> and <rs type="grantNumber">P20 GM139760</rs>) and the <rs type="funder">State of Delaware</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_rpqp7HV">
+					<idno type="grant-number">R01 GM097587</idno>
+				</org>
+				<org type="funding" xml:id="_3Kjq5CU">
+					<idno type="grant-number">S10 OD016361</idno>
+					<orgName type="grant-name">NIH-shared instrumentation grant</orgName>
+				</org>
+				<org type="funding" xml:id="_Fn5cWkR">
+					<idno type="grant-number">P20 GM103446</idno>
+				</org>
+				<org type="funding" xml:id="_bA27D8X">
+					<idno type="grant-number">P20 GM139760</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3 61.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">DCAN: deep contour-aware networks for accurate gland segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="2487" to="2496" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Instance segmentation of biomedical images with an object-aware embedding learned with local constraints</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Strauch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Merhof</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32239-7_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32239-750" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11764</biblScope>
+			<biblScope unit="page" from="451" to="459" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Cascaded pyramid network for multi-person pose estimation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="7103" to="7112" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Instance-sensitive fully convolutional networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-46466-4_32</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-46466-432" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2016</title>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Leibe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Matas</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Sebe</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="volume">9910</biblScope>
+			<biblScope unit="page" from="534" to="549" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Semantic instance segmentation with a discriminative loss function</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>De Brabandere</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Neven</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1708.02551</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">SSAP: single-shot instance segmentation with affinity pyramid</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Gao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="642" to="651" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Simultaneous detection and segmentation</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hariharan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Arbeláez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Malik</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10584-0_20</idno>
+		<idno>978-3-319-10584-0 20</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2014</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8695</biblScope>
+			<biblScope unit="page" from="297" to="312" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Mask R-CNN</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Gkioxari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2017 IEEE International Conference on Computer Vision (ICCV)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2980" to="2988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<author>
+			<persName><forename type="first">P</forename><surname>Hirsch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Mais</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kainmueller</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2001.07626</idno>
+		<title level="m">PatchPerPix for instance segmentation</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Long short-term memory</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1735" to="1780" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">High-precision automated reconstruction of neurons with flood-filling networks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Januszewski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="605" to="610" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Januszewski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Maitin-Shepard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kornfeld</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Denk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Jain</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1611.00421</idno>
+		<title level="m">Flood-filling networks</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Deep occlusion-aware instance segmentation with overlapping bilayers</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">W</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">K</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4019" to="4028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Instance segmentation of biological images using harmonic embeddings</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kulikov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lempitsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="3843" to="3851" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dollár</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Girshick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Hariharan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Belongie</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<publisher>Feature pyramid networks for object detection</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Microsoft COCO: common objects in context</title>
+		<author>
+			<persName><forename type="first">T.-Y</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-10602-1_48</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-10602-148" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2014</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Fleet</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Pajdla</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Schiele</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Tuytelaars</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014">2014</date>
+			<biblScope unit="volume">8693</biblScope>
+			<biblScope unit="page" from="740" to="755" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Intersection to overpass: instance segmentation on filamentous structures with an orientation-aware neural network and terminus pairing algorithm</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kolagunda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Treible</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nedo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Caplan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Kambhamettu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="125" to="133" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Densely connected stacked U-network for filament segmentation in microscopy images</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-11024-6_30</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-11024-630" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Leal-Taixé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Roth</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11134</biblScope>
+			<biblScope unit="page" from="403" to="411" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Affinity derivation and graph merge for instance segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01219-9_42</idno>
+		<idno>978-3- 030-01219-9 42</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11207</biblScope>
+			<biblScope unit="page" from="708" to="724" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Annotated high-throughput microscopy image sets for validation</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ljosa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">L</forename><surname>Sokolnicki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">E</forename><surname>Carpenter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="637" to="637" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Semi-convolutional operators for instance segmentation</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Novotny</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Albanie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Larlus</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01246-5_6</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01246-56" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11205</biblScope>
+			<biblScope unit="page" from="89" to="105" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+		<title level="m">Automatic differentiation in PyTorch</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">End-to-end instance segmentation with recurrent attention</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">S</forename><surname>Zemel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the 2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)<address><addrLine>Honolulu, HI, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="21" to="26" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Recurrent neural networks for semantic instance segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Salvador</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1712.00617</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">SOAX: a software for quantification of 3D biopolymer networks</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sci. Rep</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page">9081</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Multi-scale cell instance segmentation with keypoint graph based bounding boxes</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32239-7_41</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32239-741" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11764</biblScope>
+			<biblScope unit="page" from="369" to="377" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Automated quantification and sizing of unbranched filamentous cyanobacteria by modelbased object-oriented image analysis</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zeder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Van Den Wyngaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Köster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Felder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pernthaler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Environ. Microbiol</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1615" to="1622" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Extracting microtubule networks from superresolution single-molecule localization microscopy data</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Nishimura</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kanchanawong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mol. Biol. Cell</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="333" to="345" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

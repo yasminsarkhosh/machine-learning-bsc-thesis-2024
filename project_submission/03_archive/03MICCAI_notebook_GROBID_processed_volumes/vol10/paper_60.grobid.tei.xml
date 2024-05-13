@@ -1,0 +1,911 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Nonuniformly Spaced Control Points Based on Variational Cardiac Image Registration</title>
+				<funder ref="#_y3paUPJ">
+					<orgName type="full">Shenzhen Fundamental Research Program</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Haosheng</forename><surname>Su</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Shenzhen University</orgName>
+								<address>
+									<postCode>518060</postCode>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Guangdong Provincial Key Laboratory of Popular High Performance Computers</orgName>
+								<address>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Shenzhen Key Laboratory of Service Computing and Application</orgName>
+								<address>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Xuan</forename><surname>Yang</surname></persName>
+							<email>yangxuan@szu.edu.cn</email>
+							<idno type="ORCID">0000-0002-6680-6934</idno>
+							<affiliation key="aff0">
+								<orgName type="institution">Shenzhen University</orgName>
+								<address>
+									<postCode>518060</postCode>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Guangdong Provincial Key Laboratory of Popular High Performance Computers</orgName>
+								<address>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="department">Shenzhen Key Laboratory of Service Computing and Application</orgName>
+								<address>
+									<settlement>Shenzhen, Guangdong</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Nonuniformly Spaced Control Points Based on Variational Cardiac Image Registration</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="634" to="644"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">401F3FD5BF3915524C253885AEEF6281</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_60</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Cardiac image registration</term>
+					<term>Variational Bayesian</term>
+					<term>Non-uniformly-spaced control points</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Non-uniformly spaced control points located on the interface of different objects are beneficial for constructing an accurate displacement field for image registration. However, extracting features of non-uniformly spaced control points in images is challenging for convolutional neural networks (CNNs). We extend a probabilistic image registration model using uniformed-spaced control points by employing non-uniformly-spaced control points. We construct a network to extract the image and spatial features of non-uniformly-spaced control points. Moreover, a variational Bayesian (VB) model using a factorized prior is employed to estimate the distribution of latent variables. In theory, we analyze the KL divergence between the posterior and the two separated priors. We found that the factorized prior has the advantage of decreasing the KL divergence, but too more factorized priors, such as the standard normal, might deteriorate registration accuracy. Moreover, we analyze the relationship between the uncertainty of the displacement field and the spatial distribution of control points. Experimental results on four public datasets show that our network outperforms the state-ofarts registration networks and can provide registration uncertainty.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Image registration is critical for estimating cardiac motion, aiming to estimate the displacements between cardiac anatomical tissues at different time points. Generative models focus on data distribution and tend to model the underlying patterns or data distribution. They make it possible to train the network using fewer data, improve robustness when data is missing, and, most importantly, allow quantifying the uncertainty associated with the output <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b21">22]</ref>. Variational Bayesian (VB) <ref type="bibr" target="#b15">[16]</ref> is commonly used in generative models. In recent years, unsupervised registration methods based on Variational Bayesian (VB) have been proposed, including point-set-based and intensity-based <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b27">28]</ref>. Pointset-based methods extract critical points from two images and simultaneously estimate the probabilistic correspondence and spatial transformation between two point sets <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b28">29]</ref>. In these methods, the points and their correspondence are random variables, and the transformation parameters are latent variables. Intensity-based methods estimate the distribution of parameters of transformation <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20]</ref>. These methods extract image features and pay attention to image correspondence. This paper focuses on intensity-based VB methods.</p><p>Gan et al. <ref type="bibr" target="#b10">[11]</ref> proposed a probabilistic image registration method based on a parametric transformation model. They pointed out that the spatial locations of control points influence registration accuracy and delicately located control points can improve registration results. On the other hand, most existing priors either each dimension with identical independent distribution <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20]</ref> or all dimensions obey a global distribution <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b10">11]</ref>. Priors with identical independent distributions are too simple to constrain the variational posterior; on the contrary, the global distribution might enforce each dimension of the variational posterior to correlate too much.</p><p>To address the above issues, we propose a probabilistic model based on variational Bayesian using non-uniformly spaced control points for cardiac image registration. Details of our contributions include:</p><p>-Employing nonuniformly spaced control points in a variational Bayesian image registration model improves registration accuracy. The control points are spaced on the contours of objects, and their intensity and spatial features are extracted using a network. We addressed the inherent disorder challenge in the control-points-based image registration model using CNNs, which can locate control points freely instead of only on grids. Additionally, our approach is not sensitive to location errors of control points. -The global prior is partitioned into several independent priors, which correspond to different control points. We analyzed the KL divergence between the variational posterior and the factorized prior in theory and found that properly factorized priors can close the gap with the variational posterior and increase the evidence of a lower bound in the VB model. -Our approach can provide more available information about registration uncertainty. Our uncertainty maps concentrate on the boundaries of objects instead of spreading over everywhere. It is favorable in real applications, where surgeons only pay attention to regions of interest.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Posterior Estimation and Prior in Variational Registration Model</head><p>Given the source image S and the target image T , the goal of image registration is estimating the spatial transformation f z : R d → R d between S and T . The VB model used a variational posterior q(z|T, S) to approximate the intractable registration posterior p(z|T, S) by maximizing the evidence lower bound (ELBO) L(T, S) of log-likelihood p(T, S),</p><formula xml:id="formula_0">L(T, S) = E q(z |T,S) log p(T |z, S) -KL[q(z|T, S)||p(z)]<label>(1)</label></formula><p>In Eq. ( <ref type="formula" target="#formula_0">1</ref>), the first term is expected to be significant to ensure registration accuracy. It can be expressed by the similarity between two images, such as the Boltzmann distribution with a parameter λ, p(T |z, S) ∝ exp(-λ(1sim(T, S(f z )))), where sim is the similarity measure. By using the Monte Carlo method, the first term in L(T, S) can be approximated. The second term quantifies the amount of information the model absorbed through learning. It is a measure of the complexity of the model that is expected to be small. The parametric transformation using compact radial basis functions(CSRBFs) with control points {p i } n i=1 to interpolate the dense DVF in our model as</p><formula xml:id="formula_1">f z (u) = u + n i=1 z i ψ( u-pi 2 r</formula><p>), where z = {z i } n i=1 is the latent variable, u is a pixel. ψ is the CSRBF with support r. The value of r is obtained by the distance between control points <ref type="bibr" target="#b10">[11]</ref>. The VB-based image registration aims to estimate the variational posterior q(z|T, S) to approximate registration posterior p(z|T, S). We employed multivariate normal distribution as the variational posterior q(z|T, S) = N (μ, Diag(σ 2 )), where</p><formula xml:id="formula_2">μ = [μ 1 , . . . , μ n ] T , σ 2 = [σ 2 1 , . . . , σ 2 n ] T . (μ k , σ 2 k )</formula><p>is the distribution parameter of the kth element of the latent variable z.</p><p>Control points {p i } n i=1 influence the DVF greatly. The network NetGI proposed by Gan et al. <ref type="bibr" target="#b10">[11]</ref> spaced the global control points (GPs) and local control points (LPs) uniformly, which cannot describe the anatomical contours of cardiac tissues. When the control points are located in the boundary of objects, one advantage is that it is easier to extract significant features; the other advantage is that these points can dominate the DVF discriminately, which might control the DVF more delicately than uniformly spaced control points. In this paper, we employed the farthest point sampling (FPS) <ref type="bibr" target="#b9">[10]</ref> to sample control points on the contours of LV, RV, and MYO. All these non-uniformly spaced control points (NuPs) can roughly reflect the shape of the objects, as illustrated in Fig. <ref type="figure" target="#fig_0">1</ref>.</p><p>Since GPs and NuPs are used, the latent variable can be represented as z = z u z nu</p><p>, where z u and z nu correspond to GPs and NuPs, respectively. Distribution parameters of z u and z nu , denoted as (μ u , σ 2 u ) and (μ nu , σ 2 nu ), respectively, are estimated by a VAE. Since NuPs locate disorderly, it is challenging for CNNs to extract corresponding features. A specially designed VAE network NuNet  deals with this issue, as shown in Fig. <ref type="figure" target="#fig_1">2</ref>. Our NuNet comprises an encoder and a decoder. The encoder of our NuNet contains two branches aiming to predict (μ u , σ 2 u ) and (μ nu , σ 2 nu ), respectively. The upper branch is for GPs with several convolutional layers. To obtain more representative features, the interpolation operation was employed in the feature maps. The lower branch is for NuPs. Since NuPs are disordered and diverse from each other for different image pairs. We embedded the PointNet (PN) architecture proposed by Qi et al. <ref type="bibr" target="#b22">[23]</ref> in our NuNet. PointNet aims to extract the geometry features of a set of points without a specific order. In PointNet, two transform blocks are used to align points and features. The FeatureNet (FN) is similar to the PointNet, while the second transform is deleted because only feature matching is required. The decoder contains a CSRBF layer and an interpolation layer, where the CSRBF layer constructs a DVF using the sampled z, and the interpolation layer warps the source image S.</p><p>Gan et al. <ref type="bibr" target="#b10">[11]</ref> proposed a normal distribution p(z) = N (μ, B -1 ) as the global prior p(z). We partition the global prior as p(z) = p(z u )p(z nu ), where p(z u ) = N (0, B -1 u ) and p(z nu ) = N (0, B -1 nu ) correspond to the uniformly and non-uniformly spaced control points, respectively. We prove that the factorized prior results in a small KL divergence between the prior and the variational posterior with a high probability, which is favorable in increasing the ELBO in the VB model. Details can be referred to in the supplement. The conclusion is especially applicable to the control-points-based image registration model; it is favorable to make different control points have different priors. That implies we can regularize the variational posterior finely and control the DVF delicately. The extreme case of the prior factorization leads to the standard normal prior N (0, I). However, the standard normal prior is not conducive to estimate reasonable DVF because it makes control points independent of each other. It is contrary to the idea of CSBRF-based transformation, that is, control points that are close influence each other to the DVF.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Registration Uncertainty</head><p>Our registration network predicts the variance of latent variables, which corresponds to the deviation of parameters of elastic transformation. It is a kind of data uncertainty. We estimate the uncertainty of DVF using its variance. The displacement of pixel u is</p><formula xml:id="formula_3">d(u) = n i=1 z i ψ( u-pi 2 r ). Since z i is independent to each other, the variance of d(u) is V ar(d u ) = pi∈Au σ 2 i ψ( u-pi r ) 2</formula><p>, where A u is the local region centered at u with radius r. We found that σ 2 i of NuPs is larger than that of GPs in a statistical sense. The reason is that NuPs locate at the boundaries of objects, where large displacements occur in these areas for cardiac motion. However, cardiac motion varies subject to subject, resulting in the different displacements of points located at the boundaries of LV or RV. On the contrary, GPs distribute uniformly and locate mainly in the background with small motion in general. Correspondingly, the displacement variances of GPs are relatively small compared with that of NuPs. Moreover, when the pixel u is close to NuPs, ψ( u-pi r ) 2 is relatively large. Then, it can be concluded that the region where the NuPs are gathered generally has significant variances, such as the corner of the RV and thin myocardium. On the contrary, the regions with sparse control points, such as the background, usually have low uncertainty.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets and Implement Details</head><p>Four public datasets are used to evaluate our NuNet in experiments, including the York dataset <ref type="bibr" target="#b0">[1]</ref>, MICCAI2009 challenge dataset <ref type="bibr" target="#b23">[24]</ref>, ACDC dataset <ref type="bibr" target="#b4">[5]</ref>, and M&amp;Ms dataset <ref type="bibr" target="#b5">[6]</ref>. We combine the York, MICCAI2009, and ACDC as a hybrid dataset. There are 1060, 160, and 486 image pairs for training, validation, and testing in the hybrid dataset, respectively, while 1134, 266, and 859 image pairs in the M&amp;Ms dataset, respectively. Image slices at the end-diastolic (ED) phase and the end-systolic (ES) in one cardiac cycle are the source and target images, respectively. All images are cropped as 128 × 128 containing the heart in the center of the image. The local correlation coefficient between two images is used as the similarity measure. The Dice score, bending energy (BE), the average perpendicular distance (APD, in mm), and the number of nonpositive Jacobian determinants (|J fz | ≤ 0) are used to evaluate the performance. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Registration Results</head><p>To compare the performance of our proposed approach, five deep learning networks, KrebsDiff <ref type="bibr" target="#b16">[17]</ref>, DalcaDiff <ref type="bibr" target="#b7">[8]</ref>, VoxelMorph <ref type="bibr" target="#b3">[4]</ref>, CycleMorph <ref type="bibr" target="#b13">[14]</ref> and NetGI <ref type="bibr" target="#b10">[11]</ref> are employed. Two strategies are used to extract NuPs to train and test our network, including extracting NuPs from contours of masks provided by the dataset (mNuPs) and extracting NuPs from contours of predicted results (pNuPs) using a trained U-Net <ref type="bibr" target="#b24">[25]</ref>. mNuPs are located precisely on the contours, while pNuPs are the ones with location errors due to network performance. We denote "Ours+training NuPs+ testing NuPs" as our approach. For example, "Ours+mNuPs+pNuPs" means we use mNuPs to train our network and pNuPs to predict the registration results.</p><p>Registration results of different networks on two datasets are listed in Table <ref type="table" target="#tab_0">1</ref>. Whether the predictive NuPs are employed for training or testing, our NuNet outperforms other networks regarding Dice and APD for two datasets. It implies that our approach is not sensitive to the location error of NuPs. NetGI had better performances on BE and the number of negative Jacobian determinants. The reason is that the influence between non-uniformly spaced control points varies in different regions, which makes it challenging to control the smoothness of DVF. Besides, the factorized prior regularizes the distribution of latent variables less, leading to more flexible DVFs. As shown in Fig. <ref type="figure" target="#fig_2">3</ref>, our NuNet matched the contours of the myocardium and the right ventricle more accurately. Both NetGI and our NuNet achieve smoother DVFs compared with other networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Uncertainty</head><p>We provide uncertainty using different hyperparameters λ for NetGI and our NuNet, as shown in Fig. <ref type="figure" target="#fig_3">4</ref>. An image pair is input to trained networks to predict the distribution parameters of the latent variable z. Next, z is sampled 500 times to construct DVFs, and the displacement vector's magnitude deviation is used as the uncertainty of a DVF. In Fig. <ref type="figure" target="#fig_3">4</ref>, it is observed that the uncertainty estimated by our approach concentrates on the boundaries of objects, while NetGI diffuses the uncertainty around the heart region. The reason is that our NuPs locate on the boundaries of objects, while NetGI spreads local control points uniformly in the heart region. Our approach focuses on uncertainty in specific regions, which provides more valuable uncertainty information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Ablation Study</head><p>To verify the effectiveness of the different modules of our network, we employ different variants of our network to conduct an ablation study. "GPs", "LPs",  "FN" and "PN" represent global control points, local control points, FeatureNet, and PointNet, respectively. Three priors with different covariance matrices are compared. The experimental ablation results are listed in Table <ref type="table" target="#tab_1">2</ref>. All results are average evaluations on two testing datasets using mNuPs. From the first two rows, it can be seen that the upper branch is also vital for registration, even if the background deforms slightly between the two images. By focusing on the global and the local simultaneously, the performance can be improved further, as listed in the fourth row. By comparing the results of the second and third rows, it can be concluded that the FeatureNet embedded in our lower branch can address the disorder issue of intensity features of NuPs. Besides, it is observed from the fifth and seventh rows that the spatial features boosted the performance of our NuNet. Results of the last three rows indicate that our factorized prior generates complex deformation but has little influence to BE and the number of nonpositive Jacobian determinants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This paper addressed the issue of non-uniformly spaced control points in the VB-based image registration model for cardiac motion estimation. We employed the FPS algorithm to sample control points from the contour of the heart. The PointNetis embedded in our network to learn the intensity and spatial features. We found that the factorized prior leads to small KL divergence and is beneficial to produce more flexible DVFs. Experimental results on four datasets show that our proposed approach achieves optimal performance compared to state-ofart networks. The uncertainty estimated by our network focuses on important regions and provides more information about uncertainty in applications.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Spatial distribution of control points. From left to right: the image, the mask of the image, the contour of objects, and uniformly spaced global control points and non-uniformly spaced local control points.</figDesc><graphic coords="4,62,97,166,04,326,08,221,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Architecture of our network NuNet.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Demonstration of registration results using different networks. The first column is the source images (odd rows) and the target images (even rows). The green, blue, and red colors mark the mask of the target image, the warped mask of the source image, and the overlap region of the two masks. The warped grids illustrate the estimated DVFs using different networks. (Color figure online)</figDesc><graphic coords="7,87,30,54,44,249,55,148,27" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Uncertainty maps using our network and NetGI, respectively, under different registration accuracy. The first column is the source images (odd rows) and the target images (even rows). Other columns: the odd and even rows illustrate uncertainty using NuNet and NetGI, respectively.</figDesc><graphic coords="8,101,97,53,84,248,92,192,85" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Evaluation of registration results for all networks on the hybrid dataset and M&amp;Ms dataset. Data format: mean (standard deviations).</figDesc><table><row><cell>Dataset Method</cell><cell>Dice</cell><cell>APD</cell><cell>BE</cell><cell>|J fz | ≤ 0</cell></row><row><cell>Hybrid KrebsDiff</cell><cell cols="3">0.835 (0.062) 2.30 (0.79) 28.88 (15.23)</cell><cell>10.47 (18.11)</cell></row><row><cell>DalcaDiff</cell><cell cols="4">0.847 (0.059) 2.09 (0.70) 157.97 (104.15) 0.25 (0.57)</cell></row><row><cell>VoxelMorph</cell><cell cols="4">0.842 (0.066) 2.20 (0.84) 157.34 (96.98) 55.81 (46.87)</cell></row><row><cell>CycleMorph</cell><cell cols="4">0.841 (0.079) 2.25 (1.09) 304.49 (72.32) 65.85 (40.56)</cell></row><row><cell>NetGI</cell><cell cols="3">0.843 (0.068) 2.19 (0.87) 3.94 (1.69)</cell><cell>0.00 (0.00)</cell></row><row><cell cols="4">Ours+mNuPs+mNuPs 0.855 (0.060) 2.01 (0.70) 6.13 (3.70)</cell><cell>2.80 (5.55)</cell></row><row><cell cols="4">Ours+mNuPs+pNuPs 0.852 (0.060) 2.04 (0.73) 5.73 (3.10)</cell><cell>3.37 (10.26)</cell></row><row><cell>Ours+pNuPs+pNuPs</cell><cell cols="3">0.850 (0.064) 2.10 (0.80) 4.85 (2.86)</cell><cell>1.14 (2.53)</cell></row><row><cell>M&amp;Ms KrebsDiff</cell><cell cols="3">0.836 (0.054) 1.84 (1.00) 36.65 (34.96)</cell><cell>8.00 (16.89)</cell></row><row><cell>DalcaDiff</cell><cell cols="3">0.851 (0.052) 1.64 (0.95) 183 (126)</cell><cell>0.42 (1.81)</cell></row><row><cell>VoxelMorph</cell><cell cols="3">0.844 (0.058) 1.71 (0.96) 194 (102)</cell><cell>105 (110)</cell></row><row><cell>CycleMorph</cell><cell cols="3">0.852 (0.058) 1.64 (0.99) 519 (137)</cell><cell>95 (55)</cell></row><row><cell>NetGI</cell><cell cols="3">0.847 (0.054) 1.69 (0.80) 4.74 (1.71)</cell><cell>1.17 (9.20)</cell></row><row><cell cols="4">Ours+mNuPs+mNuPs 0.861 (0.052) 1.54 (0.78) 2.19 (0.76)</cell><cell>1.19 (7.47)</cell></row><row><cell cols="4">Ours+mNuPs+pNuPs 0.859 (0.049) 1.57 (0.79) 9.03 (4.50)</cell><cell>6.06 (14.01)</cell></row><row><cell>Ours+pNuPs+pNuPs</cell><cell cols="3">0.858 (0.050) 1.57 (0.78) 9.44 (4.45)</cell><cell>6.15 (15.20)</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Results of ablation experiments on two datasets.</figDesc><table><row><cell>No. GPs LPs FN PN</cell><cell>Prior cov. Σ P Σ f I</cell><cell>Hybrid Dice</cell><cell>APD</cell><cell>Dice</cell><cell>M&amp;Ms</cell><cell>APD</cell></row><row><cell>1</cell><cell></cell><cell cols="5">0.813 (0.085) 2.66 (1.17) 0.807 (0.066) 2.09 (0.97)</cell></row><row><cell>2</cell><cell></cell><cell cols="5">0.802 (0.089) 2.71 (1.10) 0.807 (0.068) 2.09 (1.17)</cell></row><row><cell>3</cell><cell></cell><cell cols="5">0.821 (0.082) 2.46 (1.05) 0.825 (0.067) 1.94 (1.19)</cell></row><row><cell>4</cell><cell></cell><cell cols="5">0.824 (0.078) 2.48 (1.05) 0.832 (0.058) 1.85 (0.89)</cell></row><row><cell>5</cell><cell></cell><cell cols="5">0.851 (0.063) 2.07 (0.78) 0.859 (0.052) 1.57 (0.86)</cell></row><row><cell>6</cell><cell></cell><cell cols="5">0.827 (0.077) 2.45 (1.03) 0.830 (0.060) 1.85 (0.87)</cell></row><row><cell>7</cell><cell></cell><cell cols="5">0.855 (0.060) 2.01 (0.70) 0.861 (0.052) 1.54 (0.78)</cell></row><row><cell>8</cell><cell></cell><cell cols="5">0.833 (0.072) 2.28 (0.97) 0.844 (0.064) 1.75 (1.07)</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This work is supported by the <rs type="funder">Shenzhen Fundamental Research Program</rs> (<rs type="grantNumber">JCYJ20220531102407018</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_y3paUPJ">
+					<idno type="grant-number">JCYJ20220531102407018</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 60.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Efficient and generalizable statistical models of shape and appearance for analysis of cardiac MRI</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Andreopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">K</forename><surname>Tsotsos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="335" to="357" />
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Unsupervised multi-modal image registration via geometry preserving image-to-image translation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Arar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ginger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Danon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Bermano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Cohen-Or</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="13410" to="13419" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">An unsupervised learning model for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="9252" to="9260" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">VoxelMorph: a learning framework for deformable medical image registration</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1788" to="1800" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multi-structures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lalande</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Multi-centre, multi-vendor and multi-disease cardiac segmentation: the M&amp;Ms challenge</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Campello</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">9458279</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Robust probability model based on variational bayes for point set registration</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl.-Based Syst</title>
+		<imprint>
+			<biblScope unit="volume">241</biblScope>
+			<biblScope unit="page">108182</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning for fast probabilistic diffeomorphic registration</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Guttag</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Sabuncu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-00928-1_82</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-00928-182" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2018</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Alberola-López</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Fichtinger</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11070</biblScope>
+			<biblScope unit="page" from="729" to="738" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">A deep learning framework for unsupervised affine and deformable image registration</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>De Vos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">F</forename><surname>Berendsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Viergever</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sokooti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Staring</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Išgum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="page" from="128" to="143" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">The farthest point strategy for progressive image sampling</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Eldar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lindenbaum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Porat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">Y</forename><surname>Zeevi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1305" to="1315" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Probabilistic modeling for image registration using radial basis functions: application to cardiac motion estimation</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gawlikowski</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2107.03342</idno>
+		<title level="m">A survey of uncertainty in deep neural networks</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A variational Bayesian method for similarity learning in non-rigid image registration</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Grzech</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="119" to="128" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">CycleMorph: cycle consistent unsupervised deformable image registration</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">G</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page">102036</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Unsupervised deformable image registration using cycle-consistent CNN</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-G</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32226-7_19</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32226-719" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11769</biblScope>
+			<biblScope unit="page" from="166" to="174" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Welling</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1312.6114</idno>
+		<title level="m">Auto-encoding variational bayes</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Learning a probabilistic model for diffeomorphic registration</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Krebs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Delingette</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Mailhé</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ayache</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mansi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2165" to="2176" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Dual-features student-T distribution mixture model based remote sensing image registration</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Geosci. Remote Sens. Lett</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="1" to="5" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Probabilistic multilayer regularization network for unsupervised 3D brain image registration</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_39</idno>
+		<idno>978-3-030-32245-8 39</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MIC-CAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="346" to="354" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Bi-level probabilistic feature learning for deformable image registration</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Ninth International Conference on International Joint Conferences on Artificial Intelligence</title>
+		<meeting>the Twenty-Ninth International Conference on International Joint Conferences on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="723" to="730" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A remote sensing image registration algorithm based on multiple constraints and a variational Bayesian framework</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Remote Sens. Lett</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="296" to="305" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Deformable image registration uncertainty for inter-fractional dose accumulation of lung cancer proton therapy</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Nenoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiother. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">147</biblScope>
+			<biblScope unit="page" from="178" to="185" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">PointNet: deep learning on point sets for 3D classification and segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">J</forename><surname>Guibas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="652" to="660" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Evaluation framework for algorithms segmenting short axis cardiac MRI</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Radau</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Connelly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Paul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wright</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MIDAS J.-Cardiac MR Left Ventricle Segment. Challenge</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">U-net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Bayesian inference for uncertainty quantification in point-based deformable image registration</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Schultz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Krüger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Handels</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ehrhardt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Image Processing</title>
+		<imprint>
+			<biblScope unit="volume">10949</biblScope>
+			<biblScope unit="page" from="459" to="466" />
+			<date type="published" when="2019">2019. 2019</date>
+			<publisher>SPIE</publisher>
+		</imprint>
+	</monogr>
+	<note>Medical Imaging</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Generalized point set registration with fuzzy correspondences based on variational Bayesian inference</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Min</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Q H</forename><surname>Meng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Fuzzy Syst</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="1529" to="1540" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Recursive cascaded networks for unsupervised medical image registration</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">I</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="10600" to="10610" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Robust variational Bayesian point set registration</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="9905" to="9914" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

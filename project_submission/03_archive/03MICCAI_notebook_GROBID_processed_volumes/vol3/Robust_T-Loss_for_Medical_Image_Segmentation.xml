@@ -1,0 +1,938 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Robust T-Loss for Medical Image Segmentation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Alvaro</forename><surname>Gonzalez-Jimenez</surname></persName>
+							<email>alvaro.gonzalezjimenez@unibas.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Basel</orgName>
+								<address>
+									<settlement>Basel</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Simone</forename><surname>Lionetti</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Lucerne School of Computer Science and Information Technology</orgName>
+								<address>
+									<settlement>Rotkreuz</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Philippe</forename><surname>Gottfrois</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Basel</orgName>
+								<address>
+									<settlement>Basel</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fabian</forename><surname>Gröger</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Basel</orgName>
+								<address>
+									<settlement>Basel</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Lucerne School of Computer Science and Information Technology</orgName>
+								<address>
+									<settlement>Rotkreuz</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Marc</forename><surname>Pouly</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Lucerne School of Computer Science and Information Technology</orgName>
+								<address>
+									<settlement>Rotkreuz</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Alexander</forename><forename type="middle">A</forename><surname>Navarini</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Basel</orgName>
+								<address>
+									<settlement>Basel</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Robust T-Loss for Medical Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="714" to="724"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">E76A759ED0E9A6B46ED2D12C78ED6DCF</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_68</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>robust loss</term>
+					<term>medical image segmentation</term>
+					<term>noisy labels</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>This paper presents a new robust loss function, the T-Loss, for medical image segmentation. The proposed loss is based on the negative log-likelihood of the Student-t distribution and can effectively handle outliers in the data by controlling its sensitivity with a single parameter. This parameter is updated during the backpropagation process, eliminating the need for additional computation or prior information about the level and spread of noisy labels. Our experiments show that the T-Loss outperforms traditional loss functions in terms of dice scores on two public medical datasets for skin lesion and lung segmentation. We also demonstrate the ability of T-Loss to handle different types of simulated label noise, resembling human error. Our results provide strong evidence that the T-Loss is a promising alternative for medical image segmentation where high levels of noise or outliers in the dataset are a typical phenomenon in practice. The project website can be found at https:// robust-tloss.github.io.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Convolutional Neural Networks (CNNs) and Visual Transformers (ViTs) have become the standard in semantic segmentation, achieving state-of-the-art results in many applications <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b23">24]</ref>. However, supervised training of CNNs and ViTs requires large amounts of annotated data, where each pixel in the image is labeled with the category it belongs to. In the medical domain, obtaining these annotations can be costly and time-consuming as it requires expertise and domain knowledge that is often scarcely available <ref type="bibr" target="#b5">[6]</ref>. In addition, medical image annotations can be affected by human bias and poor inter-annotator agreement <ref type="bibr" target="#b22">[23]</ref>, further complicating the process. Despite efforts to obtain labels through automated mining <ref type="bibr" target="#b30">[31]</ref> and crowd-sourcing methods <ref type="bibr" target="#b10">[11]</ref>, the quality of datasets gathered using these methods remains challenging due to often high levels of label noise.</p><p>For instance, the Fitzpatrick 17k dataset, commonly used in dermatology research, contains non-skin images and noisy annotations. In a random sample of 504 images, 5.4% were labeled incorrectly or as other classes <ref type="bibr" target="#b9">[10]</ref>. The dataset was scraped from online atlases, which makes it vulnerable to inaccuracies and noise <ref type="bibr" target="#b9">[10]</ref>. Noisy labels are and will continue to be, a problem in medical datasets. This is a concern as label noise has been shown to decrease the accuracy of supervised models <ref type="bibr" target="#b19">[20,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b34">35]</ref>, making it a key area of focus for both research and practical applications.</p><p>Previous literature has explored many methods to mitigate the problem of noisy labels in deep learning. These methods can be broadly categorized into label correction <ref type="bibr" target="#b26">[27,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b31">32]</ref>, loss function correction based on an estimated noise transition matrix <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b28">29,</ref><ref type="bibr" target="#b32">33]</ref>, and robust loss functions <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b29">30,</ref><ref type="bibr" target="#b33">34]</ref>. Compared to the first two approaches, which may suffer from inaccurate estimates of the noise transition matrix, robust loss functions enable joint optimization of model parameters and variables related to the noise model and have shown promising results in classification tasks <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b33">34]</ref>. Despite these advances, semantic segmentation with noisy labels is relatively understudied. Existing research in this area has focused on the development of noise-resistant network architectures <ref type="bibr" target="#b14">[15]</ref>, the incorporation of domain-specific prior knowledge <ref type="bibr" target="#b28">[29]</ref>, or more recent strategies that update the noisy masks before memorization <ref type="bibr" target="#b16">[17]</ref>.</p><p>Although previous methods have shown robustness in semantic segmentation, they often have limitations, such as more hyper-parameters, modifications to the network architecture, or complex training procedures. In contrast, robust loss functions offer a much simpler solution as they could be incorporated with a simple change in a single modeling component. However, their effectiveness has not been thoroughly investigated.</p><p>In this work, we show that several traditional robust loss functions are vulnerable to memorizing noisy labels. To overcome this problem, we introduce a novel robust loss function, the T-Loss, which is inspired by the negative loglikelihood of the Student-t distribution. The T-Loss, whose simplest formulation features a single parameter, can adaptively learn an optimal tolerance level to label noise directly during backpropagation, eliminating the need for additional computations such as the Expectation Maximization (EM) steps.</p><p>To evaluate the effectiveness of the T-Loss as a robust loss function for medical semantic segmentation, we conducted experiments on two widely-used benchmark datasets in the field: one for skin lesion segmentation and the other for lung segmentation. We injected different levels of noise into these datasets that simulate typical human labeling errors and trained deep learning models using various robust loss functions. Our experiments demonstrate that the T-Loss outperforms these robust state-of-the-art loss functions in terms of segmentation accuracy and robustness, particularly under conditions of high noise contamination. We also observed that the T-Loss could adaptively learn the optimal tolerance level to label noise which significantly reduces the risk of memorizing noisy labels.</p><p>This research is divided as follows: Sect. 2 introduces the motivation behind our T-Loss and provides its mathematical derivation. Section 3 covers the datasets used in our experiments, the implementation and training details of T-Loss, and the metrics used for comparison. Section 4 presents the main findings of our study, including the results of the T-Loss and the baselines on both datasets and an ablation study on the parameter of T-Loss. Finally, in Sect. 5, we summarize our contributions and the significance of our study for the field.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Methodology</head><p>Let x i ∈ R c×w×h be an input image and y i ∈ {0, 1} w×h be its noisy annotated binary segmentation mask, where c represents the number of channels, w the image's width, and h its height. Given a set of images {x 1 , . . . , x N } and corresponding masks {y 1 , . . . , y N }, our goal is to train a model f w with parameters w such that f w (x) approximates the accurate binary segmentation mask for any given image x.</p><p>To this end we note that, heuristically, assuming error terms to follow a Student-t distribution (as suggested e.g. in <ref type="bibr" target="#b18">[19]</ref>) allows for significantly larger noise tolerance with respect to the usual gaussian form. Recall that the Student-t distribution for a D-dimensional variable y is defined by the Probability Density Function (PDF)</p><formula xml:id="formula_0">p(y|µ, Σ; ν) = Γ ν+D 2 Γ ν 2 |Σ| -1/2 (πν) D/2 1 + (y -µ) T Σ -1 (y -µ) ν -ν+D 2 ,<label>(1)</label></formula><p>where µ and Σ are respectively the mean and the covariance matrix of the associated multivariate normal distribution, ν is the number of degrees of freedom, and | • | indicates the determinant (see e.g. <ref type="bibr" target="#b2">[3]</ref>). From this expression, we see that the tails of the Student-t distribution follow a power law that is indeed heavier compared to the usual negative quadratic exponential. For this reason, it is well known to be robust to outliers <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b25">26]</ref>.</p><p>Since the common Mean Squared Error (MSE) loss is derived by minimizing the negative log-likelihood of the normal distribution, we choose to apply the same transformation and get</p><formula xml:id="formula_1">-log p(y|µ, Σ; ν) = -log Γ ν + D 2 + log Γ ν 2 + 1 2 log |Σ| + D 2 log(πν) + ν + D 2 log 1 + (y -µ) T Σ -1 (y -µ) ν . (2)</formula><p>The functional form of our loss function for one image is then obtained with the identification y = y i and the approximation µ = f w (x i ), and aggregated with</p><formula xml:id="formula_2">L T = 1 N N i=1 -log p(y i |f w (x i ), Σ; ν). (3)</formula><p>Equation ( <ref type="formula">2</ref>) has D(D +1)/2 free parameters in the covariance matrix, which should be estimated from the data. In the case of images, this can easily be in the order of 10 4 or larger, which makes a general computation highly non-trivial and may deteriorate the generalization capabilities of the model. For these reasons, we take Σ to be the identity matrix I D , despite knowing that pixel annotations in an image are not independent. The loss term for one image simplifies to</p><formula xml:id="formula_3">-log p(y|µ, I D ; ν) = -log Γ ν + D 2 + log Γ ν 2 + D 2 log(πν) + ν + D 2 log 1 + (y -µ) 2 ν . (<label>4</label></formula><formula xml:id="formula_4">)</formula><p>To clarify the relation with known loss functions, let δ = |y i -f w (x i )|, and fix the value of ν. For δ → 0, the functional dependence from δ reduces to a linear function of δ 2 , i.e. MSE. For large values of δ, though, Eq. ( <ref type="formula" target="#formula_3">4</ref>) is equivalent to log δ, thus penalizing large deviations even less than the much-advocated robust Mean Absolute Error (MAE). The scale of this transition, the sensitivity to outliers, is regulated by the parameter ν.</p><p>We optimize the parameter ν jointly with w using gradient descent. To this end, we reparametrize ν = e ν + where is a safeguard for numerical stability. Loss functions with similar dynamic tolerance parameters were also studied in <ref type="bibr" target="#b1">[2]</ref> in the context of regression, where using the Student-t distribution is only mentioned in passing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>In this section, we demonstrate the robustness of the T-Loss for segmentation tasks on two public image collections from different medical modalities, namely ISIC <ref type="bibr" target="#b4">[5]</ref> and Shenzhen <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b24">25]</ref>. In line with the literature, we use simulated label noise in our tests, as no public benchmark with real label noise exists <ref type="bibr" target="#b14">[15]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>The ISIC 2017 dataset <ref type="bibr" target="#b4">[5]</ref> is a well-known public benchmark of dermoscopy images for skin cancer detection. It contains 2000 training and 600 test images with corresponding lesion boundary masks. The images are annotated with lesion type, diagnosis, and anatomical location metadata. The dataset also includes a list of lesion attributes, such as size, shape, and color. We resized the images to 256 × 256 pixels for our experiments.</p><p>Shenzhen <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b24">25]</ref> is a public dataset containing 566 frontal chest radiographs with corresponding lung segmentation masks for tuberculosis detection. Since there is not a predefined split for Shenzhen as in ISIC, to ensure representative training and testing sets, we stratified the images by their tuberculosis and normal lung labels, with 70% of the data for training and the remaining 30% for testing. Resulting in 296 training images and 170 test images. All images were resized to 256 × 256 pixels.</p><p>Without a public benchmark with real noisy and clean segmentation masks, we artificially inject additional mask noise in these two datasets to test the model's robustness to low annotation quality. This simulates the real risk of errors due to factors like annotator fatigue and difficulty in annotating certain images. In particular, we follow <ref type="bibr" target="#b14">[15]</ref>, randomly sample a portion of the training data with probability α ∈ {0.3, 0.5, 0.7}, and apply morphological transformations with noise levels controlled by β ∈ {0.5, 0.7}<ref type="foot" target="#foot_0">1</ref> . The morphological transformations included erosion, dilation, and affine transformations, which respectively reduced, enlarged, and displaced the annotated area.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Setup</head><p>We train a nnU-Net <ref type="bibr" target="#b11">[12]</ref> as a segmentation network from scratch. To increase variations in the training data, we augment them with random mirroring, flipping, and gamma transformations. The T-loss was initialized with ν = 0 and = 10 -8 . The nnU-Net was trained for 100 epochs using the Adam optimizer with a learning rate of 10 -3 and a batch size of 16 for the ISIC dataset and 8 for the Shenzhen dataset. The network was trained on a single NVIDIA Tesla V100 with 32 GB of memory.</p><p>The model is trained using noisy masks. However, by using the ground truth for the corresponding noisy mask, we can evaluate the robustness of the model and measure noisy-label memorization. This is done by analyzing the dice score of the model's prediction compared to the actual ground truth.</p><p>In addition to the T-Loss, we train several other losses for comparison. Our analysis includes some traditional robust losses, such as Mean Absolute Error (MAE), Reverse Cross Entropy (RCE), Normalized Cross Entropy (NCE), and Normalized Generalized Cross Entropy (NGCE), as well as more recent methods, such as Generalized Cross Entropy (GCE) <ref type="bibr" target="#b33">[34]</ref>, Symmetrical Cross Entropy (SCE) <ref type="bibr" target="#b29">[30]</ref>, and Active-Passive Loss (APL) <ref type="bibr" target="#b17">[18]</ref>. For APL, in particular, we consider three combinations: 1) NCE+RCE, 2) NGCE+MAE, and 3) NGCE+RCE. We consider the mean of the predictions for the last 10 epochs with a fixed number of epochs and report its mean and standard deviation over 3 different random seeds.</p><p>Finally, we complete our evaluation with statistical significance tests. We use the ANOVA test <ref type="bibr" target="#b8">[9]</ref> to compare the differences between the means of the dice scores and obtain a p-value. In addition, if the difference is significant, we perform the Tukey post-hoc test <ref type="bibr" target="#b13">[14]</ref> to determine which means are different. We assume statistical significance for p-values of less than p = 0.05 and denote this with a .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Results on the ISIC Dataset</head><p>We present experimental results for the skin lesion segmentation task on the ISIC dataset in Table <ref type="table">1</ref>. Our results show that conventional losses perform well with no noise or under low noise levels, but their performance decreases significantly with increasing noise levels due to the memorization of noisy labels. This can be observed from the training dice scores in Fig. <ref type="figure" target="#fig_0">1</ref>, where traditional robust losses overfit data in later stages of learning while metrics for the T-Loss do not deteriorate. Our method achieves a dice score of 0.788 ± 0.007 even for the most extreme noise scenario under exam. Examples of the obtained masks can be seen in the supplementary material.  T-Loss (Ours) 0.825(5) 0.809(6) 0.804(5) 0.800(11) 0.790(5) 0.788(7) 0.761( <ref type="formula">6</ref>)  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Results on the Shenzhen Dataset</head><p>The results of lung segmentation for the Shenzhen test set are reported in Table <ref type="table" target="#tab_1">2</ref>. Similar to the ISIC dataset, all considered robust losses perform well at low noise levels. However, as the noise level increases, their dice scores deteriorate. On the other hand, the T-Loss stands out by consistently achieving the highest dice score, even in the most challenging scenarios. The statistical test results also support this claim, with the T-Loss being significantly superior to the other methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Dynamic Tolerance to Noise</head><p>The value of ν is crucial for the model's performance, as it controls the sensitivity to label noise. To shed light on this mechanism, we study the behavior of ν during training for different label noise levels and initializations on the ISIC dataset. As seen in Fig. <ref type="figure" target="#fig_2">2</ref>, ν dynamically adjusts annotation noise tolerance in the early stages of training, independently of its initial value. The plots demonstrate that T-Loss (Ours) 0.949(1) 0.948(1) 0.939(1) 0.914(5) 0.904(8) 0.896(7) 0.870 <ref type="bibr" target="#b30">(31)</ref> ν clearly converges to a stable solution during training, with initializations far from this solution only mildly prolonging the time needed for convergence and having no significant effect on the final dice score.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusions</head><p>In this contribution, we introduced the T-Loss, a loss function based on the negative log-likelihood of the Student-t distribution. The T-Loss offers the great advantage of controlling sensitivity to outliers through a single parameter that is dynamically optimized. Our evaluation on public medical datasets for skin lesion and lung segmentation demonstrates that the T-Loss outperforms other robust losses by a statistically significant margin. While other robust losses are vulnerable to noise memorization for high noise levels, the T-Loss can reabsorb this form of overfitting into the tolerance level ν. Our loss function also features remarkable independence to different noise types and levels.</p><p>It should be noted that other methods, such as <ref type="bibr" target="#b14">[15]</ref> offer better performance for segmentation on the ISIC dataset with the same synthetic noisy labels, while the T-Loss offers a simple alternative. The trade-off in terms of performance, computational cost, and ease of adaption to different scenarios remains to be investigated. Similarly, combinations of the T-Loss with superpixels and/or iterative label refinement procedures are still to be explored.</p><p>The T-Loss provides a robust solution for binary segmentation of medical images in the presence of high levels of annotation noise, as frequently met in practice e.g. due to annotator fatigue or inter-annotator disagreements. This may be a key feature in achieving good generalization in many medical image segmentation applications, such as clinical decision support systems. Our evaluations and analyses provide evidence that the T-Loss is a reliable and valuable tool in the field of medical image analysis, with the potential for broader application in other domains.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Data Use Declaration and Acknowledgment</head><p>We declare that we have used the ISIC dataset <ref type="bibr" target="#b4">[5]</ref> under the Apache License 2.0, publicly available, and the Shenzhen dataset <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b24">25]</ref> public available under the CC BY-NC-SA 4.0 License.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Table 1 .</head><label>1</label><figDesc>Dice score on the ISIC dataset with different noise ratios. The values refer to the mean and standard deviation over 3 different random seeds for the mean score over the last 10 epochs. Loss α = 0.0 α = 0</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The dice score of training set predictions compared to ground truth annotations during the training process on the ISIC 2017 dataset for each type of noisy mask with α = 0.7, β = 0.7. The model memorizes the noisy labels after the first ∼20K iterations, thus negatively affecting the dice score for all losses except the T-Loss.</figDesc><graphic coords="7,69,03,225,59,287,80,78,16" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The behavior of ν in the skin lesion segmentation task. Left: convergence of ν with different levels of label noise. Center: sensitivity of ν to initialization for α = 0.7, β = 0.7. Right: sensitivity of the dice score to the initialization of ν with the same settings.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Dice score on the Shenzhen dataset with different noise ratios. The values refer to the mean and standard deviation over 3 different random seeds for the mean score over the last 10 epochs.</figDesc><table><row><cell>Loss</cell><cell>α = 0.0 α = 0.3</cell><cell></cell><cell>α = 0.5</cell><cell></cell><cell>α = 0.7</cell></row><row><cell></cell><cell>β = 0.5</cell><cell>β = 0.7</cell><cell>β = 0.5</cell><cell>β = 0.7</cell><cell>β = 0.5</cell><cell>β = 0.7</cell></row><row><cell>GCE</cell><cell cols="6">0.948(1) 0.933(6) 0.930(8) 0.909(12) 0.880(19) 0.856(14) 0.807(23)</cell></row><row><cell>MAE</cell><cell cols="6">0.949(2) 0.937(6) 0.931(8) 0.910(11) 0.880(16) 0.864(20) 0.823(23)</cell></row><row><cell>RCE</cell><cell cols="6">0.949(2) 0.938(4) 0.931(8) 0.910(10) 0.886(20) 0.863(15) 0.818(26)</cell></row><row><cell>SCE</cell><cell cols="6">0.949(3) 0.938(4) 0.930(6) 0.908(09) 0.881(18) 0.865(15) 0.821(24)</cell></row><row><cell>NGCE</cell><cell cols="6">0.949(2) 0.936(7) 0.933(9) 0.906(12) 0.875(23) 0.865(17) 0.822(24)</cell></row><row><cell>NCE+RCE</cell><cell cols="6">0.949(2) 0.936(7) 0.928(9) 0.906(12) 0.879(18) 0.863(18) 0.818(23)</cell></row><row><cell cols="7">NGCE+MAE 0.949(1) 0.938(5) 0.934(6) 0.906(11) 0.877(19) 0.865(16) 0.824(21)</cell></row><row><cell cols="7">NGCE+RCE 0.949(2) 0.936(5) 0.930(10) 0.909(10) 0.884(17) 0.862(12) 0.821(26)</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://github.com/gaozhitong/SP guided Noisy Label Seg.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43898-1 68.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Objective hand eczema severity assessment with automated lesion anatomical stratification</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Amruthalingam</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/exd.14744</idno>
+		<ptr target="https://doi.org/10.1111/exd.14744" />
+	</analytic>
+	<monogr>
+		<title level="j">Exp. Dermatol. exd</title>
+		<imprint>
+			<biblScope unit="page">14744</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">A general and adaptive robust loss function</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">T</forename><surname>Barron</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="4331" to="4339" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Pattern recognition and machine learning</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Bishop</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inf. Sci. Stat</title>
+		<imprint>
+			<date type="published" when="2006">2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Lung segmentation in chest radiographs using anatomical atlases with nonrigid registration</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Candemir</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/tmi.2013.2290491</idno>
+		<ptr target="https://doi.org/10.1109/tmi.2013.2290491" />
+	</analytic>
+	<monogr>
+		<title level="j">TMI</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="577" to="590" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Skin lesion analysis toward melanoma detection: a challenge at the 2017 International symposium on biomedical imaging (ISBI), hosted by the international skin imaging collaboration (ISIC)</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C F</forename><surname>Codella</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ISBI.2018.8363547</idno>
+		<ptr target="https://doi.org/10.1109/ISBI.2018.8363547" />
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="168" to="172" />
+		</imprint>
+		<respStmt>
+			<orgName>ISBI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Prevalence of skin diseases treated at public referral hospitals in KwaZulu-Natal, South Africa</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Dlova</surname></persName>
+		</author>
+		<idno type="DOI">10.1111/bjd.15534</idno>
+		<ptr target="https://doi.org/10.1111/bjd.15534" />
+	</analytic>
+	<monogr>
+		<title level="j">Br. J. Dermatol</title>
+		<imprint>
+			<biblScope unit="volume">178</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A new family of multivariate heavy-tailed distributions with variable marginal amounts of tailweight: application to robust clustering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Forbes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wraith</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s11222-013-9414-4</idno>
+		<ptr target="https://doi.org/10.1007/s11222-013-9414-4" />
+	</analytic>
+	<monogr>
+		<title level="j">Stat. Comput</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="971" to="984" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Robust loss functions under label noise for deep neural networks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">S</forename><surname>Sastry</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1919" to="1925" />
+		</imprint>
+		<respStmt>
+			<orgName>AAAI</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">ANOVA: Repeated Measures. No. no. 07-084 in Sage University Papers</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">R</forename><surname>Girden</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Quantitative Applications in the Social Sciences</title>
+		<imprint>
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Evaluating deep neural networks trained on clinical images in dermatology with the fitzpatrick 17k dataset</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Groh</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPRW53098.2021.00201</idno>
+		<ptr target="https://doi.org/10.1109/CVPRW53098.2021.00201" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<publisher>CVPRW</publisher>
+			<biblScope unit="page" from="1820" to="1828" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">How to collect segmentations for biomedical images? A benchmark evaluating the performance of experts, crowdsourced non-experts, and algorithms</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gurari</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/WACV.2015.160</idno>
+		<ptr target="https://doi.org/10.1109/WACV.2015.160" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<publisher>WACV</publisher>
+			<biblScope unit="page" from="1169" to="1176" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+		<idno type="DOI">10.1038/s41592-020-01008-z</idno>
+		<ptr target="https://doi.org/10.1038/s41592-020-01008-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Automatic tuberculosis screening using chest radiographs</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jaeger</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/tmi.2013.2284099</idno>
+		<ptr target="https://doi.org/10.1109/tmi.2013.2284099" />
+	</analytic>
+	<monogr>
+		<title level="j">TMI</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="233" to="245" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">J</forename><surname>Keselman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Rogan</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0033-2909.84.5.1050</idno>
+		<ptr target="https://doi.org/10.1037/0033-2909.84.5.1050" />
+	</analytic>
+	<monogr>
+		<title level="m">The Tukey multiple comparison test</title>
+		<imprint>
+			<date type="published" when="1977">1977</date>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="page" from="1050" to="1056" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Superpixel-guided iterative learning from noisy labels for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_50</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-250" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="525" to="535" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A survey on deep learning in medical image analysis</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Litjens</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.media.2017.07.005</idno>
+		<ptr target="https://doi.org/10.1016/j.media.2017.07.005" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="60" to="88" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Adaptive early-learning correction for segmentation from noisy annotations</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fernandez-Granda</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR52688.2022.00263</idno>
+		<ptr target="https://doi.org/10.1109/CVPR52688.2022.00263" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="2596" to="2606" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Normalized loss functions for deep learning with noisy labels</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Romano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Erfani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bailey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<biblScope unit="volume">119</biblScope>
+			<biblScope unit="page" from="6543" to="6553" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">P</forename><surname>Murphy</surname></persName>
+		</author>
+		<title level="m">Machine Learning: A Probabilistic Perspective</title>
+		<imprint>
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+	<note>Illustrated edition</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A study of the effect of different types of noise on the precision of supervised learning techniques</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Nettleton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Orriols-Puig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fornells</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10462-010-9156-z</idno>
+		<ptr target="https://doi.org/10.1007/s10462-010-9156-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Rev</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="275" to="306" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Making deep neural networks robust to label noise: a loss correction approach</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Patrini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rozza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">K</forename><surname>Menon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Qu</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2017.240</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2017.240" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2233" to="2241" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Class noise and supervised learning in medical domains: the effect of feature extraction</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pechenizkiy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tsymbal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Puuronen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Pechenizkiy</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CBMS.2006.65</idno>
+		<ptr target="https://doi.org/10.1109/CBMS.2006.65" />
+		<imprint>
+			<date type="published" when="2006">2006</date>
+			<biblScope unit="page" from="708" to="713" />
+		</imprint>
+		<respStmt>
+			<orgName>CBMS</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Handling inter annotator agreement for automated skin lesion segmentation</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ribeiro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Avila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Valle</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Deep learning in medical image analysis</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">I</forename><surname>Suk</surname></persName>
+		</author>
+		<idno type="DOI">10.1146/annurev-bioeng-071516-044442</idno>
+		<ptr target="https://doi.org/10.1146/annurev-bioeng-071516-044442" />
+	</analytic>
+	<monogr>
+		<title level="j">Annu. Rev. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="221" to="248" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Chest X-ray analysis of tuberculosis by deep learning with segmentation and augmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Stirenko</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/elnano.2018.8477564</idno>
+		<ptr target="https://doi.org/10.1109/elnano.2018.8477564" />
+	</analytic>
+	<monogr>
+		<title level="j">ELNANO</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Robust mixture clustering using Pearson type VII distribution</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kabán</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Garibaldi</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.patrec.2010.07.015</idno>
+		<ptr target="https://doi.org/10.1016/j.patrec.2010.07.015" />
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn. Lett</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">16</biblScope>
+			<biblScope unit="page" from="2447" to="2454" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Learning from massive noisy labeled data for image classification</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2015.7298885</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2015.7298885" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2691" to="2699" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Learning from noisy large-scale datasets with minimal supervision</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Veit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Alldrin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chechik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Krasin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Belongie</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CVPR.2017.696</idno>
+		<ptr target="https://doi.org/10.1109/CVPR.2017.696" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="6575" to="6583" />
+		</imprint>
+		<respStmt>
+			<orgName>CVPR</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A noise-robust framework for automatic segmentation of COVID-19 pneumonia lesions from CT images</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/TMI.2020.3000314</idno>
+		<ptr target="https://doi.org/10.1109/TMI.2020.3000314" />
+	</analytic>
+	<monogr>
+		<title level="j">TMI</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="2653" to="2663" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Symmetric cross entropy for robust learning with noisy labels</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bailey</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ICCV.2019.00041</idno>
+		<ptr target="https://doi.org/10.1109/ICCV.2019.00041" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="322" to="330" />
+		</imprint>
+		<respStmt>
+			<orgName>ICCV</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">DeepLesion: automated mining of large-scale lesion annotations and universal lesion detection with deep learning</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Summers</surname></persName>
+		</author>
+		<idno type="DOI">10.1117/1.JMI.5.3.036501</idno>
+		<ptr target="https://doi.org/10.1117/1.JMI.5.3.036501" />
+	</analytic>
+	<monogr>
+		<title level="j">J. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">03</biblScope>
+			<biblScope unit="page" from="1" to="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Estimating instance-dependent Bayes-label transition matrix using a deep neural network</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="25302" to="25312" />
+		</imprint>
+		<respStmt>
+			<orgName>ICML</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Dual T: reducing estimation error for transition matrix in label-noise learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="7260" to="7271" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Generalized cross entropy loss for training deep neural networks with noisy labels</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sabuncu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Class noise vs. attribute noise: a quantitative study</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s10462-004-0751-8</idno>
+		<ptr target="https://doi.org/10.1007/s10462-004-0751-8" />
+	</analytic>
+	<monogr>
+		<title level="j">Artif. Intell. Rev</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="177" to="210" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

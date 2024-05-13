@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learned Alternating Minimization Algorithm for Dual-Domain Sparse-View CT Reconstruction</title>
+				<funder ref="#_wSrSn8q #_c3jRcqk #_RBJ6fv2">
+					<orgName type="full">National Science Foundation</orgName>
+				</funder>
+				<funder ref="#_kpzMN7c #_mFcMnM3 #_ewN8BQF #_c6N6BER">
+					<orgName type="full">US National Institutes of Health</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Chi</forename><surname>Ding</surname></persName>
+							<email>ding.chi@ufl.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Florida</orgName>
+								<address>
+									<postCode>32611</postCode>
+									<settlement>Gainesville</settlement>
+									<region>FL</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Qingchao</forename><surname>Zhang</surname></persName>
+							<email>qingchaozhang@ufl.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Florida</orgName>
+								<address>
+									<postCode>32611</postCode>
+									<settlement>Gainesville</settlement>
+									<region>FL</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ge</forename><surname>Wang</surname></persName>
+							<email>wangg6@rpi.edu</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Rensselaer Polytechnic Institute</orgName>
+								<address>
+									<postCode>12180</postCode>
+									<settlement>Troy</settlement>
+									<region>NY</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaojing</forename><surname>Ye</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Georgia State University</orgName>
+								<address>
+									<postCode>30302</postCode>
+									<settlement>Atlanta</settlement>
+									<region>GA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yunmei</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Florida</orgName>
+								<address>
+									<postCode>32611</postCode>
+									<settlement>Gainesville</settlement>
+									<region>FL</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learned Alternating Minimization Algorithm for Dual-Domain Sparse-View CT Reconstruction</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">5105C24817E9831309025A0FF6ED36AA</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Learned alternating minimization algorithm</term>
+					<term>Convergence</term>
+					<term>Deep networks</term>
+					<term>Sparse-view CT reconstruction</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>We propose a novel Learned Alternating Minimization Algorithm (LAMA) for dual-domain sparse-view CT image reconstruction. LAMA is naturally induced by a variational model for CT reconstruction with learnable nonsmooth nonconvex regularizers, which are parameterized as composite functions of deep networks in both image and sinogram domains. To minimize the objective of the model, we incorporate the smoothing technique and residual learning architecture into the design of LAMA. We show that LAMA substantially reduces network complexity, improves memory efficiency and reconstruction accuracy, and is provably convergent for reliable reconstructions. Extensive numerical experiments demonstrate that LAMA outperforms existing methods by a wide margin on multiple benchmark CT datasets.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Sparse-view Computed Tomography (CT) is an important class of low-dose CT techniques for fast imaging with reduced X-ray radiation dose. Due to the significant undersampling of sinogram data, the sparse-view CT reconstruction problem is severely ill-posed. As such, applying the standard filtered-backprojection (FBP) algorithm, <ref type="bibr" target="#b0">[1]</ref> to sparse-view CT data results in significant severe artifacts in the reconstructed images, which are unreliable for clinical use. In recent decades, variational methods have become a major class of mathematical approaches that model reconstruction as a minimization problem. The objective function of the minimization problem consists of a penalty term that measures the discrepancy between the reconstructed image and the given data and a regularization term that enforces prior knowledge or regularity of the image. Then an optimization method is applied to solve for the minimizer, which is the reconstructed image of the problem. The regularization in existing variational methods is often chosen as relatively simple functions, such as total variation (TV) <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref>, which is proven useful in many instances but still far from satisfaction in most real-world image reconstruction applications due to their limitations in capturing fine structures of images. Hence, it remains a very active research area in developing more accurate and effective methods for high-quality sparse-view CT reconstruction in medical imaging.</p><p>Deep learning (DL) has emerged in recent years as a powerful tool for image reconstruction. Deep learning parameterizes the functions of interests, such as the mapping from incomplete and/or noisy data to reconstructed images, as deep neural networks. The parameters of the networks are learned by minimizing some loss functional that measures the mapping quality based on a sufficient amount of data samples. The use of training samples enables DL to learn more enriched features, and therefore, DL has shown tremendous success in various tasks in image reconstruction. In particular, DL has been used for medical image reconstruction applications <ref type="bibr" target="#b4">[5]</ref><ref type="bibr" target="#b5">[6]</ref><ref type="bibr" target="#b6">[7]</ref><ref type="bibr" target="#b7">[8]</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref>, and experiments show that these methods often significantly outperform traditional variational methods.</p><p>DL-based methods for CT reconstruction have also evolved fast in the past few years. One of the most successful DL-based approaches is known as unrolling <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b12">[13]</ref><ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref>. Unrolling methods mimic some traditional optimization schemes (such as proximal gradient descent) designed for variational methods to build the network structure but replace the term corresponding to the handcrafted regularization in the original variational model by deep networks. Most existing DL-based CT reconstruction methods use deep networks to extract features of the image or the sinogram <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref><ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref><ref type="bibr" target="#b18">[19]</ref>. More recently, dual-domain methods <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b17">18]</ref> emerged and can further improve reconstruction quality by leveraging complementary information from both the image and sinogram domains. Despite the substantial improvements in reconstruction quality over traditional variational methods, there are concerns with these DL-based methods due to their lack of theoretical interpretation and practical robustness. In particular, these methods tend to be memory inefficient and prone to overfitting. One major reason is that these methods only superficially mimic some known optimization schemes but lose all convergence and stability guarantees.</p><p>Recently, a new class of DL-based methods known as learnable descent algorithm (LDA) <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20]</ref> have been developed for image reconstruction. These methods start from a variational model where the regularization can be parameterized as a deep network whose parameters can be learned. The objective function is potentially nonconvex and nonsmooth due to such parameterization. Then LDA aims to design an efficient and convergent scheme to minimize the objective function. This optimization scheme induces a highly structured deep network whose parameters are completely inherited from the learnable regularization and trained adaptively using data while retaining all convergence properties. The present work follows this approach to develop a dual-domain sparse-view CT reconstruction method. Specifically, we consider learnable regularizations for image and sinogram as composite objectives, where they unroll parallel subnetworks and extract complementary information from both domains. Unlike the existing LDA, we will design a novel adaptive scheme by modifying the alternating minimization methods <ref type="bibr" target="#b20">[21]</ref><ref type="bibr" target="#b21">[22]</ref><ref type="bibr" target="#b22">[23]</ref><ref type="bibr" target="#b23">[24]</ref><ref type="bibr" target="#b24">[25]</ref> and incorporating the residual learning architecture to improve image quality and training efficiency.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Learnable Variational Model</head><p>We formulate the dual-domain reconstruction model as the following two-block minimization problem:</p><formula xml:id="formula_0">arg min x,z Φ(x, z; s, Θ) := 1 2 Ax -z 2 + λ 2 P 0 z -s 2 + R(x; θ 1 ) + Q(z; θ 2 ),<label>(1)</label></formula><p>where (x, z) are the image and sinogram to be reconstructed and s is the sparseview sinogram. The first two terms in (1) are the data fidelity and consistency, where A and P 0 z represent the Radon transform and the sparse-view sinogram, respectively, and • ≡ • 2 . The last two terms represent the regularizations, which are defined as the l 2,1 norm of the learnable convolutional feature extraction mappings in <ref type="bibr" target="#b1">(2)</ref>. If this mapping is the gradient operator, then the regularization reduces to total variation that has been widely used as a hand-crafted regularizer in image reconstruction. On the other hand, the proposed regularizers are generalizations and capable to learn in more adapted domains where the reconstructed image and sinogram become sparse:</p><formula xml:id="formula_1">R(x; θ 1 ) = g R (x, θ 1 ) 2,1 := mR i=1 g R i (x, θ 1 ) , (2a) Q(z; θ 2 ) = g Q (z, θ 2 ) 2,1 := mQ j=1 g Q j (z, θ 2 ) , (<label>2b</label></formula><formula xml:id="formula_2">)</formula><p>where θ 1 , θ 2 are learnable parameters. We use</p><formula xml:id="formula_3">g r (•) ∈ R mr×dr to present g R (x, θ 1 ) and g Q (z, θ 2 ), i.e. r can be R or Q. The d r is the depth and √ m r × √ m r is the spacial dimension. Note g r i (•) ∈ R dr</formula><p>is the vector at position i across all channels. The feature extractor g r (•) is a CNN consisting of several convolutional operators separated by the smoothed ReLU activation function as follows:</p><formula xml:id="formula_4">g r (y) = w r l * a • • • a(w r 2 * a(w r 1 * y)),<label>(3)</label></formula><p>where {w r i } l i=1 denote convolution parameters with d r kernels. Kernel sizes are <ref type="bibr" target="#b2">(3,</ref><ref type="bibr" target="#b2">3)</ref> and <ref type="bibr" target="#b2">(3,</ref><ref type="bibr" target="#b14">15)</ref> for the image and sinogram networks, respectively. a(•) denotes smoothed ReLU activation function, which can be found in <ref type="bibr" target="#b15">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">A Learned Alternating Minimization Algorithm</head><p>This section formally introduces the Learned Alternating Minimization Algorithm (LAMA) to solve the nonconvex and nonsmooth minimization model <ref type="bibr" target="#b0">(1)</ref>. LAMA incorporates the residue learning structure <ref type="bibr" target="#b25">[26]</ref> to improve the practical learning performance by avoiding gradient vanishing in the training process with convergence guarantees. The algorithm consists of three stages, as follows:</p><p>The first stage of LAMA aims to reduce the nonconvex and nonsmooth problem in (1) to a nonconvex smooth optimization problem by using an appropriate smoothing procedure</p><formula xml:id="formula_5">r ε (y) = i∈I r 0 1 2ε g r i (y) 2 + i∈I r 1 g r i (y) - ε 2 , y ∈ Y =: m r × d r ,<label>(4)</label></formula><p>where (r, y) represents either (R, x) or (Q, z) and</p><formula xml:id="formula_6">I r 0 = {i ∈ [m r ] | g r i (y) ≤ ε}, I r 1 = [m r ] \ I r 0 . (<label>5</label></formula><formula xml:id="formula_7">)</formula><p>Note that the non-smoothness of the objective function (1) originates from the non-differentiability of the l 2,1 norm at the origin. To handle the non-smoothness, we utilize Nesterov's smoothing technique <ref type="bibr" target="#b26">[27]</ref> as previously applied in <ref type="bibr" target="#b15">[16]</ref>.</p><p>The smoothed regularizations take the form of the Huber function, effectively removing the non-smoothness aspects of the problem.</p><p>The second stage solves the smoothed nonconvex problem with the fixed smoothing factor ε = ε k , i.e. min x,z</p><formula xml:id="formula_8">{Φ ε (x, z) := f (x, z) + R ε (x) + Q ε (z)}. (<label>6</label></formula><formula xml:id="formula_9">)</formula><p>where f (x, z) denotes the first two data fitting terms from <ref type="bibr" target="#b0">(1)</ref>. In light of the substantial improvement in practical performance by ResNet <ref type="bibr" target="#b25">[26]</ref>, we propose an inexact proximal alternating linearized minimization algorithm (PALM) <ref type="bibr" target="#b21">[22]</ref> for solving <ref type="bibr" target="#b5">(6)</ref>. With ε = ε k &gt; 0, the scheme of PALM <ref type="bibr" target="#b21">[22]</ref> is</p><formula xml:id="formula_10">b k+1 = z k -α k ∇ z f (x k , z k ), u z k+1 = arg min u 1 2α k u -b k+1 2 + Q ε k (u),<label>(7)</label></formula><formula xml:id="formula_11">c k+1 = x k -β k ∇ x f (x k , u z k+1 ), u x k+1 = arg min u 1 2β k u -c k+1 2 +R ε k (u), (<label>8</label></formula><formula xml:id="formula_12">)</formula><p>where α k and β k are step sizes. Since the proximal point u x k+1 and u z k+1 are are difficult to compute, we approximate Q ε k (u) and R ε k (u) by their linear approximations at b k+1 and c k+1 , i.e.</p><formula xml:id="formula_13">Q ε k (b k+1 ) + ∇Q ε k (b k+1 ), y -b k+1 and R ε k (c k+1 ) + ∇R ε k (c k+1 ), u -c k+1 , together with the proximal terms 1 2p k u -b k+1 2 and 1 2q k u -c k+1 2 .</formula><p>Then by a simple computation, u x k+1 and u z k+1 are now determined by the following formulas</p><formula xml:id="formula_14">u z k+1 = b k+1 -αk ∇Q ε k (b k+1 ), u x k+1 = c k+1 -βk ∇R ε k (c k+1 ),<label>(9)</label></formula><p>where αk = α k p k α k +p k , βk = β k q k β k +q k . In deep learning approach, the step sizes α k , αk , β k and βk can also be learned. Note that the convergence of the sequence {(u z k+1 , u x k+1 )} is not guaranteed. We proposed that if (u z k+1 , u x k+1 ) satisfy the following Sufficient Descent Conditions (SDC):</p><formula xml:id="formula_15">Φ ε k (u x k+1 , u z k+1 ) -Φ ε k (x k , z k ) ≤ -η u x k+1 -x k 2 + u z k+1 -z k 2 , (10a) ∇Φ ε k (x k , z k ) ≤ 1 η u x k+1 -x k + u z k+1 -z k , (<label>10b</label></formula><formula xml:id="formula_16">)</formula><p>for some η &gt; 0, we accept x k+1 = u x k+1 , z k+1 = u z k+1 . If one of (10a) and (10b) is violated, we compute (v z k+1 , v x k+1 ) by the standard Block Coordinate Descent (BCD) with a simple line-search strategy to safeguard convergence: Let ᾱ, β be positive numbers in (0, 1) compute</p><formula xml:id="formula_17">v z k+1 = z k -ᾱ (∇ z f (x k , z k ) + ∇Q ε k (z k )) , (<label>11</label></formula><formula xml:id="formula_18">)</formula><formula xml:id="formula_19">v x k+1 = x k -β ∇ x f (x k , v z k+1 ) + ∇R ε k (x k ) . (<label>12</label></formula><formula xml:id="formula_20">)</formula><p>Set x k+1 = v x k+1 , z k+1 = v z k+1 , if for some δ ∈ (0, 1), the following holds:</p><formula xml:id="formula_21">Φ ε (v x k+1 , v z k+1 ) -Φ ε (x k , z k ) ≤ -δ( v x k+1 -x k 2 + v z k+1 -z k 2 ).<label>(13)</label></formula><p>Otherwise we reduce (ᾱ, β) ← ρ(ᾱ, β) where 0 &lt; ρ &lt; 1, and recompute v x k+1 , v z k+1 until the condition (13) holds. The third stage checks if ∇Φ ε has been reduced enough to perform the second stage with a reduced smoothing factor ε. By gradually decreasing ε, we obtain a subsequence of the iterates that converges to a Clarke stationary point of the original nonconvex and nonsmooth problem. The algorithm is given below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1. The Linearized Alternating Minimization Algorithm (LAMA)</head><p>Input: Initializations: x0, z0, δ, η, ρ, γ, ε0, σ, λ 1: </p><formula xml:id="formula_22">for k = 0, 1, 2, ... do 2: b k+1 = z k -α k ∇zf (x k , z k ), u z k+1 = b k+1 -αk ∇Qε k (b k+1 ) 3: c k+1 = x k -β k ∇xf (x k , u z k+1 ), u x k+1 = c k+1 -βk ∇Rε k (c k+1 ) 4: if (10) holds then 5: (x k+1 , z k+1 ) ← (u x k+1 , u z k+1 ) 6: else 7: v z k+1 = z k -ᾱ [∇zf (x k , z k ) + ∇Qε k (z k )] 8: v x k+1 = x k -β [∇xf (x k , v z k+1 ) + ∇Rε k (x k )] 9: if (13) then (x k+1 , z k+1 ) ← (v x k+1 , v z k+1 ) else ( β, ᾱ) ← ρ( β,</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Network Architecture</head><p>The architecture of the proposed multi-phase neural networks follows LAMA exactly. Hence we also use LAMA to denote the networks as each phase corresponds to each iteration in Algorithm 1. The networks inherit all the convergence properties of LAMA such that the solution is stabilized. Moreover, the algorithm effectively leverages complementary information through the inter-domain connections shown in Fig. <ref type="figure" target="#fig_0">1</ref> to accurately estimate the missing data. The network is also memory efficient due to parameter sharing across all phases. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Convergence Analysis</head><p>Since we deal with a nonconvex and nonsmooth optimization problem, we first need to introduce the following definitions based on the generalized derivatives. <ref type="figure">∞,</ref><ref type="figure">∞</ref>] is locally Lipschitz. The Clarke subdifferential of f at (x, z) is defined as</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Definition 1. (Clarke subdifferential). Suppose that</head><formula xml:id="formula_23">f : R n × R m → (-</formula><formula xml:id="formula_24">∂ c f (x, z) := {(w 1 , w 2 ) ∈ R n × R m | w 1 , v 1 + w 2 , v 2 ≤ lim sup (z1,z2)→(x,z), t→0+ f (z 1 + tv 1 , z 2 + tv 2 ) -f (z 1 , z 2 ) t , ∀(v 1 , v 2 ) ∈ R n × R m }.</formula><p>where w 1 , v 1 stands for the inner product in R n and similarly for w 2 , v 2 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Definition 2. (Clarke stationary point) For a locally Lipschitz function f defined as in</head><formula xml:id="formula_25">Definition 1, a point X = (x, z) ∈ R n × R m is called a Clarke stationary point of f , if 0 ∈ ∂f (X).</formula><p>We can have the following convergence result. All proofs are given in the supplementary material. Theorem 1. Let {Y k = (x k , z k )} be the sequence generated by the algorithm with arbitrary initial condition Y 0 = (x 0 , z 0 ), arbitrary ε 0 &gt; 0 and ε tol = 0. Let { Ỹl } =: (x k l +1 , z k l +1 )} be the subsequence, where the reduction criterion in the algorithm is met for k = k l and l = 1, 2, .... Then { Ỹl } has at least one accumulation point, and each accumulation point is a Clarke stationary point.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1">Initialization Network</head><p>The initialization (x 0 , z 0 ) is obtained by passing the sparse-view sinogram s defined in (1) through a CNN consisting of five residual blocks. Each block has four convolutions with 48 channels and kernel size <ref type="bibr" target="#b2">(3,</ref><ref type="bibr" target="#b2">3)</ref>, which are separated by ReLU. We train the CNN for 200 epochs using MSE, then use it to synthesize full-view sinograms z 0 from s. The initial image x 0 is generated by applying FBP to z 0 . The resulting image-sinogram pairs are then provided as inputs to LAMA for the final reconstruction procedure. Note that the memory size of our method in Table <ref type="table" target="#tab_1">1</ref> includes the parameters of the initialization network. Data Metric Views FBP <ref type="bibr" target="#b0">[1]</ref> DDNet <ref type="bibr" target="#b4">[5]</ref> LDA <ref type="bibr" target="#b15">[16]</ref> DuDoTrans <ref type="bibr" target="#b5">[6]</ref> Learn++ <ref type="bibr" target="#b14">[15]</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Experiment Setup</head><p>Our algorithm is evaluated on the "2016 NIH-AAPM-Mayo Clinic Low-Dose CT Grand Challenge" and the National Biomedical Imaging Archive (NBIA) datasets. We randomly select 500 and 200 image-sinogram pairs from AAPM-Mayo and NBIA, respectively, with 80% for training and 20% for testing. We evaluate algorithms using the peak signal-to-noise ratio (PSNR), structural similarity (SSIM), and the number of network parameters. The sinograms have 512 detector elements, each with 1024 evenly distributed projection views.</p><p>The sinograms are downsampled into 64 or 128 views while the image size is 256 × 256, and we simulate projections and back-projections in fan-beam geometry using distance-driven algorithms <ref type="bibr" target="#b27">[28,</ref><ref type="bibr" target="#b28">29]</ref> implemented in a PyTorch-based library CTLIB <ref type="bibr" target="#b29">[30]</ref>. Given N training data pairs {(s (i) , x(i) )} N i=1 , the loss function for training the regularization networks is defined as:</p><formula xml:id="formula_26">L(Θ) = 1 N N i=1 x (i) k+1 -x(i) 2 + z (i) k+1 -Ax (i) 2 + μ 1 -SSIM x (i) k+1 , x(i) , (<label>14</label></formula><formula xml:id="formula_27">)</formula><p>where μ is the weight for SSIM loss set as 0.01 for all experiments, x(i) is ground truth image, and final reconstructions are (x</p><formula xml:id="formula_28">(i) k+1 , z (i) k+1 ) := LAMA(x (i) 0 , z (i) 0 ).</formula><p>We use the Adam optimizer with learning rates of 1e-4 and 6e-5 for the image and sinogram networks, respectively, and train them with a warm-up approach. The training starts with three phases for 300 epochs, then adding two phases for 200 epochs each time until the number of phases reaches 15. The algorithm is implemented in Python using the PyTorch framework. Our experiments were run on a Linux server with an NVIDIA A100 Tensor Core GPU. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Numerical and Visual Results</head><p>We perform an ablation study to compare the reconstruction quality of LAMA and BCD defined in <ref type="bibr" target="#b10">(11)</ref>, <ref type="bibr" target="#b11">(12)</ref> versus the number of views and phases. Figure <ref type="figure" target="#fig_2">3</ref> illustrates that 15 phases strike a favorable balance between accuracy and computation. The residual architecture (9) introduced in LAMA is also proven to be more effective than solely applying BCD for both datasets. As illustrated in Sect. 5, the algorithm is also equipped with the added advantage of retaining convergence guarantees.</p><p>We evaluate LAMA by applying the pipeline described in Sect. 6.2 to sparseview sinograms from the test set and compare with state-of-the-art methods where the numerical results are presented in Table <ref type="table" target="#tab_1">1</ref>. Our method achieves superior results regarding PSNR and SSIM scores while having the second-lowest number of network parameters. The numerical results indicate the robustness and generalization ability of our approach. Additionally, we demonstrate the effectiveness of our method in preserving structural details while removing noise and artifacts through Fig. <ref type="figure" target="#fig_1">2</ref>. More visual results are provided in the supplementary materials. Overall, our approach significantly outperforms state-of-the-art methods, as demonstrated by both numerical and visual evaluations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusion</head><p>We propose a novel, interpretable dual-domain sparse-view CT image reconstruction algorithm LAMA. It is a variational model with composite objectives and solves the nonsmooth and nonconvex optimization problem with convergence guarantees. By introducing learnable regularizations, our method effectively suppresses noise and artifacts while preserving structural details in the reconstructed images. The LAMA algorithm leverages complementary information from both domains to estimate missing information and improve reconstruction quality in each iteration. Our experiments demonstrate that LAMA outperforms existing methods while maintaining favorable memory efficiency.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Schemetic illustration of one phase in LAMA, where (10) stands for the SDC.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Visual comparison for AAPM-Mayo dataset using 64-view sinograms.</figDesc><graphic coords="8,70,80,145,67,283,00,139,30" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. PSNR of reconstructions obtained by LAMA or BCD over phase number k using 64-view or 128-view sinograms. Left : AAPM-Mayo. Right: NBIA.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>Comparison of LAMA and existing methods on CT data with 64 and 128 views.</figDesc><table /></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" xml:id="foot_0"><p>c The Author(s), under exclusive license to Springer Nature Switzerland AG 2023 H. Greenspan et al. (Eds.): MICCAI 2023, LNCS 14229, pp. 173-183, 2023. https://doi.org/10.1007/978-3-031-43999-5_17</p></note>
+		</body>
+		<back>
+
+			<div type="funding">
+<div><p>This work was supported in part by <rs type="funder">National Science Foundation</rs> under grants <rs type="grantNumber">DMS-1925263</rs>, <rs type="grantNumber">DMS-2152960</rs> and <rs type="grantNumber">DMS-2152961</rs> and <rs type="funder">US National Institutes of Health</rs> grants <rs type="grantNumber">R01HL151561</rs>, <rs type="grantNumber">R01CA237267</rs>, <rs type="grantNumber">R01EB032716</rs> and <rs type="grantNumber">R01EB031885</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_wSrSn8q">
+					<idno type="grant-number">DMS-1925263</idno>
+				</org>
+				<org type="funding" xml:id="_c3jRcqk">
+					<idno type="grant-number">DMS-2152960</idno>
+				</org>
+				<org type="funding" xml:id="_RBJ6fv2">
+					<idno type="grant-number">DMS-2152961</idno>
+				</org>
+				<org type="funding" xml:id="_kpzMN7c">
+					<idno type="grant-number">R01HL151561</idno>
+				</org>
+				<org type="funding" xml:id="_mFcMnM3">
+					<idno type="grant-number">R01CA237267</idno>
+				</org>
+				<org type="funding" xml:id="_ewN8BQF">
+					<idno type="grant-number">R01EB032716</idno>
+				</org>
+				<org type="funding" xml:id="_c6N6BER">
+					<idno type="grant-number">R01EB031885</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 17.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Principles of Computerized Tomographic Imaging</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">C</forename><surname>Kak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Slaney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Society For Industrial And Applied Mathematics</title>
+		<imprint>
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Nonlinear total variation based noise removal algorithms</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">I</forename><surname>Rudin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Osher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Fatemi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica D</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="259" to="268" />
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Accurate image reconstruction from few-view and limited-angle data in diffraction tomography</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">J</forename><surname>Laroque</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">Y</forename><surname>Sidky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Pan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Opt. Soc. Am. A</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">1772</biblScope>
+			<date type="published" when="2008">2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Non-local totalvariation (NLTV) minimization combined with reweighted l1-norm for compressed sensing CT reconstruction</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chuang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Held</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pouliot</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">61</biblScope>
+			<biblScope unit="issue">18</biblScope>
+			<biblScope unit="page">6878</biblScope>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A sparse-view CT reconstruction method based on combination of DenseNet and deconvolution</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xiaokun Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">X</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Cao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1407" to="1417" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">DuDoTrans: dualdomain transformer provides more attention for sinogram restoration in sparseview CT reconstruction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Shang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Deep-neural-network-based sinogram synthesis for sparse-view CT image reconstruction</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Cho</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Radiat. Plasma Med. Sci</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="109" to="119" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Drone: dual-domain residual-based optimization network for sparse-view CT reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Weiwen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Dianlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Hengyong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Vardhanabhuti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="3002" to="3014" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Deep convolutional neural network for inverse problems in imaging</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">T</forename><surname>Mccann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Froustey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Unser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Image Process</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="4509" to="4522" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Learn: learned experts&apos; assessment-based reconstruction network for sparse-data CT</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1333" to="1347" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Sparse-view Xray CT reconstruction with gamma regularization</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yining</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J.-L</forename><surname>Coatrieux</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">230</biblScope>
+			<biblScope unit="page" from="251" to="269" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Low-dose CT with a residual encoder-decoder convolutional neural network</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2524" to="2535" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Ista-Net: interpretable optimization-inspired deep network for image compressive sensing</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ghanem</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<imprint>
+			<date type="published" when="2018">2018. 2018</date>
+			<biblScope unit="page" from="1828" to="1837" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Algorithm unrolling: interpretable, efficient deep learning for signal and image processing</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Monga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">C</forename><surname>Eldar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Signal Process. Mag</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="18" to="44" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Learn++: recurrent dual-domain reconstruction network for compressed sensing CT</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Radiat. Plasma Med. Sci</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="132" to="142" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Learnable descent algorithm for nonsmooth nonconvex image reconstruction</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM J. Imag. Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1532" to="1564" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A Transformer-Based Iterative Reconstruction Model for Sparse-View CT Reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_75</idno>
+		<idno>978-3-031-16446-0 75</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022. MICCAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="790" to="800" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">DDPNet: a novel dual-domain parallel network for low-dose CT reconstruction</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Ge</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_71</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16446-071" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022. MIC-CAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="748" to="757" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Provably convergent learned inexact descent algorithm for low-dose CT reconstruction</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Alvandipour</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A learnable variational model for joint multimodal MRI reconstruction and synthesis</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bian</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lect. Notes Comput. Sci</title>
+		<imprint>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="354" to="364" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">ProxSARAH: an efficient algorithmic framework for stochastic composite nonconvex optimization</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">H</forename><surname>Pham</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">T</forename><surname>Phan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Tran-Dinh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">110</biblScope>
+			<biblScope unit="page" from="1" to="48" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Proximal alternating linearized minimization for nonconvex and nonsmooth problems</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bolte</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sabach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Teboulle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Program</title>
+		<imprint>
+			<biblScope unit="volume">146</biblScope>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Inertial proximal alternating linearized minimization (iPALM) for nonconvex and nonsmooth problems</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Pock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sabach</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM J. Imag. Sci</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1756" to="1787" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">A stochastic proximal alternating minimization for nonsmooth and nonconvex optimization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Driggs</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Davies</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-B</forename><surname>Schönlieb</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM J. Imag. Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1932" to="1970" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Inexact block coordinate descent algorithms for nonsmooth nonconvex optimization</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pesavento</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z.-Q</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Ottersten</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Signal Process</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page" from="947" to="961" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Smooth minimization of non-smooth functions</title>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Nesterov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Program</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="127" to="152" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Distance-driven projection and backprojection</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>De Man</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Nuclear Science Symposium Conference Record</title>
+		<imprint>
+			<date type="published" when="2002">2002. 2002</date>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="1477" to="1480" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Distance-driven projection and backprojection in three dimensions</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>De Man</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Basu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Med. Biol</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2463" to="2475" />
+			<date type="published" when="2004">2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Magic: manifold and graph integrative convolutional network for low-dose CT reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Xia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="page" from="3459" to="3472" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

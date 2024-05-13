@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Multi-modal Pathological Pre-training via Masked Autoencoders for Breast Cancer Diagnosis</title>
+				<funder ref="#_fkmKyqj">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+				<funder ref="#_Kv6sT8B">
+					<orgName type="full">Key Research and Development Program of Shaanxi Province, China</orgName>
+				</funder>
+				<funder ref="#_2fUn67t">
+					<orgName type="full">Key Technologies Research and Development Program</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Mengkang</forename><surname>Lu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science and Engineering</orgName>
+								<orgName type="laboratory">National Engineering Laboratory for Integrated Aero-Space-Ground-Ocean Big Data Application Technology</orgName>
+								<orgName type="institution">Northwestern Polytechnical University</orgName>
+								<address>
+									<postCode>710072</postCode>
+									<settlement>Xi&apos;an</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tianyi</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science and Engineering</orgName>
+								<orgName type="laboratory">National Engineering Laboratory for Integrated Aero-Space-Ground-Ocean Big Data Application Technology</orgName>
+								<orgName type="institution">Northwestern Polytechnical University</orgName>
+								<address>
+									<postCode>710072</postCode>
+									<settlement>Xi&apos;an</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Yong</forename><surname>Xia</surname></persName>
+							<email>yxia@nwpu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computer Science and Engineering</orgName>
+								<orgName type="laboratory">National Engineering Laboratory for Integrated Aero-Space-Ground-Ocean Big Data Application Technology</orgName>
+								<orgName type="institution">Northwestern Polytechnical University</orgName>
+								<address>
+									<postCode>710072</postCode>
+									<settlement>Xi&apos;an</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Multi-modal Pathological Pre-training via Masked Autoencoders for Breast Cancer Diagnosis</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="457" to="466"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">EDC4789ED7B19A35877FC0CA96E320E1</idno>
+					<idno type="DOI">10.1007/978-3-031-43987-2_44</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Breast cancer</term>
+					<term>Hematoxylin and eosin staining</term>
+					<term>Immunohistochemical staining</term>
+					<term>Multi-modal pre-training</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Breast cancer (BC) is one of the most common cancers identified globally among women, which has become the leading cause of death. Multi-modal pathological images contain different information for BC diagnosis. Hematoxylin and eosin (H&amp;E) staining images could reveal a considerable amount of microscopic anatomy. Immunohistochemical (IHC) staining images provide the evaluation of the expression of various biomarkers, such as the human epidermal growth factor receptor (HER2) hybridization. In this paper, we propose a multi-modal pre-training model via pathological images for BC diagnosis. The proposed pre-training model contains three modules: (1) the modal-fusion encoder, (2) the mixed attention, and (3) the modal-specific decoders. The pre-trained model could be performed on multiple relevant tasks (IHC Reconstruction and IHC classification). The experiments on two datasets (HEROHE Challenge and BCI Challenge) show state-of-the-art results.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Breast cancer (BC) is one of the most common malignant tumors in women worldwide and it causes nearly 0.7 million deaths in 2020 <ref type="bibr" target="#b25">[26]</ref>. The pathological process is usually the golden standard approach for BC diagnosis, which relies on leveraging diverse complementary information from multi-modal data. In addition to obtaining the histological characteristics of tumors from hematoxylin and eosin (H&amp;E) staining images, immunohistochemical (IHC) staining images are also widely used for pathological diagnoses, such as the human epidermal growth factor receptor 2 (HER2), the estrogen receptor (ER), and the progesterone receptor (PR) <ref type="bibr" target="#b21">[22]</ref>. With the development of deep learning, there are a lot of multi-modal fusion methods for cancer diagnosis <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b20">21]</ref>.</p><p>Recently, with the development of Transformer, multi-modal pre-training has achieved great success in the fields of computer vision (CV) and natural language processing (NLP). According to the data format, there are two main multi-modal pre-training approaches, as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. One is based on isomorphic data, such as vision-language pre-training <ref type="bibr" target="#b4">[5]</ref> and vision-speech-text pre-training <ref type="bibr" target="#b2">[3]</ref>. The other is based on heterogeneous data. Bachmann et al. <ref type="bibr" target="#b1">[2]</ref> proposed Multi-MAE to pre-train models with intensity images, depth images, and segmentation maps. In the field of medical image analysis, it is widely recognized that using multi-modal data can produce more accurate diagnoses than using single-modal data. However, the development of multi-modal pre-training methods has been limited due to the scarcity of paired multi-modal data. Most methods focus on chest X-ray vision-language pre-training <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b10">11]</ref>. To our best knowledge, there is no work for multi-modal pre-training based on pathological heterogeneous data.</p><p>In this paper, we propose a multi-modal pre-training method based on masked autoencoders for BC downstream tasks. Our model consists of three parts, i.e., the modal-fusion encoder, the mixed attention, and the modal-specific decoder. We choose paired H&amp;E and IHC (only HER2) staining images, which are cropped into non-overlapped patches as the input of our model. We randomly mask some patches by a ratio and feed the remaining patches into the modalfusion encoder to get corresponding tokens. Then the mixed attention module is used to take the intra-modal and inter-modal correlation into account. Finally, we use modal-specific decoders to reconstruct the original H&amp;E and IHC staining images respectively. Our contributions are summarized as follows:</p><p>We propose a Multi-Modal Pre-training via Masked AutoEncoders MMP-MAE for BC diagnosis. To our best knowledge, this is the first pre-training work based on multi-modal pathological data. We evaluate the proposed method on two public datasets as HEROHE Challenge and BCI challenge, which shows that our method achieves state-of-theart performance. i=1 and {yi} λ 2 N i=1 into the modal-fusion encoder to extract the patch tokens {fi} λ 1 N i=1 and {gi} λ 2 N i=1 . Then we use intra-modal attention and inter-modal attention to take patch correlation into account. X and Y are reconstructed by modal-specific decoders respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Overview</head><p>The proposed MMP-MAE consists of three modules, i.e., the modal-fusion encoder, the mixed attention, and the modal-specific decoder, as shown in Fig. <ref type="figure" target="#fig_1">2</ref>. A pair of H&amp;E and HER2 images are cropped into regular non-overlapping patches. We mask some of the patches of two modalities with a ratio. The remained patches are fed into the modal-fusion encoder to get the corresponding tokens. Then we use the mixed attention module to extract intra-modal and inter-modal complementary information. Finally, the modal-specific tokens are fed into the modal-specific decoders to reconstruct the original H&amp;E and HER2 images. The pre-trained modal-fusion encoder could be used for downstream tasks (e.g., HER2 status prediction and HER2 image generation based on H&amp;E images).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">MMP-MAE</head><p>Modal-Fusion Encoder. We use ViT-base <ref type="bibr" target="#b11">[12]</ref> as the backbone of the modalfusion encoder, which contains a linear projection, 12 transformer blocks, and a Multi-Layer Perceptron (MLP) head. We remove the MLP head and use the remained part to extract patch tokens. An image is cropped into several nonoverlapping patches, and these patches are mapped to D dimension tokens with the linear projection and added position embeddings to retain positional information. Each transformer block consists of a multi-head self-attention layer (MHSA) Mixed Attention. The mixed attention module contains intra-modal attention and inter-modal attention, as shown in Fig. <ref type="figure" target="#fig_2">3</ref>. The intra-modal attention is the original transformer block, which consists of MHSA, MLP, LNs, and residual connections. It is defined as</p><formula xml:id="formula_0">A x (F ) = softmax( Q x K x √ d )V x , A y (F ) = softmax( Q y K y √ d )V y ,<label>(1)</label></formula><p>Algorithm 1. Transformer processing flow.</p><formula xml:id="formula_1">Input: A set of patches from one image X = {xi} N i=1 , X ∈ R N ×(R×R×C) 1: Transfer patches into linear embeddings 2: for i = 1 to N do 3: fi ← LP(xi), where F = {fi} N i=1 , F ∈ R N ×D 4: end for 5: Position encoding concatenation 6: F0 ← Concat (Fp, F ), where Fp ∈ R 1×D 7: for l = 1 to L do 8: F l ← MHSA(LN(F l-1 )) + F l-1 9:</formula><p>F l ← FFN(LN(F l )) + F l 10: end for Output: Class token and patch tokens F l ∈ R (N +1)×D Fig. <ref type="figure">4</ref>. Workflow of two downstream tasks. In the HER2 staining image generation task, we remain the structure of GAN and replace the generator with our pre-trained model. In the HER2 status prediction task, we replace the feature extractor with our pre-trained model to obtain representations with HER2 semantics.</p><p>In inter-modal attention, we replace MHSA with the multi-head cross-attention (MHCA) module. We use MHCA to leverage diverse complementary information between two modalities.</p><formula xml:id="formula_2">A x (F ) = softmax( Q x K y √ d )V y , A y (F ) = softmax( Q y K x √ d )V x ,<label>(2)</label></formula><p>Modal-Specific Decoder. Each modal-specific decoder is a shallow block with two transformer layers. Different from the transformer encoder, the target of the transformer decoder is used to reconstruct the original image.</p><p>Reconstruction Loss. Given a pair of H&amp;E image X and HER2 image Y , which is cut into 16 × 16 non-overlapping patches {x i } N i=1 and {y i } N i=1 . We mask some of the patches randomly with the ratio λ 1 and λ 2 (λ 1 + λ 2 = 1). The remained patches are fed into the modal-fusion encoder and the output is corresponding patch tokens {f i } λ1N i=1 and {g i } λ2N i=1 . We randomly generate masked patch tokens {e x j }</p><p>(1-λ1)N j=1</p><p>and {e y j }</p><p>(1-λ2)N j=1</p><p>, which are learnable vectors for masked patch prediction. The input of the mixed attention module is the full set of tokens {f i , e</p><formula xml:id="formula_3">x j } i=λ1N,j=(1-λ1)N i=1,j=1</formula><p>and {g i , e y j }</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>i=λ2N,j=(1-λ2)N i=1</head><p>, which include both the remaining patch tokens and the masked patch tokens. After the process of the mixed attention module, H&amp;E and HER2 patch tokens are fed into the modal-specific decoders respectively to reconstruct the original H&amp;E image X and HER2 image Y . The reconstruction loss is computed by the mean squared error between the original images X, Y and the generative images X , Y , which is computed as</p><formula xml:id="formula_4">L H&amp;E = 1 T 1 T1 i=1 | p i -p i | 2 , L HER2 = 1 T 2 T2 i=1 | q i -q i | 2 . (<label>3</label></formula><formula xml:id="formula_5">)</formula><p>We use an adjustable hyperparameter θ to balance the losses of two modalities. The final loss L is defined as</p><formula xml:id="formula_6">L = θL H&amp;E + (1 -θ)L HER2<label>(4)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Downstream Tasks</head><p>The pre-trained encoder could be used for downstream tasks, as shown in Fig. <ref type="figure">4</ref>. We choose two relevant tasks: HER2 image generation based on H&amp;E images and HER2 status prediction. In the HER2 generation task, we replace the generator of Pyramid Pix2pix, a generative adversarial network (GAN) in <ref type="bibr" target="#b15">[16]</ref>, with our pre-trained encoder and a light-weight decoder. The weights of the pre-trained encoder are fixed, and the light-weight decoder in the generator and the discriminator are learnable. We use pairs of H&amp;E and IHC images for GAN training.</p><p>In the HER2 status prediction task, we replace the universal extractor ResNet-50 <ref type="bibr" target="#b13">[14]</ref> with our pre-trained encoder. We use CLAM-MIL <ref type="bibr" target="#b18">[19]</ref> as the aggregator in our training process.</p><p>3 Experimental Results</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>ACROBAT Challenge. The AutomatiC Registration Of Breast cAncer Tissue (ACROBAT) Challenge <ref type="bibr" target="#b26">[27]</ref> provides H&amp;E WSIs and matched IHC WSIs (ER, PR, HER2, and KI67), which consists of 750 training cases, 100 validation cases, and 300 testing cases. We choose paired H&amp;E and HER2 WSIs for pre-training. We extract the key points and descriptors from paired WSIs using SIFT <ref type="bibr" target="#b17">[18]</ref> and SuperPoint <ref type="bibr" target="#b9">[10]</ref>. Then the extracted key points and descriptors are matched using RANSAC <ref type="bibr" target="#b12">[13]</ref> and SuperGlue <ref type="bibr" target="#b24">[25]</ref>. We repeat this procedure several times on the rotated, downsampled, or transformed moving WSI to fetch the best transformation based on mean squared error (MSE) loss between source and target WSIs' descriptors. After that, the selected transformation is optimized across different levels of WSIs by gradient descent with local normalized cross-correlation (NCC) as its cost function. In the final phase of nonrigid registration, we use the optimized transformation to get the initial displacement field, which is optimized across different levels of WSIs by gradient update. The loss function of which is the weighted sum of NCC and diffusive regularization. We resize the displacement field and apply it to the original moving WSI. After all the WSI pairs are well registered, we convert the padded H&amp;E image to grayscale and apply median blur to it. Next, the Otsu threshold is applied to extract the foreground area, which is cropped into non-overlapping 256 × 256 images. Finally, all the chosen images (around 0.35 million) from WSI in the same pair are saved for MMP-MAE pre-training.</p><p>BCI Challenge. Breast Cancer Immunohistochemical Image Generation Challenge <ref type="bibr" target="#b15">[16]</ref> consists of 3896 pairs of images for training and 977 pairs for testing, which are used to generate HER2 images based on H&amp;E images. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Experimental Setup</head><p>Experiments are implemented in PyTorch <ref type="bibr" target="#b23">[24]</ref> and with 4 NVIDIA A100 Tensor Core GPUs. We pre-train our MMP-MAE on the ACROBAT dataset with AdamW <ref type="bibr" target="#b16">[17]</ref> and the learning rate of 1e -4 . The batch size of pre-training is 1024 and it takes about 30 h for 100 epochs. We use warmup for the first 10 epochs and the learning rate is set to 1e -6 .</p><p>In the HER2 staining image generation task, we use 2 GPUs with a batch size of 4. The learning rate is 2e -4 and the optimizer is Adam. We use the learning rate decay strategy for stable training. Peak Signal to Noise Ratio (PSNR) and Structural Similarity (SSIM) are used as the evaluation indicators for the quality of the HER2 generated images.</p><p>In the HER2 status prediction task, we use 1 GPU with a batch size of 1 (WSI level). The learning rate is 1e -4 and the Adam optimizer is used. Four standard metrics are used to measure the HER2 status prediction results, including the area under the receiver operator characteristic curve (AUC), Precision, Recall, and F1-score.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Method Comparison</head><p>HER2 Staining Image Generation. Three methods on BCI datasets are compared in our experiments, as shown in Table <ref type="table" target="#tab_0">1</ref>. CycleGAN is a representative unsupervised method, which doesn't need paired images for training. So  cycleGAN focuses more on style transformation, and it is difficult to match the cell-level information in detail. Pix2pix and Pyramid pix2pix use paired data, which obtain better results than cycleGAN. Pyramid pix2pix uses the multiscale constraint, which performs better than pix2pix. Our method is based on the framework of Pyramid pix2pix and we replace the generator with our pretrained encoder and a lightweight decoder. Our MMP-MAE further improves the performance, which achieves higher PSNR by 1.60, and SSIM by 0.007. The visualization on the ACROBAT dataset also shows our model could learn the modality-related information, as shown in Fig. <ref type="figure" target="#fig_3">5</ref>.</p><p>HER2 Status Prediction. We compare our method with the top five methods reported in HEROHE challenge review <ref type="bibr" target="#b8">[9]</ref>. Most of these methods use the multinetwork ensemble strategy and extra datasets. Team Macaroon uses the CAME-LYON dataset <ref type="bibr" target="#b3">[4]</ref> for tumor classification. Team MITEL uses BACH dataset <ref type="bibr" target="#b0">[1]</ref> for tumor classification. Team Piaz and Dratur both use a multi-network ensemble strategy to improve their performances. Team IRISAI first segment the tumor area and then predict the HER2 status. MMP-MAE still achieves competitive results by using a single pre-trained model, which is shown in Table <ref type="table" target="#tab_1">2</ref>. Our model improves and F1-Score by 6%. The results show our model pre-training has the ability to predict status from one modality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we propose a novel multi-modal pre-training framework, MMP-MAE for BC diagnosis. MMP-MAE use paired H&amp;E and HER2 staining images for pre-training, which could be used for several downstream tasks such as HER2 staining image generation and HER2 status prediction only by H&amp;E modality. Both the experiment results on BCI and HEROHE datasets show our pretrained MMP-MAE demonstrates strong transfer ability. Our future work will expand our work to more modalities.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of different multi-modal pre-training methods. The WSIs, genetic and clinical data from a patient could be used for isomorphic data pre-training. Pairs of H&amp;E and IHC staining WSIs are used for heterogeneous data pre-training in our method.</figDesc><graphic coords="2,41,31,54,65,341,11,128,05" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Framework of our proposed MMP-MAE. A pair of images X and Y (H&amp;E and IHC) are cropped into N non-overlapped patches, which are randomly masked by ratio λ1 and λ2. We feed the remaining patches {xi} λ 1 N i=1 and {yi} λ 2 N i=1 into the modal-fusion encoder to extract the patch tokens {fi} λ 1 N i=1 and {gi} λ 2 N i=1 . Then we use intra-modal attention and inter-modal attention to take patch correlation into account. X and Y are reconstructed by modal-specific decoders respectively.</figDesc><graphic coords="3,55,98,53,99,340,39,147,70" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig.3. Diagram of Intra-modal attention and inter-domain attention. The input of both attention modules is single-modal patch tokens. The intra-modal attention is the original transformer block, and there is no interaction between two modalities. We replace the MHSA with MHCA in the inter-modal attention to learn complementary information.</figDesc><graphic coords="4,41,79,54,38,340,21,124,33" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Visualization of MMP-MAE generation results on the ACROBAT dataset. The region in the red box shows our MMP-MAE could learn the semantic information from the adjacent area. (Color figure online)</figDesc><graphic coords="8,74,79,54,38,274,63,178,33" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Performance comparison on BCI Challenge.</figDesc><table><row><cell>Method</cell><cell cols="2">PSNR(dB) SSIM</cell></row><row><cell>cycleGAN [28]</cell><cell>16.20</cell><cell>0.373</cell></row><row><cell>Pix2pix [15]</cell><cell>18.65</cell><cell>0.419</cell></row><row><cell cols="2">Pyramid Pix2pix [16] 21.16</cell><cell>0.477</cell></row><row><cell>Proposed</cell><cell>22.76</cell><cell>0.484</cell></row><row><cell cols="3">HEROHE Challenge. HER2 On H&amp;E (HEROHE) Challenge [9] is developed</cell></row><row><cell cols="3">to predict the HER2 status in invasive BC cases via the analysis of HE slides. It</cell></row><row><cell cols="3">contains 359 training samples and 150 test samples for WSI classification.</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Performance comparison on HEROHE Challenge.</figDesc><table><row><cell cols="4">Method/Team AUC Precision Recall F1-Score</cell></row><row><cell>Macaroon</cell><cell>0.71 0.57</cell><cell cols="2">0.83 0.68</cell></row><row><cell>MITEL</cell><cell>0.74 0.58</cell><cell>0.78</cell><cell>0.67</cell></row><row><cell>Piaz</cell><cell>0.84 0.77</cell><cell>0.55</cell><cell>0.64</cell></row><row><cell>Dratur</cell><cell>0.75 0.57</cell><cell>0.70</cell><cell>0.63</cell></row><row><cell>IRISAI</cell><cell>0.67 0.58</cell><cell>0.67</cell><cell>0.62</cell></row><row><cell>Proposed</cell><cell>0.84 0.72</cell><cell>0.82</cell><cell>0.74</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgment. This work was supported in part by the <rs type="funder">Key Research and Development Program of Shaanxi Province, China</rs>, under Grant <rs type="grantNumber">2022GY-084</rs>, in part by the <rs type="funder">National Natural Science Foundation of China</rs> under Grant <rs type="grantNumber">62171377</rs>, and in part by the <rs type="funder">Key Technologies Research and Development Program</rs> under Grant <rs type="grantNumber">2022YFC2009903/2022YFC2009900</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_Kv6sT8B">
+					<idno type="grant-number">2022GY-084</idno>
+				</org>
+				<org type="funding" xml:id="_fkmKyqj">
+					<idno type="grant-number">62171377</idno>
+				</org>
+				<org type="funding" xml:id="_2fUn67t">
+					<idno type="grant-number">2022YFC2009903/2022YFC2009900</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Bach: grand challenge on breast cancer histology images</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Aresta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="122" to="139" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">MultiMAE: multi-modal multitask masked autoencoders</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Bachmann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Mizrahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Atanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zamir</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19836-6_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19836-6_20" />
+	</analytic>
+	<monogr>
+		<title level="m">Computer Vision -ECCV 2022. ECCV 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13697</biblScope>
+			<biblScope unit="page" from="348" to="367" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Efficient self-supervised learning with contextualized target representations for vision, speech and language</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Baevski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Babu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">N</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Auli</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2212.07525</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Diagnostic assessment of deep learning algorithms for detection of lymph node metastases in women with breast cancer</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">E</forename><surname>Bejnordi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JAMA</title>
+		<imprint>
+			<biblScope unit="volume">318</biblScope>
+			<biblScope unit="issue">22</biblScope>
+			<biblScope unit="page" from="2199" to="2210" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">VLP: a survey on vision-language pre-training</title>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">L</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Intell. Res</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="38" to="56" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Pathomic fusion: an integrated framework for fusing histopathology and genomic features for cancer diagnosis and prognosis</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="757" to="770" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Multimodal co-attention transformer for survival prediction in gigapixel whole slide images</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4015" to="4025" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Multi-modal masked autoencoders for medical vision-and-language pre-training</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_65</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-9_65" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2022. MICCAI 2022</title>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="679" to="689" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">HEROHE challenge: predicting HER2 status in breast cancer from hematoxylin-eosin whole-slide imaging</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Conde-Sousa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page">213</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">SuperPoint: self-supervised interest point detection and description</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Detone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Malisiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rabinovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition Workshops</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="224" to="236" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Multiple meta-model quantifying for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nguyen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-3_7" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="64" to="74" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">An image is worth 16×16 words: transformers for image recognition at scale</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Dosovitskiy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.11929</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Random sample consensus: a paradigm for model fitting with applications to image analysis and automated cartography</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Fischler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">C</forename><surname>Bolles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Commun. ACM</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="381" to="395" />
+			<date type="published" when="1981">1981</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Image-to-image translation with conditional adversarial networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1125" to="1134" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">BCI: breast cancer immunohistochemical image generation through pyramid pix2pix</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="1815" to="1824" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">I</forename><surname>Loshchilov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hutter</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1711.05101</idno>
+		<title level="m">Decoupled weight decay regularization</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Object recognition from local scale-invariant features</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">G</forename><surname>Lowe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Seventh IEEE International Conference on Computer Vision</title>
+		<meeting>the Seventh IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="1999">1999</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1150" to="1157" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Data-efficient and weakly supervised computational pathology on whole-slide images</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Williamson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Barbieri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Mahmood</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="555" to="570" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Predicting cancer outcomes from histology and genomics using convolutional networks</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Mobadersany</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci</title>
+		<meeting>Natl. Acad. Sci</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">115</biblScope>
+			<biblScope unit="page" from="2970" to="E2979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Amigo: sparse multi-modal graph transformer with sharedcontext processing for representation learning of giga-pixel images</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Nakhli</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2303.00865</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Breast cancer subtypes based on ER/PR and HER2 expression: comparison of clinicopathologic features and survival</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Onitilo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Engel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">T</forename><surname>Greenlee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">N</forename><surname>Mukesh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Med. Res</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="4" to="13" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A threshold selection method from gray-level histograms</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Otsu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Syst. Man Cybern</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="62" to="66" />
+			<date type="published" when="1979">1979</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">PyTorch: an imperative style, high-performance deep learning library</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Paszke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lerer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Bradbury</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="8026" to="8037" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Superglue: learning feature matching with graph neural networks</title>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Sarlin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Detone</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Malisiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rabinovich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4938" to="4947" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Global cancer statistics 2020: globocan estimates of incidence and mortality worldwide for 36 cancers in 185 countries</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CA Cancer J. Clin</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="209" to="249" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">ACROBAT-automatic registration of breast cancer tissue</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Weitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Valkonen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Solorzano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hartman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ruusuvuori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rantalainen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">10th Internatioal Workshop on Biomedical Image Registration</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Unpaired image-to-image translation using cycle-consistent adversarial networks</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Isola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Efros</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2223" to="2232" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Localized Questions in Medical Visual Question Answering</title>
+				<funder ref="#_SvUnbez">
+					<orgName type="full">Swiss National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Sergio</forename><surname>Tascon-Morales</surname></persName>
+							<email>sergio.tasconmorales@unibe.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Bern</orgName>
+								<address>
+									<settlement>Bern</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Pablo</forename><surname>Márquez-Neila</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Bern</orgName>
+								<address>
+									<settlement>Bern</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Raphael</forename><surname>Sznitman</surname></persName>
+							<email>raphael.sznitman@unibe.ch</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Bern</orgName>
+								<address>
+									<settlement>Bern</settlement>
+									<country key="CH">Switzerland</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Localized Questions in Medical Visual Question Answering</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="361" to="370"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">54C69F4BDE17702E97590C627F6DC59B</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_34</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>VQA</term>
+					<term>Attention</term>
+					<term>Localized Questions</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Visual Question Answering (VQA) models aim to answer natural language questions about given images. Due to its ability to ask questions that differ from those used when training the model, medical VQA has received substantial attention in recent years. However, existing medical VQA models typically focus on answering questions that refer to an entire image rather than where the relevant content may be located in the image. Consequently, VQA models are limited in their interpretability power and the possibility to probe the model about specific image regions. This paper proposes a novel approach for medical VQA that addresses this limitation by developing a model that can answer questions about image regions while considering the context necessary to answer the questions. Our experimental results demonstrate the effectiveness of our proposed model, outperforming existing methods on three datasets. Our code and data are available at https://github. com/sergiotasconmorales/locvqa.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Visual Question Answering (VQA) models are neural networks that answer natural language questions about an image <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b20">21]</ref>. The capability of VQA models to interpret natural language questions is of great appeal, as the range of possible questions that can be asked is vast and can differ from those used to train the models. This has led to many proposed VQA models for medical applications in recent years <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b22">[23]</ref><ref type="bibr" target="#b23">[24]</ref><ref type="bibr" target="#b24">[25]</ref>. These models can enable clinicians to probe the model with nuanced questions, thus helping to build confidence in its predictions.</p><p>Recent work on medical VQA has primarily focused on building more effective model architectures <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b22">23]</ref> or developing strategies to overcome limitations in medical VQA datasets <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b22">23]</ref>. Another emerging trend is to enhance VQA performance by addressing the consistency of answers produced <ref type="bibr" target="#b21">[22]</ref>, particularly when considering entailment questions (i.e., the answer to "Is the image that of a healthy subject?" should be consistent with the answer to "Is there a fracture in the tibia?"). Despite these recent advances, however, most VQA models restrict to questions that consider the entire image at a time. Specifically, VQA typically uses questions that address content within an image without specifying where this content may or may not be in the image. Yet the ability to ask specific questions about regions or locations of the image would be highly beneficial to any user as it would allow fine-grained questions and model probing. For instance, Fig. <ref type="figure" target="#fig_0">1</ref> illustrates examples of such localized questions that combine content and spatial specifications. In the medical field, posing localized questions can significantly enhance the diagnostic process by providing second opinions to medical experts about suspicious regions. Additionally, this approach can improve trustworthiness by assessing the consistency between answers to both global and localized questions.</p><p>To this day, few works have addressed the ability to include location information in VQA models. In <ref type="bibr" target="#b16">[17]</ref>, localization information is posed in questions by constraining the spatial extent to a point within bounding boxes yielded by an object detector. The model then focuses its attention on objects close to this point. However, the method was developed for natural images and relies heavily on the object detector to limit the attention extent, making it difficult to scale in medical imaging applications. Alternatively, the approach from <ref type="bibr" target="#b22">[23]</ref> answers questions about a pre-defined coarse grid of regions by directly including region information into the question (e.g., "Is grasper in (0,0) to (32,32)?"). This method relies on the ability of the model to learn a spatial mapping of the image and limits the regions to be on a fixed grid. Localized questions were also considered in <ref type="bibr" target="#b21">[22]</ref>, but the region of interest was cropped before being presented to the model, assuming that the surrounding context is irrelevant for answering this type of question.</p><p>To overcome these limitations, we propose a novel VQA architecture that alleviates the mentioned issues. At its core, we hypothesize that by allowing the VQA model to access the entire images and properly encoding the region of interest, this model can be more effective at answering questions about regions. To achieve this, we propose using a multi-glimpse attention mechanism <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b21">22,</ref><ref type="bibr" target="#b22">23]</ref> restricting its focus range to the region in question, but only after the model has considered the entire image. By doing so, we preserve contextual information about the question and its region. We evaluate the effectiveness of our approach by conducting extensive experiments on three datasets and comparing our method to state-of-the-art baselines. Our results demonstrate performance improvements across all datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Our method extends a VQA model to answer localized questions. We define a localized question for an image x as a tuple (q, m), where q is a question, and m is a binary mask of the same size as x that identifies the region to which the question pertains. Our VQA model p θ , depicted in Fig. <ref type="figure" target="#fig_1">2</ref>, accepts an image and a localized question as input and produces a probability distribution over a finite set A of possible answers. The final answer of the model â is the element with the highest probability, â = arg max a∈A p θ (a | q, x, m).</p><p>(</p><p>The model proceeds in three stages to produce its prediction: input embedding, localized attention, and final classification.</p><p>Input Embedding. The question q is first processed by an LSTM <ref type="bibr" target="#b10">[11]</ref> to produce an embedding q ∈ R Q . Similarly, the image x is processed by a ResNet-152 <ref type="bibr" target="#b9">[10]</ref> to produce the feature map x ∈ R C×H×W .</p><p>Localized Attention. An attention mechanism uses the embedding to determine relevant parts of the image to answer the corresponding question. Unlike previous attention methods, we include the region information that the mask defines. Our localized attention module (Fig. <ref type="figure" target="#fig_1">2</ref> right) uses both descriptors and the mask to produce multiple weighted versions of the image feature map, x = att(q, x, m). To do so, the module first computes an attention map g ∈ R G×H×W with G glimpses by applying unmasked attention <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b22">23]</ref> to the image feature map and the text descriptor. The value of the attention map at location (h, w) is computed as,</p><formula xml:id="formula_1">g :hw = softmax W (g) • ReLU W (x) x:hw W (q) q , (<label>2</label></formula><formula xml:id="formula_2">)</formula><p>where the index :hw indicates the feature vector at location (h, w), W (x) ∈ R C ×C , W (q) ∈ R C ×Q , and W (g) ∈ R G×C are learnable parameters of linear transformations, and is the element-wise product. In practice, the transformations W (x) and W (g) are implemented with 1 × 1 convolutions and all linear transformations include a dropout layer applied to its input. The image feature maps x are then weighted with the attention map and masked with m as, where c and g are the indexes over feature channels and glimpses, respectively, (h, w) is the index over the spatial dimensions, and m ↓ H×W denotes a binary downsampled version of m with the spatial size of x. This design allows the localized attention module to compute the attention maps using the full information available in the image, thereby incorporating context into them before being masked to constrain the answer to the specified region.</p><formula xml:id="formula_3">x cghw = g ghw • xchw • (m ↓ H×W ) hw ,<label>(3)</label></formula><p>Classification. The question descriptor q and the weighted feature maps x from the localized attention are vectorized and concatenated into a single vector of size C • G + Q and then processed by a multi-layer perceptron classifier to produce the final probabilities.</p><p>Training. The training procedure minimizes the standard cross-entropy loss over the training set updating the parameters of the LSTM encoder, localized attention module, and the final classifier. The training set consists of triplets of images, localized questions, and the corresponding ground-truth answers. As in <ref type="bibr" target="#b1">[2]</ref>, the ResNet weights are fixed with pre-trained values, and the LSTM weights are updated during training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments and Results</head><p>We compare our model to several baselines across three datasets and report quantitative and qualitative results. Additional results are available in the supplementary material.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Datasets</head><p>We evaluate our method on three datasets containing questions about regions which we detail here. The first dataset consists of an existing retinal fundus VQA dataset with questions about the image's regions and the entire image.</p><p>The second and third datasets are generated from public segmentation datasets but use the method described in <ref type="bibr" target="#b22">[23]</ref> to generate a VQA version with region questions. <ref type="bibr" target="#b21">[22]</ref>. 679 fundus images containing questions about entire images (e.g., "what is the DME risk grade?") and about randomly generated circular regions (e.g., "are there hard exudates in this region?"). The dataset comprises 9'779 question-answer (QA) pairs for training, 2'380 for validation, and 1'311 for testing. RIS-VQA. Images from the 2017 Robotic Instrument Segmentation dataset <ref type="bibr" target="#b0">[1]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>DME-VQA</head><p>We automatically generated binary questions with the structure "is there [instrument] in this region?" and corresponding masks as rectangular regions with random locations and sizes. Based on the ground-truth label maps, the binary answers were labeled "yes" if the region contained at least one pixel of the corresponding instrument and "no" otherwise. The questions were balanced to maintain the same amount of "yes" and "no" answers. Figure <ref type="figure" target="#fig_2">3</ref> shows the distribution of questions in the three datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Baselines and Metrics</head><p>We compare our method to four different baselines, as shown in Fig. <ref type="figure" target="#fig_4">4</ref>:</p><p>No mask: no information is provided about the region in the question.</p><p>Region in text <ref type="bibr" target="#b22">[23]</ref>: region information is included as text in the question.</p><p>Crop region <ref type="bibr" target="#b21">[22]</ref>: image is masked to show only the queried region, with the area outside the region set to zero. Draw region: region is indicated by drawing its boundary on the input image with a distinctive color.</p><p>We evaluated the performance of our method using accuracy for the DME-VQA dataset and the area under the receiver operating characteristic (ROC) curve and Average Precision (AP) for the RIS-VQA and INSEGCAT-VQA datasets. Implementation Details: Our VQA architecture uses an LSTM <ref type="bibr" target="#b10">[11]</ref> with an output dimension 1024 to encode the question and a word embedding size of 300.</p><p>We use the ResNet-152 <ref type="bibr" target="#b9">[10]</ref> with ImageNet weights to encode images of size 448 × 448, generating feature maps with 2048 channels. In the localized attention block, the visual and textual features are projected into a 512-dimensional space before being combined by element-wise multiplication. Following <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b12">13]</ref>, the number of glimpses is set to G = 2 for all experiments. The classification block is a multi-layer perceptron with a hidden layer of 1024 dimensions. A dropout rate of 0.25 and ReLU activation are used in the localized attention and classifier blocks. We train our models for 100 epochs using an early stopping condition with patience of 20 epochs. Data augmentation consists of horizontal flips. We use a batch size of 64 samples and the Adam optimizer with a learning rate of 10 -4 , which is reduced by a factor of 0.1 when learning stagnates. Models implemented in PyTorch 1.13.1 and trained on an Nvidia RTX 3090 graphics card.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Results</head><p>Our method outperformed all considered baselines on the DME-VQA (Table <ref type="table" target="#tab_0">1</ref>), the RIS-VQA, and the INSEGCAT-VQA datasets (Table <ref type="table" target="#tab_1">2</ref>), highlighting the importance of contextual information in answering localized questions. Context proved to be particularly critical in distinguishing between objects of similar appearance, such as the bipolar and prograsp forceps in RIS-VQA, where our method led to an 8 percent point performance improvement (Table <ref type="table" target="#tab_2">3</ref>). In contrast, the importance of context was reduced when dealing with visually distinct objects, resulting in smaller performance gains as observed in the INSEGCAT-VQA dataset. For example, despite not incorporating contextual information, the baseline crop region still benefited from correlations between the location of the region and the instrument mentioned in the question (e.g., the eye retractor typically appears at the top or the bottom of the image), enabling it to achieve competitive performance levels that are less than 2 percent points lower than our method (Table <ref type="table" target="#tab_1">2</ref>, bottom). Similar to our method, the baseline draw region incorporates contextual information when answering localized questions. However, we observed that drawing regions on the image can interfere with the computation of guided attention maps, leading to incorrect predictions (Fig. <ref type="figure" target="#fig_5">5</ref>, column 4). In addition, the lack of masking of the attention maps often led the model to wrongly consider areas beyond the region of interest while answering questions (Fig. <ref type="figure" target="#fig_5">5</ref>, column 1).</p><p>When analyzing mistakes made by our model, we observe that they tend to occur when objects or background structures in the image look similar to the object mentioned in the question (Fig. <ref type="figure" target="#fig_5">5</ref>, column 3). Similarly, false predictions were observed when only a few pixels of the object mentioned in the question were present in the region.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusions</head><p>In this paper, we proposed a novel VQA architecture to answer questions about regions. We compare the performance of our approach against several baselines and across three different datasets. By focusing the model's attention on the region after considering the evidence in the full image, we show how our method brings improvements, especially when the complete image context is required to answer the questions. Future works include studying the agreement between answers to questions about concentric regions, as well as the agreement between questions about images and regions.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Examples of localized questions. In some cases (RIS-VQA and INSEGCAT-VQA), the object mentioned in the question is only partially present in the region. We hypothesize that context can play an important role in answering such questions.</figDesc><graphic coords="2,56,31,61,46,311,38,87,88" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Left: Proposed VQA architecture for localized questions. The Localized Attention module allows the region information to be integrated into the VQA while considering the context necessary to answer the question. Right: Localized Attention module.</figDesc><graphic coords="4,41,79,53,75,340,57,115,96" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Distribution by question type (DME-VQA) and by question object (RIS-VQA and INSEGCAT-VQA).</figDesc><graphic coords="5,55,98,54,26,340,30,67,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>15'580 QA pairs from 1'423 images were used for training, 3'930 from 355 images for validation, and 13'052 from 1'200 images for testing. INSEGCAT-VQA. Frames of cataract surgery videos from the InSegCat 2 dataset [5]. We followed the same procedure as in RIS-VQA to generate balanced binary questions with masks and answers. The dataset consists of 29'380 QA pairs from 3'519 images for training, 5'306 from 536 images for validation, and 4'322 from 592 images for testing.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Illustration of evaluated baselines for an example image.</figDesc><graphic coords="6,42,81,53,72,338,98,107,98" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Qualitative examples on the RIS-VQA dataset (columns 1-3), INSEGCAT-VQA (columns 4-5), and DME-VQA (last column). Only the strongest baselines were considered in this comparison. The first row shows the image, the region, and the ground truth answer. Other rows show the overlaid attention maps and the answers produced by each model. Wrong answers are shown in red. Additional examples are available in the Supplementary Materials.</figDesc><graphic coords="8,39,39,274,76,346,00,208,54" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Average accuracy for different methods on the DME-VQA dataset. The results shown are the average of 5 models trained with different seeds.</figDesc><table><row><cell>Method</cell><cell cols="2">Accuracy (%)</cell><cell></cell><cell></cell></row><row><cell></cell><cell>Overall</cell><cell>Grade</cell><cell>Whole</cell><cell>Macula</cell><cell>Region</cell></row><row><cell>No Mask</cell><cell cols="5">61.1 ± 0.4 80.0 ± 3.7 85.7 ± 1.2 84.3 ± 0.5 57.6 ± 0.4</cell></row><row><cell cols="6">Region in Text [23] 60.0 ± 1.5 57.9 ± 12.5 85.1 ± 1.9 83.2 ± 2.4 57.7 ± 1.0</cell></row><row><cell>Crop Region [22]</cell><cell cols="5">81.4 ± 0.3 78.7 ± 1.3 81.3 ± 1.7 82.3 ± 1.4 81.5 ± 0.3</cell></row><row><cell>Draw Region</cell><cell cols="5">83.0 ± 1.0 79.6 ± 2.5 77.0 ± 4.8 84.0 ± 1.9 83.5 ± 1.0</cell></row><row><cell>Ours</cell><cell cols="5">84.2 ± 0.6 82.8 ± 0.4 87.0 ± 1.2 83.0 ± 1.5 84.2 ± 0.7</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Average test AUC and AP for different methods on the RIS-VQA and INSEGCAT-VQA datasets. The results shown are the average over 5 seeds.</figDesc><table><row><cell>Dataset</cell><cell>Method</cell><cell>AUC</cell><cell>AP</cell></row><row><cell>RIS-VQA</cell><cell>No Mask</cell><cell>0.500 ± 0.000</cell><cell>0.500 ± 0.000</cell></row><row><cell></cell><cell cols="2">Region in Text [23] 0.677 ± 0.002</cell><cell>0.655 ± 0.003</cell></row><row><cell></cell><cell>Crop Region [22]</cell><cell>0.842 ± 0.002</cell><cell>0.831 ± 0.002</cell></row><row><cell></cell><cell>Draw Region</cell><cell>0.835 ± 0.003</cell><cell>0.829 ± 0.003</cell></row><row><cell></cell><cell>Ours</cell><cell cols="2">0.885 ± 0.003 0.885 ± 0.003</cell></row><row><cell cols="2">INSEGCAT-VQA No Mask</cell><cell>0.500 ± 0.000</cell><cell>0.500 ± 0.000</cell></row><row><cell></cell><cell cols="2">Region in Text [23] 0.801 ± 0.012</cell><cell>0.793 ± 0.014</cell></row><row><cell></cell><cell>Crop Region [22]</cell><cell>0.901 ± 0.002</cell><cell>0.891 ± 0.003</cell></row><row><cell></cell><cell>Draw Region</cell><cell>0.910 ± 0.003</cell><cell>0.907 ± 0.005</cell></row><row><cell></cell><cell>Ours</cell><cell cols="2">0.914 ± 0.002 0.915 ± 0.002</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Average test AUC for different methods on the RIS-VQA dataset as a function of instrument type. Results are averaged over 5 models trained with different seeds. The corresponding table for INSEGCAT-VQA is available in the Supplementary Materials.</figDesc><table><row><cell>Method</cell><cell cols="2">Instrument Type</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>Large</cell><cell>Monopolar</cell><cell>Vessel</cell><cell>Grasping</cell><cell>Prograsp</cell><cell>Bipolar</cell></row><row><cell></cell><cell>Needle</cell><cell>Curved</cell><cell>Sealer</cell><cell>Retractor</cell><cell>Forceps</cell><cell>Forceps</cell></row><row><cell></cell><cell>Driver</cell><cell>Scissors</cell><cell></cell><cell></cell><cell></cell><cell></cell></row><row><cell>No Mask</cell><cell>0.500</cell><cell>0.500</cell><cell>0.500</cell><cell>0.500</cell><cell>0.500</cell><cell>0.500</cell></row><row><cell></cell><cell>±0</cell><cell>±0</cell><cell>±0</cell><cell>±0</cell><cell>±0</cell><cell>±0</cell></row><row><cell>Region in</cell><cell>0.717</cell><cell>0.674</cell><cell>0.620</cell><cell>0.616</cell><cell>0.647</cell><cell>0.645</cell></row><row><cell>Text [23]</cell><cell>±0.003</cell><cell>±0.001</cell><cell>±0.011</cell><cell>±0.020</cell><cell>±0.008</cell><cell>±0.003</cell></row><row><cell>Crop</cell><cell>0.913</cell><cell>0.812</cell><cell>0.752</cell><cell>0.715</cell><cell>0.773</cell><cell>0.798</cell></row><row><cell>Region [22]</cell><cell>±0.002</cell><cell>±0.003</cell><cell>±0.009</cell><cell>±0.015</cell><cell>±0.003</cell><cell>±0.004</cell></row><row><cell>Draw</cell><cell>0.915</cell><cell>0.777</cell><cell>0.783</cell><cell>0.709</cell><cell>0.755</cell><cell>0.805</cell></row><row><cell>Region</cell><cell>±0.003</cell><cell>±0.003</cell><cell>±0.004</cell><cell>±0.012</cell><cell>±0.004</cell><cell>±0.005</cell></row><row><cell>Ours</cell><cell>0.944</cell><cell>0.837</cell><cell>0.872</cell><cell>0.720</cell><cell>0.834</cell><cell>0.880</cell></row><row><cell></cell><cell>±0.001</cell><cell>±0.005</cell><cell>±0.008</cell><cell>±0.031</cell><cell>±0.006</cell><cell>±0.003</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This work was partially funded by the <rs type="funder">Swiss National Science Foundation</rs> through grant <rs type="grantNumber">191983</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_SvUnbez">
+					<idno type="grant-number">191983</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0 34.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<author>
+			<persName><forename type="first">M</forename><surname>Allan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.06426</idno>
+		<title level="m">robotic instrument segmentation challenge</title>
+		<imprint>
+			<date type="published" when="2017">2017. 2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">VQA: visual question answering</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Antol</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="2425" to="2433" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">MUTAN: multimodal tucker fusion for visual question answering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ben-Younes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Cadene</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Cord</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Thome</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE International Conference on Computer Vision</title>
+		<meeting>the IEEE International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="2612" to="2620" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Multiple meta-model quantifying for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Nguyen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_7</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-37" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="64" to="74" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Pixel-based tool segmentation in cataract surgery videos with mask R-CNN</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Fox</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Taschwer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Schoeffmann</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/CBMS49503.2020.00112</idno>
+		<ptr target="https://doi.org/10.1109/CBMS49503.2020.00112" />
+	</analytic>
+	<monogr>
+		<title level="m">33rd IEEE International Symposium on Computer-Based Medical Systems, CBMS 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">G S</forename><surname>De Herrera</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>González</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><forename type="middle">C</forename><surname>Santosh</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Z</forename><surname>Temesgen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Kane</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Soda</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Rochester, MN, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">July 28-30, 2020. 2020</date>
+			<biblScope unit="page" from="565" to="568" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Multimodal compact bilinear pooling for visual question answering and visual grounding</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fukui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Rohrbach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rohrbach</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1606.01847</idno>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Cross-modal self-attention with multitask pre-training for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Gong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2021 International Conference on Multimedia Retrieval</title>
+		<meeting>the 2021 International Conference on Multimedia Retrieval</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="456" to="460" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Making the v in VQA matter: elevating the role of image understanding in visual question answering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Khot</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Summers-Stay</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Batra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Parikh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="6904" to="6913" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Overview of the ImageCLEF 2018 medical domain visual question answering task</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Farri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lungren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Müller</surname></persName>
+		</author>
+		<ptr target="CEUR-WS.org&lt;http://ceur-ws.org&gt;" />
+	</analytic>
+	<monogr>
+		<title level="m">CEUR Workshop Proceedings</title>
+		<meeting><address><addrLine>Avignon, France</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2018-09">September 2018</date>
+			<biblScope unit="page" from="10" to="14" />
+		</imprint>
+	</monogr>
+	<note>CLEF2018 Working Notes</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Long short-term memory</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1735" to="1780" />
+			<date type="published" when="1997">1997</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">GQA: a new dataset for compositional question answering over real-world images</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Hudson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1902.095063</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">W</forename><surname>On</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">W</forename><surname>Ha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">T</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1610.04325</idno>
+		<title level="m">Hadamard product for low-rank bilinear pooling</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">AIML at VQA-Med 2020: knowledge inference via a skeleton-based sentence mapping approach for medical domain visual question answering</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Van Den</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hengel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Verjans</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Slake: a semanticallylabeled knowledge-enhanced dataset for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">M</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 IEEE 18th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="1650" to="1654" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">An effective deep transfer learning and information fusion framework for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Rosen</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-28577-7_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-28577-720" />
+	</analytic>
+	<monogr>
+		<title level="m">CLEF 2019</title>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Crestani</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11696</biblScope>
+			<biblScope unit="page" from="238" to="247" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Hinthorn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Russakovsky</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2011.13681</idno>
+		<title level="m">Point and ask: incorporating pointing into visual question answering</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Overcoming data limitation in medical visual question answering</title>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">D</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T.-T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">X</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Tjiputra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><forename type="middle">D</forename><surname>Tran</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32251-9_57</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32251-957" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11767</biblScope>
+			<biblScope unit="page" from="522" to="530" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Radiology objects in COntext (ROCO): a multimodal image dataset</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Pelka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Koitka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Rückert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Nensa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Friedrich</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01364-6_20</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01364-620" />
+	</analytic>
+	<monogr>
+		<title level="m">LABELS/CVII/STENT -2018</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Stoyanov</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11043</biblScope>
+			<biblScope unit="page" from="180" to="189" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">CGMVQA: a new classification and generative model for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Access</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="50626" to="50636" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">LXMERT: learning cross-modality encoder representations from transformers</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bansal</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1908.07490</idno>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Consistency-preserving visual question answering in medical imaging</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tascon-Morales</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Márquez-Neila</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sznitman</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_37</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-137" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention. MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="386" to="395" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A question-centric model for visual question answering in medical imaging</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Löfstedt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Nyholm</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Sznitman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="2856" to="2868" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Question-guided feature pyramid network for medical visual question answering</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Xiao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Syst. Appl</title>
+		<imprint>
+			<biblScope unit="volume">214</biblScope>
+			<biblScope unit="page">119148</biblScope>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Medical visual question answering via conditional reasoning</title>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">M</forename><surname>Zhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><forename type="middle">M</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 28th ACM International Conference on Multimedia</title>
+		<meeting>the 28th ACM International Conference on Multimedia</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2345" to="2354" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

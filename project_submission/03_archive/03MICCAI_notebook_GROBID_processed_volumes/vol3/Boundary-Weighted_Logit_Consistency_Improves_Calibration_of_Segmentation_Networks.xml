@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Boundary-Weighted Logit Consistency Improves Calibration of Segmentation Networks</title>
+				<funder ref="#_z3zJ9KK">
+					<orgName type="full">National Institutes of Health</orgName>
+					<orgName type="abbreviated">NIH</orgName>
+				</funder>
+				<funder ref="#_Y7Xy2Ea">
+					<orgName type="full">Swiss National Science Foundation</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName><forename type="first">Neerav</forename><surname>Karani</surname></persName>
+							<email>nkarani@csail.mit.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Neel</forename><surname>Dey</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Polina</forename><surname>Golland</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Massachusetts Institute of Technology</orgName>
+								<address>
+									<settlement>Cambridge</settlement>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Boundary-Weighted Logit Consistency Improves Calibration of Segmentation Networks</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="367" to="377"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">70011085838849A78461799BF28BB9D2</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-1_36</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>calibration</term>
+					<term>consistency regularization</term>
+					<term>segmentation</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Neural network prediction probabilities and accuracy are often only weakly-correlated. Inherent label ambiguity in training data for image segmentation aggravates such miscalibration. We show that logit consistency across stochastic transformations acts as a spatially varying regularizer that prevents overconfident predictions at pixels with ambiguous labels. Our boundary-weighted extension of this regularizer provides state-of-the-art calibration for prostate and heart MRI segmentation. Code is available at https://github.com/neerakara/BWCR.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Supervised learning of deep neural networks is susceptible to overfitting when labelled training datasets are small, as is often the case in medical image analysis. Data augmentation (DA) tackles this issue by transforming (informed by knowledge of task-specific invariances and equivariances) labelled input-output pairs, thus simulating new input-output pairs to expand the training dataset. This idea is used in semi-supervised learning <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b16">15]</ref> via an unsupervised loss function that promotes the desired invariance and equivariance properties in predictions for unlabelled images. We refer to this as consistency regularization (CR).</p><p>While previous work has employed CR to leverage unlabelled images, we show that even in the absence of any additional unlabelled images, CR improves calibration <ref type="bibr" target="#b10">[9]</ref>, and sometimes, even segmentation accuracy of neural networks over those trained with DA. This is surprising at first sight. Compared to DA, when employed in the supervised setting, CR does not have access to additional data. What are then the causes of this benefit?</p><p>To answer this question, we note that boundaries between anatomical regions are often ambiguous in medical images due to absence of sufficient contrast or presence of image noise or partial volume effects. Annotations in labelled segmentation datasets, however, typically comprise of hard class assignments for each pixel, devoid of information regarding such ambiguity. Supervised learning approaches then insist on perfect agreement at every pixel between predictions and ground truth labels, which can be achieved by over-parameterized neural networks. For instance, using the cross-entropy loss function for training maximizes logit differences between the ground truth class and other classes for each pixel <ref type="bibr" target="#b23">[22]</ref>. This bias for low-entropy predictions caused by supervised learning loss functions coupled with inherent ambiguity in the true underlying labels leads to over-confident predictions and miscalibrated models.</p><p>This viewpoint suggests that reduced logit differences across classes for pixels with ambiguous labels may help counter such miscalibration. Based on this idea, we make two main contributions in this paper. First, we show that CR can automatically discover such pixels and prevent overfitting to their noisy labels. In doing so, CR induces a spatially varying pixel-wise regularization effect, leading to improved calibration. In contrast to previous use of CR in medical image segmentation <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b16">15]</ref>, these new benefits are independent of additional unlabelled images. Second, based on this understanding of the mechanism underlying the calibration benefits of CR, we propose a spatially-varying weighing strategy for the CR loss relative to the supervised loss. This strategy emphasizes regularization in pixels near tissue boundaries, as these pixels are more likely to suffer from label ambiguity. We illustrate the calibration benefits of our approach on segmentation tasks in prostate and heart MRI.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Label ambiguity in medical image segmentation is tackled either by generating multiple plausible segmentations for each image <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b14">13]</ref>, or by predicting a single well-calibrated segmentation <ref type="bibr" target="#b11">[10,</ref><ref type="bibr" target="#b13">12,</ref><ref type="bibr" target="#b15">14,</ref><ref type="bibr" target="#b19">18,</ref><ref type="bibr" target="#b23">22]</ref>. In the latter group, predictions of multiple models are averaged to produce the final segmentation <ref type="bibr" target="#b11">[10,</ref><ref type="bibr" target="#b19">18]</ref>. Alternatively, the training loss of a single model is modified to prevent low-entropy predictions at all pixels <ref type="bibr" target="#b23">[22]</ref>, at pixels with high errors <ref type="bibr" target="#b15">[14]</ref> or pixels near boundaries <ref type="bibr" target="#b13">[12,</ref><ref type="bibr" target="#b22">21]</ref>. Smoothing ground truth labels of boundary pixels <ref type="bibr" target="#b13">[12]</ref> disregards image intensities that cause label ambiguity. In contrast, the boundary-weighted variant of our approach emphasizes regularization in those regions but allows consistency across stochastic transformations to differentiate sub-regions with varying label ambiguity. Related, boundary-weighted supervised losses have been proposed in different contexts <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b12">11]</ref>. Aleatoric uncertainty estimation in medical images <ref type="bibr" target="#b20">[19,</ref><ref type="bibr" target="#b30">29]</ref> is closely related to the problem of pixel-wise label ambiguity due to uncertainty in the underlying image intensities. In particular, employing stochastic transformations during inference has been shown to produce estimates of aleatoric uncertainty <ref type="bibr" target="#b30">[29]</ref>, while we use them during training to automatically identify regions with ambiguous labels and prevent low-entropy segmentation predictions in such regions. In semi-supervised medical image segmentation, CR is widely used as a means to leverage unlabelled images to improve segmentation accuracy <ref type="bibr" target="#b6">[6,</ref><ref type="bibr" target="#b8">7,</ref><ref type="bibr" target="#b16">15,</ref><ref type="bibr" target="#b18">17,</ref><ref type="bibr" target="#b31">30]</ref>. In contrast, we investigate the capability of CR to improve calibration without using any unlabelled images. Finally, for image classification, CR can help mitigating label noise <ref type="bibr" target="#b9">[8]</ref> and label smoothing has been shown to improve calibration <ref type="bibr" target="#b21">[20]</ref>. To our knowledge, this paper is the first to investigate the role of CR as a means to improve calibration of segmentation models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methods</head><p>Using a labelled dataset {(X i , Y i )}, i = 1, 2, . . . n, we wish to learn a function that maps images X ∈ R H×W to segmentation labelmaps Y ∈ {1, 2, ..., C} H×W , where C is the number of classes. Let f θ be a convolutional neural network that predicts Ŷ = σ(f θ (X)), where f θ (X) ∈ R H×W ×C are logits and σ is the softmax function. In supervised learning, optimal parameter values are obtained by minimizing an appropriate supervised loss, θ = argmin θ E X,Y L s (σ(f θ (X)), Y ). Data augmentation (DA) leverages knowledge that the segmentation function is invariant to intensity transformations S φ (e.g., contrast and brightness modifications, blurring, sharpening, Gaussian noise addition) and equivariant to geometric transformations T ψ (e.g., affine and elastic deformations).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>The optimization becomes θ = argmin</head><formula xml:id="formula_0">θ E X,Y,φ,ψ L s (σ(g(X; θ, φ, ψ)), Y ), where g(X; θ, φ, ψ) = T -1 ψ (f θ (S φ (T ψ (X)))).</formula><p>In order to achieve equivariance with respect to T ψ , the loss is computed after applying the inverse transformation to the logits. Consistency regularization (CR) additionally constrains the logits predicted for similar images to be similar. This is achieved by minimizing a consistency loss L c between logits predicted for two transformed versions of the same image: θ</p><formula xml:id="formula_1">= argmin θ E X,Y,φ,ψ,φ ,ψ L s (σ(g(X; θ, φ, ψ)), Y ) + λL c (g(X; θ, φ, ψ), g(X; θ, φ , ψ )).</formula><p>The exact strategy for choosing arguments of L c can vary: as above, we use predictions of the same network θ for different transformations (φ, ψ) and (φ , ψ ) <ref type="bibr" target="#b6">[6]</ref>; alternatives include setting φ = φ, ψ = ψ, and using two variants of the model θ and θ <ref type="bibr" target="#b27">[26,</ref><ref type="bibr" target="#b28">27]</ref> or different combinations of these approaches <ref type="bibr" target="#b8">[7,</ref><ref type="bibr" target="#b16">15]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Consistency Regularization at Pixel-Level</head><p>Here, we show how understanding the relative behaviours of the supervised and unsupervised losses used in CR help to improve calibration. Common choices for L s and L c are pixel-wise cross-entropy loss and pixel-wise sum-of-squares loss, respectively. For these choices, the total loss for pixel j can be written as follows:</p><formula xml:id="formula_2">L j = L j s + λ L j c = - C c=1 y j c log(σ(z j c )) + λ C c=1 (z j c -z j c ) 2 , (<label>1</label></formula><formula xml:id="formula_3">)</formula><p>where z j and z j are C-dimensional logit vectors at pixel j in g(X; θ, φ, ψ) and g(X; θ, φ , ψ ) respectively, and the subscript c indexes classes. L s drives the predicted probability of the ground truth label class to 1, and those of all other classes to 0. Such low-entropy predictions are preferred by the loss function even for pixels whose predictions should be ambiguous due to insufficient image contrast, partial volume effect or annotator mistakes.</p><p>Consistency loss L c encourages solutions with consistent logit predictions across stochastic transformations. This includes, but is not restricted to, the low-entropy solution preferred by L s . In fact, it turns out that due to the chosen formulation of L s in the probability space and L c in the logit space, deviations  from logit consistency are penalized more strongly than deviations from lowentropy predictions. Thus, L c permits high confidence predictions only for pixels where logit consistency across stochastic transformations can be achieved.</p><p>Furthermore, variability in predictions across stochastic transformations has been shown to be indicative of aleatoric image uncertainty <ref type="bibr" target="#b30">[29]</ref>. This suggests that inconsistencies in logit predictions are likely to occur at pixels with high label ambiguity, causing high values of L c and preventing high confidence predictions at pixels with latent ambiguity in labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Special Case of Binary Segmentation:</head><p>To illustrate the pixel-wise regularization effect more clearly, let us consider binary segmentation. Here, we can fix z 1 = 0 and let z 2 = z, as only logit differences matter in the softmax function. Further, let us consider only one pixel, drop the pixel index and assume that its ground truth label is c = 2. Thus, y 1 = 0 and y 2 = 1. With these simplifications, L s =log(σ(z)) and L c = (zz ) 2 . Figure <ref type="figure" target="#fig_0">1</ref> shows that L s favours high z values, regardless of z , while L c prefers the z = z line, and heavily penalizes deviations from it. The behaviour of these losses is similar for multi-label segmentation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Spatially Varying Weight for Consistency Regularization</head><p>Understanding consistency regularization as mitigation against overfitting to hard labels in ambiguous pixels points to a straightforward improvement of the method. Specifically, the regularization term in the overall loss should be weighed higher when higher pixel ambiguity, and thus, higher label noise, is expected. Natural candidates for higher ambiguity are pixels near label boundaries. Accordingly, we propose boundary-weighted consistency regularization (BWCR):</p><formula xml:id="formula_4">L j = L j s + λ(r j ) L j c (2) λ(r j ) = λ max max(R -r j , 0) R + λ min<label>(3)</label></formula><p>where r j is the distance to the closest boundary from pixel j, λ(r j ) drops away from the label boundaries, and R is the width of the boundary region affected by the regularization. We compute r j = argmin c r j c , where r j c is the absolute value of the euclidean distance transform <ref type="bibr" target="#b25">[24]</ref> at pixel j of the binarized segmentation for foreground label c. Figure <ref type="figure" target="#fig_1">2</ref> shows examples of r j and λ(r j ) maps.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments and Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Datasets:</head><p>We investigate the effect of CR on two public datasets. The NCI <ref type="bibr" target="#b5">[5]</ref> dataset includes T2-weighted prostate MRI scans of N = 70 subjects (30 acquired with a 3T scanner and a surface coil, and 40 acquired with a 1.5T scanner and an endo-rectal coil). In-plane resolution is 0.4 -0.75 mm 2 , throughplane resolution is 3 -4mm. Expert annotations are available for central gland (CG) and peripheral zone (PZ). The ACDC <ref type="bibr" target="#b4">[4]</ref> dataset consists of cardiac cine MRI scans of N = 150 subjects (evenly distributed over 4 pathological types and healthy subjects, and acquired using 1.5T and 3T scanners). In-plane resolution is 1.37 -1.68 mm 2 , through-plane resolution is 5 -10 mm. Expert annotations are provided for right ventricle (RV), left ventricle (LV) and myocardium (MY). Two 3D volumes that capture the end-systolic and end-diastolic stages of the cine acquisition respectively are annotated for each subject.</p><p>Data Splits: From the N subjects in each dataset, we select N ts test, N vl validation and N tr training subjects. {N ts , N vl } are set to {30, 4} for NCI and {50, 5} for ACDC. We have 3 settings for N tr : small, medium and large, with N tr as 6, 12 and 36 for NCI, and 5, 10 and 95 for ACDC, in the three settings, respectively. All experiments are run thrice, with test subjects fixed across runs, and training and validation subjects randomly sampled from remaining subjects. In each dataset, subjects in all subsets are evenly distributed over different scanners.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Pre-processing:</head><p>We correct bias fields using the N4 <ref type="bibr" target="#b29">[28]</ref> algorithm, linearly rescale intensities of each image volume using its 2nd and 98th intensity percentile, followed by clipping at 0.0 and 1.0, resample (linearly for images and with nearest-neighbours for labels) NCI and ACDC volumes to 0.625 mm 2 and 1.33 mm 2 in-plane resolution, while leaving the through-plane resolution unchanged, and crop or pad with zeros to set the in-plane size to 192 x 192 pixels.</p><p>Training Details: We use a 2D U-net <ref type="bibr" target="#b26">[25]</ref> architecture for f θ , and use crossentropy loss as L s and squared difference between logits as L c . For S φ , we employ gamma transformations, linear intensity scaling and shifts, blurring, sharpening and additive Gaussian noise. For T ψ , we use affine transformations. For both, we use the same parameter ranges as in <ref type="bibr" target="#b32">[31]</ref>. For every 2D image in a batch, we apply each transformation with probability 0.5. We set the batch size to 16, train for 50000 iterations with Adam optimizer, and linearly decay the learning rate from 10 -4 to 10 -7 . After the training is completed, we set θ to its exponential moving average at the iteration with the best validation Dice score <ref type="bibr" target="#b1">[2]</ref>.</p><p>Evaluation Criteria: We evaluate segmentation accuracy using Dice similarity coefficient and calibration using Expected Calibration Error (ECE) <ref type="bibr" target="#b10">[9]</ref> and Thresholded Adaptive Calibration Error (TACE) <ref type="bibr" target="#b24">[23]</ref> (computed using 15 bins and threshold of 0.01). ECE measures the average difference of accuracy and mean confidence of binned predicted probabilities, while TACE employs an adaptive binning scheme such that all bins contain an equal number of predictions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Effect of CR</head><p>First, we check if CR improves calibration of segmentation models. We perform this experiment in the small training dataset setting, and present results in Table <ref type="table">1</ref>. It can be seen that as λ (Eq. 1) increases from 0.01 to 1.0, CR improves calibration in both datasets while retaining similar segmentation accuracy to DA (λ = 0.0). These results validate the discussion presented in Sect. 3.1. However, increasing λ to 10.0 leads to accuracy degradation. This motivates us to propose the boundary-weighted extension to CR in order to further improve calibration while preserving or improving segmentation accuracy.</p><p>Table <ref type="table">1</ref>. Effect of CR (λ &gt; 0) and DA (λ = 0) on segmentation accuracy and calibration. Results are reported as % average ± % standard deviation values of over test volumes and three experiment runs. For brevity, TACE values are scaled by 10. Increasing λ from 0.01 to 1.0 improves calibration, but further increasing λ leads to degradation in segmentation accuracy.</p><formula xml:id="formula_5">Method NCI ACDC λ Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓ 0.0 66±13 24±14 11±4 76±12 20±14 10±4 0.01 66±13 25±13 12±4 75±13 19±14 9±3 0.1 66±14 24±14 11±3 75±12 17±14 7±3 1.0 65±14 18±14 6±3 75±12 13±12 5±2 10.0 63±13 13±12 1±1 70±12 16±11 1±0</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Effect of BWCR</head><p>We compare CR and BWCR with the following baseline methods: (1) supervised learning without DA (Baseline), (2) data augmentation (DA) <ref type="bibr" target="#b32">[31]</ref>, (3) spatially varying label smoothing (SVLS) <ref type="bibr" target="#b13">[12]</ref> and (4) margin-based label smoothing (MLS) <ref type="bibr" target="#b17">[16,</ref><ref type="bibr" target="#b23">22]</ref>. For CR, we set λ = 1.0. For BWCR, we set λ min = 0.01, λ max = 1.0 and R = 10 pixels. These values were set heuristically; performance may be further improved by tuning them using a validation set. For SVLS and MLS, we use the recommended hyper-parameters, setting the size of the blurring kernel to 3 × 3 and its standard deviation to 1.0 in SVLS, and margin to 10.0 and regularization term weight to 0.1 in MLS. To understand the behaviour of these methods under different training dataset sizes, we carry out these comparisons in the small, medium and large settings explained above. The following observations can be made from Table <ref type="table" target="#tab_0">2:</ref> 1. As training data increases, both accuracy and calibration of the supervised learning baseline improve. Along this axis, reduced segmentation errors improve calibration metrics despite low-entropy predictions. 2. Similar trends exist for DA along the data axis. For fixed training set size, DA improves both accuracy and calibration due to the same reasoning as above. This indicates that strong DA should be used as a baseline method when developing new calibration methods. 3. Among the calibration methods, CR provides better calibration than SVLS and MLS. BWCR improves calibration even further. For all except the ACDC large training size setting, BWCR's improvements in ECE and TACE over all other methods are statistically significant (p &lt; 0.001) according to paired permutation tests. Further, while CR causes slight accuracy degradation compared to DA, BWCR improves or retains accuracy in most cases. 4. Subject-wise calibration errors (Fig. <ref type="figure" target="#fig_2">3</ref>) show that improvements in calibration statistics stem from consistent improvements across all subjects. 5. Figure <ref type="figure" target="#fig_3">4</ref> shows that predictions of CR and BWCR are less confident around boundaries. BWCR also shows different uncertainty in pixels with similar distance to object boundaries but different levels of image uncertainty.   6. Figure <ref type="figure" target="#fig_3">4</ref> also reveals an intriguing side-effect of the proposed method: CR, and to a lesser extent BWCR, exhibit confidence leakage along object boundaries of other foreground classes. For instance, in row 1 (3), CR assigns probability mass along PZ (MY) edges in the CG (RV) probability map. We defer analysis of this behaviour to future work. 7. While CR and BWCR effectively prevent over-fitting to hard ground truth labels in ambiguous pixels, they fail (in most cases) to improve segmentation accuracy as compared to DA. 8. In the large training set experiments for ACDC, CR and BWCR exhibit worse calibration than other methods. The segmentation accuracy is very high for all methods, but CR and BWCR still provide soft probabilities near boundaries thus causing poorer calibration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We developed a method for improving calibration of segmentation neural networks by noting that consistency regularization mitigates overfitting to ambiguous labels, and building on this understanding to emphasize this regularization in pixels most likely to face label noise. Future work can extend this approach for lesion segmentation and/or 3D models, explore the effect of other consistency loss functions (e.g. cosine similarity or Jensen-Shannon divergence), develop other strategies to identify pixels that are more prone to ambiguity, or study the behaviour of improved calibration on out-of-distribution samples.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Loss landscapes shown in log scale for Ls (left), Lc (right) and the total loss in Eq. 1 for different values of λ (center two), as z and z vary.</figDesc><graphic coords="4,41,79,188,99,340,66,61,78" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. From left to right, ground truth label, absolute distance function map, and proposed spatially varying weight for consistency regularization for R = 10.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Subject-wise improvement in ECE due to CR and BWCR, relative to DA. Numbers between each set of CR and BWCR boxes indicate Ntr. Advantages of the proposed method are particularly prominent for small training set sizes.</figDesc><graphic coords="7,55,98,465,02,340,18,83,86" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative comparison of calibration results for NCI CG (row 1), PZ (row 2), ACDC RV (row 3), and MY (row 4). Arrows point to spatially varying uncertainty predicted by the proposed method in ambiguous regions.</figDesc><graphic coords="8,51,81,54,32,313,03,172,45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 2 .</head><label>2</label><figDesc>Quantitative</figDesc><table><row><cell></cell><cell></cell><cell>NCI</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Method</cell><cell>Ntr = 6</cell><cell>Ntr = 12</cell><cell></cell><cell cols="2">Ntr = 36</cell></row><row><cell>Baseline</cell><cell>55±16 41±16 15±4</cell><cell cols="2">58±17 39±16 16±5</cell><cell cols="2">68±13 27±11 13±4</cell></row><row><cell>DA [31]</cell><cell>66±13 24±12 11±4</cell><cell cols="2">69±13 23±11 12±4</cell><cell cols="2">75±11 13±9 7±3</cell></row><row><cell>SVLS [12]</cell><cell>66±14 23±13 11±4</cell><cell cols="2">68±14 20±11 9±3</cell><cell cols="2">75±12 14±9 7±2</cell></row><row><cell>MLS [22]</cell><cell>66±14 31±15 13±5</cell><cell cols="2">68±14 22±10 11±4</cell><cell cols="2">75±12 14±10 7±2</cell></row><row><cell>CR (Ours)</cell><cell>65±14 18±14 6±3</cell><cell cols="2">68±14 18±14 6±3</cell><cell>73±12 9±9</cell><cell>4±2</cell></row><row><cell cols="2">BWCR (Ours) 67±13 14±12 5±3</cell><cell cols="2">69±13 13±12 3±1</cell><cell>75±11 7±7</cell><cell>3±1</cell></row><row><cell></cell><cell></cell><cell>ACDC</cell><cell></cell><cell></cell><cell></cell></row><row><cell>Method</cell><cell>Ntr = 5</cell><cell>Ntr = 10</cell><cell></cell><cell cols="2">Ntr = 95</cell></row><row><cell>Baseline</cell><cell>58±15 37±17 18±6</cell><cell cols="2">67±15 22±13 8±6</cell><cell>86±6 8±6</cell><cell>6±2</cell></row><row><cell>DA [31]</cell><cell>76±12 20±14 10±4</cell><cell cols="2">82±8 11±9 6±3</cell><cell>90±3 4±3</cell><cell>3±2</cell></row><row><cell>SVLS [12]</cell><cell>75±12 19±14 8±4</cell><cell>83±7 9±8</cell><cell>5±3</cell><cell>90±3 3±3</cell><cell>3±2</cell></row><row><cell>MLS [22]</cell><cell>75±12 20±14 9±4</cell><cell cols="2">82±8 12±9 7±3</cell><cell>90±3 3±3</cell><cell>3±2</cell></row><row><cell>CR (Ours)</cell><cell>75±12 13±12 5±2</cell><cell>81±8 8±6</cell><cell>4±1</cell><cell>88±4 7±2</cell><cell>4±1</cell></row><row><cell cols="2">BWCR (Ours) 75±11 11±10 5±2</cell><cell>82±8 8±5</cell><cell>4±1</cell><cell>89±3 8±2</cell><cell>4±1</cell></row></table><note><p>results reported as % average ± % standard deviation over test volumes and 3 experiment runs. For brevity, TACE values are scaled by 10. The best values in each column are highlighted, with the winner for tied averages decided by lower standard deviations. Paired permutation tests (n = 10000) show that ECE and TACE improvements of BWCR over all other methods are statistically significant with p &lt; 0.001, for all except the ACDC large training size setting. Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓ Dice ↑ ECE ↓ TACE ↓</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. This research is supported by <rs type="funder">NIH</rs> <rs type="grantNumber">NIBIB NAC P41EB015902</rs>, <rs type="institution">IBM</rs>, and the <rs type="funder">Swiss National Science Foundation</rs> under project <rs type="grantNumber">P500PT-206955</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_z3zJ9KK">
+					<idno type="grant-number">NIBIB NAC P41EB015902</idno>
+				</org>
+				<org type="funding" xml:id="_Y7Xy2Ea">
+					<idno type="grant-number">P500PT-206955</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Automatic segmentation of the placenta in BOLD MRI time series</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Abulnaga</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-17117-8_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-17117-81" />
+	</analytic>
+	<monogr>
+		<title level="s">Lecture Notes in Computer Science</title>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Licandro</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Melbourne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">E</forename><surname>Abaci Turk</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Macgowan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hutter</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13575</biblScope>
+			<date type="published" when="2022">2022</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Cham</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Perinatal, Preterm and Paediatric Image Analysis. PIPPI 2022</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Ensemble of averages: improving model selection and boosting performance in domain generalization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Arpit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">PHiSeg: capturing uncertainty in medical image segmentation</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">F</forename><surname>Baumgartner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="119" to="127" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_14</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-814" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">NCI-ISBI 2013 challenge: automated segmentation of prostate structures</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bloch</surname></persName>
+		</author>
+		<ptr target="https://wiki.cancerimagingarchive.net/display/Public/NCI-ISBI+2013+Challenge+-+Automated+Segmentation+of+Prostate+Structures" />
+		<imprint>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Semisupervised medical image segmentation via learning consistency under transformations</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bortsova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Dubost</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hogeweg</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Katramados</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">11769</biblScope>
+			<biblScope unit="page" from="810" to="818" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32226-7_90</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32226-790" />
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Semi-supervised brain lesion segmentation with an adapted mean teacher model</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Cui</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-20351-1_43</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-20351-1" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2019</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">C S</forename><surname>Chung</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Gee</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Yushkevich</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Bao</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11492</biblScope>
+			<biblScope unit="page">43</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Generalized Jensen-Shannon divergence loss for learning with noisy labels</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Englesson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Azizpour</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">On calibration of modern neural networks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Pleiss</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">Q</forename><surname>Weinberger</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International conference on machine learning</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Hypernet-ensemble learning of segmentation probability for medical image segmentation with ambiguous labels</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hong</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.06693</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">SynthStrip: skullstripping for any brain image</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hoopes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Mora</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">V</forename><surname>Dalca</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Fischl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hoffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeuroImage</title>
+		<imprint>
+			<biblScope unit="volume">260</biblScope>
+			<biblScope unit="page">119474</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Spatially varying label smoothing: capturing uncertainty from expert annotations</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Islam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Glocker</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-78191-0_52</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-78191-052" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2021</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Feragen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Sommer</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Schnabel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Nielsen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12729</biblScope>
+			<biblScope unit="page" from="677" to="688" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A probabilistic U-Net for segmentation of ambiguous images</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kohl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in neural information processing systems</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Maximum entropy on erroneous predictions (MEEP): improving model calibration for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Larrazabal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Martinez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2112.12218</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Transformationconsistent self-ensembling model for semisupervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="523" to="534" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The devil is in the margin: marginbased label smoothing for network calibration</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Galdran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page">102517</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Confidence calibration and predictive uncertainty estimation for deep medical image segmentation</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mehrtash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">M</forename><surname>Tempany</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abolmaesumi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kapur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="3868" to="3878" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Stochastic segmentation networks: modelling spatially correlated aleatoric uncertainty</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Monteiro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">When does label smoothing help?</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Müller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kornblith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<author>
+			<persName><forename type="first">B</forename><surname>Murugesan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Adiga</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Ayed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename></persName>
+		</author>
+		<idno type="arXiv">arXiv:2303.06268</idno>
+		<title level="m">Trust your neighbours: penalty-based constraints for model calibration</title>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<author>
+			<persName><forename type="first">B</forename><surname>Murugesan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Galdran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.09641</idno>
+		<title level="m">Calibrating segmentation networks with margin-based label smoothing</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Measuring calibration in deep learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Nixon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">W</forename><surname>Dusenberry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jerfel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tran</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR Workshops</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Distance transforms: Properties and machine vision applications. Graphical models and image processing</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W</forename><surname>Paglieroni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVGIP</title>
+		<imprint>
+			<date type="published" when="1992">1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Regularization with stochastic transformations and perturbations for deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sajjadi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Javanmardi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Tasdizen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in neural information processing systems</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in neural information processing systems</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">N4itk: improved N3 bias correction</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">J</forename><surname>Tustison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="1310" to="1320" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Aleatoric uncertainty estimation with test-time augmentation for medical image segmentation with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aertsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deprest</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ourselin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Vercauteren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">338</biblScope>
+			<biblScope unit="page" from="34" to="45" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Mutual consistency learning for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page">102530</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Generalizing deep learning for medical image segmentation to unseen domains via deep stacked transformation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="2531" to="2540" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

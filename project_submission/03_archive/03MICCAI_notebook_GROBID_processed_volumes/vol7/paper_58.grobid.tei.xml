@@ -1,0 +1,992 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Context-Aware Pseudo-label Refinement for Source-Free Domain Adaptive Fundus Image Segmentation</title>
+				<funder ref="#_rDPVQ25">
+					<orgName type="full">Hong Kong Innovation and Technology Fund</orgName>
+				</funder>
+				<funder ref="#_5A2xjxn">
+					<orgName type="full">HKUST-BICI Exploratory Fund</orgName>
+				</funder>
+				<funder ref="#_AGXM8p5 #_gCEQHWH">
+					<orgName type="full">Foshan HKUST</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Zheang</forename><surname>Huai</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xinpeng</forename><surname>Ding</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Yi</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaomeng</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Context-Aware Pseudo-label Refinement for Source-Free Domain Adaptive Fundus Image Segmentation</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="618" to="628"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">67C9B7D66B137B810013C607FF6E236F</idno>
+					<idno type="DOI">10.1007/978-3-031-43990-2_58</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Source-free domain adaptation</term>
+					<term>Context similarity</term>
+					<term>Pseudo-label refinement</term>
+					<term>Fundus image</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>In the domain adaptation problem, source data may be unavailable to the target client side due to privacy or intellectual property issues. Source-free unsupervised domain adaptation (SF-UDA) aims at adapting a model trained on the source side to align the target distribution with only the source model and unlabeled target data. The source model usually produces noisy and context-inconsistent pseudolabels on the target domain, i.e., neighbouring regions that have a similar visual appearance are annotated with different pseudo-labels. This observation motivates us to refine pseudo-labels with context relations. Another observation is that features of the same class tend to form a cluster despite the domain gap, which implies context relations can be readily calculated from feature distances. To this end, we propose a context-aware pseudo-label refinement method for SF-UDA. Specifically, a context-similarity learning module is developed to learn context relations. Next, pseudo-label revision is designed utilizing the learned context relations. Further, we propose calibrating the revised pseudolabels to compensate for wrong revision caused by inaccurate context relations. Additionally, we adopt a pixel-level and class-level denoising scheme to select reliable pseudo-labels for domain adaptation. Experiments on cross-domain fundus images indicate that our approach yields the state-of-the-art results. Code is available at https://github.com/ xmed-lab/CPR.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Accurate segmentation of the optic cup and optic disc in fundus images is essential for the cup-to-disc ratio measurement that is critical for glaucoma screening and detection <ref type="bibr" target="#b5">[6]</ref>. Although deep neural networks have achieved great advances in medical image segmentation, they are susceptible to data with domain shifts, such as those caused by using different scanning devices or different hospitals <ref type="bibr" target="#b23">[24]</ref>. Unsupervised domain adaptation <ref type="bibr" target="#b10">[11]</ref> is proposed to transfer knowledge to the target domain with access to the source and target data while not requiring any annotation in the target domain. Recently, source-free unsupervised domain adaptation (SF-UDA) has become a significant area of research <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b19">20]</ref>, where source data is inaccessible due to privacy or intellectual property concerns.</p><p>Existing SF-UDA solutions can be categorized into four main groups: batch normalization (BN) statistics adaptation <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b22">23]</ref>, approximating source images <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b25">26]</ref>, entropy minimization <ref type="bibr" target="#b1">[2]</ref>, and pseudo-labeling <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b24">25]</ref>. BN statistics adaptation methods aim to address the discrepancy of statistics between different domains. For example, <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17]</ref> update low-order and high-order BN statistics with distinct training objectives, while <ref type="bibr" target="#b22">[23]</ref> adapts BN statistics to minimize the entropy of the model's prediction. Approximating source images aims to generate sourcelike images. For example, <ref type="bibr" target="#b25">[26]</ref> first attains a coarse source image by freezing the source model and training a learnable image, then refines the image via mutual Fourier Transform. The refined source-like image provides a representation of the source data distribution and facilitates domain alignment during the adaptation process. For another instance, <ref type="bibr" target="#b8">[9]</ref> learns a domain prompt to add to a target domain image so that the sum simulates the source image. Entropy minimization methods aim to produce more confident model predictions. For example, <ref type="bibr" target="#b1">[2]</ref> minimizes output entropy with a regularizer of class-ratio. The class-ratio is estimated by an auxiliary network that is pre-trained on the source domain. For pseudo-labeling <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b28">29]</ref>, erroneous pseudo-labels are either discarded or corrected. For example, <ref type="bibr" target="#b2">[3]</ref> identifies low-confidence pseudo-labels at both the pixel-level and the class-level. On the other hand, <ref type="bibr" target="#b24">[25]</ref> performs uncertainty-weighted soft label correction by estimating the class-conditional label error probability. However, all of these methods overlook context relations, which can enhance adaptation performance without the need to access the source data.</p><p>We observe in our experiments (see Fig. <ref type="figure" target="#fig_0">1</ref> (a)) that domain gaps can result in the source model making context-inconsistent predictions. For neighboring patches of an image with similar visual appearance, the source model can yield vastly different predictions. This phenomenon can be explained by the observation in <ref type="bibr" target="#b14">[15]</ref> that target data shifts in the feature space, causing some data points to shift across the boundary of the source domain segmentor. The issue of context inconsistency motivates us to utilize context relations in refining pseudo-labels. Moreover, it is observed in our experiments (as shown in Fig. <ref type="figure" target="#fig_0">1(b)</ref>) that target features produced by the source model still form clusters, meaning that the features of target data points with the same class are closely located. This discovery led us to calculate context relations from feature distances; see Fig. <ref type="figure" target="#fig_0">1(c)</ref>.</p><p>In this paper, we present a novel context-aware pseudo-label refinement (CPR) framework for source-free unsupervised domain adaptation. Firstly, we develop a context-similarity learning module, where context relations are computed from distances of features via a context-similarity head. This takes advantage of the intrinsic clustered feature distribution under domain shift <ref type="bibr" target="#b26">[27,</ref><ref type="bibr" target="#b27">28]</ref>, where target features generated by the source encoder are close for the same class and faraway for different classes (see Fig. <ref type="figure" target="#fig_0">1 (b)</ref>). Secondly, context-aware revision is designed to leverage adjacent pseudo-labels for revising bad pseudo-labels, with aid of the learned context relations. Moreover, a calibration strategy is proposed, aiming to mitigate the negative effect brought about by the inaccurate learned context relations. Finally, the refined pseudo-labels are denoised with consideration of model knowledge and feature distribution <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b12">13]</ref> to select reliable pseudo-labels for domain adaptation. Experiments on cross-domain fundus image segmentation demonstrate our proposed framework outperforms the state-of-the-art source-free methods <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b25">26]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_1">2</ref> illustrates our SF-UDA framework via context-aware pseudo-label refinement. In this section, we first introduce the context-similarity learning scheme. Next, we propose the pseudo-label refinement strategy. Finally, we present the model training with the denoised refined pseudo-labels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Context-Similarity Learning</head><p>In the SF-UDA problem, a source model</p><formula xml:id="formula_0">f s : X s → Y s is trained using the data {x i s , y i s } ns i=1 from the source domain D s = (X s , Y s ), where (x i s , y i s ) ∈ (X s , Y s ).</formula><p>f s is typically trained with a supervision loss of cross-entropy. Also an unlabeled dataset {x i t } nt i=1 from the target domain D t is given, where x i t ∈ D t . SF-UDA aims to learn a target model f t : X t → Y t with only the source model f s and the target dataset {x i t } nt i=1 . In our fundus segmentation problem, y i ∈ {0, 1} H×W ×C , where C is the number of classes and C = 2 because there are two segmentation targets, namely optic cup and optic disc.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Architecture of Context-Similarity Head.</head><p>Although the target features generated by source encoder do not align with the source segmentor, features of the same classes tend to be in the same cluster while those of different classes are faraway, as shown in Fig. <ref type="figure" target="#fig_0">1 (b</ref>). This indicates the source feature encoder is useful for computing context relations. Therefore, we freeze the source encoder and add an additional head to the encoder for learning context semantic relations, motivated by <ref type="bibr" target="#b0">[1]</ref>. A side benefit of freezing the source encoder is the training time and required memory can be reduced, as backward propagation is not needed on the encoder. Specifically, the feature map f sim is first obtained, where a 1 × 1 convolution is applied for adaptation to the target task. Then the semantic similarity between coordinate i and coordinate j on the feature map is defined as</p><formula xml:id="formula_1">S ij = exp -f sim (x i , y i ) -f sim (x j , y j ) 1 .</formula><p>(</p><p>Computing similarities between every pair of coordinates in a feature map is computationally costly. Thus, for each coordinate i, only similarities with coordinates j lying within the circle of radius r are considered in our implementation.</p><p>Training of Context-Similarity Head. Given a target image x t , initial pseudolabels and uncertainty mask can be obtained from the source model f s and x t , following previous work <ref type="bibr" target="#b2">[3]</ref> as:</p><formula xml:id="formula_3">p v,k =f s (x t ) v , k = 1, . . . , K, p v = avg(p v,1 , . . . , p v,K ), u v = std(p v,1 , . . . , p v,K ), ŷv = 1[p v ≥ γ],</formula><p>(2)</p><formula xml:id="formula_4">z ω = v f l,v • 1[ŷ v = ω]1[u v &lt; η] • p v,ω v 1[ŷ v = ω]1[u v &lt; η] • p v,ω</formula><p>, ω ∈{foreground (fg), background (bg)},</p><formula xml:id="formula_5">d ω v = f l,v -z ω 2 , (<label>3</label></formula><formula xml:id="formula_6">)</formula><formula xml:id="formula_7">m v = 1[u v &lt; η](1[ŷ v = 1]1[d fg v &lt; d bg v ] + 1[ŷ v = 0]1[d fg v &gt; d bg v ]).</formula><p>In Eq. 2, Monte Carlo Dropout <ref type="bibr" target="#b7">[8]</ref> is performed with K forward passes through the source model, thereby calculating pseudo-label ŷv and uncertainty u v for the vth pixel. Equation 3 first extracts the class-wise prototypes z ω from the feature map f l,v of the layer before the last convolution, then uncertainty mask m v is calculated by combining the distance to prototypes and uncertainty u v . A pseudo-label for the v-th pixel is reliable if</p><formula xml:id="formula_8">m v = 1.</formula><p>Binary similarity label is then obtained. For two coordinates i and j, similarity label S * ij is 1 if pseudo-labels ŷi = ŷj , and 0 otherwise. Note only reliable pseudolabels are considered to provide less noisy supervision.</p><p>The context-similarity head is trained with S * . To address the class imbalance issue, the loss of each type of similarity (fg-fg, bg-bg, fg-bg) is calculated and aggregated <ref type="bibr" target="#b0">[1]</ref> as <ref type="formula">4</ref>)</p><formula xml:id="formula_9">L con = - 1 4 avg ŷi=ŷj =1 mi=mj =1 (logS ij )- 1 4 avg ŷi=ŷj =0 mi=mj =1 (logS ij )- 1 2 avg ŷi =ŷj mi=mj =1 (log(1-S ij )). (</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Context-Similarity-Based Pseudo-Label Refinement</head><p>Context-Aware Revision. The trained context-similarity head is utilized to refine the initial coarse pseudo-labels. Specifically, context-similarities S ij are computed by passing the target image through the source encoder and the trained head. Then the refined probability for the i-th coordinate is updated as the weighted average of the probabilities in a local circle around the i-th coordinate as</p><formula xml:id="formula_10">p re i = d(i,j)≤r S ij β d(i,j)≤r S ij β • p j (5)</formula><p>where p re i is the revised probability and d(•) is the Euclidean distance. β ≥ 1, in order to highlight the prominent similarities and ignore the smaller ones. By combining neighboring predictions based on context relations, revised probabilities are more robust. Equation 5 is performed iteratively for t rounds, since revised probabilities can be used for further revision.</p><p>Calibration. The probability update by Eq. 5 might be hurt by inaccurate context relations. We observe that for some classes (optic cup for fundus segmentation) with worse pseudo-labels, the context-similarity for "fg-bg" is not learned well. Consequently, the probability of background incorrectly propagates to that of foreground, making the probability of foreground lower. To tackle this issue, the revised probability is calibrated as</p><formula xml:id="formula_11">p i = p re i max j (p re j ) . (<label>6</label></formula><formula xml:id="formula_12">)</formula><p>The decreased probability is rectified by the maximum value in the image, considering the maximum probability (e.g., in the center of a region) after calibration of a class should be close to 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Model Adaptation with Denoised Pseudo Labels</head><p>The refined pseudo-labels can be obtained by</p><formula xml:id="formula_13">ŷ v = 1[p v ≥ γ].</formula><p>However, noisy pseudo-labels inevitably exist. The combination of model knowledge and target feature distribution shows the best estimation of sample confidence <ref type="bibr" target="#b12">[13]</ref>. To this end, reliable pseudo-labels are selected at pixel-level and class-level <ref type="bibr" target="#b2">[3]</ref> as</p><formula xml:id="formula_14">m v,p = 1(p v &lt; γ low or p v &gt; γ high ) m v,c = 1(ŷ v = 1)1(d fg v &lt; d bg v ) + 1(ŷ v = 0)1(d fg v &gt; d bg v ),<label>(7)</label></formula><p>in which γ low and γ high are two thresholds for filtering out pseudo-labels without confident probabilities. d fg v and d bg v are the distances to feature prototypes as computed in Eq. 3. The final label selection mask is the intersection of m v,p and m v,c , i.e., m v = m v,p •m v,c . The target model is trained under the supervision of pseudolabels selected by m v , with cross-entropy loss:</p><formula xml:id="formula_15">L seg = - v m v • ŷ v • log(f t (x t ) v ) + (1 -ŷ v ) • log(1 -f t (x t ) v ) . (<label>8</label></formula><formula xml:id="formula_16">)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Datasets. For a fair comparison, we follow prior work <ref type="bibr" target="#b2">[3]</ref> to select three mainstream datasets for fundus image segmentation, i.e., Drishti-GS <ref type="bibr" target="#b21">[22]</ref>, RIM-ONE-r3 <ref type="bibr" target="#b6">[7]</ref>, and the validation set of REFUGE challenge <ref type="bibr" target="#b17">[18]</ref>. These datasets are split into 50/51, 99/60, and 320/80 for training/testing, respectively.</p><p>Implementation Details and Evaluation Metrics. Following prior works <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b24">25]</ref>, our segmentation network is MobileNetV2-adapted <ref type="bibr" target="#b20">[21]</ref> DeepLabv3+ <ref type="bibr" target="#b3">[4]</ref>. The context-similarity head comprises two branches for optic cup and optic disc, respectively. Each branch includes a 1×1 convolution and a similarity feature map. The threshold γ for determining pseudo-labels is set to 0.75, referring to <ref type="bibr" target="#b23">[24]</ref>. The radius r in Eq. 5, the β in Eq. 5 and the iteration number t are set to 4, 2 and 4 respectively. The two thresholds for filtering out unconfident refined pseudo-labels are empirically set as γ low = 0.4 and γ high = 0.85, respectively. Each image is pre-processed by clipping a 512 × 512 optic disc region <ref type="bibr" target="#b23">[24]</ref>. The same augmentations as in <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b24">25]</ref> are applied, including Gaussian noise, contrast adjustment, and random erasing. The Adam optimizer is adopted with learning rates of 3e-2 and 3e-4 in the context-similarity learning stage and the target domain adaptation stage respectively. The momentum of the Adam optimizer is set to 0.9 and 0.99. The batch size is set to 8. The context-similarity head is trained for 16 epochs and the target model is trained for 10 epochs. The implementation is carried out via PyTorch on a single NVIDIA GeForce RTX 3090 GPU. For evaluation, we adopt the widely used Dice coefficient and Average Surface Distance (ASD).</p><p>Comparison with State-of-the-Arts. Table <ref type="table" target="#tab_0">1</ref> shows the comparison of our method with the state-of-the-art SF-UDA methods. Besides three SOTA methods, i.e., DPL <ref type="bibr" target="#b2">[3]</ref>, FSM <ref type="bibr" target="#b25">[26]</ref>, and U-D4R <ref type="bibr" target="#b24">[25]</ref>, we also report the adaptation result without adaptation and the result with fully supervised learning (denoted as "upper bound"). The results show that our approach achieves clear improvements over the previous methods, owing to the proposed pseudo-label refinement scheme which takes advantage of the feature distribution property under domain shift to learn context relations and utilizes valuable context information to rectify pseudolabels. Figure <ref type="figure" target="#fig_2">3</ref> (a) shows a qualitative comparison.</p><p>Ablation Study on Different Modules. Table <ref type="table" target="#tab_1">2</ref> provides a quantitative analysis to investigate the function of each module. Each component shows its importance in improving the adaptation performance. Particularly, without our pseudolabel refinement, an obvious decrease of segmentation performance can be witnessed, revealing its necessity. Without calibration, the segmentation performance  Ablation Study on Pseudo-label Refinement. Ablation study is conducted to verify the effectiveness of the pseudo-label refinement strategy. As shown in Table <ref type="table" target="#tab_2">3</ref>, after refinement, the quality of the pseudo-label is clearly promoted, leading to more accurate supervision for target domain adaptation. For the pseudolabel of optic disc which originally has high accuracy, our refinement scheme encouragingly achieves a boost of 3.5%, showing the robustness of our refinement scheme for different quality of initial pseudo-labels. Without calibration, the accu- racy of the pseudo-label of optic cup is substantially dropped, indicating it is an indispensable part of the overall scheme. Figure <ref type="figure" target="#fig_2">3</ref> (b) visualizes an example of the evolution of the pseudo-label. As can be seen, the context-inconsistent region is clearly improved.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>This work presents a novel SF-UDA method for the fundus image segmentation problem. We propose to explicitly learn context semantic relations to refine pseudolabels. Calibration is performed to compensate for the wrong revision caused by inaccurate context relations. The performance is further boosted via the denoising scheme, which provides reliable guidance for adaptation. Our experiments on crossdomain fundus image segmentation show that our method outperforms the stateof-the-art SF-UDA approaches.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. (a) Example of context-inconsistent pseudo-labels. Due to domain gap, the pseudo-label of optic disc has irregular protuberance which is inconsistent with adjacent predictions. (b) t-SNE visualization of target pixel features produced by source model. Under domain shift, despite not aligning with source segmentor, target features of the same class still form a cluster. (c) Inspired by (b), context relations can be computed from feature distances.</figDesc><graphic coords="2,58,98,59,42,302,08,66,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Overview of the proposed context-aware pseudo-label refinement (CPR) framework for SF-UDA. It consists of two stages: (a) The context-similarity head for computing context relations is trained by reliable pseudo-labels. The learned context similarities are then used to refine the pseudo-labels; (b) Only the refined pseudo-labels with high confidence supervise the training of the segmentation network. The network consists of a feature encoder (Enc) and a segmentor (Seg).</figDesc><graphic coords="4,58,98,53,99,334,72,184,72" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. On the Drishti-GS to RIM-ONE-r3 adaptation: (a) Qualitative comparison of the optic cup and disc segmentation results with different methods. (b) An example of pseudo-label change with the proposed refinement scheme.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Comparison with state-of-the-arts on two settings. "W/o adaptation" refers to directly evaluating the source model on the target dataset. "Upper bound" refers to training the model on the target dataset with labels.</figDesc><table><row><cell>Methods</cell><cell>Dice [%]↑</cell><cell></cell><cell></cell><cell cols="2">ASD [pixel]↓</cell></row><row><cell></cell><cell cols="3">Optic cup Optic disc Avg</cell><cell cols="3">Optic cup Optic disc Avg</cell></row><row><cell cols="4">Source: Drishti-GS; Target: RIM-ONE-r3</cell><cell></cell><cell></cell></row><row><cell cols="2">W/o adaptation 70.84</cell><cell>89.94</cell><cell cols="2">80.39 13.44</cell><cell>10.76</cell><cell>12.10</cell></row><row><cell>Upper bound</cell><cell>83.81</cell><cell>96.61</cell><cell cols="2">90.21 6.92</cell><cell>2.96</cell><cell>4.94</cell></row><row><cell>DPL [3]</cell><cell>71.70</cell><cell>92.52</cell><cell cols="2">82.11 12.49</cell><cell>7.34</cell><cell>9.92</cell></row><row><cell>FSM [26]</cell><cell>74.34</cell><cell>91.41</cell><cell cols="2">82.88 14.52</cell><cell>10.30</cell><cell>12.41</cell></row><row><cell>U-D4R [25]</cell><cell>73.48</cell><cell>93.18</cell><cell cols="2">83.33 10.18</cell><cell>6.15</cell><cell>8.16</cell></row><row><cell>CPR (ours)</cell><cell>75.02</cell><cell>95.03</cell><cell cols="2">85.03 9.84</cell><cell>4.32</cell><cell>7.08</cell></row><row><cell cols="3">Source: REFUGE; Target: Drishti-GS</cell><cell></cell><cell></cell><cell></cell></row><row><cell cols="2">W/o adaptation 79.80</cell><cell>93.89</cell><cell cols="2">86.84 13.25</cell><cell>6.70</cell><cell>9.97</cell></row><row><cell>Upper bound</cell><cell>89.63</cell><cell>96.80</cell><cell cols="2">93.22 6.65</cell><cell>3.55</cell><cell>5.10</cell></row><row><cell>DPL [3]</cell><cell>82.04</cell><cell>95.27</cell><cell cols="2">88.65 12.14</cell><cell>5.32</cell><cell>8.73</cell></row><row><cell>FSM [26]</cell><cell>79.30</cell><cell>94.34</cell><cell cols="2">86.82 13.79</cell><cell>5.95</cell><cell>9.87</cell></row><row><cell>U-D4R [25]</cell><cell>81.82</cell><cell>95.98</cell><cell cols="2">88.90 12.21</cell><cell>4.45</cell><cell>8.33</cell></row><row><cell>CPR (ours)</cell><cell>84.49</cell><cell>96.16</cell><cell cols="2">90.32 10.19</cell><cell>4.23</cell><cell>7.21</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Quantitative ablation study on the Drishti-GS to RIM-ONE-r3 adaptation.</figDesc><table><row><cell>Pseudo-label refinement</cell><cell>Denoising Dice [%]</cell><cell></cell></row><row><cell>Context-aware revision Calibration</cell><cell cols="3">Optic cup Optic disc Avg</cell></row><row><cell></cell><cell>67.25</cell><cell>93.73</cell><cell>80.49</cell></row><row><cell></cell><cell>53.73</cell><cell>92.67</cell><cell>73.20</cell></row><row><cell></cell><cell>69.80</cell><cell>94.95</cell><cell>82.38</cell></row><row><cell></cell><cell>74.68</cell><cell>93.10</cell><cell>83.89</cell></row><row><cell></cell><cell>72.34</cell><cell>94.13</cell><cell>83.23</cell></row><row><cell></cell><cell>75.02</cell><cell>95.03</cell><cell>85.03</cell></row><row><cell cols="4">degrades significantly, which is because the probabilities without calibration do not</cell></row><row><cell cols="4">have correct absolute values. This demonstrates calibration is a necessary step after</cell></row><row><cell cols="4">the revision. Denoising filters out unreliable pseudo-labels by taking into account</cell></row><row><cell cols="4">individual probabilities and feature distribution, thus providing more correct guid-</cell></row><row><cell cols="4">ance. Integrating all the components completes our framework and yields the best</cell></row><row><cell>result.</cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 3 .</head><label>3</label><figDesc>Comparison of pseudo-label quality of the training set with different methods on the Drishti-GS to RIM-ONE-r3 adaptation.</figDesc><table><row><cell>Methods</cell><cell>Dice [%]</cell><cell></cell></row><row><cell></cell><cell cols="2">Optic cup Optic disc</cell></row><row><cell>Initial pseudo-label [3]</cell><cell>67.66</cell><cell>90.01</cell></row><row><cell>Refined pseudo-label</cell><cell>72.01</cell><cell>93.51</cell></row><row><cell cols="2">Refined pseudo-label (w/o calibration) 58.34</cell><cell>93.40</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was partially supported by the <rs type="funder">Hong Kong Innovation and Technology Fund</rs> under Project <rs type="grantNumber">ITS/030/21</rs>, as well as by the <rs type="funder">HKUST-BICI Exploratory Fund</rs> (<rs type="grantNumber">HCIC-004</rs>) and <rs type="funder">Foshan HKUST</rs> Projects under Grants <rs type="grantNumber">FSUST21-HKUST10E</rs> and <rs type="grantNumber">FSUST21-HKUST11E</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_rDPVQ25">
+					<idno type="grant-number">ITS/030/21</idno>
+				</org>
+				<org type="funding" xml:id="_5A2xjxn">
+					<idno type="grant-number">HCIC-004</idno>
+				</org>
+				<org type="funding" xml:id="_AGXM8p5">
+					<idno type="grant-number">FSUST21-HKUST10E</idno>
+				</org>
+				<org type="funding" xml:id="_gCEQHWH">
+					<idno type="grant-number">FSUST21-HKUST11E</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43990-2 58.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Learning pixel-level semantic affinity with image-level supervision for weakly supervised semantic segmentation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ahn</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kwak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4981" to="4990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Source-relaxed domain adaptation for image segmentation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bateson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lombaert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Ben Ayed</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59710-8_48</idno>
+		<idno>978-3-030-59710-8 48</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12261</biblScope>
+			<biblScope unit="page" from="490" to="499" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptive fundus image segmentation with denoised pseudo-labeling</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87240-3_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87240-322" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12905</biblScope>
+			<biblScope unit="page" from="225" to="235" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Encoder-decoder with atrous separable convolution for semantic image segmentation</title>
+		<author>
+			<persName><forename type="first">L.-C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Papandreou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Schroff</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adam</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01234-2_49</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01234-249" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11211</biblScope>
+			<biblScope unit="page" from="833" to="851" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Source-free domain adaptation via distribution estimation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="7212" to="7222" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Joint optic disc and cup segmentation based on multi-label deep network and polar transformation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">W K</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Cao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1597" to="1605" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Rim-one: an open retinal image database for optic nerve evaluation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Fumero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Alayón</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">L</forename><surname>Sanchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sigut</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Gonzalez-Hernandez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2011 24th International Symposium on Computer-Based Medical Systems (CBMS)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2011">2011</date>
+			<biblScope unit="page" from="1" to="6" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Dropout as a Bayesian approximation: representing model uncertainty in deep learning</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Gal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="1050" to="1059" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">ProsFDA: prompt learning based source-free domain adaptation for medical image segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2211.11514</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Variational model perturbation for sourcefree domain adaptation</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">G M</forename><surname>Snoek</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=yTJzexm-u6" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Oh</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Agarwal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Belgrave</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Cho</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Unsupervised domain adaptation in brain lesion segmentation with adversarial networks</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kamnitsas</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-59050-9_47</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-59050-9" />
+	</analytic>
+	<monogr>
+		<title level="m">IPMI 2017</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Niethammer</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10265</biblScope>
+			<biblScope unit="page">47</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Pseudo-label: the simple and efficient semi-supervised learning method for deep neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Challenges in Representation Learning, ICML</title>
+		<meeting><address><addrLine>Atlanta</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page">896</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Confidence score for source-free unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Jung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yoon</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="12365" to="12377" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Model adaptation: unsupervised domain adaptation without source data</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">S</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="9641" to="9650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Do we really need to access the source data? Source hypothesis transfer for unsupervised domain adaptation</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="6028" to="6039" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Memory consistent unsupervised off-theshelf model adaptation for source-relaxed medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>El Fakhri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Woo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="page">102641</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Adapting off-the-shelf source segmenter for target medical image segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>El Fakhri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Woo</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_51</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-351" />
+	</analytic>
+	<monogr>
+		<title level="m">MIC-CAI 2021</title>
+		<editor>
+			<persName><forename type="first">Marleen</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="549" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Refuge challenge: a unified framework for evaluating automated methods for glaucoma assessment from fundus photographs</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">I</forename><surname>Orlando</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page">101570</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Uncertainty-guided source-free domain adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Roy</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19806-9_31</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19806-9" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13685</biblScope>
+			<biblScope unit="page">31</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Uncertainty reduction for model adaptation in semantic segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">P</forename><surname>Teja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Fleuret</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2021-06">June 2021</date>
+			<biblScope unit="page" from="9613" to="9623" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Mobilenetv 2: inverted residuals and linear bottlenecks</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sandler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Howard</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zhmoginov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="4510" to="4520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A comprehensive retinal image dataset for the assessment of glaucoma from the optic nerve head analysis</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Sivaswamy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Krishnadas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Chakravarty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Joshi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Tabish</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JSM Biomed. Imaging Data Papers</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">1004</biblScope>
+			<date type="published" when="2015">2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Tent: fully test-time adaptation by entropy minimization</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Shelhamer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Olshausen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Darrell</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=uXl3bZLkr3c" />
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Boundary and entropydriven adversarial learning for fundus image segmentation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32239-7_12</idno>
+		<idno>978-3-030-32239-7 12</idno>
+		<ptr target="https://doi.org/10.1007/" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11764</biblScope>
+			<biblScope unit="page" from="102" to="110" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Denoising for relaxing: unsupervised domain adaptive fundus image segmentation without source data</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16443-9_21</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16443-921" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13435</biblScope>
+			<biblScope unit="page" from="214" to="224" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Source free domain adaptation for medical image segmentation with Fourier style mining</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="page">102457</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Attracting and dispersing: a simple approach for source-free domain adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van De Weijer</surname></persName>
+		</author>
+		<ptr target="https://openreview.net/forum?id=ZlCpRiZN7n" />
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">H</forename><surname>Oh</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Agarwal</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Belgrave</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Cho</surname></persName>
+		</editor>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Exploiting the intrinsic neighborhood structure for source-free domain adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Van De Weijer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Herranz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Jui</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="29393" to="29405" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Enhancing pseudo label quality for semi-supervised domaingeneralized medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="3099" to="3107" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

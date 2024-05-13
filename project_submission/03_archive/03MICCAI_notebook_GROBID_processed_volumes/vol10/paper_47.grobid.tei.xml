@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Self-supervised MRI Reconstruction with Unrolled Diffusion Models</title>
+				<funder ref="#_WQsAaAb">
+					<orgName type="full">National Institutes of Health</orgName>
+					<orgName type="abbreviated">NIH</orgName>
+				</funder>
+				<funder ref="#_edT7VEY #_QzaVgJx #_GWKEQjH">
+					<orgName type="full">unknown</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Yilmaz</forename><surname>Korkmaz</surname></persName>
+							<email>ykorkma1@jhu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tolga</forename><surname>Cukur</surname></persName>
+							<email>cukur@ee.bilkent.edu.tr</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Bilkent University</orgName>
+								<address>
+									<settlement>Ankara</settlement>
+									<country key="TR">Turkey</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">National Magnetic Resonance Research Center (UMRAM)</orgName>
+								<address>
+									<settlement>Ankara</settlement>
+									<country key="TR">Turkey</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Vishal</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+							<email>vpatel36@jhu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Johns Hopkins University</orgName>
+								<address>
+									<settlement>Baltimore</settlement>
+									<region>MD</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Self-supervised MRI Reconstruction with Unrolled Diffusion Models</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="491" to="501"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">711F8736638C956DE4E999996E32F1FC</idno>
+					<idno type="DOI">10.1007/978-3-031-43999-5_47</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:29+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Magnetic Resonance Imaging</term>
+					<term>Self-Supervised Learning</term>
+					<term>Cross-Attention</term>
+					<term>Transformers</term>
+					<term>Accelerated MRI</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Magnetic Resonance Imaging (MRI) produces excellent soft tissue contrast, albeit it is an inherently slow imaging modality. Promising deep learning methods have recently been proposed to reconstruct accelerated MRI scans. However, existing methods still suffer from various limitations regarding image fidelity, contextual sensitivity, and reliance on fully-sampled acquisitions for model training. To comprehensively address these limitations, we propose a novel self-supervised deep reconstruction model, named Self-Supervised Diffusion Reconstruction (SSDiffRecon). SSDiffRecon expresses a conditional diffusion process as an unrolled architecture that interleaves cross-attention transformers for reverse diffusion steps with data-consistency blocks for physics-driven processing. Unlike recent diffusion methods for MRI reconstruction, a self-supervision strategy is adopted to train SSDiffRecon using only undersampled k-space data. Comprehensive experiments on public brain MR datasets demonstrates the superiority of SSDiffRecon against stateof-the-art supervised, and self-supervised baselines in terms of reconstruction speed and quality. Implementation will be available at https:// github.com/yilmazkorkmaz1/SSDiffRecon.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Magnetic Resonance Imaging (MRI) is one of the most widely used imaging modalities due to its excellent soft tissue contrast, but it has prolonged and costly scan sessions. Therefore, accelerated MRI methods are needed to improve its clinical utilization. Acceleration through undersampled acquisitions of a subset of kspace samples (i.e., Fourier domain coefficients) results in aliasing artifacts <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b16">17]</ref>. Many promising deep-learning methods have been proposed to reconstruct images by suppressing aliasing artifacts <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b24">24,</ref><ref type="bibr" target="#b27">27,</ref><ref type="bibr" target="#b29">29]</ref>. However, many existing methods are limited by suboptimal capture of the data distribution, poor contextual sensitivity, and reliance on fully-sampled acquisitions for model training <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b23">23]</ref>.</p><p>A recently emergent framework for learning data distributions in computer vision is based on diffusion models <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b18">19]</ref>. Several recent studies have considered diffusion-based MRI reconstructions, where either an unconditional or a conditional diffusion model is trained to generate images and reconstruction is achieved by later injecting data-consistency projections in between diffusion steps during inference <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b25">25]</ref>. While promising results have been reported, these diffusion methods can show limited reliability due to omission of physical constraints during training, and undesirable reliance on fully-sampled images. There is a more recent work that tried to mitigate fully-sampled data needs by Cui et al. <ref type="bibr" target="#b4">[5]</ref>. In this work authors proposed a two-staged training strategy where a Bayesian network is used to learn the fully-sampled data distribution to train a score model which is then used for conditional sampling. Our model differs from this approach since we trained it end-to-end without allowing error propagation from distinct training sessions.</p><p>To overcome mentioned limitations, we propose a novel self-supervised accelerated MRI reconstruction method, called SSDiffRecon. SSDiffRecon leverages a conditional diffusion model that interleaves linear-complexity cross-attention transformer blocks for denoising with data-consistency projections for fidelity to physical constraints. It further adopts self-supervised learning by prediction of masked-out k-space samples in undersampled acquisitions. SSDiffRecon achieves on par performance with supervised baselines while outperforming selfsupervised baselines in terms of inference speed and image fidelity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Background</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Accelerated MRI Reconstruction</head><p>Acceleration in MRI is achieved via undersampling the acquisitions in the Fourier domain as follows</p><formula xml:id="formula_0">F p CI = y p , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where F p is the partial Fourier operator, C denotes coil sensitivity maps, I is the MR image and y p is partially acquired k-space data. Reconstruction of fully sampled target MR image I from y p is an ill-posed problem since the number of unknowns are higher than the number of equations. Supervised deep learning methods try to solve this ill-posed problem using prior knowledge gathered in the offline training sessions as follows</p><formula xml:id="formula_2">I = argmin I 1 2 y p -F p CI 2 + λ(I), (<label>2</label></formula><formula xml:id="formula_3">)</formula><p>where I is the reconstruction, and λ(I) is the prior knowledge-guided regularization term. In supervised reconstruction frameworks, prior knowledge is induced from underlying mapping between under-and fully sampled acquisitions. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Denoising Diffusion Models</head><p>In diffusion models <ref type="bibr" target="#b9">[10]</ref>, Gaussian noise is progressively mapped on the data via a forward noising process</p><formula xml:id="formula_4">q (x t | x t-1 ) = N x t ; 1 -β t x t-1 , β t I ,<label>(3)</label></formula><p>where β t refers to the fixed variance schedule. After a sufficient number of forward diffusion steps (T ), x t follows a Gaussian distribution. Then, the backward diffusion process is deployed to gradually denoise x T to get x 0 using a deep neural network as a denoiser as follows</p><formula xml:id="formula_5">p θ (x t-1 | x t ) = N x t-1 ; θ (x t , t) , σ 2 t I ,<label>(4)</label></formula><p>where σ 2 t = βt = 1-ᾱt-1 1-ᾱt β t and θ represents the denoising neural network parametrized during backward diffusion and trained using the following loss <ref type="bibr" target="#b9">[10]</ref> </p><formula xml:id="formula_6">L(θ) = E t,x0, -θ √ ᾱt x 0 + √ 1 -ᾱt , t 2 , (<label>5</label></formula><formula xml:id="formula_7">)</formula><p>where ᾱt = t m=1 α m , α t = 1 -β t and ∼ N (0, I).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">SSDiffRecon</head><p>In SSDiffRecon, we utilize a conditional diffusion probabilistic model to reconstruct fully-sampled MR images given undersampled acquisitions as input. The reverse diffusion steps are parametrized using an unrolled transformer architecture as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. To improve adaptation across time steps in the diffusion process, we inject the time-index t via cross-attention transformers as opposed to the original DDPM models that add time embeddings as a bias term. In what follows we describe the training and inference procedures of SSDiffRecon.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Self-Supervised Training:</head><p>For self-supervised learning, we adopt a k-space masking strategy for diffusion models <ref type="bibr" target="#b26">[26]</ref> as follows</p><formula xml:id="formula_8">L(θ) = M l F(Cx us ) -M l F(Cx t recon ) 1 ,<label>(6)</label></formula><p>where • 1 denotes the L1-norm, F denotes 2D Fourier Transform, C are coil sensitivities, x us is the image derived from undersampled acquisitions, and M l is the random sub-mask within the main undersampling mask M. Here x t recon is the output of the unrolled denoiser network (R θ ) at time instant t ∈ {T, T -1, ..., 0}</p><formula xml:id="formula_9">x t recon = R θ (x t us , x us , M p , C, t), x t us = √ ᾱt x us + √ 1 -ᾱt , (<label>7</label></formula><formula xml:id="formula_10">)</formula><p>where M p is the sub-mask of the remaining points in M after excluding M l .</p><p>Inference: To speed up image sampling, inference starts with zero-filled Fourier reconstruction of the undersampled acquisitions as opposed to a pure noise sample. Conditional diffusion sampling is then performed with the trained diffusion model that iterates through cross-attention transformers for denoising and data-consistency projections. For gradual denoising, we introduce a descending random noise onto the undersampled data within data-consistency layers. Accordingly, the reverse diffusion step at time-index t is given as</p><formula xml:id="formula_11">x t-1 recon = R θ (x t recon , x t us , M p , C, t) + σ t z, x t us = √ ᾱt x us + √ 1 -ᾱt low , (<label>8</label></formula><formula xml:id="formula_12">)</formula><p>where low ∼ N (0, 0.1I) and z ∼ N (0, I).</p><p>Unrolled Denoising Network R θ (.): SSDiffRecon deploys an unrolled physics-guided denoiser in the diffusion process instead of UNET as is used in <ref type="bibr" target="#b9">[10]</ref>. Our denoiser network consists of the following two fundamental structures as shown in Fig. <ref type="figure" target="#fig_0">1</ref>. The entire network is trained end-to-end. Unrolled Denoising Blocks: Each denoising block consists of cross-attention and data-consistency layers sequentially. Let the input of the jth denoising block at time instant t be x t in,j ∈ R (h×w)×n , where h and w denote the height and width of the image, and n denotes the number of feature channels. For the first denoising block n = 2 and (x t in,j = x t us ). First, input is modulated with the affine-transformed global latent variable (w g ∈ R 32 ) via modulated-convolution adopted from <ref type="bibr" target="#b11">[12]</ref>. Assuming that the modulated-convolution kernel is given as β j , this operation is expressed as follows</p><formula xml:id="formula_13">x t output,j = ⎡ ⎢ ⎣ m x t,m in,j β m,1 j . . . m x t,m in,j β m,v j ⎤ ⎥ ⎦ ,<label>(9)</label></formula><p>where β u,v j ∈ R 3×3 is the convolution kernel for the u th input channel and the v th output channel, and m is the channel index. Then, the output of modulated convolution goes into the cross-attention transformer where the attention map att t j is calculated using local latent variables w t l at time index t as follows</p><formula xml:id="formula_14">att t j = sof tmax Q j (x t output,j + P.E.)K j (w t l + P.E.) T √ n V j (w t l ),<label>(10)</label></formula><p>where Q j (.), K j (.), V j (.) are queries, keys and values, respectively where each function represents a dense layer with input inside the parenthesis, and P.E. is the positional encoding. Then, x t output,j is normalized to zero-mean unit variance and scaled with a learned projection of the attention maps att t j as follows</p><p>x t output,j = α j (att j )</p><formula xml:id="formula_15">x t output,j -μ(x t output,j ) σ(x t output,j ) , (<label>11</label></formula><formula xml:id="formula_16">)</formula><p>where α j (.) is the learned scale parameter. After repeating the sequence of crossattention layer twice, lastly the data-consistency is performed. To perform dataconsistency the number of channels in x t output,j is decreased to 2 with an additional convolution layer. Then, 2-channel images are converted, where channels represent real and imaginary components, to complex and data-consistency is applied as follows</p><formula xml:id="formula_17">x t output,j = F -1 {F(Cx t output,j ) (1 -M p ) + F(Cx t us ) M p }, (<label>12</label></formula><formula xml:id="formula_18">)</formula><p>where F -1 represents the inverse 2D Fourier transform and x t us = x us during training. Then, using another extra convolution, the number of feature maps are increased to n again for the next denoising block.</p><p>Implementation Details : Adam optimizer is used for self-supervised training with β = (0.9, 0.999) and learning rate 0.002. Default noise schedule paramaters are taken from <ref type="bibr" target="#b9">[10]</ref>. 1000 forward and 5 reverse diffusion steps are used for training and inference respectively with batch size equals to 1. M l are sampled from M using uniform distribution by collecting 5% of acquired points. We used network snapshots at 445K and 654K steps which corresponds to 28th and 109th epochs for IXI and fastMRI datasets respectively. A single NVIDIA RTX A5000 gpu is used for training and inference.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experimental Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets</head><p>Experiments are performed using the following multi-coil and single-coil brain MRI datasets:</p><p>1. fastMRI: Reconstruction performance illustrated in multi-coil brain MRI dataset <ref type="bibr" target="#b13">[14]</ref>, 100 subjects are used for training, 10 for validation and 40 for testing. Data from multiple sites are included with no common protocol. T 1 -, T 2 -and Flair-weighted acquisitions are considered. GCC <ref type="bibr" target="#b28">[28]</ref> is used to decrease the number of coils to 5 to reduce the computational complexity. 2. IXI: Reconstruction performance illustrated in single-coil brain MRI data from IXI (http://brain-development.org/ixi-dataset/). T 1 -, T 2 -and PDweighted acquisitions are considered. In IXI, 25 subjects are used for training, 5 for validation and 10 for testing.</p><p>Acquisitions are retrospectively undersampled using variable-density masks.</p><p>Undersampling masks are generated based on a 2D Gaussian distribution with variance adjusted to obtain acceleration rates of R = <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b7">8]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Competing Methods</head><p>We compare the performance of SSDiffRecon with the following supervised and self-supervised baselines:</p><p>1. DDPM: Supervised diffusion-based reconstruction baseline. DDPM is trained with fully sampled MR images and follows a novel k-space sampling approach during inference introduced by Peng et al. <ref type="bibr" target="#b19">[20]</ref>. 1000 forward and backward diffusion steps are used in training and inference respectively. 2. self-DDPM: Self-supervised diffusion-based reconstruction baseline. Self-DDPM is trained using only under-sampled MRI acquisitions. Other than training, the inference procedure is identical to the DDPM. 3. D5C5: Supervised model-based reconstruction baseline. D5C5 is trained using under-and fully sampled paired MR images. Network architecture and training loss are adopted from <ref type="bibr" target="#b21">[21]</ref>. 4. self-D5C5: Self-supervised model-based reconstruction baseline. Self-D5C5 is trained using the self-supervision approach introduced in [26] using undersampled acquisitions. The hyperparameters and network architecture are the same as in D5C5. 5. RGAN: CNN-based reconstruction baseline. RGAN is trained using paired under-and fully sampled MR images. Network architecture and hyperparameters are adapted from <ref type="bibr" target="#b6">[7]</ref>. 6. self-RGAN: Self-supervised CNN-based reconstruction baseline. Self-RGAN is trained using the self-supervision loss in <ref type="bibr" target="#b26">[26]</ref> using only under-sampled images. Network architecture and other hyperparameters are identical to RGAN.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Experiments</head><p>We compared the reconstruction performance using Peak-Signal-to-Noise-Ratio (PSNR, dB) and Structural-Similarity-Index (SSIM, %) between reconstructions and the ground truth images. Hyperparameter selection for each method is performed via cross-validation to maximize PSNR.</p><p>Ablation Experiments. We perform the following four ablation experiments to show the relative effect of each component in the model on the reconstruction quality as well as the effect of self-supervision in Table <ref type="table" target="#tab_1">1</ref>.</p><p>1. Supervised: Supervised training of SSDiffRecon using paired under-and fully sampled MR images and pixel-wise loss is performed. Other than training, inference sampling procedures are the same as the SSDiffRecon. 2. UNET: Original UNET architecture in DDPM <ref type="bibr" target="#b9">[10]</ref>   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Results</head><p>The results are presented in two clusters using a single figure and table for each dataset; fastMRI results are presented in Fig. <ref type="figure" target="#fig_2">3</ref> and Table <ref type="table" target="#tab_3">3</ref>, and IXI results are presented in Fig. <ref type="figure" target="#fig_1">2</ref> and Table <ref type="table" target="#tab_2">2</ref>. The best performed method in each test case is marked in bold in the tables. SSDiffRecon yields 2.55 dB more average PSNR and %1.96 SSIM than the second best self-supervised baseline in IXI, while performing 0.4 dB better in terms of PSNR and %0.25 in terms of SSIM on fastMRI. Visually, it captured most of the high frequency details while other self-supervised reconstructions suffer from either high noise or blurring artifact. Moreover, visual quality of reconstructions is either very close or better than supervised methods as be seen in the figures. It is also important to note that SSDiffRecon is performing only five backward diffusion steps while regular DDPM perform thousand diffusion steps for an equivalent reconstruction performance.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>We proposed a novel diffusion-based unrolled architecture for accelerated MRI reconstruction. Our model performs better than self-supervised baselines in a relatively short inference time while performing on-par with the supervised reconstruction methods. Inference time and model complexity analyses are presented in the supplementary materials.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Overall network architecture. SSDiffRecon utilizes an unrolled physics-guided network as a denoiser in the diffusion process while allowing time index guidance through the Mapper Network via cross-attention transformer layers (shown in green). After two transformer layers, it performs data-consistency (shown in orange). Corresponding noisy input under-sampled and denoised reconstructed images are shown during training for different time indexes descending in the direction of circular arrow. (Color figure online)</figDesc><graphic coords="3,55,98,54,38,340,18,105,31" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Reconstructions of T2-weighted images from the IXI dataset, along with the zoomed-in regions on the top and the corresponding error maps underneath.</figDesc><graphic coords="8,41,79,54,23,340,21,157,48" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Reconstructions of T1-weighted images from fastMRI, along with the zoomedin regions on the top and the corresponding error maps underneath.</figDesc><graphic coords="9,55,98,54,59,340,15,135,13" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head></head><label></label><figDesc>Mapper network is trained to generate local and global latent variables (w l and w g , respectively) that control the fine and global features in the generated images via cross-attention and instance modulation detailed in later sections. The mapper network is taking time index of the diffusion and extracted label of undersampled image (i.e., undersampling rate and target contrast in multiple contrast dataset) as input and built with 12 fully-connected layers each with 32 neurons.</figDesc><table><row><cell>1. Mapper Network</cell></row><row><cell>2. Unrolled Denoising Blocks</cell></row><row><cell>Mapper Network:</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>is trained with the same self-supervised loss as in SSDiffRecon. Other than the denoising network architecture, the training and inference procedures are not changed. 3. Without TR: SSDiffRecon without cross-attention transformer layers is trained and tested. This model only consists of data-consistency and CNN layers. Other than the network, training and inference procedures are not changed. 4. Without DC: SSDiffRecon without the data-consistency layers is trained and tested. This model does not utilize data-consistency but the other training and inference details are the same as the SSDiffRecon. Ablation results as avaraged across whole fastMRI test set.</figDesc><table><row><cell cols="2">SSDiffRecon Supervised</cell><cell>UNET</cell><cell cols="3">Without TR Without DC</cell></row><row><cell cols="6">PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM</cell></row><row><cell>fastMRI 35.9</cell><cell cols="2">94.1 36.3 93.2 26.9</cell><cell>84.7 35.1</cell><cell>93.8 26.4</cell><cell>66.4</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Reconstruction performance on the IXI dataset for R = 4 and 8.</figDesc><table><row><cell>DDPM</cell><cell>D5C5</cell><cell>RGAN</cell><cell cols="2">self-DDPM</cell><cell cols="2">Self-D5C5</cell><cell>self-RGAN</cell><cell>SSDiffRecon</cell></row><row><cell cols="8">PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM</cell></row><row><cell>T1-4x 39.4</cell><cell>98.8 37.1</cell><cell>97.1 36.8</cell><cell>97.6 33.6</cell><cell cols="2">92.7 39.3</cell><cell cols="2">98.4 36.9</cell><cell>97.9 42.3 99.3</cell></row><row><cell>T1-8x 33.0</cell><cell>96.8 30.9</cell><cell>94.0 32.3</cell><cell>95.4 30.1</cell><cell cols="2">90.2 32.7</cell><cell cols="2">96.0 31.9</cell><cell>95.9 34.6 97.9</cell></row><row><cell>T2-4x 41.8</cell><cell>98.5 38.9</cell><cell>95.0 38.5</cell><cell>96.6 35.4</cell><cell cols="2">88.1 40.2</cell><cell cols="2">97.4 39.0</cell><cell>96.9 45.9 99.1</cell></row><row><cell>T2-8x 36.2</cell><cell>96.2 34.2</cell><cell>91.6 34.6</cell><cell>94.3 32.9</cell><cell cols="2">84.9 34.6</cell><cell cols="2">94.5 34.9</cell><cell>94.6 39.3 98.0</cell></row><row><cell>PD-4x 37.1</cell><cell>98.5 36.5</cell><cell>94.7 35.6</cell><cell>96.5 32.5</cell><cell cols="4">88.4 39.4 98.5 36.3</cell><cell>96.8 38.4</cell><cell>99.0</cell></row><row><cell>PD-8x 32.2</cell><cell>96.1 30.1</cell><cell>90.5 31.9</cell><cell>93.9 29.8</cell><cell cols="2">85.0 32.3</cell><cell cols="2">94.5 31.8</cell><cell>94.4 33.3 97.8</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3"><head>Table 3 .</head><label>3</label><figDesc>Reconstruction performance on the fastMRI dataset for R = 4 and 8.</figDesc><table><row><cell></cell><cell>DDPM</cell><cell>D5C5</cell><cell>RGAN</cell><cell cols="2">self-DDPM</cell><cell cols="2">self-D5C5</cell><cell>Self-RGAN</cell><cell>SSDiffRecon</cell></row><row><cell></cell><cell cols="8">PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM PSNR SSIM</cell></row><row><cell>T1-4x</cell><cell cols="2">40.2 95.3 39.3</cell><cell>94.8 39.6</cell><cell>95.5 38.4</cell><cell cols="2">95.8 38.0</cell><cell cols="2">93.1 38.3</cell><cell>95.0 40.1</cell><cell>96.5</cell></row><row><cell>T1-8x</cell><cell cols="2">36.2 91.7 35.6</cell><cell>92.6 36.0</cell><cell>92.7 35.4</cell><cell cols="2">93.3 34.8</cell><cell cols="2">90.5 35.0</cell><cell>92.4 35.1</cell><cell>93.3</cell></row><row><cell>T2-4x</cell><cell cols="2">38.2 96.0 37.5</cell><cell>96.2 36.8</cell><cell>95.8 36.8</cell><cell cols="2">96.0 37.1</cell><cell cols="2">95.6 36.8</cell><cell>95.6 37.7</cell><cell>96.6</cell></row><row><cell>T2-8x</cell><cell cols="2">34.5 93.0 34.3</cell><cell>94.0 33.8</cell><cell>93.1 34.3</cell><cell cols="2">94.2 33.8</cell><cell cols="2">93.0 34.0</cell><cell>93.4 33.7</cell><cell>93.8</cell></row><row><cell cols="2">Flair-4x 36.8</cell><cell>93.5 36.2</cell><cell>93.3 35.1</cell><cell>92.8 35.7</cell><cell cols="2">94.1 35.4</cell><cell cols="2">91.1 35.3</cell><cell>92.1 36.9 94.6</cell></row><row><cell cols="3">Flair-8x 33.1 87.8 32.7</cell><cell>89.1 32.0</cell><cell>88.1 32.5</cell><cell cols="2">89.6 32.2</cell><cell cols="2">86.3 32.1</cell><cell>87.8 32.1</cell><cell>89.7</cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by <rs type="funder">NIH</rs> <rs type="grantNumber">R01</rs> grant <rs type="grantNumber">R01CA276221</rs> and <rs type="grantNumber">TUBITAK 1001</rs> grant <rs type="grantNumber">121E488</rs>.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_WQsAaAb">
+					<idno type="grant-number">R01</idno>
+				</org>
+				<org type="funding" xml:id="_edT7VEY">
+					<idno type="grant-number">R01CA276221</idno>
+				</org>
+				<org type="funding" xml:id="_QzaVgJx">
+					<idno type="grant-number">TUBITAK 1001</idno>
+				</org>
+				<org type="funding" xml:id="_GWKEQjH">
+					<idno type="grant-number">121E488</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43999-5 47.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">MoDL: model-based deep learning architecture for inverse problems</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">K</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Mani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Jacob</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="394" to="405" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">On learning adaptive acquisition policies for undersampled multi-coil MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Bakker</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Muckley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Romero-Soriano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Drozdzal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pineda</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.16392</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">C</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">X</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2208.05481</idno>
+		<title level="m">High-frequency space diffusion models for accelerated mri</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Accelerating multi-echo MRI in k-space with complex-valued diffusion probabilistic model</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2022 16th IEEE International Conference on Signal Processing (ICSP)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="479" to="484" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Self-score: Self-supervised learning on score-based models for MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">X</forename><surname>Cui</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2209.00835</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Adaptive diffusion priors for accelerated MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">U</forename><surname>Dar</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2207.05876</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Prior-guided image reconstruction for accelerated multi-contrast MRI via generative adversarial networks</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">U</forename><surname>Dar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Yurt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Shahdloo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">E</forename><surname>Ildız</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Tınaz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Sel. Top. Signal Process</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1072" to="1087" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Compressed-sensing MRI with random encoding</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">P</forename><surname>Haldar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Hernando</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">P</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="893" to="903" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Motion-guided physics-based learning for cardiac MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hammernik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Küstner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2021 55th Asilomar Conference on Signals, Systems, and Computers</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="900" to="907" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural. Inf. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="6840" to="6851" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Rethinking the optimization process for self-supervised modeldriven MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2203.09724</idno>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Analyzing and improving the image quality of StyleGAN</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Karras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Laine</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Aittala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hellsten</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lehtinen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Aila</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="8107" to="8116" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Assessment of the generalization of learned image reconstruction and the potential for transfer learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Knoll</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Hammernik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Kobler</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Pock</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Recht</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Sodickson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="116" to="128" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">fastMRI: a publicly available raw k-space and DICOM dataset of knee images for accelerated MR image reconstruction using machine learning</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Knoll</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Radiol. Artif. Intell</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">190007</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A parallel MR imaging method using multilayer perceptron</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Kwon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Park</surname></persName>
+		</author>
+		<idno type="DOI">10.1002/mp.12600</idno>
+		<ptr target="https://doi.org/10.1002/mp.12600" />
+	</analytic>
+	<monogr>
+		<title level="j">Med. Phys</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="6209" to="6224" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for accelerated MRI using magnitude and phase networks</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tak</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Ye</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Biomed. Eng</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page" from="1985" to="1995" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Sparse MRI: the application of compressed sensing for rapid MR imaging</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lustig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Donoho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Pauly</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Resonan. Med. Off. J. Int. Soc. Magn. Resonan. Med</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1182" to="1195" />
+			<date type="published" when="2007">2007</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Deep generative adversarial neural networks for compressive sensing MRI</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mardani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="167" to="179" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Improved denoising diffusion probabilistic models</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">Q</forename><surname>Nichol</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Dhariwal</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8162" to="8171" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Towards performant and reliable undersampled MR reconstruction via diffusion model sampling</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">K</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">M</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chellappa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention. MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="623" to="633" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_59</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16446-059" />
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Convolutional recurrent neural networks for dynamic MR image reconstruction</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schlemper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Caballero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Hajnal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="280" to="290" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A deep cascade of convolutional neural networks for MR image reconstruction</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schlemper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Caballero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">V</forename><surname>Hajnal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Price</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Information Processing in Medical Imaging</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="647" to="658" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">GrappaNet: combining parallel imaging with deep learning for multi-coil MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sriram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zbontar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Murrell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">L</forename><surname>Zitnick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Defazio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Sodickson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</meeting>
+		<imprint>
+			<date type="published" when="2020-06">June 2020</date>
+			<biblScope unit="page" from="14303" to="14310" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Accelerating magnetic resonance imaging via deep learning</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1109/ISBI.2016.7493320</idno>
+		<ptr target="https://doi.org/10.1109/ISBI.2016.7493320" />
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 13th International Symposium on Biomedical Imaging (ISBI)</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+			<biblScope unit="page" from="514" to="517" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Measurement-conditioned denoising diffusion probabilistic model for under-sampled medical image reconstruction</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16446-0_62</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16446-062" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention. MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13436</biblScope>
+			<biblScope unit="page" from="655" to="664" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Self-supervised learning of physics-guided reconstruction neural networks without fully sampled reference data</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Yaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A H</forename><surname>Hosseini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Moeller</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ellermann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Ugurbil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Akçakaya</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="3172" to="3191" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">DAGAN: deep de-aliasing generative adversarial networks for fast compressed sensing MRI reconstruction</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1310" to="1321" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Coil compression for accelerated imaging with cartesian sampling</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Pauly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Vasanawala</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Lustig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Magn. Reson. Med</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="571" to="582" />
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Image reconstruction by domain transform manifold learning</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">R</forename><surname>Rosen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Rosen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">555</biblScope>
+			<biblScope unit="issue">7697</biblScope>
+			<biblScope unit="page" from="487" to="492" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

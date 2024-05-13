@@ -1,0 +1,766 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">FE-STGNN: Spatio-Temporal Graph Neural Network with Functional and Effective Connectivity Fusion for MCI Diagnosis</title>
+				<funder ref="#_886VyUy">
+					<orgName type="full">National Natural Science Foundation of China</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Dongdong</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Lichi</forename><surname>Zhang</surname></persName>
+							<email>lichizhang@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Biomedical Engineering</orgName>
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">FE-STGNN: Spatio-Temporal Graph Neural Network with Functional and Effective Connectivity Fusion for MCI Diagnosis</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="67" to="76"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">E5B064BAA6FAA575E075AFB3EC83CF5E</idno>
+					<idno type="DOI">10.1007/978-3-031-43993-3_7</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Resting-state MRI</term>
+					<term>Brain Connectivity Network</term>
+					<term>Graph Neural Network</term>
+					<term>Attention mechanism</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Brain connectivity patterns such as functional connectivity (FC) and effective connectivity (EC), describing complex spatiotemporal dynamic interactions in the brain network, are highly desirable for mild cognitive impairment (MCI) diagnosis. Major FC methods are based on statistical dependence, usually evaluated in terms of correlations, while EC generally focuses on directional causal influences between brain regions. Therefore, comprehensive integration of FC and EC with complementary information can further extract essential biomarkers for characterizing brain abnormality. This paper proposes Spatio-Temporal Graph Neural Network with Dynamic Functional and Effective Connectivity Fusion (FE-STGNN) for MCI diagnosis using resting-state fMRI (rs-fMRI). First, dynamic FC and EC networks are constructed to encode the functional brain networks into multiple graphs. Then, spatial graph convolution is employed to process spatial structural features and temporal dynamic characteristics. Finally, we design the position encodingbased cross-attention mechanism, which utilizes the causal linkage of EC during time evolution to guide the fusion of FC networks for MCI classification. Qualitative and quantitative experimental results demonstrate the significance of the proposed FE-STGNN method and the benefit of fusing FC and EC, which achieves 82% of MCI classification accuracy and outperforms state-of-the-art methods. Our code is available at https:// github.com/haijunkenan/FE-STGNN.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Mild cognitive impairment (MCI) is a prodromal stage of memory loss or other cognitive loss (e.g., language, visual and spatial perception) in individuals that may progress to Alzheimer's disease (AD), which is a neurological brain disease that leaves individuals without the ability to live independently with daily activities <ref type="bibr" target="#b0">[1]</ref>. Diagnosis of MCI would allow on-time intervention to delay or prevent the progress of the disease, which is crucial for advanced AD without effective treatment.</p><p>Resting-state functional magnetic resonance (rs-fMRI) as a non-invasive tool has demonstrated its potential to evaluate brain activity by measuring the blood oxygenation level-dependent (BOLD) signals over time <ref type="bibr" target="#b22">[22]</ref>. Based on this, researchers model brain networks to analyze brain function and realize the diagnosis of brain diseases <ref type="bibr" target="#b13">[13]</ref>. For example, compared with healthy controls, subjects with AD and MCI have shown changes in brain networks based on rs-fMRI data <ref type="bibr" target="#b14">[14]</ref>, manifested explicitly in the weakened connection between the right hippocampus and default mode network (DMN, a set of brain regions), and the enhanced connection between the left hippocampus with right lateral prefrontal lobe brain region, etc.</p><p>A brain network can be represented as a graph structure naturally, which consists of brain regions as nodes and connections among brain regions as edges <ref type="bibr" target="#b20">[20]</ref>. Considering the characteristics of functional integration and separation in the brain, brain connectivity is typically modeled in three different patterns: namely, structural connectivity (SC) <ref type="bibr" target="#b18">[18]</ref>, functional connectivity (FC) <ref type="bibr" target="#b21">[21]</ref>, and effective connectivity (EC) <ref type="bibr" target="#b12">[12]</ref>. Structural connectivity refers to a network of physical or anatomical connections linking sets of neurons, which characterize the associated structural biophysical attributes extracted from diffusion-weighted imaging (DWI) data. Differently, both functional and effective connectivity can be generated from fMRI data. FC describes brain activity from the perspective of statistical dependencies between brain regions, while EC emphasizes directional causal interactions of one brain region over another.</p><p>Currently, with the development of deep learning, various methods have been proposed to diagnose brain disease using rs-fMRI modeled with brain connectivity <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b11">11]</ref>. Among them, graph neural network-based (GNN) methods stand out from the others for their ability to capture network topology information <ref type="bibr" target="#b5">[6]</ref>. However, there are three critical disadvantages to existing GNN-based methods for brain disease diagnosis. 1) Existing studies generally use a single brain connectivity pattern to model brain activities, which would restrict the following analysis to a single space of brain network characteristics. 2) Most of the GNNbased methods applied to brain diseases focus on extracting static topological information neglecting the dynamic nature of brain activity. 3) Many approaches seek to enhance the model's ability for disease diagnosis, while the underlying mechanism remains a black box, making it challenging to provide an explainable basis corresponding to brain neural activity.</p><p>Therefore, we propose Spatio-Temporal Graph Neural Network with Functional and Effective Connectivity Fusion (FE-STGNN), which mainly focuses on the fusion of local spatial structure information from FC and temporal causal evolution information from EC, for MCI diagnosis using rs-fMRI. As FC focuses on describing the strength of brain connections in each time slice, while EC for characterizing the dynamic information flow. Thus, our motivation is to utilize the causal linkage of EC during time evolution to guide the fusion of FC networks at discrete time slices. We summarize the novelty of the proposed method in three aspects:</p><p>1) We propose to model brain connectivity using FC and EC simultaneously, comprehensively considering the structural characteristics of the brain network and time-evolving properties of causal effects between brain regions. 2) Considering that FC networks focus on describing the strength of brain connections, while ECs are more detailed about the directional information flow among brain regions, we design a novel graph fusion framework based on a cross-attention mechanism that leads FCs to aggregate temporal structure information under EC guidance. 3) We track the model in the MCI diagnostic task and evaluate the importance of different brain regions for the impact of disease, which gives an explainable basis in combination with the background of biomedical knowledge.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_0">1</ref> illustrates the framework of the proposed spatio-temporal graph neural network with functional and effective connectivity fusion, which consists of three main sequential components: 1) Dynamic FC and EC graph matrices construction; 2) Extraction module for local spatial structural features and short-term temporal evolution characteristics using spatial graph convolutional neural network (GCN); 3) Spatio-temporal fusion positional transformer. Specifically, we first construct dynamic FC networks by calculating the correlations between BOLD signals within sliding windows and build dynamic EC networks based on the directional information transmission between two brain regions at adjacent moments. Then, the graph features of the directed and undirected brain networks are extracted respectively to obtain the spatial structural correlation and short-term temporal evolution characteristics. Finally, a fusion framework based on the attention mechanism is designed to obtain the spatio-temporal features of the brain network under the guidance of EC networks, and the FE-STGNN model is used for MCI diagnosis.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Local Spatial Structural Features and Short-Term Temporal Characteristics Extraction</head><p>Bi-Graph Construction. To construct dynamic FC and EC networks captured by rs-fMRI, we first partition the T length BOLD signals into multiple time segments using a sliding window with window-length w and stride s. The total number of segments is</p><formula xml:id="formula_0">K = (T -w)/s . Let {G|G t F C = (V, A t F C</formula><p>)} be a set of undirected FC graphs, where V is a finite set of nodes |V | = N corresponding to each brain Regions of Interests (ROI), t varies from 1 to K indicating the time segment, and the adjacency matrix A t F C ∈ R N ×N consisting of edge element e vu can be obtained by:</p><formula xml:id="formula_1">A t F C |e vu = ρ(v t , u t ) if v = u 0 otherwise , (<label>1</label></formula><formula xml:id="formula_2">)</formula><p>where ρ(v t , u t ) measuring the Pearson Correlation <ref type="bibr" target="#b2">[3]</ref> between v-th and u-th brain ROIs in t-th time segment. Meanwhile, for directed EC networks we adopt Transfer Entropy <ref type="bibr" target="#b16">[16]</ref> as a directional information-theoretic measure due to its advantages in detecting nonlinear interactions between neurons. Therefore, we have EC graphs for each t-th segment with {G|G t EC = (V, A t EC )}, where the edge element e vu can be computed through ζ(v t → u t+1 ), which measures the directed information of Transfer Entropy between two ROIs:</p><formula xml:id="formula_3">A t EC |e vu = ζ(v t → u t+1 ) if v = u 1 otherwise . (<label>2</label></formula><formula xml:id="formula_4">)</formula><p>Spatial Graph Convolution. The existing graph convolution methods are mainly divided into spectral methods and spatial methods. Here, we choose the spatial graph convolution for two reasons. First, the spatial method aggregates information based on the topological structure of the graph and pays close attention to the important spatial structural information in brain networks. Second, the spectral method cannot be applied to directed graphs because of the symmetry requirements of the spectral normalized Laplace matrix.</p><p>From the perspective of each node, spatial graph convolution can be described as a process of message passing and node updating <ref type="bibr" target="#b10">[10]</ref>, i.e., the aggregation of hidden features of local neighborhoods combined with transformations. Therefore, the spatial graph convolution for each layer can be obtained by two steps:</p><formula xml:id="formula_5">m l+1 v = u∈N (v) M l h l v , h l u , e vu , h l+1 v = U l h l v , m l+1 v ,<label>(3)</label></formula><p>where N (v) denotes the neighbors of v in the graph, h l v and h l u are hidden representations of node v and u in l-th layer respectively. e vu as the edge weights are elements of the adjacent matrix, and m l+1 v is the message aggregated from the target node v combined with local neighborhoods. The message functions M l and node update functions U l are all learned differentiable functions. We further aggregate the representations of all nodes in the graph G from the final convolution layer (i.e., L-th layer) to obtain FC and EC graph embeddings</p><formula xml:id="formula_6">{H|H t F C ∈ R 1×dH , H t EC ∈ R 1×dH</formula><p>} in each time segment respectively, where d H is the feature dimension of the graph embedding.</p><formula xml:id="formula_7">H = R h L v | v ∈ G . (<label>4</label></formula><formula xml:id="formula_8">)</formula><p>Here, the readout function R can be a simple permutation invariant function such as graph-level pooling function.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Spatio-Temporal Fusion with Dynamic FC and EC</head><p>Fusion Positional Transformer. After obtaining the graph representations of FC and EC in each time segment, we further design a graph fusion network based on attention mechanism, using the causal linkage of EC in time to guide the fusion of FC networks. Considering that the attention itself does not have position awareness, it is treated equally in attention at any time segment. We first introduce a learnable temporal positional encoding P ∈ R K×dH to encode the time sequence properties of the brain network, which is randomly initialized and added to FC embeddings before attention.</p><p>The attention mechanism can be described as mapping a query and a set of key-value pairs to an output which is computed as a weighted sum of the values. In practice, we first conduct linear transforms on dynamic FCs, which are computed in the form of a matrix</p><formula xml:id="formula_9">{H F C |{H t F C } K t=1 , H F C ∈ R K×dH },</formula><p>combined with the temporal positional encoding. The dynamic EC are also linear transformed in the form of matrix</p><formula xml:id="formula_10">{H EC |{H t EC } K t=1 , H EC ∈ R K×dH }.</formula><p>Therefore, both dynamic FC and EC are encoded into high-dimensional latent subspaces, including the query subspace Q ∈ R K×d k , the value subspace V ∈ R K×d k from FC, and the key subspace K ∈ R N ×d k from EC simultaneously, where d k is the dimension of latent subspace. The conducting progress can be formulated as:</p><formula xml:id="formula_11">Q = (H F C + P ) * W Q K = H EC * W K V = (H F C + P ) * W V , (<label>5</label></formula><formula xml:id="formula_12">)</formula><p>where W Q , W K , and W V are the weight matrices for Q, K, and V , respectively. We further calculate the spatio-temporal dependencies of the brain network with the dot product of FCs' query and ECs' key. Therefore, the attention of FC and EC fusion can be obtained by:</p><formula xml:id="formula_13">M = softmax QK T √ d k V. (6)</formula><p>Here, the softmax is used to normalize the spatio-temporal dependencies and the scale √ d k prevents the saturation led by softmax function. To ensure the stable training, we adopt the residual connection formulated as M = M + (H F C +P ). Furthermore, a feed-forward neural network with nonlinear activation combined with another residual connection layer are applied to further improve the prediction conditioned on the embeddings M . As a result, the output of the fusion positional transformer is Û = ReLU MW 0 + b 0 + M , where W 0 and b 0 are learnable weight and bias.</p><p>Prediction Diagnosis. In the end, the prediction layer leverages a fully connected network to map the output embeddings of the fusion positional transformer into the corresponding label space, therefore we can obtain the prediction result Y = ReLU ÛW 1 + b 1 with W 1 and b 1 are learnable weight and bias. In the training process, we design the loss function as shown in Eq. 7. The first term is used to minimize the error between the real diagnosis result Ŷ and the prediction Y . The second term L reg is the L2 regularization term that helps to avoid an overfitting problem with λ as a hyper-parameter.</p><formula xml:id="formula_14">loss = Y -Y + λL reg . (<label>7</label></formula><formula xml:id="formula_15">)</formula><p>3 Experiments</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset and Experimental Settings</head><p>In order to verify the performance of our method on Alzheimer's Disease Neuroimaging Initiative (ADNI) data <ref type="bibr" target="#b17">[17]</ref>, we adopt the individual rs-fMRI images including T = 137 time points consisting of 60 normal controls (NC) and 54 MCI subjects, following the standard pre-processing pipeline same to <ref type="bibr" target="#b3">[4]</ref>. Considering that medical imaging data in the real world is often insufficient for deep learning, we randomly selected balanced data with small samples for experiments. We perform 10-fold cross-validation 10 times for all the experiments, a sliding window of w = 37 and stride s = 10 is used to construct dynamic brain networks for all the dynamic FC-based methods. We train our model with parameters: λ = 0.01 weight of the regularization term, 1e -3 learning rate, and a maximum number of 800 epoches. We performed a grid search to determine these hyper-parameters. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Ablation Studies</head><p>Here we conduct ablation studies to verify the effectiveness of 1) the fusion of dynamic FC and EC networks and 2) each module in the proposed FE-STGNN. Specifically, we first replace graph convolutional neural network (GCN) with graph attention network (GAT) in the spatial graph convolution module (Fig. <ref type="figure" target="#fig_0">1</ref>(b)). Both of them are a kind of graph neural network methods that have been widely used in brain network analysis <ref type="bibr" target="#b4">[5]</ref>. Then, we replace the proposed fusion positional transformer with LSTM in the spatio-temporal fusion module (Fig. <ref type="figure" target="#fig_0">1(c</ref>)). Finally, we compare the models with different modules: only FCs, only ECs, and fusion FCs and ECs. It is worth noting that, in order to fuse FC and EC in LSTM, we specifically design the high-dimensional feature vector product of FC and EC in the LSTM cell. The result of ablation studies is presented in Table <ref type="table" target="#tab_0">1</ref>. These highlight modules (e.g. GCN, Transformer) are the modules constituting the proposed model. Comparing GAT and GCN methods, we find that GCN performs better than GAT in almost all models. The finding may support that GCN utilizes the Laplace matrix based on the adjacent matrix to aggregate structural information, while GAT uses attention coefficients based on node features, which are less important in brain network analysis. The Transformer also performs better than the LSTM method, which may be because compared with LSTM, the Transformer can not only extract the information of a period of time before the current time segment but also associate with the subsequent time.</p><p>To compare FC and FC+EC models, we further draw the ROC curves of comparison models in Fig. <ref type="figure" target="#fig_1">2(a)</ref>. It is shown that the ROC curves of fusion methods (i.e., green line and red line) almost wrap the curves (i.e., blue line and yellow line) of the models that only depend on the FC network. The result validate the merit of fusing FC and EC in processing and identifying brain networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Comparison with Other Methods</head><p>We also compare the proposed model against baseline algorithms including three static methods: (1) Support Vector Machine (SVM) <ref type="bibr" target="#b19">[19]</ref>; (2) Two layers of the   <ref type="bibr" target="#b15">[15]</ref>, and four dynamic methods: (4) Classical LSTM <ref type="bibr" target="#b7">[8]</ref>; (5) Dynamic Functional Connectivity Matrix Graph Embedding Method (DFC) <ref type="bibr" target="#b3">[4]</ref>; (6) MS-GCN with same normalized adjacency matrix (MS-GCN) <ref type="bibr" target="#b23">[23]</ref>; <ref type="bibr" target="#b6">(7)</ref> Spatio-Temporal Graph Convolution <ref type="bibr" target="#b9">[9]</ref>.</p><p>From Table <ref type="table" target="#tab_1">2</ref> and Fig. <ref type="figure" target="#fig_1">2</ref>(b), one can have the following observations. First, compared with three static models (i.e., SVM, DCNN, and PRGNN), almost all the methods based on dynamic FC networks obtain better performance. For example, in terms of ACC value, FE-STGNN has achieved at least 6% improvement, which indicates that dynamic functional network modeling is more effective in brain network analysis than static methods. Furthermore, our FE-STGNN yields significantly higher ACC and AUC compared to the other seven competing methods. These results validate the effectiveness of FE-STGNN in identifying MCI patients based on the fusion of FC and EC networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we present a novel FE-STGNN framework for modeling spatiotemporal connectivity patterns of brain networks for MCI diagnosis. To our knowledge, it is one of the earliest studies to use the fusion of FC and EC in a deep-learning fashion to model both spatial and temporal patterns of brain networks at the same time. The ablation studies examine the efficacy of each module of the proposed method as well as the significant benefits of combining FC and EC. The proposed model's superiority is also demonstrated when compared to other methods. We plan to extend the proposed FE-STGNN to diagnose other brain functional diseases in the future.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustration of the proposed FE-STGNN model for MCI diagnosis based on rs-fMRI data. (a) is the overall framework of the proposed method. (b) describes the detailed process of spatial graph convolution for dynamic FC and EC networks from the perspective of the red node. (c) illustrates how FC aggregates information under the guidance of EC based on attention mechanism (Color figure online)</figDesc><graphic coords="3,62,97,54,65,326,95,221,05" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Results of ROC curves and AUC values achieved by ablation studies and eight different methods</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Performance of ablation study on ADNI dataset (mean ± std %).</figDesc><table><row><cell cols="2">Metric LSTM</cell><cell></cell><cell cols="2">Transformer</cell></row><row><cell></cell><cell>FC</cell><cell>EC</cell><cell>FC+EC FC</cell><cell>EC</cell><cell>FC+EC</cell></row><row><cell cols="6">GAT ACC 74.6 ± 2.4 72.8 ± 2.1 76.3 ± 2.1 75.4 ± 2.8 73.7 ± 2.5 78.1 ± 2.3</cell></row><row><cell>SEN</cell><cell cols="5">74.3 ± 2.6 70.4 ± 2.5 76.0 ± 2.7 75.4 ± 3.4 72.3 ± 3.1 77.8 ± 2.9</cell></row><row><cell>SPE</cell><cell cols="5">71.7 ± 2.4 75.0 ± 2.2 81.7 ± 2.3 76.7 ± 3.1 75.0 ± 2.8 83.3 ± 2.7</cell></row><row><cell cols="6">GCN ACC 74.6 ± 2.3 75.4 ± 2.2 79.0 ± 2.3 78.1 ± 2.7 77.2 ± 2.6 82.5 ± 2.2</cell></row><row><cell>SEN</cell><cell cols="5">74.4 ± 2.6 74.8 ± 2.4 78.4 ± 2.5 78.1 ± 3.0 77.8 ± 3.0 82.3 ± 2.9</cell></row><row><cell>SPE</cell><cell cols="5">78.3 ± 2.5 76.7 ± 2.3 88.3 ± 2.3 78.7 ± 2.8 76.7 ± 3.0 86.7 ± 2.8</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Classification results for MCI Comparing with Different Methods (mean ± std %).</figDesc><table><row><cell></cell><cell>Model</cell><cell>ACC</cell><cell>SEN</cell><cell>SPE</cell><cell>F-score</cell></row><row><cell>Static</cell><cell>SVM [19]</cell><cell cols="4">58.7 ± 1.0 58.5 ± 1.2 63.3 ± 1.4 58.5 ± 1.0</cell></row><row><cell></cell><cell>DCNN [2]</cell><cell cols="4">64.1 ± 3.8 63.9 ± 4.8 65.0 ± 4.1 63.9 ± 3.7</cell></row><row><cell></cell><cell cols="5">PRGNN [15] 76.3 ± 3.7 75.7 ± 5.2 86.7 ± 4.5 75.8 ± 4.1</cell></row><row><cell cols="2">Dynamic LSTM [8]</cell><cell cols="4">65.8 ± 4.2 66.0 ± 4.1 61.7 ± 2.9 65.8 ± 3.8</cell></row><row><cell></cell><cell>DFC [4]</cell><cell cols="4">72.8 ± 2.9 72.4 ± 2.1 80.0 ± 3.3 72.5 ± 3.2</cell></row><row><cell></cell><cell cols="5">MSGCN [23] 75.4 ± 2.8 75.0 ± 3.1 83.3 ± 2.8 75.1 ± 2.7</cell></row><row><cell></cell><cell>STGCN [9]</cell><cell cols="4">79.8 ± 3.2 79.5 ± 3.5 85.0 ± 2.7 79.6 ± 3.3</cell></row><row><cell></cell><cell cols="5">FE-STGNN 82.5 ± 2.2 82.3 ± 2.9 86.7 ± 2.8 82.4 ± 2.1</cell></row><row><cell cols="6">Diffusion Convolutional Neural Networks (DCNN) [2]; (3) Graph Neural Net-</cell></row><row><cell cols="4">work with regularized pooling layers (PRGNN)</cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgement. This work was supported by the <rs type="funder">National Natural Science Foundation of China</rs> (No. <rs type="grantNumber">62001292</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_886VyUy">
+					<idno type="grant-number">62001292</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43993-3_7.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Alzheimer&apos;s disease facts and figures</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Association</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Alzheimers Dement</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="327" to="406" />
+			<date type="published" when="2021">2021. 2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Diffusion-convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Atwood</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Towsley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Adv. Neural Inform. Process. Syst</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="1993" to="2001" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Pearson correlation coefficient</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Benesty</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Cohen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Noise Reduction in Speech Processing</title>
+		<editor>
+			<persName><forename type="first">I</forename><surname>Cohen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Chen</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Benesty</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Berlin; Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009">2009</date>
+			<biblScope unit="page" from="1" to="4" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Extraction of dynamic functional connectivity from brain grey matter and white matter for MCI classification</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">W</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">38</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="5019" to="5034" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Braingb: a benchmark for brain network analysis with graph neural networks</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Cui</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="493" to="506" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Graph theory and brain connectivity in Alzheimer&apos;s disease</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deletoile</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Adeli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroscientist</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="616" to="626" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Functional brain connectivity using fMRI in aging and Alzheimer&apos;s disease</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">L</forename><surname>Dennis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Thompson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuropsychol. Rev</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="49" to="62" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Identifying Autism from resting-state fMRI using long short-term memory networks</title>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">C</forename><surname>Dvornek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ventola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">A</forename><surname>Pelphrey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">S</forename><surname>Duncan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning in Medical Imaging</title>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H.-I</forename><surname>Suk</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">K</forename><surname>Suzuki</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="page" from="362" to="370" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-67389-9_42</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-67389-9_42" />
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Spatiotemporal graph convolution for resting-state fMRI analysis</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gadgil</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pfefferbaum</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">V</forename><surname>Sullivan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Adeli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Pohl</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59728-3_52</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59728-3_52" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2020: 23rd International Conference</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Lima, Peru; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">October 4-8, 2020. 2020</date>
+			<biblScope unit="page" from="528" to="538" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VII</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Neural message passing for quantum chemistry</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gilmer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">S</forename><surname>Schoenholz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Riley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Vinyals</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">E</forename><surname>Dahl</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference On Machine Learning</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="page" from="1263" to="1272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Learning brain connectivity of Alzheimer&apos;s disease by sparse inverse covariance estimation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">50</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="935" to="949" />
+			<date type="published" when="2010">2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A survey on brain effective connectivity network learning</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Functional brain network efficiency predicts intelligence</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Langer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Pedroni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">R</forename><surname>Gianotti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Hänggi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Knoch</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jäncke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Hum. Brain Mapp</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1393" to="1406" />
+			<date type="published" when="2012">2012</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Harmonic holes as the submodules of brain network and network dissimilarity</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-10828-1_9</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-10828-1_9" />
+	</analytic>
+	<monogr>
+		<title level="m">Computational Topology in Image Context: 7th International Workshop</title>
+		<editor>
+			<persName><forename type="first">R</forename><surname>Marfil</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Calderón</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">F</forename><surname>Díaz Del Río</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><surname>Real</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Bandera</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Málaga, Spain; I, Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019-01-24">2019. January 24-25, 2019. 2019</date>
+			<biblScope unit="page" from="110" to="122" />
+		</imprint>
+	</monogr>
+	<note>CTIC</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Pooling regularized graph neural network for fMRI biomarker analysis</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59728-3_61</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59728-3_61" />
+	</analytic>
+	<monogr>
+		<title level="m">Medical Image Computing and Computer Assisted Intervention -MICCAI 2020: 23rd International Conference</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Lima, Peru; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">October 4-8, 2020. 2020</date>
+			<biblScope unit="page" from="625" to="635" />
+		</imprint>
+	</monogr>
+	<note>Proceedings, Part VII</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Causality, feedback and directed information</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Massey</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Int. Symp. Inf. Theory Applic. (ISITA-90)</title>
+		<meeting>Int. Symp. Inf. Theory Applic. (ISITA-90)</meeting>
+		<imprint>
+			<date type="published" when="1990">1990</date>
+			<biblScope unit="page" from="303" to="305" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Baseline and longitudinal patterns of brain atrophy in mci patients, and their use in prediction of short-term conversion to ad: results from adni</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Misra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Davatzikos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1415" to="1422" />
+			<date type="published" when="2009">2009</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Nature and nurture shape structural connectivity in the face processing brain network</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">F Q</forename><surname>Sanchez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hildebrandt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neuroimage</title>
+		<imprint>
+			<biblScope unit="volume">229</biblScope>
+			<biblScope unit="page">117736</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Least squares support vector machine classifiers</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">A</forename><surname>Suykens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vandewalle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Process. Lett</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="293" to="300" />
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Connectome: graph theory application in functional brain network architecture</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Vecchio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Miraglia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Rossini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Clin. Neurophysiol. Pract</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="206" to="213" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A systematic framework for functional connectivity measures</title>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">E</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">G</forename><surname>Bénar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">P</forename><surname>Quilichini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Friston</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">K</forename><surname>Jirsa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Neurosci</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page">405</biblScope>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Sparse temporally dynamic restingstate functional connectivity networks for early MCI identification</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">Y</forename><surname>Wee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Yap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Brain Imaging Behav</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="342" to="356" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multi-scale graph convolutional network for mild cognitive impairment detection</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Yue</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Elazab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Lei</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-35817-4_10</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-35817-4_10" />
+	</analytic>
+	<monogr>
+		<title level="m">Graph Learning in Medical Imaging: First International Workshop</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Zhang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Zhou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">B</forename><surname>Jie</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Liu</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Shenzhen, China; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019-10-17">2019. October 17, 2019. 2019</date>
+			<biblScope unit="page" from="79" to="87" />
+		</imprint>
+	</monogr>
+	<note>Proceedings</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,840 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Unsupervised Domain Adaptation for Anatomical Landmark Detection</title>
+				<funder ref="#_nxSTBEt">
+					<orgName type="full">Shenzhen Science and Technology Innovation Committee Fund</orgName>
+				</funder>
+				<funder ref="#_WF3T5hs">
+					<orgName type="full">Hong Kong Innovation and Technology Fund</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Haibo</forename><surname>Jin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName><forename type="first">Haoxuan</forename><surname>Che</surname></persName>
+							<email>hche@cse.ust.hk</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hao</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Chemical and Biological Engineering</orgName>
+								<orgName type="institution">The Hong Kong University of Science and Technology</orgName>
+								<address>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Unsupervised Domain Adaptation for Anatomical Landmark Detection</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="695" to="705"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">AC040C4F51FEEAC378F0B93B12A1F1F0</idno>
+					<idno type="DOI">10.1007/978-3-031-43907-0_66</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:28+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Recently, anatomical landmark detection has achieved great progresses on single-domain data, which usually assumes training and test sets are from the same domain. However, such an assumption is not always true in practice, which can cause significant performance drop due to domain shift. To tackle this problem, we propose a novel framework for anatomical landmark detection under the setting of unsupervised domain adaptation (UDA), which aims to transfer the knowledge from labeled source domain to unlabeled target domain. The framework leverages self-training and domain adversarial learning to address the domain gap during adaptation. Specifically, a self-training strategy is proposed to select reliable landmark-level pseudo-labels of target domain data with dynamic thresholds, which makes the adaptation more effective. Furthermore, a domain adversarial learning module is designed to handle the unaligned data distributions of two domains by learning domaininvariant features via adversarial training. Our experiments on cephalometric and lung landmark detection show the effectiveness of the method, which reduces the domain gap by a large margin and outperforms other UDA methods consistently.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Anatomical landmark detection is a fundamental step in many clinical applications such as orthodontic diagnosis <ref type="bibr" target="#b10">[11]</ref> and orthognathic treatment planning <ref type="bibr" target="#b5">[6]</ref>. However, manually locating the landmarks can be tedious and time-consuming. And the results from manual labeling can cause errors due to the inconsistency in landmark identification <ref type="bibr" target="#b4">[5]</ref>. Therefore, it is of great need to automate the task of landmark detection for efficiency and consistency.</p><p>In recent years, deep learning based methods have achieved great progresses in anatomical landmark detection. For supervised learning, earlier works <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b20">20,</ref><ref type="bibr" target="#b27">27]</ref> adopted heatmap regression with extra shape constraints. Later, graph network <ref type="bibr" target="#b15">[16]</ref> and self-attention <ref type="bibr" target="#b10">[11]</ref> were introduced to model landmark dependencies in an end-to-end manner for better performance.</p><p>Despite the success of recent methods, they mostly focus on single-domain data, which assume the training and test sets follow the same distribution. However, such an assumption is not always true in practice, due to the differences in patient populations and imaging devices. Figure <ref type="figure" target="#fig_0">1</ref> shows that cephalogram images from two domains can be very different in both histogram and visual appearance. Therefore, a well trained model may encounter severe performance degradation in practice due to the domain shift of test data. A straightforward solution to this issue is to largely increase the size and diversity of training set, but the labeling is prohibitively expensive, especially for medical images. On the other hand, unsupervised domain adaptation (UDA) <ref type="bibr" target="#b9">[10]</ref> aims to transfer the knowledge learned from the labeled source domain to the unlabeled target domain, which is a potential solution to the domain shift problem as unlabeled data is much easier to collect. The effectiveness of UDA has been proven in many vision tasks, such as image classification <ref type="bibr" target="#b9">[10]</ref>, object detection <ref type="bibr" target="#b6">[7]</ref>, and pose estimation <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b24">24]</ref>. However, its feasibility in anatomical landmark detection still remains unknown.</p><p>In this paper, we aim to investigate anatomical landmark detection under the setting of UDA. Our preliminary experiments show that a well-performed model will yield significant performance drop on cross-domain data, where the mean radial error (MRE) increases from 1.22 mm to 3.32 mm and the success detection rate (SDR) within 2 mm drops from 83.76% to 50.05%. To address the domain gap, we propose a unified framework, which contains a base landmark detection model, a self-training strategy, and a domain adversarial learning module. Specifically, self-training is adopted to effectively leverage the unlabeled data from the target domain via pseudo-labels. To handle confirmation bias <ref type="bibr" target="#b1">[2]</ref>, we propose landmark-aware self-training (LAST) to select pseudo-labels at the landmark-level with dynamic thresholds. Furthermore, to address the covariate shift <ref type="bibr" target="#b26">[26]</ref> issue (i.e., unaligned data distribution) that may degrade the performance of self-training, a domain adversarial learning (DAL) module is designed to learn domain-invariant features via adversarial training. Our experiments on two anatomical datasets show the effectiveness of the proposed framework. For example, on cephalometric landmark detection, it reduces the domain gap in MRE by 47% (3.32 mm → 1.75 mm) and improves the SDR (2 mm) from 50.05% to 69.15%. We summarize our contributions as follows. 1. We investigated anatomical landmark detection under the UDA setting for the first time, and showed that domain shift indeed causes severe performance drop of a well-performed landmark detection model. 2. We proposed a novel framework for the UDA of anatomical landmark detection, which significantly improves the cross-domain performance and consistently outperforms other state-of-the-art UDA methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Figure <ref type="figure" target="#fig_1">2</ref> shows the overall framework, which aims to yield satisfactory performance in target domain under the UDA setting. During training, it leverages both labeled source domain data S = {x S i , y S i } N i=1 and unlabeled target domain data T = {x T j } M j=1 . For evaluation, it will be tested on a hold-out test set from target domain. The landmark detection model is able to predict landmarks with confidence, which is detailed in Sect. 2.1. To reduce domain gap, we further propose LAST and DAL, which are introduced in Sects. 2.2 and 2.3, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Landmark Detection Model</head><p>Recently, coordinate regression <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b15">16]</ref> has obtained better performance than heatmap regression <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b27">27]</ref>. However, coordinate based methods do not output confidence scores, which are necessary for pseudo-label selection in self-training <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b13">14]</ref>. To address this issue, we designed a model that is able to predict accurate landmarks while providing confidence scores. As shown in Fig. <ref type="figure" target="#fig_2">3</ref> (a), the model utilizes both coordinate and heatmap regression, where the former provides coarse but robust predictions via global localization, then projected to the local maps of the latter for prediction refinement and confidence measurement.</p><p>Global Localization. We adopt Transformer decoder <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b14">15]</ref> for coarse localization due to its superiority in global attentions. A convolutional neural network (CNN) is used to extract feature f ∈ R C×H×W , where C, H, and W represents number of channels, map height and width, respectively. By using f as memory, the decoder takes landmark queries q ∈ R L×C as input, then iteratively updates them through multiple decoder layers, where L is the number of landmarks. Finally, a feed-forward network (FFN) converts the updated landmark queries to coordinates ŷc ∈ R L×2 . The loss function L coord is defined to be the L1 loss between the predicted coordinate ŷc and the label y c .</p><p>Local Refinement. This module outputs a score map ŷs ∈ R L×H×W and an offset map ŷo ∈ R 2L×H×W via 1 × 1 convolutional layers by taking f as input. The score map indicates the likelihood of each grid to be the target landmark, while the offset map represents the relative offsets of the neighbouring grids to the target. The ground-truth (GT) landmark of the score map is smoothed by a Gaussian kernel <ref type="bibr" target="#b23">[23]</ref>, and L2 loss is used for loss function L score . Since the offset is a regression problem, L1 is used for loss L offset , and only applied to the area where its GT score is larger than zero. During inference, different from <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b23">23]</ref>, the optimal local grid is not selected by the maximum score of ŷs , but instead the projection of the coordinates from global localization. Then the corresponding offset value is added to the optimal grid for refinement. Also, the confidence of each prediction can be easily obtained from the score map via projection.</p><p>The loss function of the landmark detection model can be summarized as</p><formula xml:id="formula_0">L base = S λ s L score + λ o L offset + L coord , (<label>1</label></formula><formula xml:id="formula_1">)</formula><p>where S is source domain data, λ s and λ o are balancing coefficients. Empirically, we set λ s = 100 and λ o = 0.02 in this paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Landmark-Aware Self-training</head><p>Self-training <ref type="bibr" target="#b13">[14]</ref> is an effective semi-supervised learning (SSL) method, which iteratively estimates and selects reliable pseudo-labeled samples to expand the labeled set. Its effectiveness has also been verified on several vision tasks under the UDA setting, such as object detection <ref type="bibr" target="#b6">[7]</ref>. However, very few works explored self-training for the UDA of landmark detection, but mostly restricted to the paradigm of SSL <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b21">21]</ref>. Since UDA is more challenging than SSL due to domain shift, reliable pseudolabels should be carefully selected to avoid confirmation bias <ref type="bibr" target="#b1">[2]</ref>. Existing works <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b21">21]</ref> follow the pipeline of image classification by evaluating reliability at the image-level, which we believe is not representative because the landmarks within an image may have different reliabilities (see Fig. <ref type="figure" target="#fig_2">3 (b</ref>)). To avoid potential noisy labels caused by the image-level selection, we propose LAST, which selects reliable pseudo-labels at the landmark-level. To achieve this, we use a binary mask m ∈ {0, 1} L to indicate the reliability of each landmark for a given image, where value 1 indicates the label is reliable and 0 the opposite. To decide the reliability of each landmark, a common practice is to use a threshold τ , where the l-th landmark is reliable if its confidence score s l &gt; τ. During loss calculation, each loss term is multiplied by m to mask out the unreliable landmark-level labels. Thus, the loss for LAST is</p><formula xml:id="formula_2">L LAST = S∪T M (L base ),<label>(2)</label></formula><p>where M represents the mask operation, T = {x T j , y</p><formula xml:id="formula_3">T j } M j=1</formula><p>, and y T is the estimated pseudo-labels from the last self-training round. Note that the masks of the source domain data S always equal to one as they are ground truths. However, the landmark-level selection leads to unbalanced pseudo-labels between landmarks, as shown in Fig. <ref type="figure" target="#fig_2">3 (c</ref>). This is caused by the fixed threshold τ in self-training, which cannot handle different landmarks adaptively. To address this issue, we introduce percentile scores <ref type="bibr" target="#b3">[4]</ref> to yield dynamic thresholds (DT) for different landmarks. Specifically, for the l-th landmark, when the pseudolabels are sorted based on confidence (high to low), τ l r is used as the threshold, which is the confidence score of r-th percentile. In this way, the selection ratio of pseudo-labels can be controlled by r, and the unbalanced issue can be addressed by using the same r for all the landmarks. We set the curriculum to be r = Δ • t, where t is the t-th self-training round and Δ is a hyperparameter that controls the pace. We use Δ = 20%, which yields five training rounds in total.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Domain Adversarial Learning</head><p>Although self-training has been shown effective, it inevitably contains bias towards source domain because its initial model is trained with source domain data only. In other words, the data distribution of target domain is different from the source domain, which is known as covariate shift <ref type="bibr" target="#b26">[26]</ref>. To mitigate it, we introduce DAL to align the distribution of the two by conducting an adversarial training between a domain classifier and the feature extractor. Specifically, the feature f further goes through a global average pooling (GAP) and a fully connected (FC) layer, then connects to a domain classifier D to discriminate the source of input x. The classifier can be trained with binary cross-entropy loss:</p><formula xml:id="formula_4">L D = -d log D(F (x)) -(1 -d) log(1 -D(F (x))), (<label>3</label></formula><formula xml:id="formula_5">)</formula><p>where d is domain label, with d = 0 and d = 1 indicating the images are from source and target domain, respectively. The domain classifier is trained to minimize L D , while the feature extractor F is encouraged to maximize it such that the learned feature is indistinguishable to the domain classifier. Thus, the adversarial objective function can be written as</p><formula xml:id="formula_6">L DAL = max F min D L D .</formula><p>To simplify the optimization, we adopt gradient reversal layer (GRL) <ref type="bibr" target="#b9">[10]</ref> to mimic the adversarial training, which is placed right after the feature extractor. During backpropagation, GRL negates the gradients that pass back to the feature extractor F so that F is actually maximized. In this way, the adversarial training can be done via the minimization of L D , i.e., L DAL = L D . Finally, we have the overall loss function as follows:</p><formula xml:id="formula_7">L = S∪T L LAST + λ D L DAL ,<label>(4)</label></formula><p>where λ D is a balancing coefficient.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Experimental Settings</head><p>In this section, we present experiments on cephalometric landmark detection. See lung landmark detection in Appendix A.</p><p>Source Domain. The ISBI 2015 Challenge provides a public dataset <ref type="bibr" target="#b22">[22]</ref>, which is widely used as a benchmark of cephalometric landmark detection. It contains 400 images in total, where 150 images are for training, 150 images are Test 1 data, and the remaining are Test 2. Each image is annotated with 19 landmarks by two experienced doctors, and the mean values of the two are used as GT. In this paper, we only use the training set as the labeled source domain data.</p><p>Target Domain. The ISBI 2023 Challenge provides a new dataset <ref type="bibr" target="#b12">[13]</ref>, which was collected from 7 different imaging devices. By now, only the training set is released, which contains 700 images. For UDA setting, we randomly selected 500 images as unlabeled target domain data, and the remaining 200 images are for evaluation. The dataset provides 29 landmarks, but we only use 19 of them, i.e., the same landmarks as the source domain <ref type="bibr" target="#b22">[22]</ref>. Following previous works <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b15">16]</ref>, all the images are resized to 640 × 800. For evaluation metric, we adopt MRE and SDR within four radius (2 mm, 2.5 mm, 3 mm, and 4 mm). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>For the comparison under UDA setting, several state-of-the-art UDA methods were implemented, including FDA <ref type="bibr" target="#b25">[25]</ref>, UMT <ref type="bibr" target="#b7">[8]</ref>, SAC <ref type="bibr" target="#b0">[1]</ref>, and AT <ref type="bibr" target="#b16">[17]</ref>. Additionally, the base model trained with source domain data only is included as the lower bound, and the model trained with equal amount of labeled target domain data is used as the upper bound. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Model Analysis</head><p>We first do ablation study to show the effectiveness of each module, which can be seen in Table <ref type="table" target="#tab_2">2</ref>. The baseline model simply uses vanilla self-training <ref type="bibr" target="#b13">[14]</ref> for  To show the superiority of our base model, we replace it by standard heatmap regression <ref type="bibr" target="#b23">[23]</ref> (HM), which obtains degraded results in both MRE and SDR. Furthermore, we conduct analysis on subdomain discrepancy, which shows the effectiveness of our method on each subdomain (see Appendix B).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Qualitative Results</head><p>Figure <ref type="figure" target="#fig_3">4</ref> shows the qualitative results of the source-only base model, AT <ref type="bibr" target="#b16">[17]</ref>, and our method on target domain test data. The green dots are GTs, and red dots are predictions. It can be seen from the figure that our model makes better predictions than the other two (see yellow rectangles). We also notice that some landmarks are quite challenging, where all the three fail to give accurate predictions (see cyan rectangles).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this paper, we investigated anatomical landmark detection under the UDA setting. To mitigate the performance drop caused by domain shift, we proposed a unified UDA framework, which consists of a landmark detection model, a self-training strategy, and a DAL module. Based on the predictions and confidence scores from the landmark model, a self-training strategy is proposed for domain adaptation via landmark-level pseudo-labels with dynamic thresholds. Meanwhile, the model is encouraged to learn domain-invariant features via adversarial training so that the unaligned data distribution can be addressed. We constructed a UDA setting based on two anatomical datasets, where the experiments showed that our method not only reduces the domain gap by a large margin, but also outperforms other UDA methods consistently. However, a performance gap still exists between the current UDA methods and the supervised model in target domain, indicating more effective UDA methods are needed to close the gap.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Domain A vs. Domain B. (a) Image histogram. (b)-(c) Visual samples.</figDesc><graphic coords="2,43,29,54,56,337,36,63,16" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The overall framework. Based on 1) the landmark detection model, it 2) utilizes LAST to leverage the unlabeled target domain data via pseudo-labels, and 3) simultaneously conducts DAL for domain-invariant features.</figDesc><graphic coords="3,82,47,54,38,287,80,113,32" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. (a) Our landmark detection model. (b) Confidence scores of different landmarks for a random target domain image. (c) Statistics of reliable landmark-level pseudolabels with a fixed threshold τ = 0.4 over 500 images.</figDesc><graphic coords="4,43,29,54,50,337,36,140,20" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Qualitative results of three models on target domain test data. Green dots are GTs, and red dots are predictions. Yellow rectangles indicate that our model performs better than the other two, while cyan rectangles indicate that all the three fail. (Color figure online)</figDesc><graphic coords="8,43,29,54,41,337,36,150,28" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 .</head><label>1</label><figDesc>Results on the target domain test set, under UDA setting. We use ImageNet pretrained ResNet-50 as the backbone, followed by three deconvolutional layers for upsampling to stride 4<ref type="bibr" target="#b23">[23]</ref>. For Transformer decoder, three decoder layers are used, and the embedding length C = 256. Our model has 41M parameters and 139 GFLOPs when input size is 640 × 800. The source domain images are oversampled to the same number of target domain so that the domain classifier is unbiased. Adam is used as the optimizer, and the model is trained for 720 epochs in each self-training round. The initial learning rate is 2 × 10 -4 , and decayed by 10 at the 480th and 640th epoch. The batch size is set to 10 and λ D is set to 0.01. For data augmentation, we use random scaling, translation, rotation, occlusion, and blurring. The code was implemented with PyTorch 1.13 and trained with one RTX 3090 GPU. The training took about 54 h.</figDesc><table><row><cell>Method</cell><cell cols="3">MRE↓ 2 mm 2.5 mm 3 mm 4 mm</cell></row><row><cell cols="2">Base, Labeled Source 3.32</cell><cell>50.05 56.87</cell><cell>62.63 70.87</cell></row><row><cell>FDA [25]</cell><cell>2.16</cell><cell>61.28 69.73</cell><cell>76.34 84.57</cell></row><row><cell>UMT [8]</cell><cell>1.98</cell><cell>63.94 72.52</cell><cell>78.89 87.05</cell></row><row><cell>SAC [1]</cell><cell>1.94</cell><cell>65.68 73.76</cell><cell>79.63 87.81</cell></row><row><cell>AT [17]</cell><cell>1.87</cell><cell>66.82 74.81</cell><cell>80.73 88.47</cell></row><row><cell>Ours</cell><cell>1.75</cell><cell cols="2">69.15 76.94 82.92 90.05</cell></row><row><cell cols="2">Base, Labeled Target 1.22</cell><cell>83.76 89.71</cell><cell>92.79 96.08</cell></row><row><cell>Implementation Details.</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head></head><label></label><figDesc>Table1shows the results. Firstly, we can see that the model trained on the target domain obtains much better performance than the one on source domain in both MRE (1.22 mm vs. 3.32 mm) and SDR (83.76% vs. 50.05%, within 2 mm), which indicates that the domain shift can cause severe performance degradation. By leveraging both labeled source domain and unlabeled target domain data, our model achieves 1.75 mm in MRE and 69.15% in SDR within 2 mm. It not only reduces the domain gap by a large margin (3.32 mm → 1.75 mm in MRE and 50.05% → 69.15% in 2 mm SDR), but also outperforms the other UDA methods consistently. However, there is still a gap between the UDA methods and the supervised model in target domain.</figDesc><table /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Ablation study of different modules. DT), the MRE improves to 1.98 mm. When the proposed LAST and DAL are applied separately, the MREs are 1.91 mm and 1.96 mm, respectively, which verifies the effectiveness of the two modules. By combining the two, the model obtains the best results in both MRE and SDR.</figDesc><table><row><cell>Method</cell><cell cols="3">MRE↓ 2 mm 2.5 mm 3 mm 4 mm</cell></row><row><cell>Self-training [14]</cell><cell>2.18</cell><cell>62.18 69.44</cell><cell>75.47 84.36</cell></row><row><cell>LAST w/o DT</cell><cell>1.98</cell><cell>65.34 72.53</cell><cell>78.03 86.11</cell></row><row><cell>LAST</cell><cell>1.91</cell><cell>66.21 74.39</cell><cell>80.23 88.42</cell></row><row><cell>DAL</cell><cell>1.96</cell><cell>65.92 74.18</cell><cell>79.73 87.60</cell></row><row><cell>LAST+DAL</cell><cell>1.75</cell><cell cols="2">69.15 76.94 82.92 90.05</cell></row><row><cell cols="2">LAST+DAL w/ HM 1.84</cell><cell>66.45 75.09</cell><cell>81.82 89.55</cell></row><row><cell cols="4">domain adaptation, which achieves 2.18 mm in MRE. By adding LAST but</cell></row><row><cell>without dynamic thresholds (</cell><cell></cell><cell></cell><cell></cell></row></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgments. This work was supported by the <rs type="funder">Shenzhen Science and Technology Innovation Committee Fund</rs> (Project No. <rs type="grantNumber">SGDX20210823103201011</rs>) and <rs type="funder">Hong Kong Innovation and Technology Fund</rs> (Project No. <rs type="grantNumber">ITS/028/21FP</rs>).</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_nxSTBEt">
+					<idno type="grant-number">SGDX20210823103201011</idno>
+				</org>
+				<org type="funding" xml:id="_WF3T5hs">
+					<idno type="grant-number">ITS/028/21FP</idno>
+				</org>
+			</listOrg>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43907-0_66.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Self-supervised augmentation consistency for adapting semantic segmentation</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Araslanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Roth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="15384" to="15394" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Pseudolabeling and confirmation bias in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arazo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ortego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">E</forename><surname>O'connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcguinness</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2020 International Joint Conference on Neural Networks (IJCNN)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Domain adaptation through anatomical constraints for 3D human pose estimation under the cover</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bigalke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Hansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Diesel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">P</forename><surname>Heinrich</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Medical Imaging with Deep Learning</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="173" to="187" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Curriculum labeling: revisiting pseudo-labeling for semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Cascante-Bonilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Ordonez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="6912" to="6920" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Intraobserver reliability of landmark identification in cone-beam computed tomography-synthesized two-dimensional cephalograms versus conventional cephalometric radiography: a preliminary study</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Dental Sci</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="56" to="62" />
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Cephalometric landmark detection by attentive feature pyramid fusion and regression-voting</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32248-9_97</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32248-9_97" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11766</biblScope>
+			<biblScope unit="page" from="873" to="881" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Domain adaptive faster R-CNN for object detection in the wild</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Sakaridis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Van Gool</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="3339" to="3348" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Unbiased mean teacher for cross-domain object detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Duan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="4091" to="4101" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Teacher supervises students how to learn from partially labeled images for facial landmark detection</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="783" to="792" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unsupervised domain adaptation by backpropagation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Ganin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Lempitsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="1180" to="1189" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">CephalFormer: incorporating global structure constraint into visual features for general cephalometric landmark detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16437-8_22</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16437-8_22" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13433</biblScope>
+			<biblScope unit="page" from="227" to="237" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">When liebig&apos;s barrel meets facial landmark detection: a practical model</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shao</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2105.13150</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Aariz: a benchmark dataset for automatic cephalometric landmark detection and CVM stage classification</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Khalid</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2302.07797</idno>
+		<imprint>
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Pseudo-label: the simple and efficient semi-supervised learning method for deep neural networks</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">H</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML Workshop on Challenges in Representation Learning</title>
+		<imprint>
+			<date type="published" when="2013">2013</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">RepFormer: refinement pyramid transformer for robust facial landmark detection</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">A</forename><surname>Heng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IJCAI</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Structured landmark detection via topology-adapting deep graph learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58545-7_16</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58545-7_16" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12354</biblScope>
+			<biblScope unit="page" from="266" to="283" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Cross-domain adaptive teacher for object detection</title>
+		<author>
+			<persName><forename type="first">Y</forename><forename type="middle">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="7581" to="7590" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Landmarks detection with anatomical constraints for total hip arthroplasty preoperative measurements</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X.-S</forename><surname>Hua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="670" to="679" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_65</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-1_65" />
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Learning from synthetic animals</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Mu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Hager</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Yuille</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="12386" to="12395" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Integrating spatial configuration into heatmap regression based CNNs for landmark localization</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Payer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Štern</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Urschler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Pseudo-labeled auto-curriculum learning for semi-supervised keypoint localization</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A benchmark for comparison of dental radiography analysis algorithms</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">W</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Simple baselines for human pose estimation and tracking</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Wei</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-01231-1_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-01231-1_29" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2018</title>
+		<editor>
+			<persName><forename type="first">V</forename><surname>Ferrari</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Hebert</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">C</forename><surname>Sminchisescu</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="volume">11210</biblScope>
+			<biblScope unit="page" from="472" to="487" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">3D human pose estimation in the wild by adversarial learning</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<biblScope unit="page" from="5255" to="5264" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">FDA: Fourier domain adaptation for semantic segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Soatto</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="4085" to="4095" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">A review of single-source deep unsupervised visual domain adaptation</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Tran. Neural Netw. Learn. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="473" to="493" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">An attention-guided deep regression model for landmark detection in cephalograms</title>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Gao</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32226-7_60</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32226-7_60" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11769</biblScope>
+			<biblScope unit="page" from="540" to="548" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

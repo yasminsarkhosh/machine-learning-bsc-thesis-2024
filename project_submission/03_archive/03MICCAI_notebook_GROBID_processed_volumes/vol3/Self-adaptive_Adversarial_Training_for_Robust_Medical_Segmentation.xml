@@ -1,0 +1,1106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Self-adaptive Adversarial Training for Robust Medical Segmentation</title>
+				<funder ref="#_EzyWB5n">
+					<orgName type="full">EPSRC</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Partnership Resource Fund of ORCA Hub</orgName>
+				</funder>
+				<funder>
+					<orgName type="full">Faculty of Environment, Science and Economy at the University of Exeter</orgName>
+				</funder>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Fu</forename><surname>Wang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Exeter</orgName>
+								<address>
+									<postCode>EX4 4QF</postCode>
+									<settlement>Exeter</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Zeyu</forename><surname>Fu</surname></persName>
+							<email>z.fu@exeter.ac.uk</email>
+						</author>
+						<author>
+							<persName><forename type="first">Yanghao</forename><surname>Zhang</surname></persName>
+							<email>yanghao.zhang@liverpool.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Exeter</orgName>
+								<address>
+									<postCode>EX4 4QF</postCode>
+									<settlement>Exeter</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Liverpool</orgName>
+								<address>
+									<postCode>L69 3BX</postCode>
+									<settlement>Liverpool</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Wenjie</forename><surname>Ruan</surname></persName>
+							<email>w.ruan@trustai.uk</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Exeter</orgName>
+								<address>
+									<postCode>EX4 4QF</postCode>
+									<settlement>Exeter</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Liverpool</orgName>
+								<address>
+									<postCode>L69 3BX</postCode>
+									<settlement>Liverpool</settlement>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Self-adaptive Adversarial Training for Robust Medical Segmentation</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">1EDD2111370283A8659BC1244FD77203</idno>
+					<idno type="DOI">10.1007/978-3-031-43898-169.</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:26+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Medical Image Segmentation • Adversarial Training</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>Adversarial training has been demonstrated to be one of the most effective approaches to training deep neural networks that are robust to malicious perturbations. Research on effectively applying it to produce robust 3D medical image segmentation models is ongoing. While few empirical studies have been done in this area, developing effective adversarial training methods for complex segmentation models and highvolume 3D examples is challenging and requires theoretical support. In this paper, we consider the robustness of 3D segmentation tasks from a PAC-Bayes generalisation perceptive and show that reducing the trained models' Lipschitz constant benefits the models' robustness performance. Demonstrating by empirical investigation, we show that adjusting the adversarial iteration can help to reduce the model's Lipschitz constant, enabling a self-adaptive adversarial training strategy. Empirical studies on the medical segmentation decathlon dataset have been done to demonstrate the efficiency of the proposed adversarial training method. Our implementation is available at https://github.com/TrustAI/SEAT.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Medical image segmentation is a fundamental task in medical image analysis <ref type="bibr" target="#b14">[14,</ref><ref type="bibr" target="#b23">23]</ref>, where deep neural network based model shave achieved revolutionary progress <ref type="bibr" target="#b13">[13,</ref><ref type="bibr" target="#b26">26]</ref>. Although these cutting-edge models can achieve near-human level performance on medical tasks <ref type="bibr" target="#b17">[17]</ref> and can play a crucial role in medical diagnosis, treatment planning, and monitoring of various diseases, they are vulnerable to adversarial attacks like other deep learning models <ref type="bibr" target="#b14">[14,</ref><ref type="bibr" target="#b18">18,</ref><ref type="bibr" target="#b31">31]</ref>. The vulnerability of medical segmentation models to adversarial attacks could have severe consequences in clinical scenarios, leading to incorrect diagnoses and inappropriate or even harmful treatments that risk the patient's safety. Hence, improving the adversarial robustness of medical segmentation models is crucial.</p><p>Recent studies on the natural image domains show that adversarial training is one of the most successful strategies against adversarial attacks <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr">12,</ref><ref type="bibr" target="#b32">32]</ref>. The concept behind adversarial training is to utilise the adversarially perturbed examples as training data to improve the trained models' robustness <ref type="bibr" target="#b11">[11,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b30">30]</ref>. Although a large amount of efforts has been made to adopt adversarial training techniques as data argumentation to mitigate the shortage of data <ref type="bibr" target="#b24">[24,</ref><ref type="bibr" target="#b25">25,</ref><ref type="bibr" target="#b33">33,</ref><ref type="bibr" target="#b36">36]</ref>, how to effectively deploy adversarial training to improve adversarial robustness has been discussed less by the medical image community. Along this direction, Daza et al. <ref type="bibr" target="#b5">[6]</ref> proposed to adversarially fine-tune pre-trained models on the Medical Segmentation Decathlon (MSD) datasets <ref type="bibr" target="#b0">[1]</ref> to improve their robustness, which empirically demonstrated the effectiveness of adversarial training. However, the theoretical foundations for developing more effective adversarial training techniques for 3D segmentation tasks are still lacking.</p><p>In this paper, we consider how to effectively improve the adversarial robustness in 3D medical image segmentation tasks. Taking inspiration from the PAC-Bayes generalisation bounds on standard training <ref type="bibr" target="#b22">[22]</ref> and adversarial training <ref type="bibr" target="#b8">[8]</ref>, we show that reducing the Lipschitz constant of the trained model (defined in Eq. ( <ref type="formula">5</ref>)) can narrow down the generalisation gap and improve the effect of adversarial training. Nevertheless, existing approaches served for such a purpose, e.g., spectral normalisation <ref type="bibr" target="#b28">[28]</ref> and penalising gradient norm <ref type="bibr" target="#b21">[21]</ref>, are impractical due to the complexity of model architecture and the large volume of examples in 3D segmentation tasks. To overcome these difficulties, as shown in Fig. <ref type="figure">1</ref>, we empirically demonstrate that conducting adversarial training with an appropriate number of adversarial iterations during training can induce a regularisation effect on the trained models' gradient norm. This motivates us to design an adversarial training strategy that dynamically changes adversarial iterations during training. As shown in Fig. <ref type="figure" target="#fig_0">2</ref> and Tab. 2, the proposed adversarial strategy can train robust segmentation models under both adversarial training and fine-tuning scenarios. Compared with FREE adversarial training with a fixed number of adversarial iterations, our self-adaptive adversarial training strategy conducts much fewer backpropagation, leading to a considerable boost in training efficiency.</p><p>In summary, our contribution comes from three parts: i) Based on the PAC-Bayes generalisation framework, we show that the adversarial training effect on 3D segmentation tasks can be improved by reducing the norm of the trained models' gradient; ii) As existing methods do not work on 3D tasks, our empirical investigation demonstrates that dynamically adjusting the adversarial iteration can achieve a better regularising effect on the gradient norm than fixing the iteration; iii) We design a SElf-adaptive Adversarial Training strategy, SEAT for short, and empirically prove its effectiveness on the MSD dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Works</head><p>The goal of adversarial attacks is to add malicious perturbations to the input examples, aiming to fool or deceive target neural networks while maintaining imperceptible to human or detection mechanisms <ref type="bibr" target="#b30">[30]</ref>. In previous studies <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b34">34]</ref>, extensive empirical analyses have been conducted on the adversarial robustness of 2D segmentation tasks. These studies showed that segmentation models were 'inherently' more robust to adversarial examples than classification models, thanks to components such as residual connections and multiscale processing that can enhance the models' robustness. However, similar to the 'arms race' between adversarial attack and defence developed for classification tasks <ref type="bibr" target="#b2">[3]</ref>, new attack methods like <ref type="bibr" target="#b9">[9,</ref><ref type="bibr" target="#b38">38]</ref> have been developed to break the natural robustness of segmentation models, revealing their vulnerability to malicious perturbations. To achieve adversarial robustness in segmentation models, Xu et al. <ref type="bibr" target="#b35">[35]</ref> introduced adversarial training, one of the most effective defence mechanisms against strong adversarial attacks <ref type="bibr" target="#b2">[3]</ref>. Later, Gu et al. <ref type="bibr" target="#b10">[10]</ref> proposed SegPGD, an efficient segmentation attack method that can be used to evaluate or adversarially train 2D segmentation models.</p><p>In the field of 3D medical imaging, due to the large volume of 3D examples and the shortage of training data, medical segmentation models are often prone to overfitting, resulting in poor generalisation and increased vulnerability to adversarial attacks <ref type="bibr" target="#b14">[14]</ref>. While approaches such as preprocessing <ref type="bibr" target="#b16">[16]</ref> and robust detection <ref type="bibr" target="#b15">[15]</ref> have been proposed to defend against adversarial attacks, they operate as additional protection for the deployed model rather than improving its robustness. In contrast, adversarial training methods can produce models with intrinsic robustness <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b10">10]</ref>, but research on effectively applying them to train robust medical segmentation models just commences. Daza et al. <ref type="bibr" target="#b5">[6]</ref> proposed a lightweight segmentation model called ROG and adopted FREE adversarial training <ref type="bibr" target="#b29">[29]</ref> to fine-tune models pretrained on MSD datasets <ref type="bibr" target="#b0">[1]</ref>. They also extended AutoAttack <ref type="bibr" target="#b4">[5]</ref>, a combination of four attacks, to evaluate the adversarial robustness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methodology</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Notations. Considering a segmentation task with input domain X</head><formula xml:id="formula_0">B,n = {x ∈ R n x ≤ B} and output domain YK,n = y ∈ R n || ∀i ∈ N + ≤n yi ∈ {1, . . . , C}</formula><p>, where • is a norm constrain and C is the number of classes. We let D be a dataset containing N pairs of example and segmentation mask drawn i.i.d from the unknown distribution D. Denoted by f w : R n → R n , the segmentation results can be computed via a neural network parameterised over w = vec</p><formula xml:id="formula_1">{W i } d i=1 ,</formula><p>where d is the number of blocks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">PAC-Bayes Generalisation Bounds</head><p>Previous works, e.g., <ref type="bibr" target="#b8">[8,</ref><ref type="bibr" target="#b11">11,</ref><ref type="bibr" target="#b22">22]</ref>, propose to utilise the PAC-Bayes framework <ref type="bibr" target="#b20">[20]</ref> to study the generalisation on both benign and adversarial examples of classification models. As the whole example corresponds to one label, the expected margin loss <ref type="bibr" target="#b22">[22]</ref> for classification models is defined as</p><formula xml:id="formula_2">Lγ(f cls w ) = P (x,y)∼D f cls w (x)[y] -max j =y f cls w (x)[j] ≤ γ ,<label>(1)</label></formula><p>where γ &gt; 0 is the margin term. Similarly, we can extend the expected margin loss for segmentation models as</p><formula xml:id="formula_3">Lγ(fw) = P (x,y)∼D E x i ∈x fw(xi : x)[y] -max j =y fw(xi : x)[j] ≤ γ .</formula><p>(</p><formula xml:id="formula_4">)<label>2</label></formula><p>Based on Eq. ( <ref type="formula" target="#formula_4">2</ref>), we can then adopt the PAC-Bayes bounds to formulate the generalisability of segmentation models. Specifically, letting L 0 be the expected risk, i.e., γ = 0, and L γ be the empirical margin loss, the following bound holds for any δ, γ &gt; 0 with probability ≥ 1δ on benign training set <ref type="bibr" target="#b22">[22]</ref>.</p><formula xml:id="formula_5">L0(fw) ≤ Lγ(fw) + O ⎛ ⎝ B 2 d 2 h ln(dh)Φ + ln dN δ γ 2 N ⎞ ⎠ , (<label>3</label></formula><formula xml:id="formula_6">)</formula><p>where h is number of hidden units in each block and Φ is the complexity score given by</p><formula xml:id="formula_7">d i=1 W i 2 2 d i=1 Wi 2 F Wi 2 2</formula><p>. Farnia et al. <ref type="bibr" target="#b8">[8]</ref> extended the generalisation bound in Eq. ( <ref type="formula" target="#formula_5">3</ref>) to adversarial training scenario and gave the following adversarial generalisation bound,</p><formula xml:id="formula_8">L adv 0 (fw) ≤ L adv γ (fw) + O ⎛ ⎝ (B + ε) 2 d 2 h ln(dh)Φ adv + ln dN δ γ 2 N ⎞ ⎠ , (<label>4</label></formula><formula xml:id="formula_9">)</formula><p>where ε is the perturbation ratio, and Φ adv is proportion to Φ, while the exact form of it depends on the adversarial attack method. The complexity scores Φ and Φ adv are both proportional to d i=1 W i 2 , which is the product of the spectral norm of all blocks <ref type="bibr" target="#b8">[8]</ref> that can be viewed as an estimation of the Lipschitz constant of the trained model <ref type="bibr" target="#b27">[27]</ref>. As other factors become constants when a specific training task and the model architecture are given, the above analysis implies that narrowing down the generalisation gap can be achieved by reducing the complexity scores Φ and Φ adv through decreasing the Lipschitz constant of the model defined as follows.</p><p>Definition 1 (Lipschitz constant). Let f w : R n → R n be a segmentation model, δ be a perturbation, and L be a Lipschitz continued loss function, K &gt; 0 is said to be a Lipschitz constant of model f w if, for any x, x + δ ∈ X , we have</p><formula xml:id="formula_10">L(fw(x)) -L(fw(x + δ)) ≤ K δ .</formula><p>(5)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Narrowing down the Generalisation Gap</head><p>Decreasing the expected risk requires reducing the Lipschitz constant of the trained model while maintaining satisfactory training performance. One approach to control the Lipschitz constant is regularising the gradient during training, where Farnia et al. <ref type="bibr" target="#b8">[8]</ref> accomplished this by applying spectral normalisation <ref type="bibr" target="#b28">[28]</ref> to 2D convolution and other linear operations. However, 3D segmentation models cannot directly benefit from such an approach because spectral Fig. <ref type="figure">1</ref>. A comparison was made on three tasks from MSD, namely tasks 3, 7, and 9, to investigate the regularising effect on the gradient norm induced by different approaches. These approaches we implemented are denoted as random, FREE-5/3, and SEAT, which respectively represent randomised noise, FREE adversarial training with 5 and 3 adversarial iterations, and the proposed self-adaptive adversarial training strategy.</p><p>normalisation is theoretically inapplicable for high-dimensional tensors. Note that the Lipschitz constant is an upper bound on how fast the loss value changes when small perturbations are added to the network's input <ref type="bibr" target="#b30">[30]</ref>, i.e., K ≥ max x∈X ∇ x L(f w (x)). Therefore, one can utilise ∇ x L(f w (x)) as a penalty during training to reduce the generalisation gap, but directly minimising the gradient norm through gradient descent can lead to to an unacceptable computational cost <ref type="bibr" target="#b7">[7]</ref>.</p><p>On a small classification dataset, Moosavi-Dezfooli et al. <ref type="bibr" target="#b21">[21]</ref> found that regularising the gradient norm can train robustness models while conducting adversarial training could reduce the gradient norm. Therefore, taking three datasets within MSD as examples, we compared the regularisation effect on the trained models' gradient norm induced by FREE adversarial training and randomised noise. These models have been trained in 50 epochs. We record the gradient norm at the end of each epoch and report the averaged value throughout the training. It can be seen from Fig. <ref type="figure">1</ref> that adversarial training indeed has notably reduced the gradient norm. However, more adversarial iterations did not always result in the lowest averaged gradient norm. This observation aligns with findings from previous works <ref type="bibr" target="#b29">[29,</ref><ref type="bibr" target="#b32">32]</ref>, which showed that repeatedly training the model too many rounds on the same batch could lead to 'catastrophic forgetting'. Hence, conducting appropriate numbers of adversarial iterations at appropriate timing could be critical to regularising the gradient norm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Self-adaptive Adversarial Training Schedule</head><p>Motivated by the empirical investigation in Fig. <ref type="figure">1</ref>, we design an adversarial training schedule that can automatically adjust the number of adversarial iterations during training. As described in Algorithm 1 and Algorithm 2, we allow the algorithm to compute and monitor the accumulation of the gradient norm K throughout training. Given the update frequency q, the model is initially trained on clean examples, while adversarial training starts at the q-th epoch by only performing one adversarial iteration. After another q training epochs, a threshold is initialised based on the K at that epoch. From there, the algorithm checks whether the current K is larger or smaller than the threshold every q epochs, and if so, the number of adversarial iterations will be increased or decreased accordingly unless reaching the minimum or minimum values. As illustrated in Fig. <ref type="figure">1</ref>, SEAT showed the best regularisation effect on the gradient norm in this preliminary investigation. We will conduct a comprehensive evaluation of its training performance in the next section. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiment</head><p>This section evaluates the proposed adversarial training strategy under both adversarial training and adversarial fine-tuning scenarios on the MSD datasets <ref type="bibr" target="#b0">[1]</ref>.</p><p>Implementation Details. Following the benchmark on the MSD dataset built by Daza et al. <ref type="bibr" target="#b5">[6]</ref>, we adopted the ROG model <ref type="bibr" target="#b5">[6]</ref> but applied the SGD optimiser with a fixed number of epochs. In Fig. <ref type="figure" target="#fig_0">2</ref>, we trained the model for 300 epochs using a two-step learning rate schedule. The initial learning rate was set to 0.01 and was decreased by a factor of 10 twice during the training process. The training adversarial perturbation budget is set to be 8/255, and we re-scale the perturbation according to the value range of examples when performing adversarial training and attack. We set the number of adversarial iterations in FREE to 5 and allow SEAT to perform up to 5 adversarial iterations as well. The number of iterations is updated every 3 epochs in SEAT. Besides, our implementation is built with the PyTorch framework, and experiments are carried out on a workstation with an Intel i7-10700KF processor, a GeForce RTX 3090 graphics card, and 64 GB memory. Regarding the test methods, Daza et al. <ref type="bibr" target="#b5">[6]</ref> introduced two gradient-based white-box adversarial attack methods, i.e., APGD-CE and APGD-DLR, and two query-based black-box attack, FAB and Square <ref type="bibr" target="#b4">[5]</ref>. However, as reported in their paper, the FAB attack can barely reduce the target segmentation models' performance, while APGD-DLR needs at least three classes (C &gt; 2) when computing the loss, which is inapplicable for some training tasks in MSD. We adopted APGD-CE, PGD, and Square to evaluate the trained models' robustness. However, as evident from Table <ref type="table" target="#tab_2">2</ref>, the Square black-box attack also performed poorly in our evaluation.</p><p>Robustness Performance. We first evaluate the adversarially trained models by using attacks with different ratios. The averaged dice scores over categories and attacks on each task are reported in Fig. <ref type="figure" target="#fig_0">2</ref>, and the computational cost given by the number of backpropagations is summarised in Table <ref type="table" target="#tab_1">1</ref>. As all adversarial training methods are carried out with ε = 8/255, through this experiment, we can see the trained models' robustness is generalisable to adversarial perturbations with smaller or larger ratios. Although the fine-tuned models generally demonstrate better robustness than their counterparts that underwent only adversarial training across a majority of the tasks, we observe that these performance gaps appear to correlate with the number of available training examples specific to each task. The widest performance gap is revealed in Task 9, which only has 41 training examples <ref type="bibr" target="#b0">[1]</ref>. Conversely, it's interesting to note that in Task 3, which includes 210 training examples <ref type="bibr" target="#b0">[1]</ref>, the adversarially trained models actually surpass the performance of their fine-tuned counterparts. From a methodological perspective, models trained using SEAT often show robustness performance that's on par with, and occasionally superior to, those trained using FREE. Because backpropagation is the most computationally expensive opera- Adversarial Trade-Off. In classification tasks, adversarial training suffers from the trade-off between the adversarial robustness and the accuracy of clean examples <ref type="bibr" target="#b37">[37]</ref>. An increase in the robustness of trained models often results in a decrease in performance on clean data <ref type="bibr" target="#b29">[29]</ref>, which, however, is not the case in the 3D segmentation tasks. As shown in Table <ref type="table" target="#tab_2">2</ref>, increasing the training epochs generally led to enhanced robustness while maintaining an appreciable Dice score on clean examples. This is likely caused by the significantly increased difficulties of the training tasks and the lack of training data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>In this paper, we first introduce the PAC-Bayes generalisation bounds by defining the expected margin loss for the segmentation task and show that the generalisation gap can be narrowed down by reducing the Lipschitz constant of the trained model. While existing techniques like spectral normalisation and penalising the gradient norm are impractical for 3D segmentation models, we empirically show that dynamically adjusting the adversarial iterations can achieve a better regularisation of the model's Lipschitz constant. Accordingly, we developed a self-adaptive adversarial training method, namely SEAT, and evaluated its performance on the MSD dataset. Our experiments demonstrate that SEAT can train segmentation models with considerable robustness and is much more efficient than its opponents. Please note that the observation in this paper is only made on the ROG model, and we plan to extend our investigation to other state-of-the-art segmentation models in the future.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig.2. Adversarial robustness performance of FREE and SEAT on MSD datasets against different adversarial ratios. Namely, FREE and SEAT train randomly initialised models, while FREE-FT and SEAT-FT, corresponding to adversarial fine-tuning, are performed on pre-trained models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 1 .</head><label>1</label><figDesc>The numbers of backpropagations that are performed in 300 epochs</figDesc><table><row><cell>Train Method</cell><cell cols="10">Task01 Task02 Task03 Task04 Task05 Task06 Task07 Task08 Task09 Task10</cell></row><row><cell>SEAT</cell><cell>636</cell><cell>675</cell><cell>756</cell><cell>657</cell><cell>792</cell><cell>744</cell><cell>858</cell><cell>636</cell><cell>663</cell><cell>993</cell></row><row><cell>SEAT-FT</cell><cell>741</cell><cell>618</cell><cell>597</cell><cell>609</cell><cell>597</cell><cell>792</cell><cell>645</cell><cell>606</cell><cell>785</cell><cell>624</cell></row><row><cell cols="2">FREE/FREE-FT 1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell><cell>1500</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2"><head>Table 2 .</head><label>2</label><figDesc>Task-by-task performance of SEAT with increasing epochs (ε = 8/255) , we use the number of backpropagation as a metric to measure the computational cost. As can be seen in Table1, SEAT is significantly more efficient than FREE in both adversarial training and fine-tuning scenarios. On average, SEAT performed 741 and 661 backpropagations during adversarial training and fine-tuning, respectively. While FREE requires a fixed 1,500 times of backpropagation due to the setup of the training epochs and adversarial iterations.</figDesc><table><row><cell>Attack</cell><cell cols="2">#Epochs Task01 Task02 Task03 Task04 Task05 Task06 Task07 Task08 Task09 Task10</cell></row><row><cell>Clean</cell><cell>300</cell><cell>0.7013 0.7702 0.6392 0.8034 0.2674 0.5197 0.4102 0.3682 0.5622 0.1667</cell></row><row><cell></cell><cell>400</cell><cell>0.7015 0.8223 0.6472 0.8255 0.2809 0.6325 0.4699 0.3837 0.6561 0.2081</cell></row><row><cell></cell><cell>500</cell><cell>0.7095 0.8359 0.6495 0.8379 0.3144 0.6118 0.5110 0.3960 0.6742 0.2303</cell></row><row><cell cols="2">APGD-CE 300</cell><cell>0.1475 0.0000 0.2868 0.1529 0.0163 0.0256 0.0008 0.1199 0.0520 0.0110</cell></row><row><cell></cell><cell>400</cell><cell>0.1352 0.0000 0.2931 0.1633 0.0107 0.0221 0.0009 0.1257 0.0519 0.0199</cell></row><row><cell></cell><cell>500</cell><cell>0.1107 0.0000 0.2687 0.1825 0.0161 0.0449 0.0011 0.1187 0.0337 0.0135</cell></row><row><cell>PGD</cell><cell>300</cell><cell>0.1492 0.0000 0.3228 0.2941 0.0085 0.0101 0.0045 0.1270 0.0000 0.0047</cell></row><row><cell></cell><cell>400</cell><cell>0.1435 0.0007 0.3264 0.3255 0.0067 0.0130 0.0124 0.1335 0.0002 0.0064</cell></row><row><cell></cell><cell>500</cell><cell>0.1376 0.0009 0.3075 0.3663 0.0125 0.0154 0.0093 0.1309 0.0001 0.0074</cell></row><row><cell>Square</cell><cell>300</cell><cell>0.7013 0.7702 0.6392 0.8034 0.2674 0.5197 0.4094 0.3682 0.4810 0.1429</cell></row><row><cell></cell><cell>400</cell><cell>0.7015 0.8223 0.6472 0.8255 0.2809 0.6184 0.4699 0.3837 0.6387 0.2080</cell></row><row><cell></cell><cell>500</cell><cell>0.7095 0.8359 0.6495 0.8379 0.3144 0.5729 0.5101 0.3956 0.6124 0.2263</cell></row></table><note><p>tion</p></note></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div><p>Acknowledgements. FW is funded by the <rs type="funder">Faculty of Environment, Science and Economy at the University of Exeter</rs>. WR is the corresponding author of this work that was funded by the <rs type="funder">Partnership Resource Fund of ORCA Hub</rs> via the <rs type="funder">EPSRC</rs> under project [<rs type="grantNumber">EP/R026173/1</rs>]. We would like to thank <rs type="person">Abhra Chaudhuri</rs> for helping with proofreading and the anonymous reviewers for providing valuable feedback.</p></div>
+			</div>
+			<listOrg type="funding">
+				<org type="funding" xml:id="_EzyWB5n">
+					<idno type="grant-number">EP/R026173/1</idno>
+				</org>
+			</listOrg>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The medical segmentation decathlon</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Antonelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Reinke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Commun</title>
+		<imprint>
+			<biblScope unit="volume">13</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4128</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">On the robustness of semantic segmentation models to adversarial attacks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Arnab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Miksik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H S</forename><surname>Torr</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Obfuscated gradients give a false sense of security: circumventing defenses to adversarial examples</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Athalye</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Carlini</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Robustbench: a standardized adversarial robustness benchmark</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Croce</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2010.09670</idno>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Croce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Towards robust general medical image segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Daza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Pérez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Arbeláez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="volume">12903</biblScope>
+			<biblScope unit="page" from="3" to="13" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName><forename type="first">Cham</forename><surname>Springer</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87199-4_1</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87199-41" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The complexity of finding stationary points with stochastic gradient descent</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Drori</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Shamir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Generalizable adversarial training via spectral normalization</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Farnia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Adversarial examples on segmentation models can be easy to transfer</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Torr</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2111.11368</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">SegPGD: an effective and efficient adversarial attack for evaluating and boosting segmentation robustness</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">H S</forename><surname>Torr</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-19818-2_18</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-19818-218" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2022</title>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Avidan</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Brostow</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><surname>Cissé</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><forename type="middle">M</forename><surname>Farinella</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Hassner</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13689</biblScope>
+			<biblScope unit="page" from="308" to="325" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Enhancement to safety and security of deep learning</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning Safety</title>
+		<editor>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">G</forename><surname>Jin</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</editor>
+		<imprint>
+			<biblScope unit="page" from="205" to="216" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A survey of safety and trustworthiness of deep neural networks: verification, testing, adversarial attack and defence, and interpretability</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kroening</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-981-19-6814-3_12</idno>
+		<ptr target="https://doi.org/10.1007/978-981-19-6814-31212" />
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Sci. Rev</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page">100270</biblScope>
+			<date type="published" when="2020">2023. 2020</date>
+			<publisher>Springer</publisher>
+			<pubPlace>Singapore</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Isensee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">F</forename><surname>Jaeger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Kohl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Petersen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Maier-Hein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat. Methods</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="203" to="211" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Adversarial attacks and defenses on AI in medical imaging informatics: a survey</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Kaviani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sohn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Syst. Appl</title>
+		<imprint>
+			<biblScope unit="page">116815</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Robust detection of adversarial attacks on medical images</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ISBI</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Defending deep learning-based biomedical image segmentation from adversarial attacks: a low-cost frequency refinement approach</title>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-59719-1_34</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-59719-134" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Martel</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12264</biblScope>
+			<biblScope unit="page" from="342" to="351" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A comparison of deep learning performance against health-care professionals in detecting diseases from medical imaging: a systematic review and meta-analysis</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Faes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">U</forename><surname>Kale</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lancet Digit. Health</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="271" to="e297" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Understanding adversarial attacks on deep learning based medical image analysis systems</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Gu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">110</biblScope>
+			<biblScope unit="page">107332</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Towards deep learning models resistant to adversarial attacks</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Madry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Makelov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Schmidt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Tsipras</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vladu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1706.06083</idno>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">PAC-Bayesian model averaging</title>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Mcallester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">COLT</title>
+		<imprint>
+			<date type="published" when="1999">1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Robustness via curvature regularization, and vice versa</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Moosavi-Dezfooli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fawzi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uesato</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Frossard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CVPR</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A PAC-Bayesian approach to spectrally-normalized margin bounds for neural networks</title>
+		<author>
+			<persName><forename type="first">B</forename><surname>Neyshabur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bhojanapalli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Srebro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Ai in medical imaging informatics: current challenges and future directions</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">S</forename><surname>Panayides</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Amini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">D</forename><surname>Filipovic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE J. Biomed. Health Inform</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1837" to="1857" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Adversarially robust prototypical few-shot segmentation with neural-odes</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Pandey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vardhan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Chasmai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16452-1_8</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16452-18" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13438</biblScope>
+			<biblScope unit="page" from="77" to="87" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Duo-SegNet: adversarial dual-views for semi-supervised medical image segmentation</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Peiris</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Egan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Harandi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87196-3_40</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87196-340" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12902</biblScope>
+			<biblScope unit="page" from="428" to="438" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-428" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Lipschitz regularity of deep neural networks: analysis and efficient estimation</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Scaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Virmaux</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">The singular values of convolutional layers</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Sedghi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">M</forename><surname>Long</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Adversarial training for free</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Shafahi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Najibi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Ghiasi</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<publisher>NeurIPS</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Intriguing properties of neural networks</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Zaremba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICLR</title>
+		<imprint>
+			<date type="published" when="2014">2014</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Deep learning and its adversarial robustness: a brief introduction</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Deep Learning, Intelligent Control and Evolutionary Computation</title>
+		<imprint>
+			<publisher>World Scientific</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="547" to="584" />
+		</imprint>
+	</monogr>
+	<note>Handbook on Computer Learning and Intelligence</note>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Dynamic efficient adversarial training guided by gradient magnitude</title>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NeurIPS TEA Workshop</title>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Contextaware virtual adversarial training for anatomically-plausible segmentation</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Pedersoli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Desrosiers</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-87193-2_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-87193-229" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2021</title>
+		<editor>
+			<persName><forename type="first">M</forename><surname>De Bruijne</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="volume">12901</biblScope>
+			<biblScope unit="page" from="304" to="314" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Adversarial examples for semantic segmentation and object detection</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICCV</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Dynamic divide-and-conquer adversarial training for robust semantic segmentation</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jia</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICCV</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Adversarial consistency for single domain generalization in medical image segmentation</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Reynolds</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-031-16449-1_64</idno>
+		<ptr target="https://doi.org/10.1007/978-3-031-16449-164" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2022</title>
+		<editor>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Q</forename><surname>Dou</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">P</forename><forename type="middle">T</forename><surname>Fletcher</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Speidel</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename><surname>Li</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">13437</biblScope>
+			<biblScope unit="page" from="671" to="681" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Theoretically principled trade-off between robustness and accuracy</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Jiao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ICML</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Generalizing universal adversarial perturbations for deep neural networks</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><surname>Ruan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">112</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="1597" to="1626" />
+			<date type="published" when="2023">2023</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

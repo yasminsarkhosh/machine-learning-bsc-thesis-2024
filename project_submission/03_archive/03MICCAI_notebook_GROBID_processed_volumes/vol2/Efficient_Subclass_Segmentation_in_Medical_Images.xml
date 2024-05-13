@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Efficient Subclass Segmentation in Medical Images</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature Switzerland</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature Switzerland</p>
+				</availability>
+				<date type="published" when="2023">2023</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Linrui</forename><surname>Dai</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Wenhui</forename><surname>Lei</surname></persName>
+							<email>wenhui.lei@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="laboratory">Shanghai Artificial Intelligence Laboratory</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Xiaofan</forename><surname>Zhang</surname></persName>
+							<email>xiaofan.zhang@sjtu.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Shanghai Jiao Tong University</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="laboratory">Shanghai Artificial Intelligence Laboratory</orgName>
+								<address>
+									<settlement>Shanghai</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Efficient Subclass Segmentation in Medical Images</title>
+					</analytic>
+					<monogr>
+						<title level="m">Lecture Notes in Computer Science</title>
+						<idno type="ISSN">0302-9743</idno>
+						<idno type="eISSN">1611-3349</idno>
+						<imprint>
+							<publisher>Springer Nature Switzerland</publisher>
+							<biblScope unit="page" from="266" to="275"/>
+							<date type="published" when="2023" />
+						</imprint>
+					</monogr>
+					<idno type="MD5">1FD68713FA648094E0AF76156897B638</idno>
+					<idno type="DOI">10.1007/978-3-031-43895-0_25</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.0" ident="GROBID" when="2024-05-13T19:27+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Automatic Segmentation • Deep Learning</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>As research interests in medical image analysis become increasingly fine-grained, the cost for extensive annotation also rises. One feasible way to reduce the cost is to annotate with coarse-grained superclass labels while using limited fine-grained annotations as a complement. In this way, fine-grained data learning is assisted by ample coarse annotations. Recent studies in classification tasks have adopted this method to achieve satisfactory results. However, there is a lack of research on efficient learning of fine-grained subclasses in semantic segmentation tasks. In this paper, we propose a novel approach that leverages the hierarchical structure of categories to design network architecture. Meanwhile, a task-driven data generation method is presented to make it easier for the network to recognize different subclass categories. Specifically, we introduce a Prior Concatenation module that enhances confidence in subclass segmentation by concatenating predicted logits from the superclass classifier, a Separate Normalization module that stretches the intra-class distance within the same superclass to facilitate subclass segmentation, and a HierarchicalMix model that generates high-quality pseudo labels for unlabeled samples by fusing only similar superclass regions from labeled and unlabeled images. Our experiments on the BraTS2021 and ACDC datasets demonstrate that our approach achieves comparable accuracy to a model trained with full subclass annotations, with limited subclass annotations and sufficient superclass annotations. Our approach offers a promising solution for efficient fine-grained subclass segmentation in medical images. Our code is publicly available here.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In recent years, the use of deep learning for automatic medical image segmentation has led to many successful results based on large amounts of annotated training data. However, the trend towards segmenting medical images into finergrained classes (denoted as subclasses) using deep neural networks has resulted in an increased demand for finely annotated training data <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b20">21]</ref>. This process requires a higher level of domain expertise, making it both time-consuming and demanding. As annotating coarse-grained (denoted as superclasses) classes is generally easier than subclasses, one way to reduce the annotation cost is to collect a large number of superclasses annotations and then labeling only a small number of samples in subclasses. Moreover, in some cases, a dataset may have already been annotated with superclass labels, but the research focus has shifted towards finer-grained categories <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b23">24]</ref>. In such cases, re-annotating an entire dataset may not be as cost-effective as annotating only a small amount of data with subclass labels.</p><p>Here, the primary challenge is to effectively leverage superclass annotations to facilitate the learning of fine-grained subclasses. To solve this problem, several works have proposed approaches for recognizing new subclasses with limited subclass annotations while utilizing the abundant superclass annotations in classification tasks <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b24">25]</ref>. In general, they assume the subclasses are not known during the training stage and typically involve pre-training a base model on superclasses to automatically group samples of the same superclass into several clusters while adapting them to finer subclasses during test time.</p><p>However, to the best of our knowledge, there has been no work specifically exploring learning subclasses with limited subclass and full superclass annotations in semantic segmentation task. Previous label-efficient learning methods, such as semi-supervised learning <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b25">26]</ref>, few-shot learning <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b18">19]</ref> and weakly supervised learning <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b26">27]</ref>, focus on either utilize unlabeled data or enhance the model's generalization ability or use weaker annotations for training. However, they do not take into account the existence of superclasses annotations, making them less competitive in our setting.</p><p>In this study, we focus on the problem of efficient subclass segmentation in medical images, whose goal is to segment subclasses under the supervision of limited subclass and sufficient superclass annotations. Unlike previous works such as <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b24">25]</ref>, we assume that the target subclasses and their corresponding limited annotations are available during the training process, which is more in line with practical medical scenarios.</p><p>Our main approach is to utilize the hierarchical structure of categories to design network architectures and data generation methods that make it easier for the network to distinguish between subclass categories. Specifically, we propose 1) a Prior Concatenation module that concatenates predicted logits from the superclass classifier to the input feature map before subclass segmentation, serving as prior knowledge to enable the network to focus on recognizing subclass categories within the current predicted superclass; 2) a Separate Normalization module that aims to stretch the intra-class distance within the same superclass, facilitating subclass segmentation; 3) a HierarchicalMix module inspired by GuidedMix <ref type="bibr" target="#b22">[23]</ref>, which for the first time suggests fusing similar labeled and unlabeled image pairs to generate high-quality pseudo labels for the unlabeled samples. However, GuidedMix selects image pairs based on their similarity and fuses entire images. In contrast, our approach is more targeted. We mix a certain superclass region from an image with subclass annotation to the corresponding superclass region in an unlabeled image without subclass annotation, avoiding confusion between different superclass regions. This allows the model to focus on distinguishing subclasses within the same superclass. Our experiments on the Brats 2021 <ref type="bibr" target="#b2">[3]</ref> and ACDC <ref type="bibr" target="#b4">[5]</ref> datasets demonstrate that our model, with sufficient superclass and very limited subclass annotations, achieves comparable accuracy to a model trained with full subclass annotations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Method</head><p>Problem Definition. We start by considering a set of R coarse classes, denoted by Y c = {Y 1 , ..., Y R }, such as background and brain tumor, and a set of N training images, annotated with Y c , denoted by D c = {(x l , y l )|y l i ∈ Y c } N l=1 . Each pixel i in image x l is assigned a superclass label y l i . To learn a finer segmentation model, we introduce a set of fine subclass</p><formula xml:id="formula_0">K = R i=1 k i in coarse classes, denoted by Y f = {Y 1,1 , ..., Y 1,k1 , ..., Y R,1 , ..., Y R,</formula><p>kR }, such as background, enhancing tumor, tumor core, and whole tumor. We assume that only a small subset of n training images have pixel-wise subclass labels z ∈ Y f denoted by</p><formula xml:id="formula_1">D f = {(x l , z l )|z l i ∈ Y f } n l=1 .</formula><p>Our goal is to train a segmentation network f (x l ) that can accurately predict the subclass labels for each pixel in the image x l , even when n N . Without specification, we consider R = 2 (background and foreground) and extend the foreground class to multi subclass in this work.</p><p>Prior Concatenation. One direct way to leverage the superclass and subclass annotations simultaneously is using two 1×1×1 convolution layers as superclass and subclass classification heads for the features extracted from the network. The superclassification and subclassification heads are individually trained by superclass P c (x l ) labels and subclass labels P f (x l ). With enough superclass labels, the feature maps corresponding to different superclasses should be well separated. However, this coerces the subclassification head to discriminate among K subclasses under the mere guidance from few subclass annotations, making it prone to overfitting.</p><p>Another common method to incorporate the information from superclass annotations into the subclassification head is negative learning <ref type="bibr" target="#b13">[14]</ref>. This technique penalizes the prediction of pixels being in the wrong superclass label, effectively using the superclass labels as a guiding principle for the subclassification head. However, in our experiments, we found that this method may lead to lower overall performance, possibly due to unstable training gradients resulting from the uncertainty of the subclass labels.</p><p>To make use of superclass labels without affecting the training of the subclass classification head, we propose a simple yet effective method called Prior Concatenation (PC): as shown in Fig. <ref type="figure" target="#fig_0">1</ref> (a), we concatenate predicted superclass logit scores S c (x l ) onto the feature maps F (x l ) and then perform subclass segmentation. The intuition behind this operation is that by concatenating the predicted superclass probabilities with feature maps, the network is able to leverage the prior knowledge of the superclass distribution and focus more on learning the fine-grained features for better discrimination among subclasses.</p><p>Separate Normalization. Intuitively, given sufficient superclass labels in supervised learning, the superclassification head tends to reduce feature distance among samples within the same superclass, which conflicts with the goal of increasing the distance between subclasses within the same superclass. To alleviate this issue, we aim to enhance the internal diversity of the distribution within the same superclass while preserving the discriminative features among superclasses.</p><p>To achieve this, we propose Separate Normalization(SN) to separately process feature maps belonging to hierarchical foreground and background divided by superclass labels. As a superclass and the subclasses within share the same background, the original conflict between classifiers is transferred to finding the optimal transformations that separate foreground from background, enabling the network to extract class-specific features while keeping the features inside different superclasses well-separated.</p><p>Our framework is shown in Fig. <ref type="figure" target="#fig_0">1 (b</ref>). First, we use Batch Norm layers <ref type="bibr" target="#b11">[12]</ref> to perform separate affine transformations on the original feature map. The transformed feature maps, each representing a semantic foreground and background, are then passed through a convolution block for feature extraction before further classification. The classification process is coherent with the semantic meaning of each branch. Namely, the foreground branch includes a superclassifier and a subclassifier that classifies the superclass and subclass foreground, while the background branch is dedicated solely to classify background pixels. Finally, two separate network branches are jointly supervised by segmentation loss on superand subclass labels. The aforementioned prior concatenation continues to take effect by concatenating predicted superclass logits on the inputs of subclassifier.</p><p>HierarchicalMix. Given the scarcity of subclass labels, we intend to maximally exploit the existent subclass supervision to guide the segmentation of coarsely labeled samples. Inspired by GuidedMix <ref type="bibr" target="#b22">[23]</ref>, which provides consistent knowledge transfer between similar labeled and unlabeled images with pseudo labeling, we propose HierarchicalMix(HM) to generate robust pseudo supervision. Nevertheless, GuidedMix relies on image distance to select similar images and performs a whole-image mixup, which loses focus on the semantic meaning of each region within an image. We address this limitation by exploiting the additional superclass information for a more targeted mixup. This information allows us to fuse only the semantic foreground regions, realizing a more precise transfer of foreground knowledge. A detailed pipeline of HierarchicalMix is described below.</p><p>As shown in Fig. <ref type="figure" target="#fig_1">2</ref>, for each sample (x, y) in the dataset that does not have subclass labels, we pair it with a randomly chosen fine-labeled sample (x , y , z ). First, we perform an random rotation and flipping T on (x, y) and feed both the original sample and the transformed sample Tx into the segmentation network f . An indirect segmentation of x is obtained by performing the inverse transformation T -1 on the segmentation result of Tx. A transform-invariant pseudo subclass label map z pse is generated according to the following scheme: Pixel (i, j) in z pse is assigned a valid subclass label index (z pse ) i,j = f (x) i,j only when f (x) i,j agrees with [T -1 f (Tx)] i,j with a high confidence τ as well as f (x) i,j and x i,j both belong to the same superclass label.</p><p>Next, we adopt image mixup by cropping the bounding box of foreground pixels in x , resizing it to match the size of foreground in x, and linearly overlaying them by a factor of α on x. This semantically mixed image x mix has subclass labels z = resize(α • z ) from the fine-labeled image x . Then, we pass it through the network to obtain a segmentation result f (x mix ). This segmentation result is supervised by the superposition of the pseudo label map z pse and subclass labels z, with weighting factor α:</p><formula xml:id="formula_2">L p = L(f (x mix ), α • z + (1 -α) • z pse ).</formula><p>The intuition behind this framework is to simultaneously leverage the information from both unlabeled and labeled data by incorporating a more robust supervision from transform-invariant pseudo labels. While mixing up only the semantic foreground provides a way of exchanging knowledge between similar foreground objects while lifting the confirmation bias in pseudo labeling <ref type="bibr" target="#b0">[1]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Experiments</head><p>Dataset and Preprocessing. We conduct all experiments on two public datasets. The first one is the ACDC<ref type="foot" target="#foot_0">1</ref> dataset <ref type="bibr" target="#b4">[5]</ref>, which contains 200 MRI images with segmentation labels for left ventricle cavity (LV), right ventricle cavity (RV), and myocardium (MYO). Due to the large inter-slice spacing, we use 2D segmentation as in <ref type="bibr" target="#b1">[2]</ref>. We adopt the processed data and the same data division in <ref type="bibr" target="#b15">[16]</ref>, which uses 140 scans for training, 20 scans for validation and 40 scans for evaluation. During inference, predictions are made on each individual slice and then assembled into a 3D volume. The second is the BraTS2021<ref type="foot" target="#foot_1">2</ref> dataset <ref type="bibr" target="#b2">[3]</ref>, which consists of 1251 mpMRI scans with an isotropic 1 mm 3 resolution. Each scan includes four modalities (FLAIR, T1, T1ce, and T2), and is annotated for necrotic tumor core (TC), peritumoral edematous/invaded tissue (PE), and the GD-enhancing tumor (ET). We randomly split the dataset into 876, 125, and 250 cases for training, validation, and testing, respectively. For both datasets, image intensities are normalized to values in [0, 1] and the foreground superclass is defined as the union of all foreground subclasses for both datasets.</p><p>Implementation Details and Evaluation Metrics. To augment the data during training, we randomly cropped the images with a patch size of 256 × 256 for the ACDC dataset and 96 × 96 × 96 for the BraTS2021 dataset. The model loss L is set by adding the losses from Cross Entropy Loss and Dice Loss. The weighing factor α in HierarchicalMix section is chosen to be 0.5, while τ linearly decreases from 1 to 0.4 during the training process.</p><p>We trained the model for 40,000 iterations using SGD optimizer with a 0.9 momentum and a linearly decreasing learning rate that starts at 0.01 and ends with 0. We used a batch size of 24 for the ACDC dataset and 4 for the BraTS2021 dataset, where half of the samples are labeled with subclasses and the other half only labeled with superclasses. More details can be found in the supplementary materials. To evaluate the segmentation performance, we used two widely-used metrics: the Dice coefficient (DSC) and 95% Hausdorff Distance (HD 95 ). The confidence factor τ mentioned in HierarchicalMix starts at 1 and linearly decays to 0.4 throughout the training process, along with a weighting factor α sampled according to the uniform distribution on [0.5, 1].</p><p>Performance Comparison with Other Methods. To evaluate the effectiveness of our proposed method, we firstly trained two U-Net models <ref type="bibr" target="#b19">[20]</ref> to serve as upper and lower bounds of performance. The first U-Net was trained on the complete subclass dataset {(x l , y l , z l )} N l=1 , while the second was trained on its subset {(x l , y l , z l )} n l=1 . Then, we compared our method with the following four methods, all of which were trained using n subclass labels and N superclass labels: Modified U-Net (Mod): This method adds an additional superclass classifier alongside the subclass classifier in the U-Net. Negative Learning (NL): This method incorporates superclass information into the loss module by introducing a separate negative learning loss in the original U-Net. This additional loss penalizes pixels that are not segmented as the correct superclass. Cross Pseudo Supervision (CPS) <ref type="bibr" target="#b6">[7]</ref>: This method simulates pseudo supervision by utilizing the segmentation results from two models with different parameter initializations, and adapts their original network to the Modified U-Net architecture. Uncertainty Aware Mean Teacher (UAMT) <ref type="bibr" target="#b25">[26]</ref>: This method modifies the classical mean teacher architecture <ref type="bibr" target="#b21">[22]</ref> by adapting the teacher model to learn from only reliable targets while ignoring the rest, and also adapts the original network to the Modified U-Net architecture.</p><p>Table <ref type="table">1</ref>. Mean Dice Score (%, left) and HD95 (mm, right) of different methods on ACDC and BraTS2021 datasets. Sup. and Sub. separately represents the number of data with superclass and subclass annotations in the experiments. '_' means the result of our proposal is significantly better than the closet competitive result (p-value &lt; 0.05). The standard deviations of each metric are recorded in the supplementary materials. The quantitative results presented in Table <ref type="table">1</ref> reveal that all methods that utilize additional superclass annotations outperformed the baseline method, which involved training a U-Net using only limited subclass labels. However, the methods that were specifically designed to utilize superclass information or explore the intrinsic structure of the subclass data, such as NL, CPS, and UAMT, did not consistently outperform the simple Modified U-Net. In fact, these methods sometimes performed worse than the simple Modified U-Net, indicating the difficulty of utilizing superclass information effectively. In contrast, our proposed method achieved the best performance among all compared methods on both the ACDC and BraTS2021 datasets. Specifically, our method attained an average Dice score of 87.3% for ACDC and 75.4% for BraTS2021, outperforming the closest competitor by 5.0% and 1.4%, respectively. Ablation Studies. In this study, we performed comprehensive ablation studies to analyze the contributions of each component and the performance of our method under different numbers of images with subclass annotations. The performance of each component is individually evaluated, and is listed in Table <ref type="table" target="#tab_1">2</ref>. Each component has demonstrated its effectiveness in comparison to the naive modified U-Net method. Moreover, models that incorporate more components generally outperform those with fewer components. The effectiveness of the proposed HierarchicalMix is evident from the comparisons made with models that use only image mixup or pseudo-labeling for data augmentation, while the addition of Separate Normalization consistently improves the model performance. Furthermore, our method was competitive with a fully supervised baseline, achieving comparable results with only 6.5% and 3.4% subclass annotations on ACDC and BraTS2021.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Conclusion</head><p>In this work, we proposed an innovative approach to address the problem of efficient subclass segmentation in medical images, where limited subclass annotations and sufficient superclass annotations are available. To the best of our knowledge, this is the first work specifically focusing on this problem. Our approach leverages the hierarchical structure of categories to design network architectures and data generation methods that enable the network to distinguish between subclass categories more easily. Specifically, we introduced a Prior Concatenation module that enhances confidence in subclass segmentation by concatenating predicted logits from the superclass classifier, a Separate Normalization module that stretches the intra-class distance within the same superclass to facilitate subclass segmentation, and a HierarchicalMix model that generates high-quality pseudo labels for unlabeled samples by fusing only similar superclass regions from labeled and unlabeled images. Our experiments on the ACDC and BraTS2021 datasets demonstrated that our proposed approach outperformed other compared methods in improving the segmentation accuracy. Overall, our proposed method provides a promising solution for efficient fine-grained subclass segmentation in medical images.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Proposed network architecture, Lc and L f stand for the superclass loss and subclass loss respectively.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. The framework of HierarchicalM ix. This process is adopted at training time to pair each coarsely labeled image x with its mixed image xmix and pseudo subclass label z. "//" represents the cut of gradient backpropagation.</figDesc><graphic coords="5,101,43,63,41,247,87,136,30" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1"><head>Table 2 .</head><label>2</label><figDesc>Mean Dice Score (%, left) and HD95 (mm, right) of ablation studies on ACDC and BraTS2021 datasets (mixup and pseudo in HM column separately stands for using solely image mixup and pseudo-labeling to achieve better data utilization).</figDesc><table><row><cell>HM</cell><cell>PC SN ACDC</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="2">BraTS2021</cell></row><row><cell></cell><cell cols="2">Sup. Sub. RV</cell><cell>MYO</cell><cell>LV</cell><cell>Avg.</cell><cell cols="2">Sup. Sub. TC</cell><cell>PE</cell><cell>ET</cell><cell>Avg.</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 83.1, 11.1 80.7, 6.12 83.1, 14.7 82.3, 10.6 876</cell><cell cols="2">10 60.3, 7.69 76.2, 7.70 80.2, 4.97 72.3, 6.79</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 85.9, 2.55 83.6, 3.70 89.8, 5.15 86.5, 3.80 876</cell><cell cols="2">10 65.0, 8.00 77.0, 7.47 80.6, 3.74 74.2, 6.40</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 80.0, 8.06 80.4, 6.63 87.9, 5.07 82.8, 6.58 876</cell><cell cols="2">10 61.6, 7.00 77.3, 6.89 80.4, 6.01 73.1, 6.63</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 79.0, 3.32 81.2, 3.69 88.6, 4.43 82.9, 3.82 876</cell><cell cols="2">10 63.5, 9.03 78.9, 6.29 80.2, 4.45 74.2, 6.59</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 85.1, 1.86 81.4, 4.29 87.3, 5.55 84.6, 3.90 876</cell><cell cols="2">10 65.1, 7.93 78.4, 6.86 78.3, 3.97 73.9, 6.25</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 87.6, 2.81 83.8, 2.06 89.9, 2.87 87.1, 2.58 876</cell><cell cols="2">10 65.7, 7.56 79.6, 6.68 81.4, 4.25 75.5, 6.16</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 84.7, 5.26 84.1, 2.53 89.3, 2.79 86.0, 3.53 876</cell><cell cols="2">10 64.4, 7.96 79.5, 6.41 79.5, 5.07 74.4, 6.48</cell></row><row><cell>mixup</cell><cell>140</cell><cell cols="5">3 82.9, 5.42 80.6, 4.18 86.8, 6.06 83.5, 5.22 876</cell><cell cols="2">10 66.2, 6.90 79.6, 6.26 80.9, 4.19 75.6, 5.79</cell></row><row><cell>pseudo</cell><cell>140</cell><cell cols="5">3 78.8, 12.2 80.1, 7.66 84.3, 7.71 81.1, 9.20 876</cell><cell cols="2">10 62.4, 11.1 77.9, 6.55 80.0, 7.09 73.5, 8.24</cell></row><row><cell></cell><cell>140</cell><cell cols="5">3 87.2, 1.84 84.6, 2.70 90.1, 4.44 87.3, 2.99 876</cell><cell cols="2">10 65.5, 6.90 79.9, 6.38 80.8, 3.59 75.4, 5.62</cell></row><row><cell></cell><cell>140</cell><cell cols="5">6 86.6, 1.20 84.7, 1.87 90.9, 4.23 87.4, 2.44 876</cell><cell cols="2">20 70.7, 7.45 81.2, 6.08 82.2, 3.58 78.0, 5.70</cell></row><row><cell></cell><cell>140</cell><cell cols="5">9 86.1, 1.78 85.7, 1.92 90.8, 4.15 87.6, 2.62 876</cell><cell cols="2">30 71.4, 6.15 81.4, 5.84 82.5, 3.25 78.5, 5.08</cell></row><row><cell>UNet</cell><cell cols="5">0 140 90.6, 1.88 89.0, 3.59 94.6, 3.60 91.4, 3.02</cell><cell cols="3">0 876 75.8, 4.86 82.2, 5.87 83.6, 2.48 80.6, 4.40</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0"><p>https://www.creatis.insa-lyon.fr/Challenge/acdc/databases.html.</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1"><p>http://braintumorsegmentation.org/.</p></note>
+		</body>
+		<back>
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Supplementary Information</head><p>The online version contains supplementary material available at https://doi.org/10.1007/978-3-031-43895-0_25.</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Pseudo-labeling and confirmation bias in deep semi-supervised learning</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Arazo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Ortego</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>O'connor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Mcguinness</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning for network-based cardiac MR image segmentation</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Bai</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-66185-8_29</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-66185-8_29" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2017</title>
+		<editor>
+			<persName><forename type="first">D</forename><forename type="middle">L</forename><surname>Duchesne</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">S</forename></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2017">2017</date>
+			<biblScope unit="volume">10434</biblScope>
+			<biblScope unit="page" from="253" to="260" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">The RSNA-ASNR-MICCAI BraTS 2021 benchmark on brain tumor segmentation and radiogenomic classification</title>
+		<author>
+			<persName><forename type="first">U</forename><surname>Baid</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2107.02314</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Identifying the best machine learning algorithms for brain tumor segmentation, progression assessment, and overall survival prediction in the brats challenge</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Bakas</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1811.02629</idno>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Deep learning techniques for automatic MRI cardiac multistructures segmentation and diagnosis: is the problem solved?</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Bernard</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Med. Imaging</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2514" to="2525" />
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Fine-grained angular contrastive learning with coarse labels</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Bukchin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="8730" to="8740" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Semi-supervised semantic segmentation with cross pseudo supervision</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2613" to="2622" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Efficient algorithms for learning from coarse labels</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Fotakis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kalavasis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Kontonis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Tzamos</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Learning Theory</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="2060" to="2079" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Multimodal MRI image decision fusion-based network for glioma classification</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Q</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Front. Oncol</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page">819673</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Anomaly detectioninspired few-shot medical image segmentation through self-supervision with supervoxels</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Hansen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gautam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Jenssen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Kampffmeyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">102385</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Synergistic learning of lung lobe segmentation and hierarchical multi-instance classification for automated severity assessment of COVID-19 in CT images</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">113</biblScope>
+			<biblScope unit="page">107828</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Batch normalization: Accelerating deep network training by reducing internal covariate shift</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="page" from="448" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Bounding boxes for weakly supervised segmentation: global constraints get close to full supervision</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kervadec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dolz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Granger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">B</forename><surname>Ayed</surname></persName>
+		</author>
+		<idno>PMLR</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Medical Imaging with Deep Learning</title>
+		<imprint>
+			<biblScope unit="page" from="365" to="381" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">NLNL: negative learning for noisy labels</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF International Conference on Computer Vision</title>
+		<meeting>the IEEE/CVF International Conference on Computer Vision</meeting>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="101" to="110" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">One-shot weakly-supervised segmentation in medical images</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Lei</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2111.10773</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+		<ptr target="https://github.com/HiLab-git/SSL4MIS" />
+		<title level="m">SSL4MIS</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Semi-supervised medical image segmentation via uncertainty rectified pyramid consistency</title>
+		<author>
+			<persName><forename type="first">X</forename><surname>Luo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page">102517</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Superclass-conditional gaussian mixture model for learning finegrained embeddings</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Ni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Learning Representations</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Self-supervision with superpixels: training few-shot medical image segmentation without annotation</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Ouyang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Biffi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Kart</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Rueckert</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-58526-6_45</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-58526-6_45" />
+	</analytic>
+	<monogr>
+		<title level="m">ECCV 2020</title>
+		<editor>
+			<persName><forename type="first">A</forename><surname>Vedaldi</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">H</forename><surname>Bischof</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J.-M</forename><surname>Frahm</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="volume">12374</biblScope>
+			<biblScope unit="page" from="762" to="780" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">U-Net: convolutional networks for biomedical image segmentation</title>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ronneberger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Brox</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-319-24574-4_28</idno>
+		<ptr target="https://doi.org/10.1007/978-3-319-24574-4_28" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2015</title>
+		<editor>
+			<persName><forename type="first">N</forename><surname>Navab</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">J</forename><surname>Hornegger</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">W</forename><forename type="middle">M</forename><surname>Wells</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Frangi</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015">2015</date>
+			<biblScope unit="volume">9351</biblScope>
+			<biblScope unit="page" from="234" to="241" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Verse: a vertebrae labelling and segmentation benchmark for multi-detector CT images</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sekuboyina</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">102166</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Mean teachers are better role models: weight-averaged consistency targets improve semi-supervised deep learning results</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tarvainen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Valpola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">GuidedMix-Net: semisupervised semantic segmentation by using labeled images as reference</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Shao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the AAAI Conference on Artificial Intelligence</title>
+		<meeting>the AAAI Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="2379" to="2387" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multi-scale semi-supervised clustering of brain images: deriving disease subtypes</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Wen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Med. Image Anal</title>
+		<imprint>
+			<biblScope unit="volume">75</biblScope>
+			<biblScope unit="page">102304</biblScope>
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Towards cross-granularity few-shot learning: coarseto-fine pseudo-labeling with visual-semantic meta-embedding</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 29th ACM International Conference on Multimedia</title>
+		<meeting>the 29th ACM International Conference on Multimedia</meeting>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+			<biblScope unit="page" from="3005" to="3014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Uncertainty-aware self-ensembling model for semi-supervised 3D left atrium segmentation</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C.-W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P.-A</forename><surname>Heng</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/978-3-030-32245-8_67</idno>
+		<ptr target="https://doi.org/10.1007/978-3-030-32245-8_67" />
+	</analytic>
+	<monogr>
+		<title level="m">MICCAI 2019</title>
+		<editor>
+			<persName><forename type="first">D</forename><surname>Shen</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="volume">11765</biblScope>
+			<biblScope unit="page" from="605" to="613" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">CycleMix: a holistic strategy for medical image segmentation from scribble supervision</title>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">X</forename><surname>Zhuang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</title>
+		<meeting>the IEEE/CVF Conference on Computer Vision and Pattern Recognition</meeting>
+		<imprint>
+			<date type="published" when="2022">2022</date>
+			<biblScope unit="page" from="11656" to="11665" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
